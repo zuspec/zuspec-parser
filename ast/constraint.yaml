@@ -9,24 +9,21 @@ classes:
         - super: ConstraintStmt
         - data:
           - constraints: list<UP<ConstraintStmt>>
-          #        - data:
-                #            - symtab:
-                #                - type: map<string, P<NamedScopeChild>>
-                #                - is_ctor: false
     - ConstraintStmt:
         - super: ScopeChild
-    - ConstraintStmtDefault:
-        - super: ConstraintStmt
-        - data:
-            - hid: UP<ExprHierarchicalId>
-            - expr: UP<Expr>
-    - ConstraintStmtDefaultDisable:
-        - super: ConstraintStmt
-        - data:
-            - hid: UP<ExprHierarchicalId>
     - ConstraintStmtExpr:
         - super: ConstraintStmt
         - data:
+            - expr: UP<Expr>
+    - ConstraintStmtForeach:
+        - super: ConstraintScope
+        - data:
+            - it:
+                - type: P<ConstraintStmtField>
+                - is_ctor: false
+            - idx:
+                - type: P<ConstraintStmtField>
+                - is_ctor: false
             - expr: UP<Expr>
     - ConstraintStmtField:
         - super: ConstraintStmt
@@ -39,16 +36,6 @@ classes:
             - iterator_id: UP<ExprId>
             - type_id: UP<DataTypeUserDefined>
             - ref_path: UP<ExprRefPath>
-    - ConstraintStmtForeach:
-        - super: ConstraintScope
-        - data:
-            - it:
-                - type: P<ConstraintStmtField>
-                - is_ctor: false
-            - idx:
-                - type: P<ConstraintStmtField>
-                - is_ctor: false
-            - expr: UP<Expr>
     - ConstraintStmtIf:
         - super: ConstraintStmt
         - data:
@@ -63,5 +50,14 @@ classes:
         - super: ConstraintStmt
         - data:
             - list: list<UP<ExprRefPathContext>>
+    - ConstraintStmtDefault:
+        - super: ConstraintStmt
+        - data:
+            - hid: UP<ExprHierarchicalId>
+            - expr: UP<Expr>
+    - ConstraintStmtDefaultDisable:
+        - super: ConstraintStmt
+        - data:
+            - hid: UP<ExprHierarchicalId>
             
             

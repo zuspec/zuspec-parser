@@ -167,6 +167,14 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 	return 0;
 }
 
+// B.9 Activity statements
+antlrcpp::Any AstBuilderInt::visitActivity_action_traversal_stmt(PSSParser::Activity_action_traversal_stmtContext *ctx) {
+	DEBUG_ENTER("visitActivity_action_traversal_stmt");
+	DEBUG("TODO: skipping activity traversal statement");
+	DEBUG_LEAVE("visitActivity_action_traversal_stmt");
+	return 0;
+}
+
 // B.14 Constraints
 antlrcpp::Any AstBuilderInt::visitConstraint_declaration(PSSParser::Constraint_declarationContext *ctx) {
 	DEBUG_ENTER("visitConstraint_declaration");
@@ -201,18 +209,18 @@ antlrcpp::Any AstBuilderInt::visitConstraint_declaration(PSSParser::Constraint_d
 	return 0;
 }
 
-antlrcpp::Any AstBuilderInt::visitConstraint_set(PSSParser::Constraint_setContext *ctx) {
-	DEBUG_ENTER("visitConstraint_set");
+// antlrcpp::Any AstBuilderInt::visitConstraint_set(PSSParser::Constraint_setContext *ctx) {
+// 	DEBUG_ENTER("visitConstraint_set");
 
-	if (ctx->constraint_body_item()) {
-		ctx->constraint_body_item()->accept(this);
-	} else {
-		ctx->constraint_block()->accept(this);
-	}
+// 	if (ctx->constraint_body_item()) {
+// 		ctx->constraint_body_item()->accept(this);
+// 	} else {
+// 		ctx->constraint_block()->accept(this);
+// 	}
 
-	DEBUG_LEAVE("visitConstraint_set");
-	return 0;
-}
+// 	DEBUG_LEAVE("visitConstraint_set");
+// 	return 0;
+// }
 
 antlrcpp::Any AstBuilderInt::visitConstraint_block(PSSParser::Constraint_blockContext *ctx) {
 	DEBUG_ENTER("visitConstraint_block");
@@ -233,10 +241,10 @@ antlrcpp::Any AstBuilderInt::visitConstraint_block(PSSParser::Constraint_blockCo
 	return 0;
 }
 
-antlrcpp::Any AstBuilderInt::visitDefault_constraint_item(PSSParser::Default_constraint_itemContext *ctx) {
-	DEBUG_ENTER("visitDefault_constraint_item");
+antlrcpp::Any AstBuilderInt::visitDefault_constraint(PSSParser::Default_constraintContext *ctx) {
+	DEBUG_ENTER("visitDefault_constraint");
 	DEBUG("TODO");
-	DEBUG_LEAVE("visitDefault_constraint_item");
+	DEBUG_LEAVE("visitDefault_constraint");
 	return 0;
 }
 
@@ -249,14 +257,40 @@ antlrcpp::Any AstBuilderInt::visitDefault_disable_constraint(PSSParser::Default_
 
 antlrcpp::Any AstBuilderInt::visitExpression_constraint_item(PSSParser::Expression_constraint_itemContext *ctx) {
 	DEBUG_ENTER("visitExpression_constraint_item");
-	DEBUG("TODO");
+	ast::IConstraintStmtExpr *c = m_factory->mkConstraintStmtExpr(
+		mkExpr(ctx->expression()));
+	m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
 	DEBUG_LEAVE("visitExpression_constraint_item");
 	return 0;
 }
 
 antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_constraint_itemContext *ctx) {
 	DEBUG_ENTER("visitForeach_constraint_item");
-	DEBUG("TODO");
+	ast::IConstraintStmtForeach *c = m_factory->mkConstraintStmtForeach(
+		mkExpr(ctx->expression()));
+	
+	if (ctx->it_id) {
+		ast::IConstraintStmtField *it = m_factory->mkConstraintStmtField(
+			mkId(ctx->it_id->identifier()),
+			0 // TODO: what do we do about datatype here?
+		);
+		c->setIt(it);
+		c->getConstraints().push_back(ast::IConstraintStmtUP(it));
+	}
+
+	if (ctx->idx_id) {
+		ast::IConstraintStmtField *idx = m_factory->mkConstraintStmtField(
+			mkId(ctx->idx_id->identifier()),
+			0 // TODO: 
+		);
+		c->setIdx(idx);
+		c->getConstraints().push_back(ast::IConstraintStmtUP(idx));
+	}
+
+	m_constraint_s.back()->getConstraints().push_back(ast::IConstraintScopeUP(c));
+	m_constraint_s.push_back(c);
+	visitConstraintSetItems(ctx->constraint_set());
+	m_constraint_s.pop_back();
 	DEBUG_LEAVE("visitForeach_constraint_item");
 	return 0;
 }
@@ -271,7 +305,28 @@ antlrcpp::Any AstBuilderInt::visitForall_constraint_item(PSSParser::Forall_const
 
 antlrcpp::Any AstBuilderInt::visitIf_constraint_item(PSSParser::If_constraint_itemContext *ctx) {
 	DEBUG_ENTER("visitIf_constraint_item");
-	DEBUG("TODO");
+	ast::IExpr *cond = mkExpr(ctx->expression());
+	ast::IConstraintScope *true_c = m_factory->mkConstraintScope();
+	ast::IConstraintScope *false_c = 0;
+	m_constraint_s.push_back(true_c);
+	visitConstraintSetItems(ctx->constraint_set(0));
+	m_constraint_s.pop_back();
+
+	if (ctx->constraint_set(1)) {
+		false_c = m_factory->mkConstraintScope();
+		m_constraint_s.push_back(false_c);
+		visitConstraintSetItems(ctx->constraint_set(1));
+		m_constraint_s.pop_back();
+	}
+
+	IConstraintStmtIf *c = m_factory->mkConstraintStmtIf(
+		cond,
+		true_c,
+		false_c);
+
+	m_constraint_s.back()->getConstraints().push_back(
+		IConstraintStmtUP(c));
+
 	DEBUG_LEAVE("visitIf_constraint_item");
 	return 0;
 }
@@ -288,6 +343,24 @@ antlrcpp::Any AstBuilderInt::visitUnique_constraint_item(PSSParser::Unique_const
 	DEBUG("TODO");
 	DEBUG_LEAVE("visitUnique_constraint_item");
 	return 0;
+}
+
+void AstBuilderInt::visitConstraintSetItems(PSSParser::Constraint_setContext *ctx) {
+	DEBUG_ENTER("visitConstraintSetItems");
+
+	if (ctx->constraint_body_item()) {
+		ctx->constraint_body_item()->accept(this);
+	} else {
+		std::vector<PSSParser::Constraint_body_itemContext *> items =
+			ctx->constraint_block()->constraint_body_item();
+		for (std::vector<PSSParser::Constraint_body_itemContext *>::const_iterator
+			it=items.begin();
+			it!=items.end(); it++) {
+			(*it)->accept(this);
+		}
+	}
+
+	DEBUG_LEAVE("visitConstraintSetItems");
 }
 
 void AstBuilderInt::syntaxError(
@@ -514,6 +587,11 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 	}
 
 	return ret;
+}
+
+ast::IExpr *AstBuilderInt::mkExpr(
+		PSSParser::ExpressionContext 			*ctx) {
+	return 0;
 }
 
 }

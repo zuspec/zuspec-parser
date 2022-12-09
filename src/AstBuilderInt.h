@@ -45,14 +45,17 @@ public:
 	// B.3 Struct declarations
 	virtual antlrcpp::Any visitStruct_declaration(PSSParser::Struct_declarationContext *ctx) override;
 
+	// B.9 Activity statements
+	virtual antlrcpp::Any visitActivity_action_traversal_stmt(PSSParser::Activity_action_traversal_stmtContext *ctx) override;
+
 	// B.14 Constraints
 	virtual antlrcpp::Any visitConstraint_declaration(PSSParser::Constraint_declarationContext *ctx) override;
 
-	virtual antlrcpp::Any visitConstraint_set(PSSParser::Constraint_setContext *ctx) override;
+//	virtual antlrcpp::Any visitConstraint_set(PSSParser::Constraint_setContext *ctx) override;
 
 	virtual antlrcpp::Any visitConstraint_block(PSSParser::Constraint_blockContext *ctx) override;
 
-	virtual antlrcpp::Any visitDefault_constraint_item(PSSParser::Default_constraint_itemContext *ctx) override;
+	virtual antlrcpp::Any visitDefault_constraint(PSSParser::Default_constraintContext *ctx) override;
 
 	virtual antlrcpp::Any visitDefault_disable_constraint(PSSParser::Default_disable_constraintContext *ctx) override;
 
@@ -67,6 +70,8 @@ public:
 	virtual antlrcpp::Any visitImplication_constraint_item(PSSParser::Implication_constraint_itemContext *ctx) override;
 	
 	virtual antlrcpp::Any visitUnique_constraint_item(PSSParser::Unique_constraint_itemContext *ctx) override;
+
+	void visitConstraintSetItems(PSSParser::Constraint_setContext *ctx);
 
     virtual void syntaxError(
     		Recognizer *recognizer,
@@ -108,6 +113,9 @@ private:
 
 	ast::ITypeIdentifier *mkTypeId(
 		PSSParser::Type_identifierContext		*ctx);
+
+	ast::IExpr *mkExpr(
+		PSSParser::ExpressionContext 			*ctx);
 
 
 
