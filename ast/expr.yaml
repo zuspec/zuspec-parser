@@ -29,7 +29,7 @@ enums:
         - UnaryOp_BitXor
 
 classes: 
-    - Expr:
+    - Expr: {}
 
     - ExprBin:
         - super: Expr

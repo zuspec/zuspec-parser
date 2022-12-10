@@ -5,17 +5,14 @@
  *      Author: ballance
  */
 #pragma once
-#include "gtest/gtest.h"
+#include "TestBase.h"
 
-class TestParseSpecExamples : public ::testing::Test {
+class TestParseSpecExamples : public TestBase {
 public:
 	TestParseSpecExamples();
 
 	virtual ~TestParseSpecExamples();
 
-	void runTest(
-		const std::string &content,
-		const std::string &name);
 
 };
 

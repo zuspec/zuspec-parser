@@ -1,0 +1,33 @@
+
+flags:
+  - FieldAttr:
+    - Action
+    - Builtin
+    - Rand
+    - Const
+    - Static
+    - Private
+    - Protected
+
+classes:
+  - Field:
+      super: NamedScopeChild
+      data:
+      - type : UP<DataType>
+      - attr : FieldAttr
+      - array_dim : UP<Expr>
+      - init : UP<Expr>
+
+  - FieldRef:
+      super: NamedScopeChild
+      data:
+      - type: UP<DataTypeUserDefined>
+      - array_dim: UP<Expr>
+      - is_input: bool
+
+  - FieldClaim:
+      super: NamedScopeChild
+      data:
+      - type: UP<DataTypeUserDefined>
+      - array_dim: UP<Expr>
+      - is_lock: bool

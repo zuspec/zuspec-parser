@@ -41,7 +41,8 @@ using namespace ast;
 AstBuilderInt::AstBuilderInt(
 	ast::IFactory		*factory,
 	IMarkerListener 	*marker_l) : m_factory(factory), m_marker_l(marker_l) {
-	// TODO Auto-generated constructor stub
+	m_collectDocStrings = false;
+	m_field_depth = 0;
 
 }
 
@@ -77,16 +78,16 @@ antlrcpp::Any AstBuilderInt::visitPackage_declaration(
 	// TODO: populate Id list
 	fprintf(stdout, "%d elements in package_identifier\n",
 		ctx->package_id_path()->package_identifier().size());
-	/*
+	std::vector<PSSParser::Package_identifierContext *> id =
+		ctx->package_id_path()->package_identifier();
 	for (std::vector<PSSParser::Package_identifierContext *>::const_iterator
-		it=ctx->package_id_path()->package_identifier().begin();
-		it!=ctx->package_id_path()->package_identifier().end(); it++) {
+		it=id.begin();
+		it!=id.end(); it++) {
 		PSSParser::Package_identifierContext *id = (*it);
-		pkg->getId().push_back(IExprIdUP(mkId(id->identifier())));
+		pkg->getId().push_back(IExprIdUP(mkId((*it)->identifier())));
 	}
-	 */
 
-	addChild(pkg);
+	addChild(pkg, ctx->start);
 	push_scope(pkg);
 	std::vector<PSSParser::Package_body_itemContext *> items = ctx->package_body_item();
 	for (std::vector<PSSParser::Package_body_itemContext *>::const_iterator
@@ -100,6 +101,7 @@ antlrcpp::Any AstBuilderInt::visitPackage_declaration(
 }
 
 antlrcpp::Any AstBuilderInt::visitImport_stmt(PSSParser::Import_stmtContext *ctx) {
+	DEBUG_ENTER("visitImport_stmt");
 	bool is_wildcard = false;
 	IExprId *alias = 0;
 	
@@ -116,15 +118,242 @@ antlrcpp::Any AstBuilderInt::visitImport_stmt(PSSParser::Import_stmtContext *ctx
 
 	std::vector<PSSParser::Type_identifier_elemContext *> elems = 
 		ctx->package_import_pattern()->type_identifier()->type_identifier_elem();
-//	mkTypeId(imp->getPath(), ctx->package_import_pattern()->type_identifier());
 	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
 		it=elems.begin();
 		it!=elems.end(); it++) {
 		imp->getPath().push_back(IExprIdUP(mkId((*it)->identifier())));
 	}
-	addChild(imp);
+	addChild(imp, ctx->start);
+	DEBUG_LEAVE("visitImport_stmt");
+	return 0;
+}
 
+static std::map<std::string,ast::ExtendTargetE> ExtendKind_m = {
+	{"action", ast::ExtendTargetE::Action},
+	{"buffer", ast::ExtendTargetE::Buffer},
+	{"component", ast::ExtendTargetE::Component},
+	{"enum", ast::ExtendTargetE::Enum},
+	{"resource", ast::ExtendTargetE::Resource},
+	{"state", ast::ExtendTargetE::State},
+	{"stream", ast::ExtendTargetE::Stream},
+	{"struct", ast::ExtendTargetE::Struct}
+};
 
+antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx) {
+	DEBUG_ENTER("visitExtend_stmt");
+	ExtendTargetE kind = ExtendKind_m.find(ctx->ext_type->toString())->second;
+
+	if (kind == ast::ExtendTargetE::Enum) {
+		IExtendEnum *ext = m_factory->mkExtendEnum(mkTypeId(ctx->type_identifier()));
+		std::vector<PSSParser::Enum_itemContext *> items = ctx->enum_item();
+
+		for (std::vector<PSSParser::Enum_itemContext *>::const_iterator
+			it=items.begin();
+			it!=items.end(); it++) {
+			ast::IExprId *id = mkId((*it)->identifier());
+			ast::IExpr *value = 0;
+
+			if ((*it)->constant_expression()) {
+				value = mkExpr((*it)->constant_expression()->expression());
+			}
+			ast::IEnumItem *item = m_factory->mkEnumItem(id, value);
+			ext->getItems().push_back(ast::IEnumItemUP(item));
+		}
+		
+		addChild(ext, ctx->start);
+	} else {
+		IExtendType *ext = m_factory->mkExtendType(
+			kind,
+			mkTypeId(ctx->type_identifier()));
+
+		addChild(ext, ctx->start);
+		push_scope(ext);
+		switch (kind) {
+			case ast::ExtendTargetE::Action: {
+				std::vector<PSSParser::Action_body_itemContext *> items =
+					ctx->action_body_item();
+				for (std::vector<PSSParser::Action_body_itemContext *>::const_iterator
+					it=items.begin();
+					it!=items.end(); it++) {
+					(*it)->accept(this);
+				}
+			} break;
+			case ast::ExtendTargetE::Component: {
+				std::vector<PSSParser::Component_body_itemContext *> items =
+					ctx->component_body_item();
+				for (std::vector<PSSParser::Component_body_itemContext *>::const_iterator
+					it=items.begin();
+					it!=items.end(); it++) {
+					(*it)->accept(this);
+				}
+			} break;
+			case ast::ExtendTargetE::Buffer:
+			case ast::ExtendTargetE::Resource:
+			case ast::ExtendTargetE::State:
+			case ast::ExtendTargetE::Stream:
+			case ast::ExtendTargetE::Struct: {
+				std::vector<PSSParser::Struct_body_itemContext *> items =
+					ctx->struct_body_item();
+				for (std::vector<PSSParser::Struct_body_itemContext *>::const_iterator
+					it=items.begin();
+					it!=items.end(); it++) {
+					(*it)->accept(this);
+				}
+				
+			} break;
+		}
+
+		pop_scope();
+	}
+
+	DEBUG_LEAVE("visitExtend_stmt");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitConst_field_declaration(PSSParser::Const_field_declarationContext *ctx) {
+	DEBUG_ENTER("visitConst_field_declaration");
+
+	m_field_depth++;
+	ctx->data_declaration()->accept(this);
+	m_field_depth--;
+
+	if (!m_field_depth) {
+		m_fields.clear();
+	}
+
+	for (std::vector<ast::IField *>::const_iterator
+		it=m_fields.begin();
+		it!=m_fields.end(); it++) {
+		(*it)->setAttr((*it)->getAttr() | FieldAttr::Const);
+	}
+
+	DEBUG_LEAVE("visitConst_field_declaration");
+	return 0;
+}
+
+// B.2 Action declaration
+
+antlrcpp::Any AstBuilderInt::visitAction_declaration(PSSParser::Action_declarationContext *ctx) {
+	DEBUG_ENTER("visitAction_declaration");
+
+	ast::ITypeIdentifier *super_t = 0;
+	if (ctx->action_super_spec()) {
+		super_t = mkTypeId(ctx->action_super_spec()->type_identifier());
+	}
+
+	ast::IAction *action = m_factory->mkAction(
+		mkId(ctx->action_identifier()->identifier()),
+		super_t,
+		false);
+
+	if (ctx->template_param_decl_list()) {
+		// TODO: add in declarations
+	}
+
+	addChild(action, ctx->start);
+	push_scope(action);
+
+	std::vector<PSSParser::Action_body_itemContext *> items = ctx->action_body_item();
+
+	for (std::vector<PSSParser::Action_body_itemContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		(*it)->accept(this);
+	}
+
+	pop_scope();
+
+	DEBUG_LEAVE("visitAction_declaration");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitAbstract_action_declaration(PSSParser::Abstract_action_declarationContext *ctx) {
+	DEBUG_ENTER("visitAbstract_action_declaration");
+	ctx->action_declaration()->accept(this);
+	ast::IAction *action = dynamic_cast<ast::IAction *>(scope()->getChildren().back().get());
+	action->setIs_abstract(true);
+	DEBUG_LEAVE("visitAbstract_action_declaration");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitFlow_ref_field_declaration(PSSParser::Flow_ref_field_declarationContext *ctx) {
+	DEBUG_ENTER("visitFlow_ref_field_declaration");
+
+	std::vector<PSSParser::Object_ref_fieldContext *> items = ctx->object_ref_field();
+	for (std::vector<PSSParser::Object_ref_fieldContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		ast::IExpr *array_dim = 0;
+		ast::IDataTypeUserDefined *type = 0;
+
+		if (ctx->flow_object_type()->buffer_type_identifier()) {
+			type = mkDataTypeUserDefined(ctx->flow_object_type()->buffer_type_identifier()->type_identifier());
+		} else if (ctx->flow_object_type()->state_type_identifier()) {
+			type = mkDataTypeUserDefined(ctx->flow_object_type()->state_type_identifier()->type_identifier());
+		} else if (ctx->flow_object_type()->stream_type_identifier()) {
+			type = mkDataTypeUserDefined(ctx->flow_object_type()->stream_type_identifier()->type_identifier());
+		} else {
+			DEBUG("Unknown flow-object type");
+		}
+
+		if ((*it)->array_dim()) {
+			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+		}
+
+		ast::IFieldRef *field = m_factory->mkFieldRef(
+			mkId((*it)->identifier()),
+			type,
+			array_dim,
+			ctx->is_input);
+		addChild(field, ctx->start);
+	}
+
+	DEBUG_LEAVE("visitFlow_ref_field_declaration");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitResource_ref_field_declaration(PSSParser::Resource_ref_field_declarationContext *ctx) {
+	DEBUG_ENTER("visitResource_ref_field_declaration");
+
+	std::vector<PSSParser::Object_ref_fieldContext *> items = ctx->object_ref_field();
+	for (std::vector<PSSParser::Object_ref_fieldContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		ast::IExpr *array_dim = 0;
+		ast::IDataTypeUserDefined *type = mkDataTypeUserDefined(
+			ctx->resource_object_type()->resource_type_identifier()->type_identifier());
+
+		if ((*it)->array_dim()) {
+			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+		}
+
+		ast::IFieldClaim *field = m_factory->mkFieldClaim(
+			mkId((*it)->identifier()),
+			type,
+			array_dim,
+			ctx->lock);
+		addChild(field, ctx->start);
+	}
+
+	DEBUG_LEAVE("visitResource_ref_field_declaration");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitActivity_data_field(PSSParser::Activity_data_fieldContext *ctx) {
+	DEBUG_ENTER("visitActivity_data_field");
+	m_field_depth++;
+	m_field_depth--;
+
+	for (std::vector<ast::IField *>::const_iterator
+		it=m_fields.begin();
+		it!=m_fields.end(); it++) {
+		(*it)->setAttr((*it)->getAttr() | FieldAttr::Action);
+	}
+
+	if (!m_field_depth) {
+		m_fields.clear();
+	}
+	DEBUG_LEAVE("visitActivity_data_field");
 	return 0;
 }
 
@@ -142,6 +371,7 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 
 	ast::ITypeIdentifier *super_t = 0;
 
+
 	PSSParser::Struct_super_specContext *super_t_ctx = ctx->struct_super_spec();
 	if (super_t_ctx) {
 		super_t = mkTypeId(super_t_ctx->type_identifier());
@@ -151,8 +381,7 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 		super_t,
 		StructKind_m.find(ctx->struct_kind()->toString())->second);
 
-	m_scopes.back()->getChildren().push_back(ast::IScopeChildUP(s));
-	s->setParent(m_scopes.back());
+	addChild(s, ctx->start);
 	m_scopes.push_back(s);
 	std::vector<PSSParser::Struct_body_itemContext *> body = ctx->struct_body_item();
 	for (std::vector<PSSParser::Struct_body_itemContext *>::const_iterator
@@ -175,6 +404,79 @@ antlrcpp::Any AstBuilderInt::visitActivity_action_traversal_stmt(PSSParser::Acti
 	return 0;
 }
 
+// B.11 Data declarations
+
+antlrcpp::Any AstBuilderInt::visitData_declaration(PSSParser::Data_declarationContext *ctx) {
+	DEBUG_ENTER("visitData_declaration");
+
+	std::vector<PSSParser::Data_instantiationContext *> items = ctx->data_instantiation();
+	for (std::vector<PSSParser::Data_instantiationContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		ast::IDataType *type = mkDataType(ctx->data_type());
+		ast::IExpr *array_dim = 0;
+		ast::IExpr *init = 0;
+
+		if ((*it)->array_dim()) {
+			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+		}
+
+		if ((*it)->constant_expression()) {
+			init = mkExpr((*it)->constant_expression()->expression());
+		}
+
+		ast::IField *field = m_factory->mkField(
+			mkId((*it)->identifier()),
+			type,
+			FieldAttr::NoFlags,
+			array_dim,
+			init);
+
+		addChild(field, ctx->start);
+
+		if (m_field_depth > 0) {
+			m_fields.push_back(field);
+		}
+	}
+	DEBUG_LEAVE("visitData_declaration");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitAttr_field(PSSParser::Attr_fieldContext *ctx) {
+	DEBUG_ENTER("visitAttr_field");
+
+	m_field_depth++;
+	ctx->data_declaration()->accept(this);
+	m_field_depth--;
+
+	for (std::vector<ast::IField *>::const_iterator
+		it=m_fields.begin();
+		it!=m_fields.end(); it++) {
+		FieldAttr attr = (*it)->getAttr();
+
+		if (ctx->access_modifier()) {
+
+		}
+
+		if (ctx->is_rand) {
+			attr |= FieldAttr::Rand;
+		}
+
+		if (ctx->is_const) {
+			attr |= FieldAttr::Static;
+			attr |= FieldAttr::Const;
+		}
+
+		(*it)->setAttr(attr);
+	}
+
+	if (!m_field_depth) {
+		m_fields.clear();
+	}
+	DEBUG_LEAVE("visitAttr_field");
+	return 0;
+}
+
 // B.13 Data types
 antlrcpp::Any AstBuilderInt::visitChandle_type(PSSParser::Chandle_typeContext *ctx) {
 	DEBUG_ENTER("visitChandle_type");
@@ -190,8 +492,7 @@ antlrcpp::Any AstBuilderInt::visitInteger_type(PSSParser::Integer_typeContext *c
 	ast::IExprDomainOpenRangeList *in = 0;
 
 	if (ctx->lhs) {
-		ctx->lhs->accept(this);
-		width = m_expr;
+		width = mkExpr(ctx->lhs);
 	}
 
 	if (ctx->is_in) {
@@ -219,8 +520,8 @@ antlrcpp::Any AstBuilderInt::visitBool_type(PSSParser::Bool_typeContext *ctx) {
 
 antlrcpp::Any AstBuilderInt::visitEnum_type(PSSParser::Enum_typeContext *ctx) {
 	DEBUG_ENTER("visitEnum_type");
-	ctx->enum_type_identifier()->accept(this);
-	ast::IDataTypeUserDefined *dt = dynamic_cast<ast::IDataTypeUserDefined *>(m_type);
+
+	ast::IDataTypeUserDefined *dt = mkDataTypeUserDefined(ctx->enum_type_identifier()->type_identifier());
 	ast::IExprOpenRangeList *in = 0;
 
 	if (ctx->TOK_IN()) {
@@ -247,8 +548,7 @@ antlrcpp::Any AstBuilderInt::visitEnum_declaration(PSSParser::Enum_declarationCo
 		ast::IExpr *value = 0;
 
 		if ((*it)->constant_expression()) {
-			(*it)->constant_expression()->accept(this);
-			value = m_expr;
+			value = mkExpr((*it)->constant_expression()->expression());
 		}
 
 		ast::IEnumItem *item = m_factory->mkEnumItem(
@@ -257,7 +557,7 @@ antlrcpp::Any AstBuilderInt::visitEnum_declaration(PSSParser::Enum_declarationCo
 		decl->getItems().push_back(ast::IEnumItemUP(item));
 	}
 
-	m_scopes.back()->getChildren().push_back(ast::IScopeChildUP(decl));
+	addChild(decl, ctx->start);
 
 	DEBUG_LEAVE("visitEnum_declaration");
 	return 0;
@@ -291,7 +591,7 @@ antlrcpp::Any AstBuilderInt::visitConstraint_declaration(PSSParser::Constraint_d
 		name,
 		ctx->is_dynamic);
 
-	m_scopes.back()->getChildren().push_back(ast::IScopeChildUP(constraint));
+	addChild(constraint, ctx->start);
 	m_constraint_s.push_back(constraint);
 
 	if (ctx->constraint_set()) {
@@ -515,16 +815,13 @@ antlrcpp::Any AstBuilderInt::visitExpression(PSSParser::ExpressionContext *ctx) 
 	DEBUG_ENTER("visitExpression");
 
 	if (ctx->unary_op()) {
-		ctx->lhs->accept(this);
-		ast::IExpr *lhs = m_expr;
+		ast::IExpr *lhs = mkExpr(ctx->lhs);
 
 	} else if (ctx->lhs && ctx->rhs) {
 		// It's some form of binary op
-		ctx->lhs->accept(this);
-		ast::IExpr *lhs = m_expr;
+		ast::IExpr *lhs = mkExpr(ctx->lhs);
 
-		ctx->rhs->accept(this);
-		ast::IExpr *rhs = m_expr;
+		ast::IExpr *rhs = mkExpr(ctx->rhs);
 
 		ast::ExprBinOp op = ast::ExprBinOp::BinOp_LogOr;
 		if (ctx->exp_op()) {
@@ -561,14 +858,11 @@ antlrcpp::Any AstBuilderInt::visitExpression(PSSParser::ExpressionContext *ctx) 
 			DEBUG("TODO: in_expression");
 		} else {
 			// Conditional
-			ctx->lhs->accept(this);
-			ast::IExpr *cond = m_expr;
+			ast::IExpr *cond = mkExpr(ctx->lhs);
 
-			ctx->conditional_expr()->true_expr->accept(this);
-			ast::IExpr *true_e = m_expr;
+			ast::IExpr *true_e = mkExpr(ctx->conditional_expr()->true_expr);
 
-			ctx->conditional_expr()->false_expr->accept(this);
-			ast::IExpr *false_e = m_expr;
+			ast::IExpr *false_e = mkExpr(ctx->conditional_expr()->false_expr);
 
 			m_expr = m_factory->mkExprCond(
 				cond,
@@ -632,8 +926,7 @@ antlrcpp::Any AstBuilderInt::visitRef_path(PSSParser::Ref_pathContext *ctx) {
 
 antlrcpp::Any AstBuilderInt::visitCast_expression(PSSParser::Cast_expressionContext *ctx) {
 	DEBUG_ENTER("visitCast_expression");
-	ctx->expression()->accept(this);
-	ast::IExpr *expr = m_expr;
+	ast::IExpr *expr = mkExpr(ctx->expression());
 
 	ctx->casting_type()->accept(this);
 	ast::IDataType *type = m_type;
@@ -704,21 +997,34 @@ void AstBuilderInt::syntaxError(
 	}
 }
 
-void AstBuilderInt::addChild(ast::IScopeChild *c) {
+void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t) {
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
-//	ScopeUtil::addChild(scope(), c);
+	c->setParent(scope());
+
+	if (m_collectDocStrings && t) {
+		addDocstring(c, t);
+	}
 }
 
-void AstBuilderInt::addChild(ast::INamedScopeChild *c) {
+void AstBuilderInt::addChild(ast::INamedScopeChild *c, Token *t) {
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
-//	ScopeUtil::addChild(scope(), c);
+	c->setParent(scope());
+
+	if (m_collectDocStrings && t) {
+		addDocstring(c, t);
+	}
 }
 
-void AstBuilderInt::addChild(ast::INamedScope *c) {
+void AstBuilderInt::addChild(ast::INamedScope *c, Token *t) {
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
+
+	if (m_collectDocStrings && t) {
+		addDocstring(c, t);
+	}
 }
 
 void AstBuilderInt::addDocstring(ast::IScopeChild *c, Token *t) {
+	DEBUG_ENTER("addDocstring");
 	std::vector<Token *> ws_tokens = m_tokens->getHiddenTokensToLeft(
 			t->getTokenIndex(), 10);
 	std::vector<Token *> slc_tokens = m_tokens->getHiddenTokensToLeft(
@@ -764,6 +1070,7 @@ void AstBuilderInt::addDocstring(ast::IScopeChild *c, Token *t) {
 				ws_tokens);
 	}
 
+	DEBUG("docstring=%s", docstring.c_str());
 	if (docstring != "") {
 		c->setDocstring(docstring);
 	}
@@ -778,6 +1085,7 @@ void AstBuilderInt::addDocstring(ast::IScopeChild *c, Token *t) {
 				(*it)->getText().c_str());
 	}
 	 */
+	DEBUG_LEAVE("addDocstring");
 }
 
 std::string AstBuilderInt::processDocStringMultiLineComment(
@@ -860,6 +1168,28 @@ std::string AstBuilderInt::processDocStringSingleLineComment(
 	return "";
 }
 
+ast::IDataType *AstBuilderInt::mkDataType(PSSParser::Data_typeContext *ctx) {
+	m_type = 0;
+	ctx->accept(this);
+	return m_type;
+}
+
+ast::IDataTypeUserDefined *AstBuilderInt::mkDataTypeUserDefined(PSSParser::Type_identifierContext *ctx) {
+	DEBUG_ENTER("mkDataTypeUserDefined");
+	ast::IDataTypeUserDefined *ret = m_factory->mkDataTypeUserDefined(ctx->is_global);
+	std::vector<PSSParser::Type_identifier_elemContext *> items = ctx->type_identifier_elem();
+
+	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		m_factory->mkTypeIdentifierElem(mkId((*it)->identifier()));
+	}
+
+	DEBUG_LEAVE("mkDataTypeUserDefined");
+
+	return ret;
+}
+
 ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::Domain_open_range_listContext *ctx) {
 	DEBUG_ENTER("mkDomainOpenRangeList");
 	ast::IExprDomainOpenRangeList *ret = m_factory->mkExprDomainOpenRangeList();
@@ -872,14 +1202,12 @@ ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::D
 
 		ast::IExpr *lhs = 0;
 		if ((*it)->lhs) {
-			(*it)->lhs->accept(this);
-			lhs = m_expr;
+			lhs = mkExpr((*it)->lhs);
 		}
 
 		ast::IExpr *rhs = 0;
 		if ((*it)->rhs) {
-			(*it)->rhs->accept(this);
-			rhs = m_expr;
+			rhs = mkExpr((*it)->rhs);
 		}
 
 		ast::IExprDomainOpenRangeValue *value = m_factory->mkExprDomainOpenRangeValue(
@@ -907,15 +1235,22 @@ IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 	loc.linepos = ctx->start->getCharPositionInLine();
 	id->setLocation(loc);
 
-
-	// TODO: Fill in location info
-
 	return id;
 }
 
 ast::IExprHierarchicalId *AstBuilderInt::mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx) {
+	DEBUG_ENTER("mkHierarchicalId");
+	ast::IExprHierarchicalId *ret = m_factory->mkExprHierarchicalId();
+	std::vector<PSSParser::Member_path_elemContext *> items = ctx->member_path_elem();
 
-	return 0;
+	for (std::vector<PSSParser::Member_path_elemContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		// TODO:
+	}
+
+	DEBUG_LEAVE("mkHierarchicalId");
+	return ret;
 }
 
 void AstBuilderInt::mkTypeId(
@@ -949,7 +1284,9 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 
 ast::IExpr *AstBuilderInt::mkExpr(
 		PSSParser::ExpressionContext 			*ctx) {
-	return 0;
+	m_expr = 0;
+	ctx->accept(this);
+	return m_expr;
 }
 
 }

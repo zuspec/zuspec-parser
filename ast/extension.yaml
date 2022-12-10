@@ -1,0 +1,23 @@
+
+enums:
+  - ExtendTargetE:
+    - Action
+    - Buffer
+    - Component
+    - Enum
+    - Resource
+    - State
+    - Stream
+    - Struct
+
+classes:
+  - ExtendType:
+      super: Scope
+      data:
+      - kind: ExtendTargetE
+      - target: UP<TypeIdentifier>
+  - ExtendEnum:
+      super: ScopeChild
+      data:
+      - target: UP<TypeIdentifier>
+      - items: list<UP<EnumItem>>

@@ -82,9 +82,5 @@ classes:
     - Component:
         super: TypeScope
 
-flags:
-    - FieldAttr:
-        - values:
-            - FieldAttr_Builtin
 
             

@@ -137,7 +137,7 @@ action_declaration:
 	TOK_RCBRACE 
 ;
 
-/* TODO:
+/* Note: replace with a simpler form for improved performance
 abstract_action_declaration :
 	TOK_ABSTRACT TOK_ACTION action_identifier template_param_decl_list? action_super_spec?
 	TOK_LCBRACE
@@ -179,7 +179,8 @@ activity_declaration:
 action_field_declaration:
 	attr_field
 	| activity_data_field
-	| action_handle_declaration
+	// Note: This and attr_field can only be distinguished by the actual type
+//	| action_handle_declaration
 	| object_ref_field_declaration
 ;
 
@@ -215,9 +216,9 @@ object_ref_field:
 // 	action_type_identifier action_instantiation TOK_SEMICOLON
 // 	;
 
-// action_instantiation:
-// 	action_identifier array_dim? (TOK_COMMA action_identifier array_dim?)* 
-// 	;
+//action_instantiation:
+//	action_identifier array_dim? (TOK_COMMA action_identifier array_dim?)* 
+//	;
 
 action_handle_declaration:
 	action_type_identifier action_instantiation (TOK_COMMA action_instantiation)* TOK_SEMICOLON

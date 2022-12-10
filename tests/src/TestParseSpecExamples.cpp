@@ -22,28 +22,6 @@ TestParseSpecExamples::~TestParseSpecExamples() {
 	// TODO Auto-generated destructor stub
 }
 
-void TestParseSpecExamples::runTest(
-		const std::string &content,
-		const std::string &name) {
-	std::stringstream s(content);
-    zsp::ast::Factory factory;
-
-	zsp::ast::IGlobalScopeUP global(new zsp::ast::GlobalScope(0));
-
-	zsp::MarkerCollector marker_c;
-	zsp::AstBuilder ast_builder(&factory, &marker_c);
-
-	ast_builder.build(global.get(), &s);
-
-	for (std::vector<zsp::IMarkerUP>::const_iterator
-			it=marker_c.markers().begin();
-			it!=marker_c.markers().end(); it++) {
-		fprintf(stdout, "Marker: %s\n", (*it)->msg().c_str());
-	}
-
-	ASSERT_FALSE(marker_c.hasSeverity(zsp::MarkerSeverityE::Error));
-}
-
 
 TEST_F(TestParseSpecExamples, test_003_enum_data_type) {
     const char *text = R"(

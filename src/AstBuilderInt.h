@@ -35,18 +35,38 @@ public:
 			ast::IGlobalScope	*global,
 			std::istream 		*in);
 
+	// B.1 package declaration
 	virtual antlrcpp::Any visitPackage_declaration(PSSParser::Package_declarationContext *ctx) override;
 
 	virtual antlrcpp::Any visitImport_stmt(PSSParser::Import_stmtContext *ctx) override;
 
-//	virtual antlrcpp::Any visitAction_declaration(PSSParser::Action_declarationContext *ctx) override;
+	virtual antlrcpp::Any visitExtend_stmt(PSSParser::Extend_stmtContext *ctx) override;
 
+	virtual antlrcpp::Any visitConst_field_declaration(PSSParser::Const_field_declarationContext *ctx) override;
+
+	// B.2 Action declaration
+
+	virtual antlrcpp::Any visitAction_declaration(PSSParser::Action_declarationContext *ctx) override;
+
+	virtual antlrcpp::Any visitAbstract_action_declaration(PSSParser::Abstract_action_declarationContext *ctx);
+
+	virtual antlrcpp::Any visitFlow_ref_field_declaration(PSSParser::Flow_ref_field_declarationContext *ctx) override;
+	
+	virtual antlrcpp::Any visitResource_ref_field_declaration(PSSParser::Resource_ref_field_declarationContext *ctx) override;
+
+	virtual antlrcpp::Any visitActivity_data_field(PSSParser::Activity_data_fieldContext *ctx) override;
 
 	// B.3 Struct declarations
 	virtual antlrcpp::Any visitStruct_declaration(PSSParser::Struct_declarationContext *ctx) override;
 
 	// B.9 Activity statements
 	virtual antlrcpp::Any visitActivity_action_traversal_stmt(PSSParser::Activity_action_traversal_stmtContext *ctx) override;
+
+	// B.11 Data declarations
+
+	virtual antlrcpp::Any visitData_declaration(PSSParser::Data_declarationContext *ctx) override;
+
+	virtual antlrcpp::Any visitAttr_field(PSSParser::Attr_fieldContext *ctx) override;
 
 	// B.13 Data types
 
@@ -118,11 +138,11 @@ public:
 
 
 private:
-    void addChild(ast::IScopeChild *c);
+    void addChild(ast::IScopeChild *c, Token *t);
 
-    void addChild(ast::INamedScopeChild *c);
+    void addChild(ast::INamedScopeChild *c, Token *t);
 
-    void addChild(ast::INamedScope *c);
+    void addChild(ast::INamedScope *c, Token *t);
 
     void addDocstring(ast::IScopeChild *c, Token *t);
 
@@ -139,6 +159,14 @@ private:
     void push_scope(ast::IScope *s) { m_scopes.push_back(s); }
 
     void pop_scope() { m_scopes.pop_back(); }
+
+	ast::IDataType *mkDataType(PSSParser::Data_typeContext *ctx);
+
+	ast::IDataTypeUserDefined *mkDataTypeUserDefined(PSSParser::Type_identifierContext *ctx);
+
+	template <class T> T *mkDataTypeT(PSSParser::Data_typeContext *ctx) {
+		return dynamic_cast<T *>(mkDataType(ctx));
+	}
 
 	ast::IExprDomainOpenRangeList *mkDomainOpenRangeList(PSSParser::Domain_open_range_listContext *ctx);
 
@@ -159,6 +187,7 @@ private:
 
 
 private:
+	bool										m_collectDocStrings;
     IMarkerListener								*m_marker_l;
 	ast::IFactory								*m_factory;
 	ast::IExpr									*m_expr;
@@ -167,6 +196,8 @@ private:
 	std::vector<ast::IConstraintScope *>		m_constraint_s;
     std::unique_ptr<CommonTokenStream>			m_tokens;
 	std::vector<ast::IExprIdUP>					*m_type_id;
+	uint32_t									m_field_depth;
+	std::vector<ast::IField *>					m_fields;
 
 };
 
