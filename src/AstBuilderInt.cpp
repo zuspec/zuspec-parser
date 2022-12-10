@@ -175,6 +175,109 @@ antlrcpp::Any AstBuilderInt::visitActivity_action_traversal_stmt(PSSParser::Acti
 	return 0;
 }
 
+// B.13 Data types
+antlrcpp::Any AstBuilderInt::visitChandle_type(PSSParser::Chandle_typeContext *ctx) {
+	DEBUG_ENTER("visitChandle_type");
+	m_type = m_factory->mkDataTypeChandle();
+	DEBUG_LEAVE("visitChandle_type");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitInteger_type(PSSParser::Integer_typeContext *ctx) {
+	DEBUG_ENTER("visitInteger_type");
+
+	ast::IExpr *width = 0;
+	ast::IExprDomainOpenRangeList *in = 0;
+
+	if (ctx->lhs) {
+		ctx->lhs->accept(this);
+		width = m_expr;
+	}
+
+	if (ctx->is_in) {
+		in = mkDomainOpenRangeList(ctx->domain);
+	}
+
+	ast::IDataTypeInt *type = m_factory->mkDataTypeInt(
+		ctx->integer_atom_type()->TOK_INT(),
+		width,
+		in
+	);
+
+	m_type = type;
+
+	DEBUG_LEAVE("visitInteger_type");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitBool_type(PSSParser::Bool_typeContext *ctx) {
+	DEBUG_ENTER("visitBool_type");
+	m_type = m_factory->mkDataTypeBool();
+	DEBUG_LEAVE("visitBool_type");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitEnum_type(PSSParser::Enum_typeContext *ctx) {
+	DEBUG_ENTER("visitEnum_type");
+	ctx->enum_type_identifier()->accept(this);
+	ast::IDataTypeUserDefined *dt = dynamic_cast<ast::IDataTypeUserDefined *>(m_type);
+	ast::IExprOpenRangeList *in = 0;
+
+	if (ctx->TOK_IN()) {
+		ctx->open_range_list()->accept(this);
+		in = dynamic_cast<ast::IExprOpenRangeList*>(m_expr);
+	}
+
+	ast::IDataTypeEnum *type_enum = m_factory->mkDataTypeEnum(dt, in);
+
+	m_type = type_enum;
+	DEBUG_LEAVE("visitEnum_type");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitEnum_declaration(PSSParser::Enum_declarationContext *ctx) {
+	DEBUG_ENTER("visitEnum_declaration");
+
+	ast::IEnumDecl *decl = m_factory->mkEnumDecl(mkId(ctx->enum_identifier()->identifier()));
+
+	std::vector<PSSParser::Enum_itemContext *> items = ctx->enum_item();
+	for (std::vector<PSSParser::Enum_itemContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		ast::IExpr *value = 0;
+
+		if ((*it)->constant_expression()) {
+			(*it)->constant_expression()->accept(this);
+			value = m_expr;
+		}
+
+		ast::IEnumItem *item = m_factory->mkEnumItem(
+			mkId((*it)->identifier()),
+			value);
+		decl->getItems().push_back(ast::IEnumItemUP(item));
+	}
+
+	m_scopes.back()->getChildren().push_back(ast::IScopeChildUP(decl));
+
+	DEBUG_LEAVE("visitEnum_declaration");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitReference_type(PSSParser::Reference_typeContext *ctx) {
+	DEBUG_ENTER("visitReference_type");
+
+	ast::IDataTypeUserDefined *type = 0;
+	ctx->entity_type_identifier()->accept(this);
+	type = dynamic_cast<ast::IDataTypeUserDefined *>(m_type);
+
+	ast::IDataTypeRef *ref = m_factory->mkDataTypeRef(type);
+
+	m_type = ref;
+	DEBUG_LEAVE("visitReference_type");
+	return 0;
+}
+
+
 // B.14 Constraints
 antlrcpp::Any AstBuilderInt::visitConstraint_declaration(PSSParser::Constraint_declarationContext *ctx) {
 	DEBUG_ENTER("visitConstraint_declaration");
@@ -333,14 +436,31 @@ antlrcpp::Any AstBuilderInt::visitIf_constraint_item(PSSParser::If_constraint_it
 
 antlrcpp::Any AstBuilderInt::visitImplication_constraint_item(PSSParser::Implication_constraint_itemContext *ctx) {
 	DEBUG_ENTER("visitImplication_constraint_item");
-	DEBUG("TODO");
+	ast::IConstraintStmtImplication *c = m_factory->mkConstraintStmtImplication(mkExpr(ctx->expression()));
+
+	m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
+	m_constraint_s.push_back(c);
+	visitConstraintSetItems(ctx->constraint_set());
+	m_constraint_s.pop_back();
+
 	DEBUG_LEAVE("visitImplication_constraint_item");
 	return 0;
 }
 
 antlrcpp::Any AstBuilderInt::visitUnique_constraint_item(PSSParser::Unique_constraint_itemContext *ctx) {
 	DEBUG_ENTER("visitUnique_constraint_item");
-	DEBUG("TODO");
+	ast::IConstraintStmtUnique *c = m_factory->mkConstraintStmtUnique();
+
+	std::vector<PSSParser::Hierarchical_idContext *> items = 
+		ctx->hierarchical_id_list()->hierarchical_id();
+	
+	for (std::vector<PSSParser::Hierarchical_idContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		ast::IExprHierarchicalId *hid = mkHierarchicalId(*it);
+		c->getList().push_back(ast::IExprHierarchicalIdUP(hid));
+	}
+
 	DEBUG_LEAVE("visitUnique_constraint_item");
 	return 0;
 }
@@ -362,6 +482,206 @@ void AstBuilderInt::visitConstraintSetItems(PSSParser::Constraint_setContext *ct
 
 	DEBUG_LEAVE("visitConstraintSetItems");
 }
+
+// B.17 Expressions
+
+static std::map<std::string, ast::ExprUnaryOp> prv_str2unop = {
+
+};
+
+static std::map<std::string, ast::ExprBinOp> prv_str2binop = {
+	{"||", ast::ExprBinOp::BinOp_LogOr},
+	{"&&", ast::ExprBinOp::BinOp_LogAnd},
+	{"|", ast::ExprBinOp::BinOp_BitOr},
+	{"^", ast::ExprBinOp::BinOp_BitXor},
+	{"&", ast::ExprBinOp::BinOp_BitAnd},
+	{"<", ast::ExprBinOp::BinOp_Lt},
+	{"<=", ast::ExprBinOp::BinOp_Le},
+	{">", ast::ExprBinOp::BinOp_Gt},
+	{">=", ast::ExprBinOp::BinOp_Ge},
+	{"**", ast::ExprBinOp::BinOp_Exp},
+	{"*", ast::ExprBinOp::BinOp_Mul},
+	{"/", ast::ExprBinOp::BinOp_Div},
+	{"%", ast::ExprBinOp::BinOp_Mod},
+	{"+", ast::ExprBinOp::BinOp_Add},
+	{"-", ast::ExprBinOp::BinOp_Sub},
+	{"<<", ast::ExprBinOp::BinOp_Shl},
+	{">>", ast::ExprBinOp::BinOp_Shr},
+	{"==", ast::ExprBinOp::BinOp_Eq},
+	{"!=", ast::ExprBinOp::BinOp_Ne}
+};
+
+antlrcpp::Any AstBuilderInt::visitExpression(PSSParser::ExpressionContext *ctx) {
+	DEBUG_ENTER("visitExpression");
+
+	if (ctx->unary_op()) {
+		ctx->lhs->accept(this);
+		ast::IExpr *lhs = m_expr;
+
+	} else if (ctx->lhs && ctx->rhs) {
+		// It's some form of binary op
+		ctx->lhs->accept(this);
+		ast::IExpr *lhs = m_expr;
+
+		ctx->rhs->accept(this);
+		ast::IExpr *rhs = m_expr;
+
+		ast::ExprBinOp op = ast::ExprBinOp::BinOp_LogOr;
+		if (ctx->exp_op()) {
+			op = ast::ExprBinOp::BinOp_Exp;
+		} else if (ctx->mul_div_mod_op()) {
+			op = prv_str2binop.find(ctx->mul_div_mod_op()->toString())->second;
+		} else if (ctx->add_sub_op()) {
+			op = prv_str2binop.find(ctx->add_sub_op()->toString())->second;
+		} else if (ctx->shift_op()) {
+			op = prv_str2binop.find(ctx->shift_op()->toString())->second;
+		} else if (ctx->logical_inequality_op()) {
+			op = prv_str2binop.find(ctx->logical_inequality_op()->toString())->second;
+		} else if (ctx->eq_neq_op()) {
+			op = prv_str2binop.find(ctx->eq_neq_op()->toString())->second;
+		} else if (ctx->binary_and_op()) {
+			op = ExprBinOp::BinOp_BitAnd;
+		} else if (ctx->binary_xor_op()) {
+			op = ExprBinOp::BinOp_BitXor;
+		} else if (ctx->binary_or_op()) {
+			op = ExprBinOp::BinOp_BitOr;
+		} else if (ctx->logical_and_op()) {
+			op = ExprBinOp::BinOp_LogAnd;
+		} else if (ctx->logical_or_op()) {
+			op = ExprBinOp::BinOp_LogOr;
+		}
+
+		m_expr = m_factory->mkExprBin(
+			lhs,
+			op,
+			rhs);
+	} else if (ctx->lhs) {
+		// It's either an 'in' or a conditional 
+		if (ctx->in_expression()) {
+			DEBUG("TODO: in_expression");
+		} else {
+			// Conditional
+			ctx->lhs->accept(this);
+			ast::IExpr *cond = m_expr;
+
+			ctx->conditional_expr()->true_expr->accept(this);
+			ast::IExpr *true_e = m_expr;
+
+			ctx->conditional_expr()->false_expr->accept(this);
+			ast::IExpr *false_e = m_expr;
+
+			m_expr = m_factory->mkExprCond(
+				cond,
+				true_e,
+				false_e);
+		}
+	} else {
+		// It's a primary
+		ctx->primary()->accept(this);
+	}
+
+	DEBUG_LEAVE("visitExpression");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitBool_literal(PSSParser::Bool_literalContext *ctx) {
+	DEBUG_ENTER("visitBool_literal");
+	m_expr = m_factory->mkExprBool(ctx->TOK_TRUE());
+	DEBUG_LEAVE("visitBool_literal");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitString_literal(PSSParser::String_literalContext *ctx) {
+	DEBUG_ENTER("visitString_literal");
+	if (ctx->DOUBLE_QUOTED_STRING()) {
+		std::string value = ctx->DOUBLE_QUOTED_STRING()->toString();
+		value = value.substr(1, value.size()-1);
+		m_expr = m_factory->mkExprString(value, false);
+	} else { 
+		std::string value = ctx->TRIPLE_DOUBLE_QUOTED_STRING()->toString();
+		value = value.substr(3, value.size()-3);
+		m_expr = m_factory->mkExprString(value, true);
+	}
+	DEBUG_LEAVE("visitString_literal");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitNull_ref(PSSParser::Null_refContext *ctx) {
+	DEBUG_ENTER("visitNull_ref");
+	m_expr = m_factory->mkExprNull();
+	DEBUG_LEAVE("visitNull_ref");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitRef_path(PSSParser::Ref_pathContext *ctx) {
+	DEBUG_ENTER("visitRef_path");
+
+	DEBUG("TODO: visitRef_path");
+
+	if (ctx->TOK_SUPER()) {
+
+	} else if (ctx->static_ref_path()) {
+
+	} else {
+		// Just a regular context path
+	}
+
+	DEBUG_LEAVE("visitRef_path");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitCast_expression(PSSParser::Cast_expressionContext *ctx) {
+	DEBUG_ENTER("visitCast_expression");
+	ctx->expression()->accept(this);
+	ast::IExpr *expr = m_expr;
+
+	ctx->casting_type()->accept(this);
+	ast::IDataType *type = m_type;
+
+	m_expr = m_factory->mkExprCast(type, expr);
+
+	DEBUG_LEAVE("visitCast_expression");
+	return 0;
+}
+
+// B.18 Identifiers
+
+antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) {
+	DEBUG_ENTER("visitIdentifier");
+	IExprId *id;
+	
+	if (ctx->ESCAPED_ID()) {
+		id = m_factory->mkExprId(ctx->ESCAPED_ID()->toString(), true);
+	} else {
+		id = m_factory->mkExprId(ctx->ID()->toString(), false);
+	}
+
+	Location loc = id->getLocation();
+	loc.lineno = ctx->start->getLine();
+	loc.linepos = ctx->start->getCharPositionInLine();
+	id->setLocation(loc);
+
+
+	// TODO: Fill in location info
+
+	m_expr = id;
+
+	DEBUG_LEAVE("visitIdentifier");
+	return 0;
+}
+
+// B.19 Numbers
+
+antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
+	DEBUG_ENTER("visitNumber");
+	DEBUG("TODO: Number");
+	m_expr = m_factory->mkExprSignedNumber("0", 0, 0);
+
+	DEBUG_LEAVE("visitNumber");
+
+	return 0;
+}
+
 
 void AstBuilderInt::syntaxError(
     		Recognizer *recognizer,
@@ -540,6 +860,39 @@ std::string AstBuilderInt::processDocStringSingleLineComment(
 	return "";
 }
 
+ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::Domain_open_range_listContext *ctx) {
+	DEBUG_ENTER("mkDomainOpenRangeList");
+	ast::IExprDomainOpenRangeList *ret = m_factory->mkExprDomainOpenRangeList();
+	std::vector<PSSParser::Domain_open_range_valueContext *> items =
+		ctx->domain_open_range_value();
+	
+	for (std::vector<PSSParser::Domain_open_range_valueContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+
+		ast::IExpr *lhs = 0;
+		if ((*it)->lhs) {
+			(*it)->lhs->accept(this);
+			lhs = m_expr;
+		}
+
+		ast::IExpr *rhs = 0;
+		if ((*it)->rhs) {
+			(*it)->rhs->accept(this);
+			rhs = m_expr;
+		}
+
+		ast::IExprDomainOpenRangeValue *value = m_factory->mkExprDomainOpenRangeValue(
+			!((*it)->limit_high || (*it)->limit_mid || (*it)->limit_low),
+			lhs,
+			rhs
+		);
+		ret->getValues().push_back(ast::IExprDomainOpenRangeValueUP(value));
+	}
+	DEBUG_LEAVE("mkDomainOpenRangeList");
+	return ret;
+}
+
 IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 	IExprId *id;
 	
@@ -558,6 +911,11 @@ IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 	// TODO: Fill in location info
 
 	return id;
+}
+
+ast::IExprHierarchicalId *AstBuilderInt::mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx) {
+
+	return 0;
 }
 
 void AstBuilderInt::mkTypeId(

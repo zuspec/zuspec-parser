@@ -850,10 +850,11 @@ template_param_value:
  ********************************************************************/
 data_type:
 	scalar_data_type 
-	| collection_type
+//	| collection_type // Note: this parser treats collection types as parameterized classes
 	| reference_type
 	| type_identifier
 	;
+
 
 scalar_data_type:
 	chandle_type
@@ -874,8 +875,9 @@ chandle_type:
 	TOK_CHANDLE
 	;
 
+// Note: this parser considers dual-interval widths to be unsupported
 integer_type:
-	integer_atom_type (TOK_LSBRACE lhs=expression (TOK_COLON rhs=expression)? TOK_RSBRACE)?
+	integer_atom_type (TOK_LSBRACE lhs=expression /*(TOK_COLON rhs=expression)?*/ TOK_RSBRACE)?
 		(is_in=TOK_IN TOK_LSBRACE domain=domain_open_range_list TOK_RSBRACE)?
 	;
 
@@ -890,7 +892,7 @@ domain_open_range_list:
 
 // Note: this is slightly different from the spec to simplify parsing
 domain_open_range_value:
-	lhs=expression (limit_high=TOK_ELIPSIS (rhs=expression)?)?
+	lhs=expression limit_mid=TOK_ELIPSIS rhs=expression
 	| lhs=expression limit_high=TOK_ELIPSIS
 	| (limit_low=TOK_ELIPSIS rhs=expression)
 	| lhs=expression
@@ -919,12 +921,13 @@ enum_type:
 	enum_type_identifier (TOK_IN TOK_LSBRACE open_range_list TOK_RSBRACE)?
 	;
 
-collection_type:
-	| (TOK_ARRAY TOK_LT data_type TOK_COMMA array_size_expression TOK_GT)
-	| (TOK_LIST TOK_LT data_type TOK_GT)
-	| (TOK_MAP TOK_LT data_type TOK_COMMA data_type TOK_GT)
-	| (TOK_SET TOK_LT data_type TOK_GT)
-	;
+// Note: this parser treats collection types as parameterized classes
+// collection_type:
+// 	| (TOK_ARRAY TOK_LT data_type TOK_COMMA array_size_expression TOK_GT)
+// 	| (TOK_LIST TOK_LT data_type TOK_GT)
+// 	| (TOK_MAP TOK_LT data_type TOK_COMMA data_type TOK_GT)
+// 	| (TOK_SET TOK_LT data_type TOK_GT)
+//	;
 
 array_size_expression:
 	constant_expression
@@ -1325,12 +1328,14 @@ paren_expr:
 cast_expression:
 	TOK_LPAREN casting_type TOK_RPAREN expression
 	;
-	
+
+
 ref_path:
 	(static_ref_path (TOK_DOT hierarchical_id)? bit_slice?)
 	| ( (TOK_SUPER TOK_DOT)? hierarchical_id bit_slice?)
 	;
 
+// At minimum, this is an identifier
 static_ref_path:
 	is_global=TOK_DOUBLE_COLON? (type_identifier_elem TOK_DOUBLE_COLON)* member_path_elem
 	;

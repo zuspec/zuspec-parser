@@ -48,6 +48,20 @@ public:
 	// B.9 Activity statements
 	virtual antlrcpp::Any visitActivity_action_traversal_stmt(PSSParser::Activity_action_traversal_stmtContext *ctx) override;
 
+	// B.13 Data types
+
+ 	virtual antlrcpp::Any visitChandle_type(PSSParser::Chandle_typeContext *ctx) override;
+
+	virtual antlrcpp::Any visitInteger_type(PSSParser::Integer_typeContext *ctx) override;
+
+	virtual antlrcpp::Any visitBool_type(PSSParser::Bool_typeContext *ctx) override;
+
+	virtual antlrcpp::Any visitEnum_type(PSSParser::Enum_typeContext *ctx) override;
+	
+    virtual antlrcpp::Any visitEnum_declaration(PSSParser::Enum_declarationContext *ctx) override;
+
+	virtual antlrcpp::Any visitReference_type(PSSParser::Reference_typeContext *ctx) override;
+
 	// B.14 Constraints
 	virtual antlrcpp::Any visitConstraint_declaration(PSSParser::Constraint_declarationContext *ctx) override;
 
@@ -72,6 +86,27 @@ public:
 	virtual antlrcpp::Any visitUnique_constraint_item(PSSParser::Unique_constraint_itemContext *ctx) override;
 
 	void visitConstraintSetItems(PSSParser::Constraint_setContext *ctx);
+
+	// B.17 Expressions
+
+	virtual antlrcpp::Any visitExpression(PSSParser::ExpressionContext *ctx) override;
+
+	virtual antlrcpp::Any visitBool_literal(PSSParser::Bool_literalContext *ctx) override;
+
+	virtual antlrcpp::Any visitString_literal(PSSParser::String_literalContext *ctx) override;
+
+	virtual antlrcpp::Any visitNull_ref(PSSParser::Null_refContext *ctx) override;
+
+	virtual antlrcpp::Any visitCast_expression(PSSParser::Cast_expressionContext *ctx) override;
+
+	virtual antlrcpp::Any visitRef_path(PSSParser::Ref_pathContext *ctx) override;
+
+	// B.18 Identifiers
+	virtual antlrcpp::Any visitIdentifier(PSSParser::IdentifierContext *ctx) override;
+
+
+	// B.19 Numbers
+	virtual antlrcpp::Any visitNumber(PSSParser::NumberContext *ctx) override;
 
     virtual void syntaxError(
     		Recognizer *recognizer,
@@ -105,7 +140,11 @@ private:
 
     void pop_scope() { m_scopes.pop_back(); }
 
+	ast::IExprDomainOpenRangeList *mkDomainOpenRangeList(PSSParser::Domain_open_range_listContext *ctx);
+
 	ast::IExprId *mkId(PSSParser::IdentifierContext *ctx);
+
+	ast::IExprHierarchicalId *mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx);
 
 	void mkTypeId(
 		std::vector<ast::IExprIdUP>				&type_id,
@@ -122,6 +161,8 @@ private:
 private:
     IMarkerListener								*m_marker_l;
 	ast::IFactory								*m_factory;
+	ast::IExpr									*m_expr;
+	ast::IDataType								*m_type;
     std::vector<ast::IScope *>					m_scopes;
 	std::vector<ast::IConstraintScope *>		m_constraint_s;
     std::unique_ptr<CommonTokenStream>			m_tokens;

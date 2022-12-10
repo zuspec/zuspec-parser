@@ -96,11 +96,11 @@ TEST_F(TestParseSpecExamples, test_008_struct_with_rand_modifier) {
     const char *text = R"(
 
 struct axi4_trans_req {
-rand bit[31:0] axi_addr;
-rand bit[31:0] axi_write_data;
+rand bit[32] axi_addr;
+rand bit[32] axi_write_data;
 rand bit is_write;
-rand bit[3:0] prot;
-rand bit[1:0] sema4;
+rand bit[4] prot;
+rand bit[2] sema4;
 }
     )";
     runTest(text, "008_struct_with_rand_modifier.pss");
@@ -109,7 +109,7 @@ rand bit[1:0] sema4;
 TEST_F(TestParseSpecExamples, test_010_typedef) {
     const char *text = R"(
 
-typedef bit[31:0] uint32_t;
+typedef bit[32] uint32_t;
     )";
     runTest(text, "010_typedef.pss");
 }
@@ -122,7 +122,7 @@ struct S {
 //</example>
 
 int fixed_sized_arr [16]; // array of 16 signed integers
-bit [7:0] byte_arr [256]; // array of 256 bytes
+bit [8] byte_arr [256]; // array of 256 bytes
 route east_routes [8]; // array of 8 route structs
 
 
@@ -140,7 +140,7 @@ TEST_F(TestParseSpecExamples, test_014_sum_property_of_an_array) {
 struct S {
 //</example>
 	
-bit [7:0] data [4];
+bit [8] data [4];
  constraint data_c {
  data.sum > 0 && data.sum < 1000;
  }
@@ -158,7 +158,7 @@ TEST_F(TestParseSpecExamples, test_017_size_property_of_an_array) {
 struct S {
 //</example>
 
-bit [7:0] data [4];
+bit [8] data [4];
  constraint data_c {
  data.size < 10;
  }
@@ -227,13 +227,13 @@ TEST_F(TestParseSpecExamples, test_021_casting_of_variable_to_a_vector) {
 
 package external_fn_pkg {
  enum align_e {byte_aligned = 1, short_aligned = 2, word_aligned = 4};
- function bit[31:0] alloc_addr(bit[31:0] size, bit[3:0] align);
+ function bit[32] alloc_addr(bit[32] size, bit[4] align);
  buffer mem_seg_s {
- rand bit[31:0] size;
- bit[31:0] addr;
+ rand bit[32] size;
+ bit[32] addr;
  align_e al;
  exec post_solve {
- addr = alloc_addr(size, (bit[3:0])al);
+ addr = alloc_addr(size, (bit[4])al);
  }
  }
 }
@@ -461,7 +461,7 @@ component top {
 //</example>
 
 action A {
- rand bit[3:0] f1;
+ rand bit[4] f1;
  // ...
 }
 action B {
@@ -489,7 +489,7 @@ component top {
 //</example>
 
 action A {
- rand bit[3:0] f1;
+ rand bit[4] f1;
  // ...
 }
 action B {
@@ -514,7 +514,7 @@ component top {
 // example
 
 action A {
- rand bit[3:0] f1;
+ rand bit[4] f1;
  // ...
 }
 action B {
@@ -528,7 +528,7 @@ action B {
  }
 }
 action C {
- action bit[3:0] max;
+ action bit[4] max;
  B b1;
 
  activity {
@@ -1288,7 +1288,7 @@ TEST_F(TestParseSpecExamples, test_093_declaring_a_resource) {
     const char *text = R"(
 
 resource DMA_channel_s {
- rand bit[3:0] priority;
+ rand bit[4] priority;
 };
     )";
     runTest(text, "093_declaring_a_resource.pss");
@@ -1301,7 +1301,7 @@ TEST_F(TestParseSpecExamples, test_095_resource_object) {
 component top {
 //</example>
 resource DMA_channel_s {
- rand bit[3:0] priority;
+ rand bit[4] priority;
 };
 
 resource CPU_core_s { /* ... */ };
@@ -1467,7 +1467,7 @@ component top {
 //</example>
 
 action A {
- rand bit[31:0] addr;
+ rand bit[32] addr;
 
  constraint addr_c {
  addr == 0x1000;
@@ -1488,7 +1488,7 @@ component top {
 //</example>
 
 action B {
- action bit[31:0] addr;
+ action bit[32] addr;
 
  dynamic constraint dyn_addr1_c {
  addr in [0x1000..0x1FFF];
@@ -1514,7 +1514,7 @@ component top {
 //</example>
 
  action send_pkt {
- rand bit[15:0] pkt_sz;
+ rand bit[16] pkt_sz;
  constraint pkt_sz_c { pkt_sz > 0; }
  constraint interesting_sz_c { small_pkt_c || jumbo_pkt_c; }
  dynamic constraint small_pkt_c { pkt_sz >= 100; }
@@ -1562,7 +1562,7 @@ component top {
 //</example>
 
 action A {
- rand bit[3:0] f;
+ rand bit[4] f;
 };
 action B {
  A a1, a2, a3, a4;
@@ -1639,7 +1639,7 @@ TEST_F(TestParseSpecExamples, test_121_implication_constraint) {
     const char *text = R"(
 
 struct impl_s {
- rand bit[7:0] a, b;
+ rand bit[8] a, b;
 
  constraint ab_c {
  (a > 5) -> b == 1;
@@ -1652,7 +1652,7 @@ struct impl_s {
 TEST_F(TestParseSpecExamples, test_123_if_constraint) {
     const char *text = R"(
 struct if_else_s {
- rand bit[7:0] a, b;
+ rand bit[8] a, b;
 
  constraint ab_c {
  if (a > 5) {
@@ -1670,7 +1670,7 @@ TEST_F(TestParseSpecExamples, test_125_foreach_iterative_constraint) {
     const char *text = R"(
 
 struct foreach_s {
- rand bit[9:0] fixed_arr[10];
+ rand bit[10] fixed_arr[10];
 
  constraint fill_arr_elem_c {
  foreach (fixed_arr[i]) {
@@ -1765,8 +1765,8 @@ TEST_F(TestParseSpecExamples, test_132_struct_rand_and_non_rand_fields) {
     const char *text = R"(
 
 struct S1 {
- rand bit[3:0] a;
- bit[3:0] b;
+ rand bit[4] a;
+ bit[4] b;
 }
 struct S2 {
  rand S1 s1_1;
@@ -1784,12 +1784,12 @@ component top {
 //</example>
 
 action A {
- rand bit[3:0] a;
+ rand bit[4] a;
  }
 
  action B {
  A a_1, a_2;
- rand bit[3:0] b;
+ rand bit[4] b;
 
  activity {
  a_1;
@@ -1813,11 +1813,11 @@ component top {
 //</example>
 
 action A {
- rand bit[3:0] a;
+ rand bit[4] a;
  }
 
  action B {
- action bit[3:0] a_bit;
+ action bit[4] a_bit;
  A a_1;
 
  activity {
@@ -1905,7 +1905,7 @@ component top {
 //</example>
 
 action A {
- rand bit[3:0] val;
+ rand bit[4] val;
 }
 
 action my_action {
@@ -1936,7 +1936,7 @@ component top {
 //</example>
 
 action A {
- rand bit[3:0] val;
+ rand bit[4] val;
 }
 
 action my_action {
@@ -1986,7 +1986,7 @@ component top {
 //</example>
 
 action A {
- rand bit[3:0] val;
+ rand bit[4] val;
 }
 
 action my_action {
@@ -2014,7 +2014,7 @@ TEST_F(TestParseSpecExamples, test_150_sub_activity_traversal) {
 
 component top {
 action A {
-rand bit[3:0] val;
+rand bit[4] val;
 }
 action sub {
 A a, b, c;
@@ -2052,7 +2052,7 @@ component top {
 //</example>
 
 action A {
- rand bit[3:0] val;
+ rand bit[4] val;
 }
 action dyn {
  A a, b;
@@ -2087,12 +2087,12 @@ action dyn {
 TEST_F(TestParseSpecExamples, test_154_pre_solve_post_solve) {
     const char *text = R"(
 
-function bit[5:0] get_init_val();
-function bit[5:0] get_exp_val(bit[5:0] stim_val);
+function bit[6] get_init_val();
+function bit[6] get_exp_val(bit[6] stim_val);
 struct S1 {
-bit[5:0] init_val;
-rand bit[5:0] rand_val;
-bit[5:0] exp_val;
+bit[6] init_val;
+rand bit[6] rand_val;
+bit[6] exp_val;
 exec pre_solve {
 init_val = get_init_val();
 }
@@ -2104,9 +2104,9 @@ exp_val = get_exp_val(rand_val);
 }
 }
 struct S2 {
-bit[5:0] init_val;
-rand bit[5:0] rand_val;
-bit[5:0] exp_val;
+bit[6] init_val;
+rand bit[6] rand_val;
+bit[6] exp_val;
 rand S1 s1_1, s1_2;
 exec pre_solve {
 init_val = get_init_val();
@@ -2161,13 +2161,13 @@ action test {
 TEST_F(TestParseSpecExamples, test_158_exec_body_block_sampling_external_data) {
     const char *text = R"(
 
-function bit[3:0] compute_val1(bit[3:0] v);
-function bit[3:0] compute_val2(bit[3:0] v);
+function bit[4] compute_val1(bit[4] v);
+function bit[4] compute_val2(bit[4] v);
 component pss_top {
 
  action A {
- rand bit[3:0] x;
- bit[3:0] y1, y2;
+ rand bit[4] x;
+ bit[4] y1, y2;
 
  constraint assume_y_c {
  y1 >= x && y1 <= x+2;
@@ -2255,21 +2255,26 @@ TEST_F(TestParseSpecExamples, test_164_object_pools_affect_inferencing) {
     const char *text = R"(
 
 component pss_top {
- buffer data_buff_s {/* ... */};
- pool data_buff_s data_mem1, data_mem2;
- bind data_mem1 {A_a.dout, C_a.din};
- bind data_mem2 {B_a.dout, D_a.din};
- action A_a {output data_buff_s dout;};
- action B_a {output data_buff_s dout;};
- action C_a {input data_buff_s din;};
- action D_a {input data_buff_s din;};
- action root_a {
- C_a c;
- D_a d;
- activity {
- select {c; d;}
- }
- }
+  buffer data_buff_s {/* ... */};
+  pool data_buff_s data_mem1;
+  pool data_buff_s data_mem2;
+
+  bind data_mem1 {A_a.dout, C_a.din};
+  bind data_mem2 {B_a.dout, D_a.din};
+
+  action A_a {output data_buff_s dout;};
+  action B_a {output data_buff_s dout;};
+  action C_a {input data_buff_s din;};
+  action D_a {input data_buff_s din;};
+
+  action root_a {
+    C_a c;
+    D_a d;
+
+    activity {
+      select {c; d;}
+    }
+  }
 }
 
     )";
@@ -2358,7 +2363,7 @@ TEST_F(TestParseSpecExamples, test_172_two_coverage_points_and_cross_coverage_it
 enum color_e {red, green, blue};
 struct s {
  rand color_e color;
- rand bit[3:0] pixel_adr, pixel_offset, pixel_hue;
+ rand bit[4] pixel_adr, pixel_offset, pixel_hue;
  covergroup {
  Hue : coverpoint pixel_hue;
  Offset : coverpoint pixel_offset;
@@ -2425,7 +2430,7 @@ TEST_F(TestParseSpecExamples, test_180_specifying_an_iff_condition) {
     const char *text = R"(
 
 struct s {
-rand bit[3:0] s0;
+rand bit[4] s0;
 rand bit is_s0_enabled;
 covergroup {
 coverpoint s0 iff (is_s0_enabled);
@@ -2830,7 +2835,7 @@ TEST_F(TestParseSpecExamples, test_212_accessing_component_data_field_from_an_ac
     const char *text = R"(
 
 component sub_c {
-bit[31:0] base_addr = 0x1000;
+bit[32] base_addr = 0x1000;
 action A {
 exec body {
 // reference base_addr in context component
@@ -2885,8 +2890,8 @@ TEST_F(TestParseSpecExamples, test_215_variable_reference_used_to_select_the_fun
 
 component top {
 action A {
-rand bit[1:0] func_id;
-rand bit[3:0] a;
+rand bit[2] func_id;
+rand bit[4] a;
 exec body C = """
  func_{{func_id}}({{a}});
 """;
@@ -2901,8 +2906,8 @@ TEST_F(TestParseSpecExamples, test_216_declaring_a_random_func_id_variable_that_
 
 component top {
 action A {
-rand bit[1:0] func_id;
-rand bit[3:0] a;
+rand bit[2] func_id;
+rand bit[4] a;
 exec body C = """
  func_{{func_id}}({{a}});
 """;
@@ -2953,10 +2958,10 @@ TEST_F(TestParseSpecExamples, test_220_function_availability) {
 
 package external_functions_pkg {
 
- function bit[31:0] alloc_addr(bit[31:0] size);
+ function bit[32] alloc_addr(bit[32] size);
 
  function void transfer_mem(
- bit[31:0] src, bit[31:0] dst, bit[31:0] size
+ bit[32] src, bit[32] dst, bit[32] size
  );
 }
 package pregen_tests_pkg {
@@ -2985,15 +2990,15 @@ TEST_F(TestParseSpecExamples, test_224_calling_pi_functions) {
 
 package external_functions_pkg {
 
- function bit[31:0] alloc_addr(bit[31:0] size);
+ function bit[32] alloc_addr(bit[32] size);
 
  function void transfer_mem(
- bit[31:0] src, bit[31:0] dst, bit[31:0] size
+ bit[32] src, bit[32] dst, bit[32] size
  );
 
 buffer mem_segment_s {
- rand bit[31:0] size;
- bit[31:0] addr;
+ rand bit[32] size;
+ bit[32] addr;
 
  constraint size in [8..4096];
 
@@ -3059,10 +3064,10 @@ TEST_F(TestParseSpecExamples, test_228_target_template_function_implementation) 
     const char *text = R"(
 
 package thread_ops_pkg {
- function void do_stw(bit[31:0] val, bit[31:0] vaddr);
+ function void do_stw(bit[32] val, bit[32] vaddr);
 }
 package thread_ops_asm_pkg {
- target ASM function void do_stw(bit[31:0] val, bit[31:0] vaddr) = """
+ target ASM function void do_stw(bit[32] val, bit[32] vaddr) = """
  loadi RA {{val}}
  store RA {{vaddr}}
  """;
@@ -3091,7 +3096,7 @@ component comp {
 
  action A1 {
  rand bit mode;
- rand bit[31:0] val;
+ rand bit[32] val;
 
  constraint {
  if (mode!=0) {

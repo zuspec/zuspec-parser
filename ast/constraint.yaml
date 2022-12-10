@@ -49,7 +49,9 @@ classes:
     - ConstraintStmtUnique:
         - super: ConstraintStmt
         - data:
-            - list: list<UP<ExprRefPathContext>>
+            # LRM has List<HierarchicalId>
+#            - list: list<UP<ExprRefPathContext>>
+            - list: list<UP<ExprHierarchicalId>>
     - ConstraintStmtDefault:
         - super: ConstraintStmt
         - data:

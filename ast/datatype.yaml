@@ -19,13 +19,29 @@ classes:
     data: 
     - tid: UP<DataTypeUserDefined>
     - in_rangelist: UP<ExprOpenRangeList>
+
+- EnumItem:
+    super: NamedScopeChild
+    data:
+    - value: UP<Expr>
+
+- EnumDecl:
+    super: NamedScopeChild
+    data:
+    - items: list<UP<EnumItem>>
+
 - DataTypeInt:
     super: DataType
     data:
     - is_signed: bool
-    - width_lhs: UP<Expr>
-    - width_rhs: UP<Expr>
+    - width: UP<Expr>
     - in_range: UP<ExprDomainOpenRangeList>
+
+- DataTypeRef:
+    super: DataType
+    data:
+      - type : UP<DataTypeUserDefined>
+
 - DataTypeString:
     super: DataType
     data:
