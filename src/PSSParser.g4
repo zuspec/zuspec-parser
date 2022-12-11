@@ -678,7 +678,7 @@ activity_foreach_stmt:
 // TODO: Select should accept 1+ branches to account for replicate
 activity_select_stmt:
 	TOK_SELECT TOK_LCBRACE
-		select_branch
+//		select_branch
 		select_branch
 		select_branch*
 	TOK_RCBRACE
