@@ -60,7 +60,18 @@ public:
 	virtual antlrcpp::Any visitStruct_declaration(PSSParser::Struct_declarationContext *ctx) override;
 
 	// B.9 Activity statements
+
+	virtual antlrcpp::Any visitActivity_labeled_stmt(PSSParser::Activity_labeled_stmtContext *ctx) override;
+
 	virtual antlrcpp::Any visitActivity_action_traversal_stmt(PSSParser::Activity_action_traversal_stmtContext *ctx) override;
+
+	virtual antlrcpp::Any visitActivity_sequence_block_stmt(PSSParser::Activity_sequence_block_stmtContext *ctx) override;
+
+	virtual antlrcpp::Any visitActivity_parallel_stmt(PSSParser::Activity_parallel_stmtContext *ctx) override;
+
+	virtual antlrcpp::Any visitActivity_schedule_stmt(PSSParser::Activity_schedule_stmtContext *ctx) override;
+
+	virtual antlrcpp::Any visitActivity_repeat_stmt(PSSParser::Activity_repeat_stmtContext *ctx) override;
 
 	// B.11 Data declarations
 
@@ -160,6 +171,12 @@ private:
 
     void pop_scope() { m_scopes.pop_back(); }
 
+	ast::IActivityJoinSpec *mkActivityJoinSpec(PSSParser::Activity_join_specContext *ctx);
+
+	ast::IScopeChild *mkActivityStmt(PSSParser::Activity_stmtContext *ctx);
+
+	ast::IConstraintStmt *mkConstraintSet(PSSParser::Constraint_setContext *ctx);
+
 	ast::IDataType *mkDataType(PSSParser::Data_typeContext *ctx);
 
 	ast::IDataTypeUserDefined *mkDataTypeUserDefined(PSSParser::Type_identifierContext *ctx);
@@ -193,6 +210,9 @@ private:
 	ast::IExpr									*m_expr;
 	ast::IDataType								*m_type;
     std::vector<ast::IScope *>					m_scopes;
+	ast::IScopeChild							*m_activity_stmt;
+	ast::IExprId								*m_labeled_activity_id;
+	ast::IConstraintStmt						*m_constraint;
 	std::vector<ast::IConstraintScope *>		m_constraint_s;
     std::unique_ptr<CommonTokenStream>			m_tokens;
 	std::vector<ast::IExprIdUP>					*m_type_id;

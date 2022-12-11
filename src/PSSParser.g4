@@ -582,13 +582,19 @@ object_bind_item:
  ********************************************************************/
 
 activity_stmt: 
-	(identifier TOK_COLON)? labeled_activity_stmt
+	activity_labeled_stmt
 	| activity_data_field
 	| activity_bind_stmt
 	| action_handle_declaration
 	| activity_constraint_stmt
 	| activity_scheduling_constraint
 	| TOK_SEMICOLON
+	;
+
+// Note: this deviates from LRM BNF in order to provide
+// a good intercept point for adding labels
+activity_labeled_stmt:
+	(identifier TOK_COLON)? labeled_activity_stmt
 	;
 
 labeled_activity_stmt:

@@ -43,6 +43,8 @@ AstBuilderInt::AstBuilderInt(
 	IMarkerListener 	*marker_l) : m_factory(factory), m_marker_l(marker_l) {
 	m_collectDocStrings = false;
 	m_field_depth = 0;
+	m_labeled_activity_id = 0;
+	m_constraint = 0;
 
 }
 
@@ -397,10 +399,165 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 }
 
 // B.9 Activity statements
+
+antlrcpp::Any AstBuilderInt::visitActivity_labeled_stmt(PSSParser::Activity_labeled_stmtContext *ctx) {
+	DEBUG_ENTER("visitActivity_labeled_stmt");
+	if (ctx->identifier()) {
+		m_labeled_activity_id = mkId(ctx->identifier());
+	} else {
+		m_labeled_activity_id = 0;
+	}
+	ctx->labeled_activity_stmt()->accept(this);
+
+	m_labeled_activity_id = 0;
+
+	DEBUG_LEAVE("visitActivity_labeled_stmt");
+	return 0;
+}
+
 antlrcpp::Any AstBuilderInt::visitActivity_action_traversal_stmt(PSSParser::Activity_action_traversal_stmtContext *ctx) {
 	DEBUG_ENTER("visitActivity_action_traversal_stmt");
-	DEBUG("TODO: skipping activity traversal statement");
+	ast::IActivityLabeledStmt *stmt = 0;
+	ast::IConstraintStmt *with_c = 0;
+
+	if (ctx->inline_constraints_or_empty()->constraint_set()) {
+		with_c = mkConstraintSet(ctx->inline_constraints_or_empty()->constraint_set());
+	}
+
+	if (ctx->is_do) {
+		// By-type traversal
+		stmt = m_factory->mkActivityActionTypeTraversal(
+			mkDataTypeUserDefined(ctx->type_identifier()),
+			with_c);
+	} else {
+		// Handle traversal
+		ast::IExprHierarchicalId *path = m_factory->mkExprHierarchicalId();
+		ast::IExprMemberPathElem *elem = m_factory->mkExprMemberPathElem(
+			mkId(ctx->identifier()),
+			0,
+			(ctx->expression())?mkExpr(ctx->expression()):0);
+		path->getElems().push_back(ast::IExprMemberPathElemUP(elem));
+		ast::IExprRefPathContext *target = m_factory->mkExprRefPathContext(path);
+
+		stmt = m_factory->mkActivityActionHandleTraversal(
+			target,
+			with_c);
+	}
+
+	if (m_labeled_activity_id) {
+		stmt->setLabel(m_labeled_activity_id);
+		m_labeled_activity_id = 0;
+	}
+
+	m_activity_stmt = stmt;
+
 	DEBUG_LEAVE("visitActivity_action_traversal_stmt");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitActivity_sequence_block_stmt(PSSParser::Activity_sequence_block_stmtContext *ctx) {
+	DEBUG_ENTER("visitActivity_sequence_block_stmt");
+	ast::IActivitySequence *seq = m_factory->mkActivitySequence();
+
+	if (m_labeled_activity_id) {
+		seq->setLabel(m_labeled_activity_id);
+		m_labeled_activity_id = 0;
+	}
+
+	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
+	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		seq->getChildren().push_back(ast::IScopeChildUP(mkActivityStmt(*it)));
+	}
+
+	m_activity_stmt = seq;
+
+	DEBUG_LEAVE("visitActivity_sequence_block_stmt");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitActivity_parallel_stmt(PSSParser::Activity_parallel_stmtContext *ctx) {
+	DEBUG_ENTER("visitActivity_parallel_stmt");
+
+	ast::IActivityJoinSpec *spec = 0;
+	if (ctx->activity_join_spec()) {
+		spec = mkActivityJoinSpec(ctx->activity_join_spec());
+	}
+
+	ast::IActivityParallel *par = m_factory->mkActivityParallel(spec);
+
+	if (m_labeled_activity_id) {
+		par->setLabel(m_labeled_activity_id);
+		m_labeled_activity_id = 0;
+	}
+
+
+	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
+	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		par->getChildren().push_back(ast::IScopeChildUP(mkActivityStmt(*it)));
+	}
+
+	m_activity_stmt = par;
+
+	DEBUG_LEAVE("visitActivity_parallel_stmt");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitActivity_schedule_stmt(PSSParser::Activity_schedule_stmtContext *ctx) {
+	DEBUG_ENTER("visitActivity_schedule_stmt");
+
+	ast::IActivityJoinSpec *spec = 0;
+	if (ctx->activity_join_spec()) {
+		spec = mkActivityJoinSpec(ctx->activity_join_spec());
+	}
+
+	ast::IActivitySchedule *sched = m_factory->mkActivitySchedule(spec);
+
+	if (m_labeled_activity_id) {
+		sched->setLabel(m_labeled_activity_id);
+		m_labeled_activity_id = 0;
+	}
+
+	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
+	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+		sched->getChildren().push_back(ast::IScopeChildUP(mkActivityStmt(*it)));
+	}
+
+	m_activity_stmt = sched;
+
+	DEBUG_LEAVE("visitActivity_schedule_stmt");
+	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitActivity_repeat_stmt(PSSParser::Activity_repeat_stmtContext *ctx) {
+	DEBUG_ENTER("visitActivity_repeat_stmt");
+
+	IActivityLabeledStmt *stmt = 0;
+
+	if (ctx->is_repeat) {
+		ast::IExprId *label = m_labeled_activity_id;
+		ast::IActivityRepeatCount *stmt = m_factory->mkActivityRepeatCount(
+			(ctx->loop_var)?mkId(ctx->loop_var):0,
+			mkExpr(ctx->expression()),
+			mkActivityStmt(ctx->activity_stmt()));
+
+	} else {
+
+	}
+
+	if (m_labeled_activity_id) {
+		stmt->setLabel(m_labeled_activity_id);
+		m_labeled_activity_id = 0;
+	}
+
+	m_activity_stmt = stmt;
+
+	DEBUG_LEAVE("visitActivity_repeat_stmt");
 	return 0;
 }
 
@@ -629,7 +786,6 @@ antlrcpp::Any AstBuilderInt::visitConstraint_block(PSSParser::Constraint_blockCo
 	DEBUG_ENTER("visitConstraint_block");
 
 	ast::IConstraintScope *scope = m_factory->mkConstraintScope();
-	m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(scope));
 //	scope->setParent(m_constraint_s.back());
 	m_constraint_s.push_back(scope);
 	std::vector<PSSParser::Constraint_body_itemContext *> items = ctx->constraint_body_item();
@@ -639,6 +795,11 @@ antlrcpp::Any AstBuilderInt::visitConstraint_block(PSSParser::Constraint_blockCo
 		(*it)->accept(this);
 	}
 	m_constraint_s.pop_back();
+
+	m_constraint = scope;
+	if (m_constraint_s.size() > 0) {
+		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(scope));
+	}
 
 	DEBUG_LEAVE("visitConstraint_block");
 	return 0;
@@ -662,7 +823,10 @@ antlrcpp::Any AstBuilderInt::visitExpression_constraint_item(PSSParser::Expressi
 	DEBUG_ENTER("visitExpression_constraint_item");
 	ast::IConstraintStmtExpr *c = m_factory->mkConstraintStmtExpr(
 		mkExpr(ctx->expression()));
-	m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
+	m_constraint = c;
+	if (m_constraint_s.size() > 0) {
+		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
+	}
 	DEBUG_LEAVE("visitExpression_constraint_item");
 	return 0;
 }
@@ -690,10 +854,14 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
 		c->getConstraints().push_back(ast::IConstraintStmtUP(idx));
 	}
 
-	m_constraint_s.back()->getConstraints().push_back(ast::IConstraintScopeUP(c));
 	m_constraint_s.push_back(c);
 	visitConstraintSetItems(ctx->constraint_set());
 	m_constraint_s.pop_back();
+
+	m_constraint = c;
+	if (m_constraint_s.size() > 0) {
+		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintScopeUP(c));
+	}
 	DEBUG_LEAVE("visitForeach_constraint_item");
 	return 0;
 }
@@ -711,6 +879,7 @@ antlrcpp::Any AstBuilderInt::visitIf_constraint_item(PSSParser::If_constraint_it
 	ast::IExpr *cond = mkExpr(ctx->expression());
 	ast::IConstraintScope *true_c = m_factory->mkConstraintScope();
 	ast::IConstraintScope *false_c = 0;
+
 	m_constraint_s.push_back(true_c);
 	visitConstraintSetItems(ctx->constraint_set(0));
 	m_constraint_s.pop_back();
@@ -727,8 +896,11 @@ antlrcpp::Any AstBuilderInt::visitIf_constraint_item(PSSParser::If_constraint_it
 		true_c,
 		false_c);
 
-	m_constraint_s.back()->getConstraints().push_back(
-		IConstraintStmtUP(c));
+	m_constraint = c;
+	if (m_constraint_s.size() > 0) {
+		m_constraint_s.back()->getConstraints().push_back(
+			IConstraintStmtUP(c));
+	}
 
 	DEBUG_LEAVE("visitIf_constraint_item");
 	return 0;
@@ -738,10 +910,14 @@ antlrcpp::Any AstBuilderInt::visitImplication_constraint_item(PSSParser::Implica
 	DEBUG_ENTER("visitImplication_constraint_item");
 	ast::IConstraintStmtImplication *c = m_factory->mkConstraintStmtImplication(mkExpr(ctx->expression()));
 
-	m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
 	m_constraint_s.push_back(c);
 	visitConstraintSetItems(ctx->constraint_set());
 	m_constraint_s.pop_back();
+
+	m_constraint = c;
+	if (m_constraint_s.size()) {
+		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
+	}
 
 	DEBUG_LEAVE("visitImplication_constraint_item");
 	return 0;
@@ -1166,6 +1342,29 @@ std::string AstBuilderInt::processDocStringSingleLineComment(
     		const std::vector<Token *>		&slc_tokens,
 			const std::vector<Token *>		&ws_tokens) {
 	return "";
+}
+
+ast::IActivityJoinSpec *AstBuilderInt::mkActivityJoinSpec(PSSParser::Activity_join_specContext *ctx) {
+	DEBUG_ENTER("mkActivityoinSpec");
+	ast::IActivityJoinSpec *spec = 0;
+	DEBUG("TODO: mkActivityJoinSpec");
+
+	DEBUG_LEAVE("mkActivityoinSpec");
+	return spec;
+}
+
+ast::IScopeChild *AstBuilderInt::mkActivityStmt(PSSParser::Activity_stmtContext *ctx) {
+	DEBUG_ENTER("mkActivityStmt");
+	m_activity_stmt = 0;
+	ctx->accept(this);
+	DEBUG_LEAVE("mkActivityStmt");
+	return m_activity_stmt;
+}
+
+ast::IConstraintStmt *AstBuilderInt::mkConstraintSet(PSSParser::Constraint_setContext *ctx) {
+	m_constraint = 0;
+	ctx->accept(this);
+	return m_constraint;
 }
 
 ast::IDataType *AstBuilderInt::mkDataType(PSSParser::Data_typeContext *ctx) {
