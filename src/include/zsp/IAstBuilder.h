@@ -7,12 +7,15 @@
 
 #pragma once
 #include <iostream>
-#include "pssp/ast/IGlobalScope.h"
-#include "pssp/IMarkerListener.h"
+#include <memory>
+#include "zsp/IMarkerListener.h"
+#include "zsp/ast/IGlobalScope.h"
 
 
 namespace zsp {
 
+class IAstBuilder;
+using IAstBuilderUP=std::unique_ptr<IAstBuilder>;
 class IAstBuilder {
 public:
 
@@ -20,8 +23,7 @@ public:
 
 	virtual void build(
 		ast::IGlobalScope		*global,
-		std::istream			*in,
-		IMarkerListener			*marker_l) = 0;
+		std::istream			*in) = 0;
 
 };
 

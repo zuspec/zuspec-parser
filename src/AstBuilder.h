@@ -8,6 +8,7 @@
 #pragma once
 #include <memory>
 #include <iostream>
+#include "zsp/IAstBuilder.h"
 #include "zsp/ast/IFactory.h"
 #include "zsp/ast/IGlobalScope.h"
 #include "zsp/IMarkerListener.h"
@@ -17,7 +18,7 @@ namespace zsp {
 class AstBuilderInt;
 typedef std::unique_ptr<AstBuilderInt> AstBuilderIntUP;
 
-class AstBuilder {
+class AstBuilder : public virtual IAstBuilder {
 public:
 	AstBuilder(
 		ast::IFactory		*factory,
@@ -25,9 +26,9 @@ public:
 
 	virtual ~AstBuilder();
 
-	void build(
+	virtual void build(
 			ast::IGlobalScope	*global,
-			std::istream		*in);
+			std::istream		*in) override;
 
 private:
 	AstBuilderIntUP				m_builder_int;

@@ -21,10 +21,13 @@
 #include "TestBase.h"
 #include <sstream>
 #include "AstBuilder.h"
+#include "AstSymbolTable.h"
 #include "MarkerCollector.h"
+#include "AstMerger.h"
 #include "zsp_ast/src/GlobalScope.h"
 #include "zsp_ast/src/Factory.h"
 #include "zsp/IMarker.h"
+#include "Factory.h"
 
 
 TestBase::TestBase() {
@@ -39,14 +42,15 @@ void TestBase::runTest(
 		const std::string &content,
 		const std::string &name) {
 	std::stringstream s(content);
-    zsp::ast::Factory factory;
+    zsp::ast::Factory ast_factory;
+	zsp::Factory zsp_factory(&ast_factory);
 
-	zsp::ast::IGlobalScopeUP global(new zsp::ast::GlobalScope(0));
+	zsp::ast::IGlobalScopeUP global(ast_factory.mkGlobalScope(0));
 
 	zsp::MarkerCollector marker_c;
-	zsp::AstBuilder ast_builder(&factory, &marker_c);
+	zsp::IAstBuilderUP ast_builder(zsp_factory.mkAstBuilder(&marker_c));
 
-	ast_builder.build(global.get(), &s);
+	ast_builder->build(global.get(), &s);
 
 	for (std::vector<zsp::IMarkerUP>::const_iterator
 			it=marker_c.markers().begin();
@@ -55,5 +59,16 @@ void TestBase::runTest(
 	}
 
 	ASSERT_FALSE(marker_c.hasSeverity(zsp::MarkerSeverityE::Error));
+
+	zsp::AstMerger merger(&ast_factory);
+	zsp::ast::IGlobalScopeUP merged(merger.merge({global.get()}));
+
+	zsp::ISymbolTableUP symtab(zsp_factory.mkSymbolTable());
+	zsp::INameResolverUP name_resolver(zsp_factory.mkNameResolver(
+		symtab.get(),
+		&marker_c
+	));
+
+	name_resolver->resolve(merged.get());
 }
 

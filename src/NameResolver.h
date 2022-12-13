@@ -6,24 +6,30 @@
  */
 
 #pragma once
+#include "zsp/INameResolver.h"
+#include "zsp/INameResolverClient.h"
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/IMarkerListener.h"
+#include "zsp/ISymbolTable.h"
 
 namespace zsp {
 
-class NameResolver : public ast::VisitorBase {
+class NameResolver : 
+    public virtual INameResolver,
+    public virtual ast::VisitorBase {
 public:
 	NameResolver(
-			IMarkerListener 						*marker_l,
-			const std::vector<ast::IGlobalScope *>	&context);
+            ISymbolTable                *symtab,
+			IMarkerListener             *marker);
 
 	virtual ~NameResolver();
 
-	void resolve(const std::vector<ast::IGlobalScope *> &target);
+	void resolve(ast::IGlobalScope *root);
 
     virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;
 
 private:
+    ISymbolTable                        *m_symtab;
     IMarkerListener						*m_marker_l;
     std::vector<ast::IGlobalScope *>	m_context;
     uint32_t							m_phase;

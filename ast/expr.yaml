@@ -119,12 +119,20 @@ classes:
             - rhs: "UP<Expr>"
     - ExprRefPath:
         - super: Expr
-#        - data: 
+        - data:
+          - target:
+              is_ctor: false
+              type: P<RefTarget>
+              init: 0
 #          - 
     - ExprRefPathContext:
         - super: Expr
         - data: 
           - hier_id : "UP<ExprHierarchicalId>"
+          - target:
+              is_ctor: false
+              type: P<RefTarget>
+              init: 0
     - ExprRefPathElem:
         - super: Expr
 
@@ -141,10 +149,14 @@ classes:
             - params: "UP<MethodParameterList>"
 
     - ExprRefPathStaticRooted:
-        - super: Expr
-        - data: 
-            - root: "UP<ExprRefPathStatic>"
-            - leaf: "UP<ExprRefPathContext>"
+        super: Expr
+        data: 
+          - root: "UP<ExprRefPathStatic>"
+          - leaf: "UP<ExprRefPathContext>"
+          - target:
+              is_ctor: false
+              type: P<RefTarget>
+              init: 0
 
     - ExprRefPathSuper:
         - super: ExprRefPathContext
@@ -156,11 +168,11 @@ classes:
             - width: int32_t
             - value: int64_t
     - ExprStaticRefPath:
-        - super: Expr
-        - data: 
-            - is_global: bool
-            - base: "list<UP<TypeIdentifierElem>>"
-            - leaf: "UP<ExprMemberPathElem>"
+        super: Expr
+        data: 
+        - is_global: bool
+        - base: "list<UP<TypeIdentifierElem>>"
+        - leaf: "UP<ExprMemberPathElem>"
     - ExprString:
         - super: Expr
         - data:

@@ -55,7 +55,8 @@ classes:
       #            - target:
       #  - is_ctor: false
       #  - type: SP<RefExpr>
-    - target_p:
+    - target:
         is_ctor: false
-        type: P<ScopeChild>
+        type: UP<RefTarget>
         init: 0
+        visit: false

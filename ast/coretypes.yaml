@@ -37,19 +37,30 @@ classes:
             type: P<Scope>
             is_ctor: false
             init: 0
+            visit: false
         - index:
             type: int32_t
             is_ctor: false
             init: -1
+
+    - ScopeChildRef:
+        super: ScopeChild
+        data:
+        - target: P<ScopeChild>
             
     - GlobalScope:
         super: Scope
         data:
         - fileid: int32_t
+
     - NamedScope:
         super: Scope
         data:
         - name : UP<ExprId>
+
+    # RefTarget is treated as an abstract class.
+    # External tooling knows what more-specific type is actually in use
+    - RefTarget: {}
 
     - NamedScopeChild:
         super: ScopeChild

@@ -22,6 +22,7 @@
 #include <vector>
 #include "zsp/IMarkerListener.h"
 #include "zsp/ISymbolScope.h"
+#include "zsp/ISymbolTable.h"
 #include "zsp/ast/impl/VisitorBase.h"
 
 namespace zsp {
@@ -29,21 +30,36 @@ namespace zsp {
 
 class TaskCollectDeclarations : public virtual ast::VisitorBase {
 public:
-    TaskCollectDeclarations(IMarkerListener *listener);
+    TaskCollectDeclarations(
+        IMarkerListener *listener,
+        ISymbolTable    *symtab);
 
     virtual ~TaskCollectDeclarations();
 
-    void collect(
-        ISymbolScope            *root,
-        ast::IScope             *ast);
+    void collect(ast::IGlobalScope *root);
 
     virtual void visitPackageScope(ast::IPackageScope *i) override;
+
+    virtual void visitAction(ast::IAction *i) override;
+
+    virtual void visitComponent(ast::IComponent *i) override;
+
+    virtual void visitEnumDecl(ast::IEnumDecl *i) override;
+
+    virtual void visitField(ast::IField *i) override;
+
+    virtual void visitStruct(ast::IStruct *i) override;
 
     virtual void visitTypeScope(ast::ITypeScope *i) override;
 
 private:
-    IMarkerListener                 *m_listener;    
-    std::vector<ISymbolScope *>     m_scope_s;
+    void duplicateSymbolDeclError(
+        ast::IScopeChild            *new_sym,
+        ast::IScopeChild            *ex_sym);;;;
+
+private:
+    IMarkerListener                 *m_listener;
+    ISymbolTable                    *m_symtab;
 };
 
 }

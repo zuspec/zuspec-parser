@@ -8,13 +8,29 @@
 #include "NameResolver.h"
 #include "RefExprUtil.h"
 #include "ScopeUtil.h"
+#include "TaskCollectDeclarations.h"
+
+#define DEBUG_ENTER(fmt, ...) \
+	fprintf(stdout, "--> NameResolver::"); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
+	fprintf(stdout, "\n");
+
+#define DEBUG(fmt, ...) \
+	fprintf(stdout, "NameResolver: "); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
+	fprintf(stdout, "\n");
+
+#define DEBUG_LEAVE(fmt, ...) \
+	fprintf(stdout, "<-- NameResolver::"); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
+	fprintf(stdout, "\n");
 
 namespace zsp {
 
 NameResolver::NameResolver(
-		IMarkerListener							*marker_l,
-		const std::vector<ast::IGlobalScope *>	&context) :
-			m_marker_l(marker_l), m_context(context), m_phase(0) {
+		ISymbolTable							*symtab,
+		IMarkerListener							*marker_l) :
+			m_symtab(symtab), m_marker_l(marker_l), m_phase(0) {
 	// TODO Auto-generated constructor stub
 
 }
@@ -23,7 +39,14 @@ NameResolver::~NameResolver() {
 	// TODO Auto-generated destructor stub
 }
 
-void NameResolver::resolve(const std::vector<ast::IGlobalScope *> &target) {
+void NameResolver::resolve(ast::IGlobalScope *root) {
+	DEBUG_ENTER("resolve");
+
+	// First, collect the declarations
+	TaskCollectDeclarations(m_marker_l, m_symtab).collect(root);
+
+	root->accept(this);
+	/*
 	m_phase = 0;
 	for (std::vector<ast::IGlobalScope *>::const_iterator
 			it=target.begin(); it!=target.end(); it++) {
@@ -35,9 +58,13 @@ void NameResolver::resolve(const std::vector<ast::IGlobalScope *> &target) {
 			it=target.begin(); it!=target.end(); it++) {
 		(*it)->accept(this);
 	}
+	 */
+	DEBUG_LEAVE("resolve");
 }
 
 void NameResolver::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
+	DEBUG_ENTER("visitDataTypeUserDefined");
+#ifdef UNDEFINED
 	ast::INamedScopeChild 	*root;
 	ast::IRefExprSP 			ref;
 
@@ -77,6 +104,8 @@ void NameResolver::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
 	} else {
 		// Done
 	}
+#endif
+	DEBUG_LEAVE("visitDataTypeUserDefined");
 }
 
 } /* namespace zsp */
