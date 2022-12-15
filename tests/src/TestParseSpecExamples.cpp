@@ -96,6 +96,7 @@ TEST_F(TestParseSpecExamples, test_012_fixed_size_arrays) {
     const char *text = R"(
 
 //<example>
+struct route { }
 struct S {
 //</example>
 
@@ -204,16 +205,18 @@ TEST_F(TestParseSpecExamples, test_021_casting_of_variable_to_a_vector) {
     const char *text = R"(
 
 package external_fn_pkg {
- enum align_e {byte_aligned = 1, short_aligned = 2, word_aligned = 4};
- function bit[32] alloc_addr(bit[32] size, bit[4] align);
- buffer mem_seg_s {
- rand bit[32] size;
- bit[32] addr;
- align_e al;
- exec post_solve {
- addr = alloc_addr(size, (bit[4])al);
- }
- }
+    enum align_e {byte_aligned = 1, short_aligned = 2, word_aligned = 4};
+
+    function bit[32] alloc_addr(bit[32] size, bit[4] align);
+
+    buffer mem_seg_s {
+        rand bit[32] size;
+        bit[32] addr;
+        align_e al;
+        exec post_solve {
+            addr = alloc_addr(size, (bit[4])al);
+        }
+    }
 }
     )";
     runTest(text, "021_casting_of_variable_to_a_vector.pss");
@@ -2661,41 +2664,45 @@ TEST_F(TestParseSpecExamples, test_204_action_type_extension) {
     const char *text = R"(
 
 component mem_ops_c {
-enum mem_block_tag_e {SYS_MEM, A_MEM, B_MEM, DDR};
-buffer mem_buff_s {
-rand mem_block_tag_e mem_block;
+    enum mem_block_tag_e {SYS_MEM, A_MEM, B_MEM, DDR};
+    buffer mem_buff_s {
+        rand mem_block_tag_e mem_block;
+    }
+    pool mem_buff_s mem;
+    bind mem *;
+    action memcpy {
+        input mem_buff_s src_buff;
+        output mem_buff_s dst_buff;
+    }
 }
-pool mem_buff_s mem;
-bind mem *;
-action memcpy {
-input mem_buff_s src_buff;
-output mem_buff_s dst_buff;
-}
-}
+
 package soc_config_pkg {
-extend action mem_ops_c::memcpy {
-rand int in [1, 2, 4, 8] ta_width; // introducing new attribute
-constraint { // layering additional constraint
-src_buff.mem_block in [SYS_MEM, A_MEM, DDR];
-dst_buff.mem_block in [SYS_MEM, A_MEM, DDR];
-ta_width < 4 -> dst_buff.mem_block != A_MEM;
+    extend action mem_ops_c::memcpy {
+        rand int in [1, 2, 4, 8] ta_width; // introducing new attribute
+        constraint { // layering additional constraint
+            src_buff.mem_block in [SYS_MEM, A_MEM, DDR];
+            dst_buff.mem_block in [SYS_MEM, A_MEM, DDR];
+            ta_width < 4 -> dst_buff.mem_block != A_MEM;
+        }
+    }
 }
-}
-}
+
 component pss_top {
-import soc_config_pkg::*;// explicitly importing the package grants
-// access to types and type-members
-mem_ops_c mem_ops;
-action test {
-mem_ops_c::memcpy cpy1, cpy2;
-constraint cpy1.ta_width == cpy2.ta_width;// constraining an
-// attribute introduced in an extension
-activity {
-repeat (3) {
-parallel { cpy1; cpy2; };
-}
-}
-}
+    import soc_config_pkg::*;// explicitly importing the package grants
+    // access to types and type-members
+    mem_ops_c mem_ops;
+
+    action test {
+        mem_ops_c::memcpy cpy1, cpy2;
+        constraint cpy1.ta_width == cpy2.ta_width;// constraining an
+
+        // attribute introduced in an extension
+        activity {
+            repeat (3) {
+                parallel { cpy1; cpy2; };
+            }
+        }
+    }
 }
 
     )";
@@ -2706,40 +2713,45 @@ TEST_F(TestParseSpecExamples, test_206_enum_type_extensions) {
     const char *text = R"(
 
 package mem_defs_pkg { // reusable definitions
-enum mem_block_tag_e {}; // initially empty
-buffer mem_buff_s {
-rand mem_block_tag_e mem_block;
-}
-}
-package AB_subsystem_pkg {
-import mem_defs_pkg ::*;
-extend enum mem_block_tag_e {A_MEM, B_MEM};
-}
-package soc_config_pkg {
-import mem_defs_pkg ::*;
-extend enum mem_block_tag_e {SYS_MEM, DDR};
-}
-component dma_c {
- import mem_defs_pkg::*;
- action mem2mem_xfer {
- input mem_buff_s src_buff;
- output mem_buff_s dst_buff;
- }
-}
-extend component dma_c {
-import AB_subsystem_pkg::*;
-// explicitly importing the package grants
-import soc_config_pkg::*; // access to enum items
-action dma_test {
-activity {
-do dma_c::mem2mem_xfer with {
-src_buff.mem_block == A_MEM;
-dst_buff.mem_block == DDR;
-};
-}
-}
+    enum mem_block_tag_e {}; // initially empty
+    buffer mem_buff_s {
+        rand mem_block_tag_e mem_block;
+    }
 }
 
+package AB_subsystem_pkg {
+    import mem_defs_pkg ::*;
+    extend enum mem_block_tag_e {A_MEM, B_MEM};
+}
+
+package soc_config_pkg {
+    import mem_defs_pkg ::*;
+    extend enum mem_block_tag_e {SYS_MEM, DDR};
+}
+
+component dma_c {
+    import mem_defs_pkg::*;
+    action mem2mem_xfer {
+        input mem_buff_s src_buff;
+        output mem_buff_s dst_buff;
+    }
+}
+
+extend component dma_c {
+    import AB_subsystem_pkg::*;
+
+    // explicitly importing the package grants
+    import soc_config_pkg::*; // access to enum items
+
+    action dma_test {
+        activity {
+            do dma_c::mem2mem_xfer with {
+                src_buff.mem_block == A_MEM;
+                dst_buff.mem_block == DDR;
+            };
+        }
+    }
+}
     )";
     runTest(text, "206_enum_type_extensions.pss");
 }

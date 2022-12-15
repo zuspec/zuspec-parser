@@ -1,5 +1,5 @@
 /**
- * INameResolver.h
+ * ISymbolTableIterator.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,30 +19,25 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/ast/ITypeScope.h"
-#include "zsp/INamespace.h"
-#include "zsp/ITypeDecl.h"
+#include <memory>
+#include <string>
 
 namespace zsp {
 
-
-class INameResolver;
-using INameResolverUP=std::unique_ptr<INameResolver>;
-class INameResolver {
+class ISymbolTableIterator;
+using ISymbolTableIteratorUP=std::unique_ptr<ISymbolTableIterator>;
+class ISymbolTableIterator {
 public:
 
-    virtual ~INameResolver() { }
+    virtual ~ISymbolTableIterator() { }
 
-    virtual void resolve(ast::ISymbolScope *root) = 0;
+    virtual bool pushNamedScope(const std::string &name) = 0;
 
-    // /**
-    //  * @brief Returns the active namespace stack
-    //  * 
-    //  * @return const std::vector<INamespace *>& 
-    //  */
-    // virtual const std::vector<INamespace *> &getNamespace() = 0;
+    virtual void popScope() = 0;
 
+    virtual bool hasScopes() = 0;
+
+    virtual ISymbolTableIterator *clone() = 0;
 
 };
 

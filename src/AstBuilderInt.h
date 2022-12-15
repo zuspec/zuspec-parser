@@ -59,6 +59,10 @@ public:
 	// B.3 Struct declarations
 	virtual antlrcpp::Any visitStruct_declaration(PSSParser::Struct_declarationContext *ctx) override;
 
+	// B.8 Component declarations
+
+	virtual antlrcpp::Any visitComponent_declaration(PSSParser::Component_declarationContext *ctx) override;
+
 	// B.9 Activity statements
 
 	virtual antlrcpp::Any visitActivity_labeled_stmt(PSSParser::Activity_labeled_stmtContext *ctx) override;
@@ -167,9 +171,9 @@ private:
 
     ast::IScope *scope() const { return m_scopes.back(); }
 
-    void push_scope(ast::IScope *s) { m_scopes.push_back(s); }
+    void push_scope(ast::IScope *s);
 
-    void pop_scope() { m_scopes.pop_back(); }
+    void pop_scope();
 
 	ast::IActivityJoinSpec *mkActivityJoinSpec(PSSParser::Activity_join_specContext *ctx);
 

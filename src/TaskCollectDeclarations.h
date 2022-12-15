@@ -48,6 +48,8 @@ public:
 
     virtual void visitField(ast::IField *i) override;
 
+    virtual void visitScopeChildRef(ast::IScopeChildRef *i) override;
+
     virtual void visitStruct(ast::IStruct *i) override;
 
     virtual void visitTypeScope(ast::ITypeScope *i) override;

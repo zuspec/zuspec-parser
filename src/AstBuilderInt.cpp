@@ -384,17 +384,44 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 		StructKind_m.find(ctx->struct_kind()->toString())->second);
 
 	addChild(s, ctx->start);
-	m_scopes.push_back(s);
+	push_scope(s);
 	std::vector<PSSParser::Struct_body_itemContext *> body = ctx->struct_body_item();
 	for (std::vector<PSSParser::Struct_body_itemContext *>::const_iterator
 		it=body.begin();
 		it!=body.end(); it++) {
 		(*it)->accept(this);
 	}
-
-	m_scopes.pop_back();
+	pop_scope();
 
 	DEBUG_LEAVE("visitStruct_declaration");
+	return 0;
+}
+
+// B.8 Component declarations
+
+antlrcpp::Any AstBuilderInt::visitComponent_declaration(PSSParser::Component_declarationContext *ctx) {
+	DEBUG_ENTER("visitComponent_declaration");
+	ast::ITypeIdentifier *super_t = 0;
+
+	if (ctx->component_super_spec()) {
+		super_t = mkTypeId(ctx->component_super_spec()->type_identifier());
+	}
+
+	ast::IComponent *comp = m_factory->mkComponent(
+		mkId(ctx->component_identifier()->identifier()),
+		super_t);
+
+	addChild(comp, ctx->start);
+	push_scope(comp);
+	std::vector<PSSParser::Component_body_itemContext *> body = ctx->component_body_item();
+	for (std::vector<PSSParser::Component_body_itemContext *>::const_iterator
+		it=body.begin();
+		it!=body.end(); it++) {
+		(*it)->accept(this);
+	}
+	pop_scope();
+
+	DEBUG_LEAVE("visitComponent_declaration");
 	return 0;
 }
 
@@ -1159,6 +1186,7 @@ void AstBuilderInt::syntaxError(
 			size_t charPositionInLine,
 			const std::string &msg,
 			std::exception_ptr e) {
+	fprintf(stdout, "Error: Syntax error\n");
 	if (m_marker_l) {
 		ast::Location loc;
 		loc.fileid = 0;
@@ -1344,6 +1372,16 @@ std::string AstBuilderInt::processDocStringSingleLineComment(
 	return "";
 }
 
+void AstBuilderInt::push_scope(ast::IScope *s) { 
+	DEBUG("-- push_scope");
+	m_scopes.push_back(s); 
+}
+
+void AstBuilderInt::pop_scope() { 
+	DEBUG("-- pop_scope");
+	m_scopes.pop_back(); 
+}
+
 ast::IActivityJoinSpec *AstBuilderInt::mkActivityJoinSpec(PSSParser::Activity_join_specContext *ctx) {
 	DEBUG_ENTER("mkActivityoinSpec");
 	ast::IActivityJoinSpec *spec = 0;
@@ -1381,7 +1419,8 @@ ast::IDataTypeUserDefined *AstBuilderInt::mkDataTypeUserDefined(PSSParser::Type_
 	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-		m_factory->mkTypeIdentifierElem(mkId((*it)->identifier()));
+		ret->getElems().push_back(ast::ITypeIdentifierElemUP(
+			m_factory->mkTypeIdentifierElem(mkId((*it)->identifier()))));
 	}
 
 	DEBUG_LEAVE("mkDataTypeUserDefined");
@@ -1466,6 +1505,10 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 		PSSParser::Type_identifierContext		*ctx) {
 	ast::ITypeIdentifier *ret = m_factory->mkTypeIdentifier();
 	std::vector<PSSParser::Type_identifier_elemContext *> elems = ctx->type_identifier_elem();
+
+	if (elems.size() == 0) {
+		fprintf(stdout, "Error: elems.size==0\n");
+	}
 
 	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
 		it=elems.begin();

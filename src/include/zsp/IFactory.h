@@ -20,9 +20,13 @@ public:
 
     virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) = 0;
 
+    virtual ISymbolTableIterator *mkAstSymbolTableIterator(
+        ast::ISymbolScope       *root) = 0;
+
     virtual INameResolver *mkNameResolver(
         ISymbolTable            *symtab,
         IMarkerListener         *marker_l) = 0;
+
 
     virtual ISymbolTable *mkSymbolTable() = 0;
 

@@ -1,5 +1,5 @@
 /**
- * Factory.h
+ * AstSymbolTableIterator.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,37 +19,32 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/IFactory.h"
-#include "zsp/ast/IFactory.h"
-#include "zsp/ISymbolTable.h"
-#include "zsp/ast/IFactory.h"
+#include <vector>
+#include "zsp/ast/ISymbolScope.h"
+#include "zsp/ISymbolTableIterator.h"
 
 namespace zsp {
 
 
 
-class Factory : public virtual IFactory {
+class AstSymbolTableIterator : public virtual ISymbolTableIterator {
 public:
-    Factory(ast::IFactory *ast_factory);
+    AstSymbolTableIterator(ast::ISymbolScope *root);
 
-    virtual ~Factory();
+    AstSymbolTableIterator(const AstSymbolTableIterator &other);
 
-    virtual ast::IFactory *getAstFactory() override;
+    virtual ~AstSymbolTableIterator();
 
-    virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) override;
+    virtual bool pushNamedScope(const std::string &name) override;
 
-    virtual ISymbolTableIterator *mkAstSymbolTableIterator(
-        ast::ISymbolScope       *root) override;
+    virtual void popScope() override;
 
-    virtual INameResolver *mkNameResolver(
-        ISymbolTable            *symtab,
-        IMarkerListener         *marker_l) override;
+    virtual bool hasScopes() override;
 
-
-    virtual ISymbolTable *mkSymbolTable() override;
+    virtual ISymbolTableIterator *clone() override;
 
 private:
-    ast::IFactory                       *m_ast_factory;
+    std::vector<ast::ISymbolScope *>        m_scope_s;
 
 };
 

@@ -26,6 +26,22 @@ namespace zsp {
 
 class AstSymbolTable : public ISymbolTable {
 public:
+    struct NameScope;
+    using NameScopeUP=std::unique_ptr<NameScope>;
+    struct NameScope {
+        NameScope(ast::IScopeChild *item) : m_item(item) { }
+
+        NameScope *find(const std::string &name) {
+            std::map<std::string, NameScopeUP>::const_iterator it = m_syms.find(name);
+            return (it != m_syms.end())?it->second.get():0;
+        }
+
+        ast::IScopeChild                         *m_item;
+        std::map<std::string, NameScopeUP>       m_syms;
+        NameScopeUP                              m_params_s;
+    };
+
+public:
     AstSymbolTable();
 
     virtual ~AstSymbolTable();
@@ -33,6 +49,8 @@ public:
     virtual void init(INameResolver *resolver) override {
 //        m_name_resolver = resolver;
     }
+
+    virtual ISymbolTableIterator *mkIterator() override;
 
     virtual void enterPackage(const std::string &name) override;
 
@@ -69,15 +87,9 @@ public:
 
     virtual void leavePackage(const std::string &name) override;
 
+    NameScope *findRootSymbol(const std::string &name);
+
 private:
-    struct NameScope;
-    using NameScopeUP=std::unique_ptr<NameScope>;
-    struct NameScope {
-        NameScope(ast::IScopeChild *item) : m_item(item) { }
-        ast::IScopeChild                         *m_item;
-        std::map<std::string, NameScopeUP>       m_syms;
-        NameScopeUP                              m_params_s;
-    };
 
 private:
     NameScopeUP                     m_root;

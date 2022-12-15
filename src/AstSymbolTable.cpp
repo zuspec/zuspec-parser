@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "AstSymbolTable.h"
+#include "AstSymbolTableIterator.h"
 
 
 namespace zsp {
@@ -31,6 +32,11 @@ AstSymbolTable::AstSymbolTable() : m_root(new AstSymbolTable::NameScope(0)) {
 
 AstSymbolTable::~AstSymbolTable() {
 
+}
+
+ISymbolTableIterator *AstSymbolTable::mkIterator() {
+//    return new AstSymbolTableIterator(this);
+    return 0;
 }
 
 void AstSymbolTable::enterPackage(const std::string &name) {
@@ -114,6 +120,16 @@ void AstSymbolTable::leaveTypeScope(ast::ITypeScope *s) {
 
 void AstSymbolTable::leavePackage(const std::string &name) {
 
+}
+
+AstSymbolTable::NameScope *AstSymbolTable::findRootSymbol(
+    const std::string &name) {
+    std::map<std::string,NameScopeUP>::const_iterator it = m_root->m_syms.find(name);
+    if (it != m_root->m_syms.end()) {
+        return it->second.get();
+    } else {
+        return 0;
+    }
 }
 
 }

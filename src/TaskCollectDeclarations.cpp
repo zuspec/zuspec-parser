@@ -54,23 +54,17 @@ void TaskCollectDeclarations::collect(ast::IGlobalScope *root) {
 
 void TaskCollectDeclarations::visitPackageScope(ast::IPackageScope *i) {
     DEBUG_ENTER("visitPackageScope %s", i->getId().at(0)->getId().c_str());
-    m_symtab->enterPackage(i->getId().at(0)->getId());
+    m_symtab->defineSymbolScope(
+        i->getId().at(0)->getId(),
+        i);
 
-    // TODO: Check for existing namespace
-    // TODO: handle a declared-nested namespace
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(this);
+    }
 
-    /** TODO: 
-    ISymbolScope *scope = new SymbolScope(
-        i->getName()->getId(),
-        SymbolScopeKind::Namespace);
-    m_scope_s.push_back(scope);
-    scope->addDeclScope(i);
-    m_scope_s.back()->addSubscope(scope);
-    VisitorBase::visitPackageScope(i);
-    m_scope_s.pop_back();
-     */
-
-    m_symtab->leavePackage(i->getId().at(0)->getId());
+    m_symtab->leaveSymbolScope();
     DEBUG_LEAVE("visitPackageScope %s", i->getId().at(0)->getId().c_str());
 }
 
@@ -100,13 +94,16 @@ void TaskCollectDeclarations::visitComponent(ast::IComponent *i) {
 
 void TaskCollectDeclarations::visitEnumDecl(ast::IEnumDecl *i) {
     DEBUG_ENTER("visitEnumDecl %s", i->getName()->getId().c_str());
+
     ast::IScopeChild *dup = m_symtab->defineSymbolScope(i->getName()->getId(), i);
+
     if (dup) {
         duplicateSymbolDeclError(i, dup);
     } else {
         VisitorBase::visitEnumDecl(i);
         m_symtab->leaveSymbolScope();
     }
+
     DEBUG_LEAVE("visitEnumDecl %s", i->getName()->getId().c_str());
 }
 
@@ -117,6 +114,12 @@ void TaskCollectDeclarations::visitField(ast::IField *i) {
         duplicateSymbolDeclError(i, dup);
     }
     DEBUG_LEAVE("visitField %s", i->getName()->getId().c_str());
+}
+
+void TaskCollectDeclarations::visitScopeChildRef(ast::IScopeChildRef *i) {
+    DEBUG_ENTER("visitScopeChildRef");
+    i->getTarget()->accept(this);
+    DEBUG_LEAVE("visitScopeChildRef");
 }
 
 void TaskCollectDeclarations::visitStruct(ast::IStruct *i) {

@@ -30,11 +30,11 @@ AstMerger::~AstMerger() {
 
 }
 
-ast::IGlobalScope *AstMerger::merge(
+ast::ISymbolScope *AstMerger::merge(
         const std::vector<ast::IGlobalScope *> &asts) {
-    ast::IGlobalScope *ret = m_factory->mkGlobalScope(0);
-    Scope root(ret);
-    m_scope_s.push_back(&root);
+    /*
+    ast::ISymbolAggregateScope *ret = m_factory->mkSymbolAggregateScope("");
+    m_scope_s.push_back(ret);
 
     for (std::vector<ast::IGlobalScope *>::const_iterator
         it_ast=asts.begin();
@@ -47,27 +47,27 @@ ast::IGlobalScope *AstMerger::merge(
     }
     m_scope_s.pop_back();
     return ret;
+     */
+    return 0;
 }
 
 void AstMerger::visitPackageScope(ast::IPackageScope *i) {
+    /*
     for (std::vector<ast::IExprIdUP>::const_iterator
         id_it=i->getId().begin();
         id_it!=i->getId().end(); id_it++) {
-        std::map<std::string,ScopeUP>::const_iterator p_it;
-        p_it = m_scope_s.back()->subscope_m.find((*id_it)->getId());
+        std::map<std::string,int32_t>::const_iterator p_it;
+        p_it = m_scope_s.back()->getSymtab().find((*id_it)->getId());
 
-        if (p_it == m_scope_s.back()->subscope_m.end()) {
-            ast::IPackageScope *pkg = m_factory->mkPackageScope();
-            pkg->getId().push_back(ast::IExprIdUP(
-                m_factory->mkExprId(
-                    (*id_it)->getId(),
-                    (*id_it)->getIs_escaped())));
-            Scope *s = new Scope(pkg);
-            m_scope_s.back()->scope->getChildren().push_back(ast::IScopeUP(s->scope));
-            m_scope_s.back()->subscope_m.insert({(*id_it)->getId(), ScopeUP(s)});
-            m_scope_s.push_back(s);
+        if (p_it == m_scope_s.back()->getSymtab().end()) {
+            ast::IAggregateSymbolScope *pkg = m_factory->mkAggregateSymbolScope((*id_it)->getId());
+            int32_t id = m_scope_s.back()->getChildren().size();
+            m_scope_s.back()->getSymtab().insert({(*id_it)->getId(), id});
+            m_scope_s.back()->getOwned().push_back(ast::IScopeChildUP(pkg));
+            m_scope_s.push_back(pkg);
         } else {
-            m_scope_s.push_back(p_it->second.get());
+            m_scope_s.push_back(dynamic_cast<ast::IAggregateSymbolScope *>(
+                m_scope_s.back()->getChildren().at(p_it->second)));
         }
     }
 
@@ -82,11 +82,22 @@ void AstMerger::visitPackageScope(ast::IPackageScope *i) {
         id_it!=i->getId().end(); id_it++) {
         m_scope_s.pop_back();
     }
+     */
+}
+
+void AstMerger::visitScope(ast::IScope *i) {
+    /*
+    int32_t id = m_scope_s.back()->get
+    m_scope_s.back()->getChildren().push_back(
+        ast::IScopeChildUP(m_factory->mkScopeChildRef(i)));
+     */
 }
 
 void AstMerger::visitScopeChild(ast::IScopeChild *i) {
+    /*
     m_scope_s.back()->scope->getChildren().push_back(
         ast::IScopeChildUP(m_factory->mkScopeChildRef(i)));
+    */
 }
 
 }

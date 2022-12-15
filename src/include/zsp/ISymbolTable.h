@@ -21,6 +21,7 @@
 #pragma once
 #include "zsp/ast/ITypeScope.h"
 #include "zsp/INameResolver.h"
+#include "zsp/ISymbolTableIterator.h"
 
 namespace zsp {
 
@@ -39,6 +40,8 @@ public:
     virtual ~ISymbolTable() { }
 
     virtual void init(INameResolver *resolver) = 0;
+
+    virtual ISymbolTableIterator *mkIterator() = 0;
 
 //    virtual ast::INamedScopeChild *enterNamedScope(
 //        ast::INamedScopeChild *) = 0;

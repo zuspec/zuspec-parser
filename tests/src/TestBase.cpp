@@ -28,6 +28,7 @@
 #include "zsp_ast/src/Factory.h"
 #include "zsp/IMarker.h"
 #include "Factory.h"
+#include "TaskBuildSymbolTree.h"
 
 
 TestBase::TestBase() {
@@ -61,7 +62,10 @@ void TestBase::runTest(
 	ASSERT_FALSE(marker_c.hasSeverity(zsp::MarkerSeverityE::Error));
 
 	zsp::AstMerger merger(&ast_factory);
-	zsp::ast::IGlobalScopeUP merged(merger.merge({global.get()}));
+	zsp::ast::ISymbolScopeUP symtree(zsp::TaskBuildSymbolTree(
+		&ast_factory,
+		&marker_c).build({global.get()}));
+//	zsp::ast::IGlobalScopeUP merged(merger.merge({global.get()}));
 
 	zsp::ISymbolTableUP symtab(zsp_factory.mkSymbolTable());
 	zsp::INameResolverUP name_resolver(zsp_factory.mkNameResolver(
@@ -69,6 +73,9 @@ void TestBase::runTest(
 		&marker_c
 	));
 
-	name_resolver->resolve(merged.get());
+	name_resolver->resolve(
+		symtree.get()
+//		global.get()
+	);
 }
 

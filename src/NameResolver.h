@@ -6,6 +6,8 @@
  */
 
 #pragma once
+#include <vector>
+#include "zsp/IFactory.h"
 #include "zsp/INameResolver.h"
 #include "zsp/INameResolverClient.h"
 #include "zsp/ast/impl/VisitorBase.h"
@@ -19,17 +21,31 @@ class NameResolver :
     public virtual ast::VisitorBase {
 public:
 	NameResolver(
-            ISymbolTable                *symtab,
+            IFactory                    *factory,
 			IMarkerListener             *marker);
 
 	virtual ~NameResolver();
 
-	void resolve(ast::IGlobalScope *root);
+	void resolve(ast::ISymbolScope *root);
+
+    virtual void visitPackageScope(ast::IPackageScope *i) override;
+
+    virtual void visitComponent(ast::IComponent *i) override;
+
+    virtual void visitEnumDecl(ast::IEnumDecl *i) override;
+
+    virtual void visitStruct(ast::IStruct *i) override;
 
     virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;
 
+protected:
+    ISymbolTableIterator *sym_it() const;
+
 private:
-    ISymbolTable                        *m_symtab;
+    IFactory                            *m_factory;
+
+    std::vector<ISymbolTableIteratorUP> m_sym_it_s;
+
     IMarkerListener						*m_marker_l;
     std::vector<ast::IGlobalScope *>	m_context;
     uint32_t							m_phase;

@@ -1,5 +1,5 @@
 /**
- * AstMerger.h
+ * TaskBuildSymbolTree.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,42 +19,52 @@
  *     Author: 
  */
 #pragma once
-#include <map>
-#include <memory>
-#include <vector>
+#include "zsp/IMarkerListener.h"
 #include "zsp/ast/IFactory.h"
 #include "zsp/ast/impl/VisitorBase.h"
 
 namespace zsp {
 
-class AstMerger : public virtual ast::VisitorBase {
+
+
+class TaskBuildSymbolTree : public virtual ast::VisitorBase {
 public:
-    AstMerger(ast::IFactory *factory);
+    TaskBuildSymbolTree(
+        ast::IFactory           *factory,
+        IMarkerListener         *marker_l
+    );
 
-    virtual ~AstMerger();
+    virtual ~TaskBuildSymbolTree();
 
-    virtual ast::ISymbolScope *merge(
-        const std::vector<ast::IGlobalScope *> &asts);
+    ast::ISymbolScope *build(
+        const std::vector<ast::IGlobalScope *>  &roots);
 
     virtual void visitPackageScope(ast::IPackageScope *i) override;
 
-    virtual void visitScope(ast::IScope *i) override;
+    virtual void visitEnumDecl(ast::IEnumDecl *i) override;
+
+    virtual void visitEnumItem(ast::IEnumItem *i) override;
 
     virtual void visitScopeChild(ast::IScopeChild *i) override;
 
-private:
-    struct Scope;
-    using ScopeUP=std::unique_ptr<Scope>;
-    struct Scope {
-        Scope(ast::IScope *s) : scope(s) { }
-        ast::IScope                     *scope;
-        std::map<std::string, ScopeUP>  subscope_m;
-    };
+    virtual void visitTypeScope(ast::ITypeScope *i) override;;
+
+
+
+protected:
+
+    void reportDuplicateSymbol(
+        ast::ISymbolScope       *scope,
+        ast::IScopeChild        *orig,
+        ast::IScopeChild        *dup);
 
 private:
-    ast::IFactory                                   *m_factory;
-    std::vector<ast::ISymbolScope *>       m_scope_s;
+    ast::IFactory                       *m_factory;
+    IMarkerListener                     *m_marker_l;
+    std::vector<ast::ISymbolScope *>     m_scope_s;
 
 };
 
 }
+
+

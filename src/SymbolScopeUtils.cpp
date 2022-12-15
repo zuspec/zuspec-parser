@@ -1,5 +1,5 @@
-/**
- * INameResolver.h
+/*
+ * SymbolScopeUtils.cpp
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -16,36 +16,20 @@
  * limitations under the License.
  *
  * Created on:
- *     Author: 
+ *     Author:
  */
-#pragma once
-#include <vector>
-#include "zsp/ast/ITypeScope.h"
-#include "zsp/INamespace.h"
-#include "zsp/ITypeDecl.h"
+#include "SymbolScopeUtils.h"
+
 
 namespace zsp {
 
 
-class INameResolver;
-using INameResolverUP=std::unique_ptr<INameResolver>;
-class INameResolver {
-public:
+SymbolScopeUtils::SymbolScopeUtils() {
 
-    virtual ~INameResolver() { }
+}
 
-    virtual void resolve(ast::ISymbolScope *root) = 0;
+SymbolScopeUtils::~SymbolScopeUtils() {
 
-    // /**
-    //  * @brief Returns the active namespace stack
-    //  * 
-    //  * @return const std::vector<INamespace *>& 
-    //  */
-    // virtual const std::vector<INamespace *> &getNamespace() = 0;
+}
 
-
-};
-
-} /* namespace zsp */
-
-
+}
