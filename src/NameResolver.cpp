@@ -167,43 +167,43 @@ void NameResolver::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
 void NameResolver::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
 	DEBUG_ENTER("visitDataTypeUserDefined");
-	ISymbolTableIteratorUP it(sym_it()->clone());
+	// ISymbolTableIteratorUP it(sym_it()->clone());
 
-	// Find the first element
+	// // Find the first element
 
-	fprintf(stdout, "Searching for %s\n", i->getElems().at(0)->getId()->getId().c_str());
-	for (std::vector<ast::ITypeIdentifierElemUP>::const_iterator
-		ti_it=i->getElems().begin();
-		ti_it!=i->getElems().end(); ti_it++) {
+	// fprintf(stdout, "Searching for %s\n", i->getElems().at(0)->getId()->getId().c_str());
+	// for (std::vector<ast::ITypeIdentifierElemUP>::const_iterator
+	// 	ti_it=i->getElems().begin();
+	// 	ti_it!=i->getElems().end(); ti_it++) {
 
-		if (ti_it == i->getElems().begin()) {
-			bool found = false;
+	// 	if (ti_it == i->getElems().begin()) {
+	// 		bool found = false;
 
-			while (it->hasScopes()) {
-				if (it->pushNamedScope((*ti_it)->getId()->getId())) {
-					fprintf(stdout, "Found!\n");
-					found = true;
-					break;
-				} else {
-					fprintf(stdout, "Uplevel\n");
-					it->popScope();
-				}
-			}
+	// 		while (it->hasScopes()) {
+	// 			if (it->pushNamedScope((*ti_it)->getId()->getId())) {
+	// 				fprintf(stdout, "Found!\n");
+	// 				found = true;
+	// 				break;
+	// 			} else {
+	// 				fprintf(stdout, "Uplevel\n");
+	// 				it->popScope();
+	// 			}
+	// 		}
 
-			if (!found) {
-				fprintf(stdout, "Error: Failed to find first type elem %s\n",
-					i->getElems().at(0)->getId()->getId().c_str());
-				return;
-			}
-		} else {
-			if (it->pushNamedScope((*ti_it)->getId()->getId())) {
-				fprintf(stdout, "... found\n");
-			} else {
-				fprintf(stdout, "... failed to find subsequent element\n");
-				break;
-			}
-		}
-	}
+	// 		if (!found) {
+	// 			fprintf(stdout, "Error: Failed to find first type elem %s\n",
+	// 				i->getElems().at(0)->getId()->getId().c_str());
+	// 			return;
+	// 		}
+	// 	} else {
+	// 		if (it->pushNamedScope((*ti_it)->getId()->getId())) {
+	// 			fprintf(stdout, "... found\n");
+	// 		} else {
+	// 			fprintf(stdout, "... failed to find subsequent element\n");
+	// 			break;
+	// 		}
+	// 	}
+	// }
 
 	DEBUG_LEAVE("visitDataTypeUserDefined");
 }

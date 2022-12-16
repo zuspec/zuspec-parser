@@ -1407,15 +1407,18 @@ ast::IDataType *AstBuilderInt::mkDataType(PSSParser::Data_typeContext *ctx) {
 
 ast::IDataTypeUserDefined *AstBuilderInt::mkDataTypeUserDefined(PSSParser::Type_identifierContext *ctx) {
 	DEBUG_ENTER("mkDataTypeUserDefined");
-	ast::IDataTypeUserDefined *ret = m_factory->mkDataTypeUserDefined(ctx->is_global);
-	std::vector<PSSParser::Type_identifier_elemContext *> items = ctx->type_identifier_elem();
+	// std::vector<PSSParser::Type_identifier_elemContext *> items = ctx->type_identifier_elem();
 
-	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
-		it=items.begin();
-		it!=items.end(); it++) {
-		ret->getElems().push_back(ast::ITypeIdentifierElemUP(
-			m_factory->mkTypeIdentifierElem(mkId((*it)->identifier()))));
-	}
+	// for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
+	// 	it=items.begin();
+	// 	it!=items.end(); it++) {
+	// 	ret->getElems().push_back(ast::ITypeIdentifierElemUP(
+	// 		m_factory->mkTypeIdentifierElem(mkId((*it)->identifier()))));
+	// }
+
+	ast::IDataTypeUserDefined *ret = m_factory->mkDataTypeUserDefined(
+		ctx->is_global,
+		mkTypeId(ctx));
 
 	DEBUG_LEAVE("mkDataTypeUserDefined");
 

@@ -21,6 +21,7 @@
 #pragma once
 #include <memory>
 #include <string>
+#include "zsp/ast/IScopeChild.h"
 
 namespace zsp {
 
@@ -30,6 +31,8 @@ class ISymbolTableIterator {
 public:
 
     virtual ~ISymbolTableIterator() { }
+
+    virtual ast::IScopeChild *findSymbol(const std::string &name) = 0;
 
     virtual bool pushNamedScope(const std::string &name) = 0;
 

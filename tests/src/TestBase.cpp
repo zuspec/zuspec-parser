@@ -61,21 +61,11 @@ void TestBase::runTest(
 
 	ASSERT_FALSE(marker_c.hasSeverity(zsp::MarkerSeverityE::Error));
 
-	zsp::AstMerger merger(&ast_factory);
-	zsp::ast::ISymbolScopeUP symtree(zsp::TaskBuildSymbolTree(
-		&ast_factory,
-		&marker_c).build({global.get()}));
-//	zsp::ast::IGlobalScopeUP merged(merger.merge({global.get()}));
+	zsp::ILinker *linker = zsp_factory.mkAstLinker();
 
-	zsp::ISymbolTableUP symtab(zsp_factory.mkSymbolTable());
-	zsp::INameResolverUP name_resolver(zsp_factory.mkNameResolver(
-		symtab.get(),
-		&marker_c
-	));
-
-	name_resolver->resolve(
-		symtree.get()
-//		global.get()
+	zsp::ast::ISymbolScope *root = linker->link(
+		&marker_c,
+		{global.get()}
 	);
 }
 

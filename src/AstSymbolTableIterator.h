@@ -35,6 +35,8 @@ public:
 
     virtual ~AstSymbolTableIterator();
 
+    virtual ast::IScopeChild *findSymbol(const std::string &name) override;
+
     virtual bool pushNamedScope(const std::string &name) override;
 
     virtual void popScope() override;

@@ -38,14 +38,30 @@ AstSymbolTableIterator::~AstSymbolTableIterator() {
 
 }
 
+ast::IScopeChild *AstSymbolTableIterator::findSymbol(const std::string &name) {
+    std::map<std::string,int32_t>::const_iterator it =
+        m_scope_s.back()->getSymtab().find(name);
+
+    if (it != m_scope_s.back()->getSymtab().end()) {
+        return m_scope_s.back()->getChildren().at(it->second);
+    } else {
+        return 0;
+    }
+}
+
 bool AstSymbolTableIterator::pushNamedScope(const std::string &name) {
     std::map<std::string,int32_t>::const_iterator it =
         m_scope_s.back()->getSymtab().find(name);
 
     if (it != m_scope_s.back()->getSymtab().end()) {
-        m_scope_s.push_back(dynamic_cast<ast::ISymbolScope *>(
-            m_scope_s.back()->getChildren().at(it->second)));
-        return true;
+        ast::ISymbolScope *scope = dynamic_cast<ast::ISymbolScope *>(
+            m_scope_s.back()->getChildren().at(it->second));
+        if (scope) {
+            m_scope_s.push_back(scope);
+            return true;
+        } else {
+            return false;
+        }
     } else {
         return false;
     }

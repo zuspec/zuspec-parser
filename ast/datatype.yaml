@@ -51,7 +51,7 @@ classes:
     super: DataType
     data: 
     - is_global: bool
-    - elems: list<UP<TypeIdentifierElem>>
+    - type_id: UP<TypeIdentifier>
       #            - target:
       #  - is_ctor: false
       #  - type: SP<RefExpr>
