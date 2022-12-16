@@ -1,6 +1,7 @@
 
 #pragma once
 #include "zsp/IAstBuilder.h"
+#include "zsp/ILinker.h"
 #include "zsp/IMarkerListener.h"
 #include "zsp/INameResolver.h"
 #include "zsp/ISymbolTable.h"
@@ -19,6 +20,8 @@ public:
     virtual ast::IFactory *getAstFactory() = 0;
 
     virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) = 0;
+
+    virtual ILinker *mkAstLinker() = 0;
 
     virtual ISymbolTableIterator *mkAstSymbolTableIterator(
         ast::ISymbolScope       *root) = 0;

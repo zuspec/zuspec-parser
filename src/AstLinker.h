@@ -1,5 +1,5 @@
 /**
- * Factory.h
+ * AstLinker.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -20,39 +20,25 @@
  */
 #pragma once
 #include "zsp/IFactory.h"
-#include "zsp/ast/IFactory.h"
-#include "zsp/ISymbolTable.h"
+#include "zsp/ILinker.h"
 #include "zsp/ast/IFactory.h"
 
 namespace zsp {
 
 
-
-class Factory : public virtual IFactory {
+class AstLinker : public virtual ILinker {
 public:
-    Factory(ast::IFactory *ast_factory);
+    AstLinker(IFactory *factory);
 
-    virtual ~Factory();
+    virtual ~AstLinker();
 
-    virtual ast::IFactory *getAstFactory() override;
-
-    virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) override;
-
-    virtual ILinker *mkAstLinker() override;
-
-    virtual ISymbolTableIterator *mkAstSymbolTableIterator(
-        ast::ISymbolScope       *root) override;
-
-    virtual INameResolver *mkNameResolver(
-        ISymbolTable            *symtab,
-        IMarkerListener         *marker_l) override;
-
-
-    virtual ISymbolTable *mkSymbolTable() override;
+    virtual ast::ISymbolScope *link(
+        IMarkerListener                         *marker_l,
+        const std::vector<ast::IGlobalScope *>  &scopes) override;
 
 private:
-    ast::IFactory                       *m_ast_factory;
-
+    IFactory                    *m_factory;
+    ast::IFactory               *m_ast_factory;
 };
 
 }

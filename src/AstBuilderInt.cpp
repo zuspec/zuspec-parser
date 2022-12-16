@@ -118,13 +118,7 @@ antlrcpp::Any AstBuilderInt::visitImport_stmt(PSSParser::Import_stmtContext *ctx
 
 	IPackageImportStmt *imp = m_factory->mkPackageImportStmt(is_wildcard, alias);
 
-	std::vector<PSSParser::Type_identifier_elemContext *> elems = 
-		ctx->package_import_pattern()->type_identifier()->type_identifier_elem();
-	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
-		it=elems.begin();
-		it!=elems.end(); it++) {
-		imp->getPath().push_back(IExprIdUP(mkId((*it)->identifier())));
-	}
+	imp->setPath(mkDataTypeUserDefined(ctx->package_import_pattern()->type_identifier()));
 	addChild(imp, ctx->start);
 	DEBUG_LEAVE("visitImport_stmt");
 	return 0;

@@ -183,17 +183,17 @@ TEST_F(TestParseSpecExamples, test_020_overlap_of_possible_enum_values) {
 component top {
 //</example>
 	
-enum config_modes_e {UNKNOWN, MODE_A=10, MODE_B=20};
-enum foo_e {A=10, B, C};
+    enum config_modes_e {UNKNOWN, MODE_A=10, MODE_B=20};
+    enum foo_e {A=10, B, C};
 
-action my_a {
- rand config_modes_e cfg;
- rand foo_e foo;
- constraint cfg == (config_modes_e)11; // illegal
- constraint cfg == (config_modes_e)foo; // cfg==MODE_A,
- // the only value in the numeric domain of both cfg and foo
- // ...
-}
+    action my_a {
+        rand config_modes_e cfg;
+        rand foo_e foo;
+        constraint cfg == (config_modes_e)11; // illegal
+        constraint cfg == (config_modes_e)foo; // cfg==MODE_A,
+        // the only value in the numeric domain of both cfg and foo
+        // ...
+    }
 
 //<example>
 }
@@ -558,6 +558,8 @@ TEST_F(TestParseSpecExamples, test_045_variants_of_specifying_sequential_executi
 
 // example
 component top {
+    action A { }
+    action B { }
 // example
 
 action my_test {
@@ -1683,6 +1685,10 @@ TEST_F(TestParseSpecExamples, test_129_scheduling_constraints) {
 
 //<example>
 component top {
+    action A { }
+    action B { }
+    action C { }
+    action D { }
 //</example>
 
 action my_sub_flow {

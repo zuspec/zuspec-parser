@@ -1,5 +1,5 @@
 /**
- * Factory.h
+ * TaskApplyTypeExtensions.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,39 +19,29 @@
  *     Author: 
  */
 #pragma once
+#include "zsp/IMarkerListener.h"
+#include "zsp/ISymbolTableIterator.h"
 #include "zsp/IFactory.h"
-#include "zsp/ast/IFactory.h"
-#include "zsp/ISymbolTable.h"
-#include "zsp/ast/IFactory.h"
+#include "zsp/ast/impl/VisitorBase.h"
 
 namespace zsp {
 
 
 
-class Factory : public virtual IFactory {
+class TaskApplyTypeExtensions : public ast::VisitorBase {
 public:
-    Factory(ast::IFactory *ast_factory);
+    TaskApplyTypeExtensions(
+        IFactory            *factory,
+        IMarkerListener     *marker_l);
 
-    virtual ~Factory();
+    virtual ~TaskApplyTypeExtensions();
 
-    virtual ast::IFactory *getAstFactory() override;
-
-    virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) override;
-
-    virtual ILinker *mkAstLinker() override;
-
-    virtual ISymbolTableIterator *mkAstSymbolTableIterator(
-        ast::ISymbolScope       *root) override;
-
-    virtual INameResolver *mkNameResolver(
-        ISymbolTable            *symtab,
-        IMarkerListener         *marker_l) override;
-
-
-    virtual ISymbolTable *mkSymbolTable() override;
+    void apply(ast::ISymbolScope *root);
 
 private:
-    ast::IFactory                       *m_ast_factory;
+    IFactory                        *m_factory;
+    IMarkerListener                 *m_marker_l;
+    ISymbolTableIteratorUP          m_symtab_it;
 
 };
 

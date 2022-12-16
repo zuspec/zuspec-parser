@@ -1,5 +1,5 @@
 /**
- * Factory.h
+ * TaskResolveRefs.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -20,38 +20,26 @@
  */
 #pragma once
 #include "zsp/IFactory.h"
-#include "zsp/ast/IFactory.h"
-#include "zsp/ISymbolTable.h"
-#include "zsp/ast/IFactory.h"
+#include "zsp/IMarkerListener.h"
+#include "zsp/ast/ISymbolScope.h"
+#include "zsp/ast/impl/VisitorBase.h"
 
 namespace zsp {
 
 
-
-class Factory : public virtual IFactory {
+class TaskResolveRefs : public ast::VisitorBase {
 public:
-    Factory(ast::IFactory *ast_factory);
+    TaskResolveRefs(
+        IFactory            *factory,
+        IMarkerListener     *marker_l);
 
-    virtual ~Factory();
+    virtual ~TaskResolveRefs();
 
-    virtual ast::IFactory *getAstFactory() override;
-
-    virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) override;
-
-    virtual ILinker *mkAstLinker() override;
-
-    virtual ISymbolTableIterator *mkAstSymbolTableIterator(
-        ast::ISymbolScope       *root) override;
-
-    virtual INameResolver *mkNameResolver(
-        ISymbolTable            *symtab,
-        IMarkerListener         *marker_l) override;
-
-
-    virtual ISymbolTable *mkSymbolTable() override;
+    void resolve(ast::ISymbolScope *root);
 
 private:
-    ast::IFactory                       *m_ast_factory;
+    IFactory                *m_factory;
+    IMarkerListener         *m_marker_l;
 
 };
 

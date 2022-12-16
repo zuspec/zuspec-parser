@@ -69,3 +69,9 @@ Need a way to navigate scopes search path. Notion of a 'cursor'.
 Let's say we perform per-file checking 
 
 
+# Name Resolution Steps
+- Build a symbol-table tree from declarations. Collect imports at the same time
+- Apply type extensions
+  - Resolve package-level import references
+  - Resolve extend targets
+- Resolve remaining names

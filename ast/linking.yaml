@@ -14,6 +14,11 @@ classes:
     - name:
       - type: string
       - is_ctor: true
+    - upper:
+      - type: P<SymbolScope>
+      - is_ctor: false
+      - init: 0
+      - visit: false
     - children: 
       - type: list<P<ScopeChild>>
       - is_ctor: false
@@ -29,6 +34,16 @@ classes:
       - type: list<UP<ScopeChild>>
       - is_ctor: false
       - visit: false
+    - imports: 
+      - type: UP<SymbolImportSpec>
+      - is_ctor: false
+
+- SymbolImportSpec:
+    data:
+    - imports:
+      - type: list<P<PackageImportStmt>>
+    - symtab:
+      - type: map<string,P<ScopeChild>>
 
 #- SymbolAggregateScope:
 #    super: SymbolScope

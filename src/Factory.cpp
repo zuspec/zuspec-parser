@@ -20,6 +20,7 @@
  */
 #include "Factory.h"
 #include "AstBuilder.h"
+#include "AstLinker.h"
 #include "AstSymbolTable.h"
 #include "AstSymbolTableIterator.h"
 #include "NameResolver.h"
@@ -37,11 +38,15 @@ Factory::~Factory() {
 }
 
 ast::IFactory *Factory::getAstFactory() {
-    return 0;
+    return m_ast_factory;
 }
 
 IAstBuilder *Factory::mkAstBuilder(IMarkerListener *marker_l) {
     return new AstBuilder(m_ast_factory, marker_l);
+}
+
+ILinker *Factory::mkAstLinker() {
+    return new AstLinker(this);
 }
 
 ISymbolTableIterator *Factory::mkAstSymbolTableIterator(

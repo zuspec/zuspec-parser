@@ -81,9 +81,11 @@ classes:
     - PackageImportStmt:
         super: ScopeChild
         data:
-        - path: list<UP<ExprId>>
         - wildcard: bool
         - alias: UP<ExprId>
+        - path: 
+          - type: UP<DataTypeUserDefined>
+          - is_ctor: false
 
     - Action:
         super: TypeScope

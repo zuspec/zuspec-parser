@@ -137,6 +137,34 @@ void NameResolver::visitStruct(ast::IStruct *i) {
 	sym_it()->popScope();
 }
 
+void NameResolver::visitSymbolScope(ast::ISymbolScope *i) {
+	DEBUG_ENTER("visitSymbolScope");
+
+	m_sym_it_s.back()->pushNamedScope(i->getName());
+	for (std::vector<ast::IScopeChild *>::const_iterator
+		it=i->getChildren().begin();
+		it!=i->getChildren().end(); it++) {
+		(*it)->accept(this);
+	}
+	m_sym_it_s.back()->popScope();
+
+	DEBUG_LEAVE("visitSymbolScope");
+}
+
+void NameResolver::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
+	DEBUG_ENTER("visitSymbolTypeScope");
+
+	m_sym_it_s.back()->pushNamedScope(i->getName());
+	for (std::vector<ast::IScopeChild *>::const_iterator
+		it=i->getChildren().begin();
+		it!=i->getChildren().end(); it++) {
+		(*it)->accept(this);
+	}
+	m_sym_it_s.back()->popScope();
+
+	DEBUG_LEAVE("visitSymbolTypeScope");
+}
+
 void NameResolver::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
 	DEBUG_ENTER("visitDataTypeUserDefined");
 	ISymbolTableIteratorUP it(sym_it()->clone());

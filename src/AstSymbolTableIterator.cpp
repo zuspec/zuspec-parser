@@ -60,7 +60,7 @@ void AstSymbolTableIterator::popScope() {
 }
 
 bool AstSymbolTableIterator::hasScopes() {
-    return m_scope_s.size() > 1;
+    return m_scope_s.size() > 0;
 }
 
 ISymbolTableIterator *AstSymbolTableIterator::clone() {
