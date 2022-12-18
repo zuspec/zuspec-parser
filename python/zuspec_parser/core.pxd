@@ -8,7 +8,7 @@ cimport ciostream
 cdef class Factory(object):
     cdef decl.IFactory      *_hndl
 
-    cpdef AstBuilder mkAstBuilder(self)
+    cpdef AstBuilder mkAstBuilder(self, MarkerListener marker_l)
 
     @staticmethod
     cdef Factory inst()
@@ -21,8 +21,7 @@ cdef class AstBuilder(object):
 
     cpdef build(self,
         ast.GlobalScope         root,
-        ciostream.cistream      in_s,
-        MarkerListener          listener)
+        ciostream.cistream      in_s)
 
     @staticmethod
     cdef AstBuilder mk(decl.IAstBuilder *hndl)

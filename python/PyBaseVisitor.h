@@ -1,6 +1,6 @@
 #pragma once
 #include "zsp/ast/impl/VisitorBase.h"
-#include "zsp_ast_api.h"
+#include <Python.h>
 namespace zsp {
 namespace ast {
 

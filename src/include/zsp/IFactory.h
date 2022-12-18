@@ -17,6 +17,8 @@ public:
 
     virtual ~IFactory() { }
 
+    virtual void init(ast::IFactory *ast_factory) = 0;
+
     virtual ast::IFactory *getAstFactory() = 0;
 
     virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) = 0;

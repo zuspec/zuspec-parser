@@ -18,16 +18,22 @@ cimport ciostream
 
 cdef extern from "zsp/IFactory.h" namespace "zsp":
     cdef cppclass IFactory:
-        IAstBuilder *mkAstBuilder()
+        ast.IFactory *getAstFactory()
+
+        IAstBuilder *mkAstBuilder(IMarkerListener *)
+
+        ILinker *mkAstLinker()
 
 cdef extern from "zsp/IAstBuilder.h" namespace "zsp":
     cdef cppclass IAstBuilder:
 
         void build(
             ast.IGlobalScope        *scope,
-            ciostream.istream       *in_s,
-            IMarkerListener         *marker_l)
+            ciostream.istream       *in_s)
 
+cdef extern from "zsp/ILinker.h" namespace "zsp":
+    cdef cppclass ILinker:
+        pass
 
 cdef extern from "zsp/IMarker.h" namespace "zsp":
     cdef enum MarkerSeverityE:

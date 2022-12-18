@@ -1,2 +1,9 @@
 
+zuspec_parser/*.so
+zuspec_parser/*.dll
+
+zsp_ast.cpp
+zsp_ast.h
+zsp_ast.pyx
+zsp_ast_api.h
 

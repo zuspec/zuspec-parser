@@ -7,8 +7,8 @@ cdef class Factory(object):
         self._hndl = NULL
         pass
 
-    cpdef AstBuilder mkAstBuilder(self):
-        return AstBuilder.mk(self._hndl.mkAstBuilder())
+    cpdef AstBuilder mkAstBuilder(self, MarkerListener marker_l):
+        return AstBuilder.mk(self._hndl.mkAstBuilder(marker_l._hndl))
         pass
 
     @staticmethod
@@ -35,15 +35,16 @@ cdef class AstBuilder(object):
 
     cpdef build(self,
         ast.GlobalScope         root,
-        ciostream.cistream      in_s,
-        MarkerListener          listener):
+        ciostream.cistream      in_s):
         self._hndl.build(
             root.asGlobalScope(),
-            in_s.stream(),
-            listener._hndl)
+            in_s.stream())
 
     @staticmethod
     cdef AstBuilder mk(decl.IAstBuilder *hndl):
         ret = AstBuilder()
         ret._hndl = hndl
         return ret
+
+cdef class MarkerListener(object):
+    pass

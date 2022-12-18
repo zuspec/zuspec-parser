@@ -28,6 +28,9 @@
 
 namespace zsp {
 
+Factory::Factory() : m_ast_factory(0) {
+
+}
 
 Factory::Factory(ast::IFactory *ast_factory) : m_ast_factory(ast_factory) {
 
@@ -35,6 +38,10 @@ Factory::Factory(ast::IFactory *ast_factory) : m_ast_factory(ast_factory) {
 
 Factory::~Factory() {
 
+}
+
+void Factory::init(ast::IFactory *ast_factory) {
+    m_ast_factory = ast_factory;
 }
 
 ast::IFactory *Factory::getAstFactory() {
@@ -63,6 +70,17 @@ INameResolver *Factory::mkNameResolver(
 ISymbolTable *Factory::mkSymbolTable() {
     return new AstSymbolTable();
 //    return 0;
+}
+
+IFactory *Factory::inst() {
+    if (!m_inst) {
+        m_inst = FactoryUP(new Factory());
+    }
+    return m_inst.get();
+}
+
+extern "C" IFactory *getZuspecParserFactory() {
+    return Factory::inst();
 }
 
 }

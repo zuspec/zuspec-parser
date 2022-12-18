@@ -27,12 +27,17 @@
 namespace zsp {
 
 
-
+class Factory;
+using FactoryUP=std::unique_ptr<Factory>;
 class Factory : public virtual IFactory {
 public:
+    Factory();
+
     Factory(ast::IFactory *ast_factory);
 
     virtual ~Factory();
+
+    virtual void init(ast::IFactory *ast_factory) override;
 
     virtual ast::IFactory *getAstFactory() override;
 
@@ -50,7 +55,10 @@ public:
 
     virtual ISymbolTable *mkSymbolTable() override;
 
+    static IFactory *inst();
+
 private:
+    static FactoryUP                    m_inst;
     ast::IFactory                       *m_ast_factory;
 
 };

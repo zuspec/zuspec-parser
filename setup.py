@@ -126,7 +126,7 @@ class build_ext(_build_ext):
             os.path.join(cwd, "build", "src", "libzuspec-parser.so"),
             os.path.join(package_dir, "libzuspec-parser.so"))
         copy_file(
-            os.path.join(cwd, "build", "antlr4", "libantlr4-runtime.so"),
+            os.path.join(cwd, "build", "antlr4", "lib64", "libantlr4-runtime.so"),
             os.path.join(package_dir, "libantlr4-runtime.so"))
                 
         dest_filename = os.path.join(package_dir, filename)

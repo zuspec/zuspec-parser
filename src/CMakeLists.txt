@@ -22,6 +22,11 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
 
+link_directories(
+	${CMAKE_BINARY_DIR}/antlr4/lib
+	${CMAKE_BINARY_DIR}/antlr4/lib64
+	)
+
 antlr_target(PSSLexer PSSLexer.g4 LEXER)
 antlr_target(PSSParser PSSParser.g4 PARSER 
              DEPENDS_ANTLR PSSLexer
@@ -34,22 +39,35 @@ antlr_target(PSSParser PSSParser.g4 PARSER
 file(GLOB zsp_SRC
 	"*.h"
 	"*.cpp")
-add_library(zsp SHARED
+add_library(zuspec-parser SHARED
 	${zsp_SRC}
 	${ANTLR_PSSParser_OUTPUTS}
 	${ANTLR_PSSLexer_OUTPUTS})
 
-install(TARGETS zsp
+install(TARGETS zuspec-parser
     DESTINATION lib
     EXPORT zsp-targets)
     
-add_dependencies(zsp AST libantlr4)
+add_dependencies(zuspec-parser AST libantlr4)
 
-add_library(zsp_static STATIC
+if (WIN32)
+	if (BUILD_SHARED_LIBS)
+		list(APPEND ZUSPEC_PARSER_LIBS antlr4-runtime)
+	else()
+		list(APPEND ZUSPEC_PARSER_LIBS antlr4-runtime-static)
+	endif()
+else()
+	list(APPEND ZUSPEC_PARSER_LIBS antlr4-runtime pthread)
+endif()
+
+target_link_libraries(zuspec-parser ${ZUSPEC_PARSER_LIBS})
+set_target_properties(zuspec-parser PROPERTIES SKIP_BUILD_RPATH TRUE)
+
+add_library(zuspec-parser_static STATIC
 	${zsp_SRC}
 	${ANTLR_PSSParser_OUTPUTS}
 	${ANTLR_PSSLexer_OUTPUTS})
 
-add_dependencies(zsp_static AST libantlr4)
+add_dependencies(zuspec-parser_static AST libantlr4)
 	
 
