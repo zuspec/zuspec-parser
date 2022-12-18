@@ -1,7 +1,7 @@
 #*****************************************************************************
 #* setup.py
 #*
-#* pssparser Python extension setup file
+#* zuspec-parser Python extension setup file
 #*****************************************************************************
 
 import os
@@ -34,8 +34,8 @@ if os.path.isdir(os.path.join(zuspecparser_dir, "packages")):
 else:
     parent = os.path.dirname(zuspecparser_dir)
 
-    if os.path.isdir(os.path.join(parent, "pssparser")):
-        print("pssparser is a peer")
+    if os.path.isdir(os.path.join(parent, "zuspec-parser")):
+        print("zuspec-parser is a peer")
         packages_dir = parent
     else:
         raise Exception("Unexpected source layout")
@@ -82,10 +82,10 @@ if result.returncode != 0:
 #********************************************************************
 builddir = os.path.join(cwd, "build")
 file_m = {
-    os.path.join(builddir, "pssast/ext/pssast_decl.pxd") : os.path.join(pythondir, "pssparser/pssast_decl.pxd"),
-    os.path.join(builddir, "pssast/ext/pssast.pxd") : os.path.join(pythondir, "pssparser/pssast.pxd"),
-    os.path.join(builddir, "pssast/ext/pssast.pyx") : os.path.join(pythondir, "pssast.pyx"),
-    os.path.join(builddir, "pssast/ext/PyBaseVisitor.h") : os.path.join(pythondir, "PyBaseVisitor.h")
+    os.path.join(builddir, "zsp_ast/ext/zsp_ast_decl.pxd") : os.path.join(pythondir, "zuspec_parser/zsp_ast_decl.pxd"),
+    os.path.join(builddir, "zsp_ast/ext/zsp_ast.pxd") : os.path.join(pythondir, "zuspec_parser/zsp_ast.pxd"),
+    os.path.join(builddir, "zsp_ast/ext/zsp_ast.pyx") : os.path.join(pythondir, "zsp_ast.pyx"),
+    os.path.join(builddir, "zsp_ast/ext/PyBaseVisitor.h") : os.path.join(pythondir, "PyBaseVisitor.h")
 }
 
 for src,dst in file_m.items():
@@ -123,8 +123,8 @@ class build_ext(_build_ext):
         package_dir = build_py.get_package_dir(package)
 
         copy_file(
-            os.path.join(cwd, "build", "src", "libpssparser.so"),
-            os.path.join(package_dir, "libpssparser.so"))
+            os.path.join(cwd, "build", "src", "libzuspec-parser.so"),
+            os.path.join(package_dir, "libzuspec-parser.so"))
         copy_file(
             os.path.join(cwd, "build", "antlr4", "libantlr4-runtime.so"),
             os.path.join(package_dir, "libantlr4-runtime.so"))
@@ -142,14 +142,14 @@ include_dirs.append(os.path.join(zuspecparser_dir, "src/include"))
 build_dir = os.path.join(zuspecparser_dir, "build")
 
 include_dirs.append(build_dir)
-include_dirs.append(os.path.join(build_dir, "pssast/ext"))
-include_dirs.append(os.path.join(build_dir, "pssast/src/include"))
+include_dirs.append(os.path.join(build_dir, "zsp_ast/ext"))
+include_dirs.append(os.path.join(build_dir, "zsp_ast/src/include"))
 
 if "CMAKE_BINARY_DIR" in os.environ.keys():
     cmake_binary_dir=os.environ["CMAKE_BINARY_DIR"]
-    include_dirs.append(os.path.join(cmake_binary_dir, "pssast/ext"))
-    include_dirs.append(os.path.join(cmake_binary_dir, "pssast/ext/"))
-    include_dirs.append(os.path.join(cmake_binary_dir, "pssast/src/include"))
+    include_dirs.append(os.path.join(cmake_binary_dir, "zsp_ast/ext"))
+    include_dirs.append(os.path.join(cmake_binary_dir, "zsp_ast/ext/"))
+    include_dirs.append(os.path.join(cmake_binary_dir, "zsp_ast/src/include"))
     include_dirs.append(os.path.join(pythondir))
 
 library_dirs = [] 
@@ -165,11 +165,11 @@ print("sources=" + str(sources))
 extra_link_args=[]
 #extra_link_args.append(os.path.join(os.getcwd(), "../antlr4/lib/libantlr4-runtime.a"))
 
-ast_ext_srcs = [os.path.join(pythondir, "pssast.pyx")],
+ast_ext_srcs = [os.path.join(pythondir, "zsp_ast.pyx")],
 ast_ext = Extension(
-    "zuspec_parser.pssast", 
+    "zuspec_parser.zsp_ast", 
     [
-        os.path.join(pythondir, "pssast.pyx"),
+        os.path.join(pythondir, "zsp_ast.pyx"),
 #        os.path.join(pythondir, "PyBaseVisitor.cpp")
     ],
     include_dirs=include_dirs,
@@ -178,7 +178,7 @@ ast_ext = Extension(
     extra_link_args=extra_link_args,
     language="c++")
 ext = Extension(
-    "pssparser.core", 
+    "zuspec_parser.core", 
     sources,
     include_dirs=include_dirs,
     library_dirs=library_dirs,

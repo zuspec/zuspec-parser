@@ -73,7 +73,7 @@ ExternalProject_Add(AST
 	SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/zsp_ast/src"
 	DOWNLOAD_COMMAND 
 		${PYTHON} -m astbuilder gen-cpp -name zsp_ast -namespace zsp::ast -astdir ${CMAKE_CURRENT_SOURCE_DIR}/ast -license ${CMAKE_CURRENT_SOURCE_DIR}/etc/copyright.cpp &&
-		${PYTHON} -m astbuilder gen-pyext -name zsp_ast -namespace zsp::ast -package zsp.ast -astdir ${CMAKE_CURRENT_SOURCE_DIR}/ast -o ../ext
+		${PYTHON} -m astbuilder gen-pyext -name zsp_ast -namespace zsp::ast -package zuspec_parser.zsp_ast -astdir ${CMAKE_CURRENT_SOURCE_DIR}/ast -o ../ext
         CMAKE_CACHE_ARGS
           -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/zsp_ast
           -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}

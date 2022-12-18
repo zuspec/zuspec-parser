@@ -1,5 +1,5 @@
 
-cimport pssparser.pssast as ast
+cimport zuspec_parser.zsp_ast as ast
 cimport ciostream
 
 cdef class Factory(object):

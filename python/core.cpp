@@ -4,22 +4,22 @@
 {
     "distutils": {
         "depends": [
-            "/project/fun/zuspec/zuspec-fe-parser/packages/python/lib/python3.7/site-packages/ciostream/ciostream_native.h"
+            "packages/python/lib/python3.7/site-packages/ciostream/ciostream_native.h"
         ],
         "include_dirs": [
-            "/project/fun/zuspec/zuspec-fe-parser/packages/python/lib/python3.7/site-packages/ciostream",
+            "packages/python/lib/python3.7/site-packages/ciostream",
             "/project/fun/zuspec/zuspec-fe-parser/packages/zuspec-parser/src/include",
             "/project/fun/zuspec/zuspec-fe-parser/packages/zuspec-parser/build",
             "/project/fun/zuspec/zuspec-fe-parser/packages/zuspec-parser/build/pssast/ext",
             "/project/fun/zuspec/zuspec-fe-parser/packages/zuspec-parser/build/pssast/src/include"
         ],
         "language": "c++",
-        "name": "pssparser.core",
+        "name": "zuspec_parser.core",
         "sources": [
             "/project/fun/zuspec/zuspec-fe-parser/packages/zuspec-parser/python/core.pyx"
         ]
     },
-    "module_name": "pssparser.core"
+    "module_name": "zuspec_parser.core"
 }
 END: Cython Metadata */
 
@@ -775,8 +775,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__pssparser__core
-#define __PYX_HAVE_API__pssparser__core
+#define __PYX_HAVE__zuspec_parser__core
+#define __PYX_HAVE_API__zuspec_parser__core
 /* Early includes */
 #include "ios"
 #include "new"
@@ -803,102 +803,142 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include <stdint.h>
 #include <stdio.h>
 #include <map>
-#include "pssp/ast/ExprBinOp.h"
-#include "pssp/ast/ExprUnaryOp.h"
-#include "pssp/ast/TypeCategory.h"
-#include "pssp/ast/IFactory.h"
-#include "pssp/ast/IExecStmt.h"
-#include "pssp/ast/IExpr.h"
-#include "pssp/ast/IRefExpr.h"
-#include "pssp/ast/ITemplateParamDeclList.h"
-#include "pssp/ast/ITemplateParamDecl.h"
-#include "pssp/ast/IScopeChild.h"
-#include "pssp/ast/ITemplateParamValueList.h"
-#include "pssp/ast/ITemplateParamValue.h"
-#include "pssp/ast/ITemplateParamTypeValue.h"
-#include "pssp/ast/ITemplateParamExprValue.h"
-#include "pssp/ast/IConstraintStmt.h"
-#include "pssp/ast/IScope.h"
-#include "pssp/ast/INamedScopeChild.h"
-#include "pssp/ast/IPackageImportStmt.h"
-#include "pssp/ast/IDataType.h"
-#include "pssp/ast/IExecScope.h"
-#include "pssp/ast/IProceduralStmtDataDeclaration.h"
-#include "pssp/ast/IExprBin.h"
-#include "pssp/ast/IExprBitSlice.h"
-#include "pssp/ast/IExprBool.h"
-#include "pssp/ast/IExprCast.h"
-#include "pssp/ast/IExprCompileHas.h"
-#include "pssp/ast/IExprCond.h"
-#include "pssp/ast/IExprDomainOpenRangeList.h"
-#include "pssp/ast/IExprDomainOpenRangeValue.h"
-#include "pssp/ast/IExprHierarchicalId.h"
-#include "pssp/ast/IExprId.h"
-#include "pssp/ast/IExprIn.h"
-#include "pssp/ast/IExprMemberPathElem.h"
-#include "pssp/ast/IExprNumber.h"
-#include "pssp/ast/IExprAggregateLiteral.h"
-#include "pssp/ast/IExprOpenRangeList.h"
-#include "pssp/ast/IExprOpenRangeValue.h"
-#include "pssp/ast/IExprRefPath.h"
-#include "pssp/ast/IExprRefPathElem.h"
-#include "pssp/ast/IExprRefPathStaticRooted.h"
-#include "pssp/ast/IExprStaticRefPath.h"
-#include "pssp/ast/IExprString.h"
-#include "pssp/ast/IExprSubscript.h"
-#include "pssp/ast/IExprUnary.h"
-#include "pssp/ast/IMethodParameterList.h"
-#include "pssp/ast/ITypeIdentifier.h"
-#include "pssp/ast/ITypeIdentifierElem.h"
-#include "pssp/ast/IRefExprTypeScopeGlobal.h"
-#include "pssp/ast/IRefExprTypeScopeContext.h"
-#include "pssp/ast/IRefExprScopeIndex.h"
-#include "pssp/ast/ITemplateGenericTypeParamDecl.h"
-#include "pssp/ast/ITemplateCategoryTypeParamDecl.h"
-#include "pssp/ast/ITemplateValueParamDecl.h"
-#include "pssp/ast/IConstraintBlock.h"
-#include "pssp/ast/IConstraintScope.h"
-#include "pssp/ast/IConstraintStmtDefault.h"
-#include "pssp/ast/IConstraintStmtDefaultDisable.h"
-#include "pssp/ast/IConstraintStmtExpr.h"
-#include "pssp/ast/IConstraintStmtField.h"
-#include "pssp/ast/IConstraintStmtIf.h"
-#include "pssp/ast/IConstraintStmtUnique.h"
-#include "pssp/ast/IGlobalScope.h"
-#include "pssp/ast/INamedScope.h"
-#include "pssp/ast/IPackageScope.h"
-#include "pssp/ast/IDataTypeArray.h"
-#include "pssp/ast/IDataTypeBool.h"
-#include "pssp/ast/IDataTypeChandle.h"
-#include "pssp/ast/IDataTypeEnum.h"
-#include "pssp/ast/IDataTypeInt.h"
-#include "pssp/ast/IDataTypeString.h"
-#include "pssp/ast/IDataTypeUserDefined.h"
-#include "pssp/ast/IExprRefPathContext.h"
-#include "pssp/ast/IExprRefPathStatic.h"
-#include "pssp/ast/IExprSignedNumber.h"
-#include "pssp/ast/IExprUnsignedNumber.h"
-#include "pssp/ast/IConstraintStmtForall.h"
-#include "pssp/ast/IConstraintStmtForeach.h"
-#include "pssp/ast/IConstraintStmtImplication.h"
-#include "pssp/ast/ITypeScope.h"
-#include "pssp/ast/IExprRefPathStaticFunc.h"
-#include "pssp/ast/IExprRefPathSuper.h"
-#include "pssp/ast/IAction.h"
-#include "pssp/ast/IComponent.h"
-#include "pssp/ast/IStruct.h"
-#include "pssp/ast/IState.h"
-#include "pssp/ast/IStream.h"
-#include "pssp/ast/IBuffer.h"
-#include "pssp/ast/IResource.h"
-#include "pssp/ast/impl/VisitorBase.h"
+#include "zsp/ast/ExprBinOp.h"
+#include "zsp/ast/ExprUnaryOp.h"
+#include "zsp/ast/ExtendTargetE.h"
+#include "zsp/ast/StructKind.h"
+#include "zsp/ast/TypeCategory.h"
+#include "zsp/ast/FieldAttr.h"
+#include "zsp/ast/IFactory.h"
+#include "zsp/ast/IScopeChild.h"
+#include "zsp/ast/ISymbolImportSpec.h"
+#include "zsp/ast/IActivityJoinSpec.h"
+#include "zsp/ast/IRefExpr.h"
+#include "zsp/ast/IRefTarget.h"
+#include "zsp/ast/ITemplateParamDeclList.h"
+#include "zsp/ast/ITemplateParamDecl.h"
+#include "zsp/ast/IActivitySelectBranch.h"
+#include "zsp/ast/ITemplateParamValueList.h"
+#include "zsp/ast/ITemplateParamValue.h"
+#include "zsp/ast/IActivityMatchChoice.h"
+#include "zsp/ast/ITemplateParamTypeValue.h"
+#include "zsp/ast/ITemplateParamExprValue.h"
+#include "zsp/ast/IExecStmt.h"
+#include "zsp/ast/IExpr.h"
+#include "zsp/ast/IActivityStmt.h"
+#include "zsp/ast/IActivitySchedulingConstraint.h"
+#include "zsp/ast/IActivityJoinSpecBranch.h"
+#include "zsp/ast/IActivityJoinSpecSelect.h"
+#include "zsp/ast/IActivityJoinSpecNone.h"
+#include "zsp/ast/IActivityJoinSpecFirst.h"
+#include "zsp/ast/IConstraintStmt.h"
+#include "zsp/ast/IScope.h"
+#include "zsp/ast/IScopeChildRef.h"
+#include "zsp/ast/INamedScopeChild.h"
+#include "zsp/ast/IPackageImportStmt.h"
+#include "zsp/ast/IDataType.h"
+#include "zsp/ast/IExecScope.h"
+#include "zsp/ast/IProceduralStmtDataDeclaration.h"
+#include "zsp/ast/IExprBin.h"
+#include "zsp/ast/IExprBitSlice.h"
+#include "zsp/ast/IExprBool.h"
+#include "zsp/ast/IExprCast.h"
+#include "zsp/ast/IExprCompileHas.h"
+#include "zsp/ast/IExprCond.h"
+#include "zsp/ast/IExprDomainOpenRangeList.h"
+#include "zsp/ast/IExprDomainOpenRangeValue.h"
+#include "zsp/ast/IExprHierarchicalId.h"
+#include "zsp/ast/IExprId.h"
+#include "zsp/ast/IExprIn.h"
+#include "zsp/ast/IExprMemberPathElem.h"
+#include "zsp/ast/IExprNull.h"
+#include "zsp/ast/IExprNumber.h"
+#include "zsp/ast/IExprAggregateLiteral.h"
+#include "zsp/ast/IExprOpenRangeList.h"
+#include "zsp/ast/IExprOpenRangeValue.h"
+#include "zsp/ast/IExprRefPath.h"
+#include "zsp/ast/IExprRefPathContext.h"
+#include "zsp/ast/IExprRefPathElem.h"
+#include "zsp/ast/IExprRefPathStaticRooted.h"
+#include "zsp/ast/IExprStaticRefPath.h"
+#include "zsp/ast/IExprString.h"
+#include "zsp/ast/IExprSubscript.h"
+#include "zsp/ast/IExprUnary.h"
+#include "zsp/ast/IMethodParameterList.h"
+#include "zsp/ast/ITypeIdentifier.h"
+#include "zsp/ast/ITypeIdentifierElem.h"
+#include "zsp/ast/IExtendEnum.h"
+#include "zsp/ast/ISymbolScope.h"
+#include "zsp/ast/IRefExprTypeScopeGlobal.h"
+#include "zsp/ast/IRefExprTypeScopeContext.h"
+#include "zsp/ast/IRefExprScopeIndex.h"
+#include "zsp/ast/ITemplateGenericTypeParamDecl.h"
+#include "zsp/ast/ITemplateCategoryTypeParamDecl.h"
+#include "zsp/ast/ITemplateValueParamDecl.h"
+#include "zsp/ast/IActivityBindStmt.h"
+#include "zsp/ast/IActivityConstraint.h"
+#include "zsp/ast/IActivityLabeledStmt.h"
+#include "zsp/ast/IActivityLabeledScope.h"
+#include "zsp/ast/IConstraintScope.h"
+#include "zsp/ast/IConstraintStmtExpr.h"
+#include "zsp/ast/IConstraintStmtField.h"
+#include "zsp/ast/IConstraintStmtIf.h"
+#include "zsp/ast/IConstraintStmtUnique.h"
+#include "zsp/ast/IConstraintStmtDefault.h"
+#include "zsp/ast/IConstraintStmtDefaultDisable.h"
+#include "zsp/ast/IGlobalScope.h"
+#include "zsp/ast/INamedScope.h"
+#include "zsp/ast/IPackageScope.h"
+#include "zsp/ast/IDataTypeArray.h"
+#include "zsp/ast/IDataTypeBool.h"
+#include "zsp/ast/IDataTypeChandle.h"
+#include "zsp/ast/IDataTypeEnum.h"
+#include "zsp/ast/IEnumItem.h"
+#include "zsp/ast/IEnumDecl.h"
+#include "zsp/ast/IDataTypeInt.h"
+#include "zsp/ast/IDataTypeRef.h"
+#include "zsp/ast/IDataTypeString.h"
+#include "zsp/ast/IDataTypeUserDefined.h"
+#include "zsp/ast/IExprRefPathStatic.h"
+#include "zsp/ast/IExprRefPathSuper.h"
+#include "zsp/ast/IExprSignedNumber.h"
+#include "zsp/ast/IExprUnsignedNumber.h"
+#include "zsp/ast/IExtendType.h"
+#include "zsp/ast/IField.h"
+#include "zsp/ast/IFieldRef.h"
+#include "zsp/ast/IFieldClaim.h"
+#include "zsp/ast/ISymbolTypeScope.h"
+#include "zsp/ast/ISymbolFunctionScope.h"
+#include "zsp/ast/IActivityActionHandleTraversal.h"
+#include "zsp/ast/IActivityActionTypeTraversal.h"
+#include "zsp/ast/IActivitySequence.h"
+#include "zsp/ast/IActivityParallel.h"
+#include "zsp/ast/IActivitySchedule.h"
+#include "zsp/ast/IActivityRepeatCount.h"
+#include "zsp/ast/IActivityRepeatWhile.h"
+#include "zsp/ast/IActivityForeach.h"
+#include "zsp/ast/IActivitySelect.h"
+#include "zsp/ast/IActivityIfElse.h"
+#include "zsp/ast/IActivityMatch.h"
+#include "zsp/ast/IActivityReplicate.h"
+#include "zsp/ast/IActivitySuper.h"
+#include "zsp/ast/IConstraintBlock.h"
+#include "zsp/ast/IConstraintStmtForeach.h"
+#include "zsp/ast/IConstraintStmtForall.h"
+#include "zsp/ast/IConstraintStmtImplication.h"
+#include "zsp/ast/IExprRefPathStaticFunc.h"
+#include "zsp/ast/ITypeScope.h"
+#include "zsp/ast/IComponent.h"
+#include "zsp/ast/IStruct.h"
+#include "zsp/ast/IAction.h"
+#include "zsp/ast/impl/VisitorBase.h"
 #include "PyBaseVisitor.h"
 #include <iostream>
 #include "ciostream_native.h"
-#include "pssp/IFactory.h"
-#include "pssp/IAstBuilder.h"
-#include "pssp/IMarker.h"
-#include "pssp/IMarkerListener.h"
+#include "zsp/IFactory.h"
+#include "zsp/IAstBuilder.h"
+#include "zsp/IMarker.h"
+#include "zsp/IMarkerListener.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif /* _OPENMP */
@@ -1110,1006 +1150,1376 @@ static const char *__pyx_filename;
 static const char *__pyx_f[] = {
   "python/core.pyx",
   "stringsource",
-  "python/pssparser/core.pxd",
-  "type.pxd",
-  "__init__.pxd",
-  "python/pssparser/pssast.pxd",
+  "python/zuspec_parser/core.pxd",
+  "packages/python/lib/python3.7/site-packages/Cython/Includes/cpython/type.pxd",
+  "packages/python/lib/python3.7/site-packages/ciostream/__init__.pxd",
+  "python/zuspec_parser/zsp_ast.pxd",
 };
 
-/* "pssast_decl.pxd":13
+/* "zsp_ast_decl.pxd":13
  * cimport cpython.ref as cpy_ref
  * 
  * ctypedef char                 int8_t             # <<<<<<<<<<<<<<
  * ctypedef unsigned char        uint8_t
  * ctypedef short                int16_t
  */
-typedef char __pyx_t_9pssparser_11pssast_decl_int8_t;
+typedef char __pyx_t_13zuspec_parser_12zsp_ast_decl_int8_t;
 
-/* "pssast_decl.pxd":14
+/* "zsp_ast_decl.pxd":14
  * 
  * ctypedef char                 int8_t
  * ctypedef unsigned char        uint8_t             # <<<<<<<<<<<<<<
  * ctypedef short                int16_t
  * ctypedef unsigned short       uint16_t
  */
-typedef unsigned char __pyx_t_9pssparser_11pssast_decl_uint8_t;
+typedef unsigned char __pyx_t_13zuspec_parser_12zsp_ast_decl_uint8_t;
 
-/* "pssast_decl.pxd":15
+/* "zsp_ast_decl.pxd":15
  * ctypedef char                 int8_t
  * ctypedef unsigned char        uint8_t
  * ctypedef short                int16_t             # <<<<<<<<<<<<<<
  * ctypedef unsigned short       uint16_t
  * ctypedef int                  int32_t
  */
-typedef short __pyx_t_9pssparser_11pssast_decl_int16_t;
+typedef short __pyx_t_13zuspec_parser_12zsp_ast_decl_int16_t;
 
-/* "pssast_decl.pxd":16
+/* "zsp_ast_decl.pxd":16
  * ctypedef unsigned char        uint8_t
  * ctypedef short                int16_t
  * ctypedef unsigned short       uint16_t             # <<<<<<<<<<<<<<
  * ctypedef int                  int32_t
  * ctypedef unsigned int         uint32_t
  */
-typedef unsigned short __pyx_t_9pssparser_11pssast_decl_uint16_t;
+typedef unsigned short __pyx_t_13zuspec_parser_12zsp_ast_decl_uint16_t;
 
-/* "pssast_decl.pxd":17
+/* "zsp_ast_decl.pxd":17
  * ctypedef short                int16_t
  * ctypedef unsigned short       uint16_t
  * ctypedef int                  int32_t             # <<<<<<<<<<<<<<
  * ctypedef unsigned int         uint32_t
  * ctypedef long long            int64_t
  */
-typedef int __pyx_t_9pssparser_11pssast_decl_int32_t;
+typedef int __pyx_t_13zuspec_parser_12zsp_ast_decl_int32_t;
 
-/* "pssast_decl.pxd":18
+/* "zsp_ast_decl.pxd":18
  * ctypedef unsigned short       uint16_t
  * ctypedef int                  int32_t
  * ctypedef unsigned int         uint32_t             # <<<<<<<<<<<<<<
  * ctypedef long long            int64_t
  * ctypedef unsigned long long   uint64_t
  */
-typedef unsigned int __pyx_t_9pssparser_11pssast_decl_uint32_t;
+typedef unsigned int __pyx_t_13zuspec_parser_12zsp_ast_decl_uint32_t;
 
-/* "pssast_decl.pxd":19
+/* "zsp_ast_decl.pxd":19
  * ctypedef int                  int32_t
  * ctypedef unsigned int         uint32_t
  * ctypedef long long            int64_t             # <<<<<<<<<<<<<<
  * ctypedef unsigned long long   uint64_t
  * 
  */
-typedef PY_LONG_LONG __pyx_t_9pssparser_11pssast_decl_int64_t;
+typedef PY_LONG_LONG __pyx_t_13zuspec_parser_12zsp_ast_decl_int64_t;
 
-/* "pssast_decl.pxd":20
+/* "zsp_ast_decl.pxd":20
  * ctypedef unsigned int         uint32_t
  * ctypedef long long            int64_t
  * ctypedef unsigned long long   uint64_t             # <<<<<<<<<<<<<<
  * 
- * ctypedef IExecStmt *IExecStmtP
+ * ctypedef IScopeChild *IScopeChildP
  */
-typedef unsigned PY_LONG_LONG __pyx_t_9pssparser_11pssast_decl_uint64_t;
+typedef unsigned PY_LONG_LONG __pyx_t_13zuspec_parser_12zsp_ast_decl_uint64_t;
 
-/* "pssparser/pssast.pxd":13
+/* "zuspec_parser/zsp_ast.pxd":13
  * cimport cpython.ref as cpy_ref
  * 
  * ctypedef char                 int8_t             # <<<<<<<<<<<<<<
  * ctypedef unsigned char        uint8_t
  * ctypedef short                int16_t
  */
-typedef char __pyx_t_9pssparser_6pssast_int8_t;
+typedef char __pyx_t_13zuspec_parser_7zsp_ast_int8_t;
 
-/* "pssparser/pssast.pxd":14
+/* "zuspec_parser/zsp_ast.pxd":14
  * 
  * ctypedef char                 int8_t
  * ctypedef unsigned char        uint8_t             # <<<<<<<<<<<<<<
  * ctypedef short                int16_t
  * ctypedef unsigned short       uint16_t
  */
-typedef unsigned char __pyx_t_9pssparser_6pssast_uint8_t;
+typedef unsigned char __pyx_t_13zuspec_parser_7zsp_ast_uint8_t;
 
-/* "pssparser/pssast.pxd":15
+/* "zuspec_parser/zsp_ast.pxd":15
  * ctypedef char                 int8_t
  * ctypedef unsigned char        uint8_t
  * ctypedef short                int16_t             # <<<<<<<<<<<<<<
  * ctypedef unsigned short       uint16_t
  * ctypedef int                  int32_t
  */
-typedef short __pyx_t_9pssparser_6pssast_int16_t;
+typedef short __pyx_t_13zuspec_parser_7zsp_ast_int16_t;
 
-/* "pssparser/pssast.pxd":16
+/* "zuspec_parser/zsp_ast.pxd":16
  * ctypedef unsigned char        uint8_t
  * ctypedef short                int16_t
  * ctypedef unsigned short       uint16_t             # <<<<<<<<<<<<<<
  * ctypedef int                  int32_t
  * ctypedef unsigned int         uint32_t
  */
-typedef unsigned short __pyx_t_9pssparser_6pssast_uint16_t;
+typedef unsigned short __pyx_t_13zuspec_parser_7zsp_ast_uint16_t;
 
-/* "pssparser/pssast.pxd":17
+/* "zuspec_parser/zsp_ast.pxd":17
  * ctypedef short                int16_t
  * ctypedef unsigned short       uint16_t
  * ctypedef int                  int32_t             # <<<<<<<<<<<<<<
  * ctypedef unsigned int         uint32_t
  * ctypedef long long            int64_t
  */
-typedef int __pyx_t_9pssparser_6pssast_int32_t;
+typedef int __pyx_t_13zuspec_parser_7zsp_ast_int32_t;
 
-/* "pssparser/pssast.pxd":18
+/* "zuspec_parser/zsp_ast.pxd":18
  * ctypedef unsigned short       uint16_t
  * ctypedef int                  int32_t
  * ctypedef unsigned int         uint32_t             # <<<<<<<<<<<<<<
  * ctypedef long long            int64_t
  * ctypedef unsigned long long   uint64_t
  */
-typedef unsigned int __pyx_t_9pssparser_6pssast_uint32_t;
+typedef unsigned int __pyx_t_13zuspec_parser_7zsp_ast_uint32_t;
 
-/* "pssparser/pssast.pxd":19
+/* "zuspec_parser/zsp_ast.pxd":19
  * ctypedef int                  int32_t
  * ctypedef unsigned int         uint32_t
  * ctypedef long long            int64_t             # <<<<<<<<<<<<<<
  * ctypedef unsigned long long   uint64_t
  * 
  */
-typedef PY_LONG_LONG __pyx_t_9pssparser_6pssast_int64_t;
+typedef PY_LONG_LONG __pyx_t_13zuspec_parser_7zsp_ast_int64_t;
 
-/* "pssparser/pssast.pxd":20
+/* "zuspec_parser/zsp_ast.pxd":20
  * ctypedef unsigned int         uint32_t
  * ctypedef long long            int64_t
  * ctypedef unsigned long long   uint64_t             # <<<<<<<<<<<<<<
  * 
- * from pssparser cimport pssast_decl
+ * from zuspec_parser cimport zsp_ast_decl
  */
-typedef unsigned PY_LONG_LONG __pyx_t_9pssparser_6pssast_uint64_t;
+typedef unsigned PY_LONG_LONG __pyx_t_13zuspec_parser_7zsp_ast_uint64_t;
 
 /*--- Type declarations ---*/
 struct __pyx_obj_9ciostream_cistream;
 struct __pyx_obj_9ciostream_costream;
-struct __pyx_obj_9pssparser_6pssast_Factory;
-struct __pyx_obj_9pssparser_6pssast_ExecStmt;
-struct __pyx_obj_9pssparser_6pssast_Expr;
-struct __pyx_obj_9pssparser_6pssast_RefExpr;
-struct __pyx_obj_9pssparser_6pssast_TemplateParamDeclList;
-struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl;
-struct __pyx_obj_9pssparser_6pssast_ScopeChild;
-struct __pyx_obj_9pssparser_6pssast_TemplateParamValueList;
-struct __pyx_obj_9pssparser_6pssast_TemplateParamValue;
-struct __pyx_obj_9pssparser_6pssast_TemplateParamTypeValue;
-struct __pyx_obj_9pssparser_6pssast_TemplateParamExprValue;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmt;
-struct __pyx_obj_9pssparser_6pssast_Scope;
-struct __pyx_obj_9pssparser_6pssast_NamedScopeChild;
-struct __pyx_obj_9pssparser_6pssast_PackageImportStmt;
-struct __pyx_obj_9pssparser_6pssast_DataType;
-struct __pyx_obj_9pssparser_6pssast_ExecScope;
-struct __pyx_obj_9pssparser_6pssast_ProceduralStmtDataDeclaration;
-struct __pyx_obj_9pssparser_6pssast_ExprBin;
-struct __pyx_obj_9pssparser_6pssast_ExprBitSlice;
-struct __pyx_obj_9pssparser_6pssast_ExprBool;
-struct __pyx_obj_9pssparser_6pssast_ExprCast;
-struct __pyx_obj_9pssparser_6pssast_ExprCompileHas;
-struct __pyx_obj_9pssparser_6pssast_ExprCond;
-struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeList;
-struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeValue;
-struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId;
-struct __pyx_obj_9pssparser_6pssast_ExprId;
-struct __pyx_obj_9pssparser_6pssast_ExprIn;
-struct __pyx_obj_9pssparser_6pssast_ExprMemberPathElem;
-struct __pyx_obj_9pssparser_6pssast_ExprNumber;
-struct __pyx_obj_9pssparser_6pssast_ExprAggregateLiteral;
-struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeList;
-struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeValue;
-struct __pyx_obj_9pssparser_6pssast_ExprRefPath;
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathElem;
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticRooted;
-struct __pyx_obj_9pssparser_6pssast_ExprStaticRefPath;
-struct __pyx_obj_9pssparser_6pssast_ExprString;
-struct __pyx_obj_9pssparser_6pssast_ExprSubscript;
-struct __pyx_obj_9pssparser_6pssast_ExprUnary;
-struct __pyx_obj_9pssparser_6pssast_MethodParameterList;
-struct __pyx_obj_9pssparser_6pssast_TypeIdentifier;
-struct __pyx_obj_9pssparser_6pssast_TypeIdentifierElem;
-struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeGlobal;
-struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeContext;
-struct __pyx_obj_9pssparser_6pssast_RefExprScopeIndex;
-struct __pyx_obj_9pssparser_6pssast_TemplateGenericTypeParamDecl;
-struct __pyx_obj_9pssparser_6pssast_TemplateCategoryTypeParamDecl;
-struct __pyx_obj_9pssparser_6pssast_TemplateValueParamDecl;
-struct __pyx_obj_9pssparser_6pssast_ConstraintBlock;
-struct __pyx_obj_9pssparser_6pssast_ConstraintScope;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefault;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefaultDisable;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtExpr;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtField;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtIf;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtUnique;
-struct __pyx_obj_9pssparser_6pssast_GlobalScope;
-struct __pyx_obj_9pssparser_6pssast_NamedScope;
-struct __pyx_obj_9pssparser_6pssast_PackageScope;
-struct __pyx_obj_9pssparser_6pssast_DataTypeArray;
-struct __pyx_obj_9pssparser_6pssast_DataTypeBool;
-struct __pyx_obj_9pssparser_6pssast_DataTypeChandle;
-struct __pyx_obj_9pssparser_6pssast_DataTypeEnum;
-struct __pyx_obj_9pssparser_6pssast_DataTypeInt;
-struct __pyx_obj_9pssparser_6pssast_DataTypeString;
-struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined;
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathContext;
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic;
-struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber;
-struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForall;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForeach;
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtImplication;
-struct __pyx_obj_9pssparser_6pssast_TypeScope;
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticFunc;
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathSuper;
-struct __pyx_obj_9pssparser_6pssast_Action;
-struct __pyx_obj_9pssparser_6pssast_Component;
-struct __pyx_obj_9pssparser_6pssast_Struct;
-struct __pyx_obj_9pssparser_6pssast_State;
-struct __pyx_obj_9pssparser_6pssast_Stream;
-struct __pyx_obj_9pssparser_6pssast_Buffer;
-struct __pyx_obj_9pssparser_6pssast_Resource;
-struct __pyx_obj_9pssparser_6pssast_VisitorBase;
-struct __pyx_obj_9pssparser_4core_Factory;
-struct __pyx_obj_9pssparser_4core_AstBuilder;
-struct __pyx_obj_9pssparser_4core_MarkerListener;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolImportSpec;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefTarget;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDeclList;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelectBranch;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValueList;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValue;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatchChoice;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamTypeValue;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamExprValue;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChildRef;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageImportStmt;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBin;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBitSlice;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBool;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCast;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCompileHas;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCond;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprIn;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprMemberPathElem;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNull;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNumber;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprAggregateLiteral;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeValue;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPath;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathElem;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprStaticRefPath;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprString;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSubscript;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnary;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_MethodParameterList;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifierElem;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendEnum;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprScopeIndex;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateValueParamDecl;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityBindStmt;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityConstraint;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtExpr;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtField;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtIf;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtUnique;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefault;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeArray;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeBool;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeChandle;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeEnum;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumItem;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumDecl;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeInt;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeRef;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeString;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathSuper;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendType;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Field;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldRef;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldClaim;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolTypeScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolFunctionScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySequence;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityParallel;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedule;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatCount;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatWhile;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityForeach;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelect;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityIfElse;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatch;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityReplicate;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySuper;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintBlock;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForeach;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForall;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtImplication;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Component;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Struct;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Action;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase;
+struct __pyx_obj_13zuspec_parser_4core_Factory;
+struct __pyx_obj_13zuspec_parser_4core_AstBuilder;
+struct __pyx_obj_13zuspec_parser_4core_MarkerListener;
 
-/* "pssast_decl.pxd":22
+/* "zsp_ast_decl.pxd":22
  * ctypedef unsigned long long   uint64_t
  * 
- * ctypedef IExecStmt *IExecStmtP             # <<<<<<<<<<<<<<
- * ctypedef IExpr *IExprP
+ * ctypedef IScopeChild *IScopeChildP             # <<<<<<<<<<<<<<
+ * ctypedef ISymbolImportSpec *ISymbolImportSpecP
+ * ctypedef IActivityJoinSpec *IActivityJoinSpecP
+ */
+typedef zsp::ast::IScopeChild *__pyx_t_13zuspec_parser_12zsp_ast_decl_IScopeChildP;
+
+/* "zsp_ast_decl.pxd":23
+ * 
+ * ctypedef IScopeChild *IScopeChildP
+ * ctypedef ISymbolImportSpec *ISymbolImportSpecP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityJoinSpec *IActivityJoinSpecP
  * ctypedef IRefExpr *IRefExprP
  */
-typedef pssp::ast::IExecStmt *__pyx_t_9pssparser_11pssast_decl_IExecStmtP;
+typedef zsp::ast::ISymbolImportSpec *__pyx_t_13zuspec_parser_12zsp_ast_decl_ISymbolImportSpecP;
 
-/* "pssast_decl.pxd":23
- * 
- * ctypedef IExecStmt *IExecStmtP
- * ctypedef IExpr *IExprP             # <<<<<<<<<<<<<<
+/* "zsp_ast_decl.pxd":24
+ * ctypedef IScopeChild *IScopeChildP
+ * ctypedef ISymbolImportSpec *ISymbolImportSpecP
+ * ctypedef IActivityJoinSpec *IActivityJoinSpecP             # <<<<<<<<<<<<<<
  * ctypedef IRefExpr *IRefExprP
+ * ctypedef IRefTarget *IRefTargetP
+ */
+typedef zsp::ast::IActivityJoinSpec *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityJoinSpecP;
+
+/* "zsp_ast_decl.pxd":25
+ * ctypedef ISymbolImportSpec *ISymbolImportSpecP
+ * ctypedef IActivityJoinSpec *IActivityJoinSpecP
+ * ctypedef IRefExpr *IRefExprP             # <<<<<<<<<<<<<<
+ * ctypedef IRefTarget *IRefTargetP
  * ctypedef ITemplateParamDeclList *ITemplateParamDeclListP
  */
-typedef pssp::ast::IExpr *__pyx_t_9pssparser_11pssast_decl_IExprP;
+typedef zsp::ast::IRefExpr *__pyx_t_13zuspec_parser_12zsp_ast_decl_IRefExprP;
 
-/* "pssast_decl.pxd":24
- * ctypedef IExecStmt *IExecStmtP
- * ctypedef IExpr *IExprP
- * ctypedef IRefExpr *IRefExprP             # <<<<<<<<<<<<<<
+/* "zsp_ast_decl.pxd":26
+ * ctypedef IActivityJoinSpec *IActivityJoinSpecP
+ * ctypedef IRefExpr *IRefExprP
+ * ctypedef IRefTarget *IRefTargetP             # <<<<<<<<<<<<<<
  * ctypedef ITemplateParamDeclList *ITemplateParamDeclListP
  * ctypedef ITemplateParamDecl *ITemplateParamDeclP
  */
-typedef pssp::ast::IRefExpr *__pyx_t_9pssparser_11pssast_decl_IRefExprP;
+typedef zsp::ast::IRefTarget *__pyx_t_13zuspec_parser_12zsp_ast_decl_IRefTargetP;
 
-/* "pssast_decl.pxd":25
- * ctypedef IExpr *IExprP
+/* "zsp_ast_decl.pxd":27
  * ctypedef IRefExpr *IRefExprP
+ * ctypedef IRefTarget *IRefTargetP
  * ctypedef ITemplateParamDeclList *ITemplateParamDeclListP             # <<<<<<<<<<<<<<
  * ctypedef ITemplateParamDecl *ITemplateParamDeclP
- * ctypedef IScopeChild *IScopeChildP
+ * ctypedef IActivitySelectBranch *IActivitySelectBranchP
  */
-typedef pssp::ast::ITemplateParamDeclList *__pyx_t_9pssparser_11pssast_decl_ITemplateParamDeclListP;
+typedef zsp::ast::ITemplateParamDeclList *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITemplateParamDeclListP;
 
-/* "pssast_decl.pxd":26
- * ctypedef IRefExpr *IRefExprP
+/* "zsp_ast_decl.pxd":28
+ * ctypedef IRefTarget *IRefTargetP
  * ctypedef ITemplateParamDeclList *ITemplateParamDeclListP
  * ctypedef ITemplateParamDecl *ITemplateParamDeclP             # <<<<<<<<<<<<<<
- * ctypedef IScopeChild *IScopeChildP
+ * ctypedef IActivitySelectBranch *IActivitySelectBranchP
  * ctypedef ITemplateParamValueList *ITemplateParamValueListP
  */
-typedef pssp::ast::ITemplateParamDecl *__pyx_t_9pssparser_11pssast_decl_ITemplateParamDeclP;
+typedef zsp::ast::ITemplateParamDecl *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITemplateParamDeclP;
 
-/* "pssast_decl.pxd":27
+/* "zsp_ast_decl.pxd":29
  * ctypedef ITemplateParamDeclList *ITemplateParamDeclListP
  * ctypedef ITemplateParamDecl *ITemplateParamDeclP
- * ctypedef IScopeChild *IScopeChildP             # <<<<<<<<<<<<<<
+ * ctypedef IActivitySelectBranch *IActivitySelectBranchP             # <<<<<<<<<<<<<<
  * ctypedef ITemplateParamValueList *ITemplateParamValueListP
  * ctypedef ITemplateParamValue *ITemplateParamValueP
  */
-typedef pssp::ast::IScopeChild *__pyx_t_9pssparser_11pssast_decl_IScopeChildP;
+typedef zsp::ast::IActivitySelectBranch *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivitySelectBranchP;
 
-/* "pssast_decl.pxd":28
+/* "zsp_ast_decl.pxd":30
  * ctypedef ITemplateParamDecl *ITemplateParamDeclP
- * ctypedef IScopeChild *IScopeChildP
+ * ctypedef IActivitySelectBranch *IActivitySelectBranchP
  * ctypedef ITemplateParamValueList *ITemplateParamValueListP             # <<<<<<<<<<<<<<
  * ctypedef ITemplateParamValue *ITemplateParamValueP
- * ctypedef ITemplateParamTypeValue *ITemplateParamTypeValueP
+ * ctypedef IActivityMatchChoice *IActivityMatchChoiceP
  */
-typedef pssp::ast::ITemplateParamValueList *__pyx_t_9pssparser_11pssast_decl_ITemplateParamValueListP;
+typedef zsp::ast::ITemplateParamValueList *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITemplateParamValueListP;
 
-/* "pssast_decl.pxd":29
- * ctypedef IScopeChild *IScopeChildP
+/* "zsp_ast_decl.pxd":31
+ * ctypedef IActivitySelectBranch *IActivitySelectBranchP
  * ctypedef ITemplateParamValueList *ITemplateParamValueListP
  * ctypedef ITemplateParamValue *ITemplateParamValueP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityMatchChoice *IActivityMatchChoiceP
  * ctypedef ITemplateParamTypeValue *ITemplateParamTypeValueP
- * ctypedef ITemplateParamExprValue *ITemplateParamExprValueP
  */
-typedef pssp::ast::ITemplateParamValue *__pyx_t_9pssparser_11pssast_decl_ITemplateParamValueP;
+typedef zsp::ast::ITemplateParamValue *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITemplateParamValueP;
 
-/* "pssast_decl.pxd":30
+/* "zsp_ast_decl.pxd":32
  * ctypedef ITemplateParamValueList *ITemplateParamValueListP
  * ctypedef ITemplateParamValue *ITemplateParamValueP
+ * ctypedef IActivityMatchChoice *IActivityMatchChoiceP             # <<<<<<<<<<<<<<
+ * ctypedef ITemplateParamTypeValue *ITemplateParamTypeValueP
+ * ctypedef ITemplateParamExprValue *ITemplateParamExprValueP
+ */
+typedef zsp::ast::IActivityMatchChoice *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityMatchChoiceP;
+
+/* "zsp_ast_decl.pxd":33
+ * ctypedef ITemplateParamValue *ITemplateParamValueP
+ * ctypedef IActivityMatchChoice *IActivityMatchChoiceP
  * ctypedef ITemplateParamTypeValue *ITemplateParamTypeValueP             # <<<<<<<<<<<<<<
  * ctypedef ITemplateParamExprValue *ITemplateParamExprValueP
- * ctypedef IConstraintStmt *IConstraintStmtP
+ * ctypedef IExecStmt *IExecStmtP
  */
-typedef pssp::ast::ITemplateParamTypeValue *__pyx_t_9pssparser_11pssast_decl_ITemplateParamTypeValueP;
+typedef zsp::ast::ITemplateParamTypeValue *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITemplateParamTypeValueP;
 
-/* "pssast_decl.pxd":31
- * ctypedef ITemplateParamValue *ITemplateParamValueP
+/* "zsp_ast_decl.pxd":34
+ * ctypedef IActivityMatchChoice *IActivityMatchChoiceP
  * ctypedef ITemplateParamTypeValue *ITemplateParamTypeValueP
  * ctypedef ITemplateParamExprValue *ITemplateParamExprValueP             # <<<<<<<<<<<<<<
- * ctypedef IConstraintStmt *IConstraintStmtP
- * ctypedef IScope *IScopeP
+ * ctypedef IExecStmt *IExecStmtP
+ * ctypedef IExpr *IExprP
  */
-typedef pssp::ast::ITemplateParamExprValue *__pyx_t_9pssparser_11pssast_decl_ITemplateParamExprValueP;
+typedef zsp::ast::ITemplateParamExprValue *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITemplateParamExprValueP;
 
-/* "pssast_decl.pxd":32
+/* "zsp_ast_decl.pxd":35
  * ctypedef ITemplateParamTypeValue *ITemplateParamTypeValueP
  * ctypedef ITemplateParamExprValue *ITemplateParamExprValueP
+ * ctypedef IExecStmt *IExecStmtP             # <<<<<<<<<<<<<<
+ * ctypedef IExpr *IExprP
+ * ctypedef IActivityStmt *IActivityStmtP
+ */
+typedef zsp::ast::IExecStmt *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExecStmtP;
+
+/* "zsp_ast_decl.pxd":36
+ * ctypedef ITemplateParamExprValue *ITemplateParamExprValueP
+ * ctypedef IExecStmt *IExecStmtP
+ * ctypedef IExpr *IExprP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityStmt *IActivityStmtP
+ * ctypedef IActivitySchedulingConstraint *IActivitySchedulingConstraintP
+ */
+typedef zsp::ast::IExpr *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprP;
+
+/* "zsp_ast_decl.pxd":37
+ * ctypedef IExecStmt *IExecStmtP
+ * ctypedef IExpr *IExprP
+ * ctypedef IActivityStmt *IActivityStmtP             # <<<<<<<<<<<<<<
+ * ctypedef IActivitySchedulingConstraint *IActivitySchedulingConstraintP
+ * ctypedef IActivityJoinSpecBranch *IActivityJoinSpecBranchP
+ */
+typedef zsp::ast::IActivityStmt *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityStmtP;
+
+/* "zsp_ast_decl.pxd":38
+ * ctypedef IExpr *IExprP
+ * ctypedef IActivityStmt *IActivityStmtP
+ * ctypedef IActivitySchedulingConstraint *IActivitySchedulingConstraintP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityJoinSpecBranch *IActivityJoinSpecBranchP
+ * ctypedef IActivityJoinSpecSelect *IActivityJoinSpecSelectP
+ */
+typedef zsp::ast::IActivitySchedulingConstraint *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivitySchedulingConstraintP;
+
+/* "zsp_ast_decl.pxd":39
+ * ctypedef IActivityStmt *IActivityStmtP
+ * ctypedef IActivitySchedulingConstraint *IActivitySchedulingConstraintP
+ * ctypedef IActivityJoinSpecBranch *IActivityJoinSpecBranchP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityJoinSpecSelect *IActivityJoinSpecSelectP
+ * ctypedef IActivityJoinSpecNone *IActivityJoinSpecNoneP
+ */
+typedef zsp::ast::IActivityJoinSpecBranch *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityJoinSpecBranchP;
+
+/* "zsp_ast_decl.pxd":40
+ * ctypedef IActivitySchedulingConstraint *IActivitySchedulingConstraintP
+ * ctypedef IActivityJoinSpecBranch *IActivityJoinSpecBranchP
+ * ctypedef IActivityJoinSpecSelect *IActivityJoinSpecSelectP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityJoinSpecNone *IActivityJoinSpecNoneP
+ * ctypedef IActivityJoinSpecFirst *IActivityJoinSpecFirstP
+ */
+typedef zsp::ast::IActivityJoinSpecSelect *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityJoinSpecSelectP;
+
+/* "zsp_ast_decl.pxd":41
+ * ctypedef IActivityJoinSpecBranch *IActivityJoinSpecBranchP
+ * ctypedef IActivityJoinSpecSelect *IActivityJoinSpecSelectP
+ * ctypedef IActivityJoinSpecNone *IActivityJoinSpecNoneP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityJoinSpecFirst *IActivityJoinSpecFirstP
+ * ctypedef IConstraintStmt *IConstraintStmtP
+ */
+typedef zsp::ast::IActivityJoinSpecNone *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityJoinSpecNoneP;
+
+/* "zsp_ast_decl.pxd":42
+ * ctypedef IActivityJoinSpecSelect *IActivityJoinSpecSelectP
+ * ctypedef IActivityJoinSpecNone *IActivityJoinSpecNoneP
+ * ctypedef IActivityJoinSpecFirst *IActivityJoinSpecFirstP             # <<<<<<<<<<<<<<
+ * ctypedef IConstraintStmt *IConstraintStmtP
+ * ctypedef IScope *IScopeP
+ */
+typedef zsp::ast::IActivityJoinSpecFirst *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityJoinSpecFirstP;
+
+/* "zsp_ast_decl.pxd":43
+ * ctypedef IActivityJoinSpecNone *IActivityJoinSpecNoneP
+ * ctypedef IActivityJoinSpecFirst *IActivityJoinSpecFirstP
  * ctypedef IConstraintStmt *IConstraintStmtP             # <<<<<<<<<<<<<<
  * ctypedef IScope *IScopeP
- * ctypedef INamedScopeChild *INamedScopeChildP
+ * ctypedef IScopeChildRef *IScopeChildRefP
  */
-typedef pssp::ast::IConstraintStmt *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtP;
+typedef zsp::ast::IConstraintStmt *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtP;
 
-/* "pssast_decl.pxd":33
- * ctypedef ITemplateParamExprValue *ITemplateParamExprValueP
+/* "zsp_ast_decl.pxd":44
+ * ctypedef IActivityJoinSpecFirst *IActivityJoinSpecFirstP
  * ctypedef IConstraintStmt *IConstraintStmtP
  * ctypedef IScope *IScopeP             # <<<<<<<<<<<<<<
+ * ctypedef IScopeChildRef *IScopeChildRefP
+ * ctypedef INamedScopeChild *INamedScopeChildP
+ */
+typedef zsp::ast::IScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_IScopeP;
+
+/* "zsp_ast_decl.pxd":45
+ * ctypedef IConstraintStmt *IConstraintStmtP
+ * ctypedef IScope *IScopeP
+ * ctypedef IScopeChildRef *IScopeChildRefP             # <<<<<<<<<<<<<<
  * ctypedef INamedScopeChild *INamedScopeChildP
  * ctypedef IPackageImportStmt *IPackageImportStmtP
  */
-typedef pssp::ast::IScope *__pyx_t_9pssparser_11pssast_decl_IScopeP;
+typedef zsp::ast::IScopeChildRef *__pyx_t_13zuspec_parser_12zsp_ast_decl_IScopeChildRefP;
 
-/* "pssast_decl.pxd":34
- * ctypedef IConstraintStmt *IConstraintStmtP
+/* "zsp_ast_decl.pxd":46
  * ctypedef IScope *IScopeP
+ * ctypedef IScopeChildRef *IScopeChildRefP
  * ctypedef INamedScopeChild *INamedScopeChildP             # <<<<<<<<<<<<<<
  * ctypedef IPackageImportStmt *IPackageImportStmtP
  * ctypedef IDataType *IDataTypeP
  */
-typedef pssp::ast::INamedScopeChild *__pyx_t_9pssparser_11pssast_decl_INamedScopeChildP;
+typedef zsp::ast::INamedScopeChild *__pyx_t_13zuspec_parser_12zsp_ast_decl_INamedScopeChildP;
 
-/* "pssast_decl.pxd":35
- * ctypedef IScope *IScopeP
+/* "zsp_ast_decl.pxd":47
+ * ctypedef IScopeChildRef *IScopeChildRefP
  * ctypedef INamedScopeChild *INamedScopeChildP
  * ctypedef IPackageImportStmt *IPackageImportStmtP             # <<<<<<<<<<<<<<
  * ctypedef IDataType *IDataTypeP
  * ctypedef IExecScope *IExecScopeP
  */
-typedef pssp::ast::IPackageImportStmt *__pyx_t_9pssparser_11pssast_decl_IPackageImportStmtP;
+typedef zsp::ast::IPackageImportStmt *__pyx_t_13zuspec_parser_12zsp_ast_decl_IPackageImportStmtP;
 
-/* "pssast_decl.pxd":36
+/* "zsp_ast_decl.pxd":48
  * ctypedef INamedScopeChild *INamedScopeChildP
  * ctypedef IPackageImportStmt *IPackageImportStmtP
  * ctypedef IDataType *IDataTypeP             # <<<<<<<<<<<<<<
  * ctypedef IExecScope *IExecScopeP
  * ctypedef IProceduralStmtDataDeclaration *IProceduralStmtDataDeclarationP
  */
-typedef pssp::ast::IDataType *__pyx_t_9pssparser_11pssast_decl_IDataTypeP;
+typedef zsp::ast::IDataType *__pyx_t_13zuspec_parser_12zsp_ast_decl_IDataTypeP;
 
-/* "pssast_decl.pxd":37
+/* "zsp_ast_decl.pxd":49
  * ctypedef IPackageImportStmt *IPackageImportStmtP
  * ctypedef IDataType *IDataTypeP
  * ctypedef IExecScope *IExecScopeP             # <<<<<<<<<<<<<<
  * ctypedef IProceduralStmtDataDeclaration *IProceduralStmtDataDeclarationP
  * ctypedef IExprBin *IExprBinP
  */
-typedef pssp::ast::IExecScope *__pyx_t_9pssparser_11pssast_decl_IExecScopeP;
+typedef zsp::ast::IExecScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExecScopeP;
 
-/* "pssast_decl.pxd":38
+/* "zsp_ast_decl.pxd":50
  * ctypedef IDataType *IDataTypeP
  * ctypedef IExecScope *IExecScopeP
  * ctypedef IProceduralStmtDataDeclaration *IProceduralStmtDataDeclarationP             # <<<<<<<<<<<<<<
  * ctypedef IExprBin *IExprBinP
  * ctypedef IExprBitSlice *IExprBitSliceP
  */
-typedef pssp::ast::IProceduralStmtDataDeclaration *__pyx_t_9pssparser_11pssast_decl_IProceduralStmtDataDeclarationP;
+typedef zsp::ast::IProceduralStmtDataDeclaration *__pyx_t_13zuspec_parser_12zsp_ast_decl_IProceduralStmtDataDeclarationP;
 
-/* "pssast_decl.pxd":39
+/* "zsp_ast_decl.pxd":51
  * ctypedef IExecScope *IExecScopeP
  * ctypedef IProceduralStmtDataDeclaration *IProceduralStmtDataDeclarationP
  * ctypedef IExprBin *IExprBinP             # <<<<<<<<<<<<<<
  * ctypedef IExprBitSlice *IExprBitSliceP
  * ctypedef IExprBool *IExprBoolP
  */
-typedef pssp::ast::IExprBin *__pyx_t_9pssparser_11pssast_decl_IExprBinP;
+typedef zsp::ast::IExprBin *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprBinP;
 
-/* "pssast_decl.pxd":40
+/* "zsp_ast_decl.pxd":52
  * ctypedef IProceduralStmtDataDeclaration *IProceduralStmtDataDeclarationP
  * ctypedef IExprBin *IExprBinP
  * ctypedef IExprBitSlice *IExprBitSliceP             # <<<<<<<<<<<<<<
  * ctypedef IExprBool *IExprBoolP
  * ctypedef IExprCast *IExprCastP
  */
-typedef pssp::ast::IExprBitSlice *__pyx_t_9pssparser_11pssast_decl_IExprBitSliceP;
+typedef zsp::ast::IExprBitSlice *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprBitSliceP;
 
-/* "pssast_decl.pxd":41
+/* "zsp_ast_decl.pxd":53
  * ctypedef IExprBin *IExprBinP
  * ctypedef IExprBitSlice *IExprBitSliceP
  * ctypedef IExprBool *IExprBoolP             # <<<<<<<<<<<<<<
  * ctypedef IExprCast *IExprCastP
  * ctypedef IExprCompileHas *IExprCompileHasP
  */
-typedef pssp::ast::IExprBool *__pyx_t_9pssparser_11pssast_decl_IExprBoolP;
+typedef zsp::ast::IExprBool *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprBoolP;
 
-/* "pssast_decl.pxd":42
+/* "zsp_ast_decl.pxd":54
  * ctypedef IExprBitSlice *IExprBitSliceP
  * ctypedef IExprBool *IExprBoolP
  * ctypedef IExprCast *IExprCastP             # <<<<<<<<<<<<<<
  * ctypedef IExprCompileHas *IExprCompileHasP
  * ctypedef IExprCond *IExprCondP
  */
-typedef pssp::ast::IExprCast *__pyx_t_9pssparser_11pssast_decl_IExprCastP;
+typedef zsp::ast::IExprCast *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprCastP;
 
-/* "pssast_decl.pxd":43
+/* "zsp_ast_decl.pxd":55
  * ctypedef IExprBool *IExprBoolP
  * ctypedef IExprCast *IExprCastP
  * ctypedef IExprCompileHas *IExprCompileHasP             # <<<<<<<<<<<<<<
  * ctypedef IExprCond *IExprCondP
  * ctypedef IExprDomainOpenRangeList *IExprDomainOpenRangeListP
  */
-typedef pssp::ast::IExprCompileHas *__pyx_t_9pssparser_11pssast_decl_IExprCompileHasP;
+typedef zsp::ast::IExprCompileHas *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprCompileHasP;
 
-/* "pssast_decl.pxd":44
+/* "zsp_ast_decl.pxd":56
  * ctypedef IExprCast *IExprCastP
  * ctypedef IExprCompileHas *IExprCompileHasP
  * ctypedef IExprCond *IExprCondP             # <<<<<<<<<<<<<<
  * ctypedef IExprDomainOpenRangeList *IExprDomainOpenRangeListP
  * ctypedef IExprDomainOpenRangeValue *IExprDomainOpenRangeValueP
  */
-typedef pssp::ast::IExprCond *__pyx_t_9pssparser_11pssast_decl_IExprCondP;
+typedef zsp::ast::IExprCond *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprCondP;
 
-/* "pssast_decl.pxd":45
+/* "zsp_ast_decl.pxd":57
  * ctypedef IExprCompileHas *IExprCompileHasP
  * ctypedef IExprCond *IExprCondP
  * ctypedef IExprDomainOpenRangeList *IExprDomainOpenRangeListP             # <<<<<<<<<<<<<<
  * ctypedef IExprDomainOpenRangeValue *IExprDomainOpenRangeValueP
  * ctypedef IExprHierarchicalId *IExprHierarchicalIdP
  */
-typedef pssp::ast::IExprDomainOpenRangeList *__pyx_t_9pssparser_11pssast_decl_IExprDomainOpenRangeListP;
+typedef zsp::ast::IExprDomainOpenRangeList *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprDomainOpenRangeListP;
 
-/* "pssast_decl.pxd":46
+/* "zsp_ast_decl.pxd":58
  * ctypedef IExprCond *IExprCondP
  * ctypedef IExprDomainOpenRangeList *IExprDomainOpenRangeListP
  * ctypedef IExprDomainOpenRangeValue *IExprDomainOpenRangeValueP             # <<<<<<<<<<<<<<
  * ctypedef IExprHierarchicalId *IExprHierarchicalIdP
  * ctypedef IExprId *IExprIdP
  */
-typedef pssp::ast::IExprDomainOpenRangeValue *__pyx_t_9pssparser_11pssast_decl_IExprDomainOpenRangeValueP;
+typedef zsp::ast::IExprDomainOpenRangeValue *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprDomainOpenRangeValueP;
 
-/* "pssast_decl.pxd":47
+/* "zsp_ast_decl.pxd":59
  * ctypedef IExprDomainOpenRangeList *IExprDomainOpenRangeListP
  * ctypedef IExprDomainOpenRangeValue *IExprDomainOpenRangeValueP
  * ctypedef IExprHierarchicalId *IExprHierarchicalIdP             # <<<<<<<<<<<<<<
  * ctypedef IExprId *IExprIdP
  * ctypedef IExprIn *IExprInP
  */
-typedef pssp::ast::IExprHierarchicalId *__pyx_t_9pssparser_11pssast_decl_IExprHierarchicalIdP;
+typedef zsp::ast::IExprHierarchicalId *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprHierarchicalIdP;
 
-/* "pssast_decl.pxd":48
+/* "zsp_ast_decl.pxd":60
  * ctypedef IExprDomainOpenRangeValue *IExprDomainOpenRangeValueP
  * ctypedef IExprHierarchicalId *IExprHierarchicalIdP
  * ctypedef IExprId *IExprIdP             # <<<<<<<<<<<<<<
  * ctypedef IExprIn *IExprInP
  * ctypedef IExprMemberPathElem *IExprMemberPathElemP
  */
-typedef pssp::ast::IExprId *__pyx_t_9pssparser_11pssast_decl_IExprIdP;
+typedef zsp::ast::IExprId *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprIdP;
 
-/* "pssast_decl.pxd":49
+/* "zsp_ast_decl.pxd":61
  * ctypedef IExprHierarchicalId *IExprHierarchicalIdP
  * ctypedef IExprId *IExprIdP
  * ctypedef IExprIn *IExprInP             # <<<<<<<<<<<<<<
  * ctypedef IExprMemberPathElem *IExprMemberPathElemP
- * ctypedef IExprNumber *IExprNumberP
+ * ctypedef IExprNull *IExprNullP
  */
-typedef pssp::ast::IExprIn *__pyx_t_9pssparser_11pssast_decl_IExprInP;
+typedef zsp::ast::IExprIn *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprInP;
 
-/* "pssast_decl.pxd":50
+/* "zsp_ast_decl.pxd":62
  * ctypedef IExprId *IExprIdP
  * ctypedef IExprIn *IExprInP
  * ctypedef IExprMemberPathElem *IExprMemberPathElemP             # <<<<<<<<<<<<<<
+ * ctypedef IExprNull *IExprNullP
+ * ctypedef IExprNumber *IExprNumberP
+ */
+typedef zsp::ast::IExprMemberPathElem *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprMemberPathElemP;
+
+/* "zsp_ast_decl.pxd":63
+ * ctypedef IExprIn *IExprInP
+ * ctypedef IExprMemberPathElem *IExprMemberPathElemP
+ * ctypedef IExprNull *IExprNullP             # <<<<<<<<<<<<<<
  * ctypedef IExprNumber *IExprNumberP
  * ctypedef IExprAggregateLiteral *IExprAggregateLiteralP
  */
-typedef pssp::ast::IExprMemberPathElem *__pyx_t_9pssparser_11pssast_decl_IExprMemberPathElemP;
+typedef zsp::ast::IExprNull *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprNullP;
 
-/* "pssast_decl.pxd":51
- * ctypedef IExprIn *IExprInP
+/* "zsp_ast_decl.pxd":64
  * ctypedef IExprMemberPathElem *IExprMemberPathElemP
+ * ctypedef IExprNull *IExprNullP
  * ctypedef IExprNumber *IExprNumberP             # <<<<<<<<<<<<<<
  * ctypedef IExprAggregateLiteral *IExprAggregateLiteralP
  * ctypedef IExprOpenRangeList *IExprOpenRangeListP
  */
-typedef pssp::ast::IExprNumber *__pyx_t_9pssparser_11pssast_decl_IExprNumberP;
+typedef zsp::ast::IExprNumber *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprNumberP;
 
-/* "pssast_decl.pxd":52
- * ctypedef IExprMemberPathElem *IExprMemberPathElemP
+/* "zsp_ast_decl.pxd":65
+ * ctypedef IExprNull *IExprNullP
  * ctypedef IExprNumber *IExprNumberP
  * ctypedef IExprAggregateLiteral *IExprAggregateLiteralP             # <<<<<<<<<<<<<<
  * ctypedef IExprOpenRangeList *IExprOpenRangeListP
  * ctypedef IExprOpenRangeValue *IExprOpenRangeValueP
  */
-typedef pssp::ast::IExprAggregateLiteral *__pyx_t_9pssparser_11pssast_decl_IExprAggregateLiteralP;
+typedef zsp::ast::IExprAggregateLiteral *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprAggregateLiteralP;
 
-/* "pssast_decl.pxd":53
+/* "zsp_ast_decl.pxd":66
  * ctypedef IExprNumber *IExprNumberP
  * ctypedef IExprAggregateLiteral *IExprAggregateLiteralP
  * ctypedef IExprOpenRangeList *IExprOpenRangeListP             # <<<<<<<<<<<<<<
  * ctypedef IExprOpenRangeValue *IExprOpenRangeValueP
  * ctypedef IExprRefPath *IExprRefPathP
  */
-typedef pssp::ast::IExprOpenRangeList *__pyx_t_9pssparser_11pssast_decl_IExprOpenRangeListP;
+typedef zsp::ast::IExprOpenRangeList *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprOpenRangeListP;
 
-/* "pssast_decl.pxd":54
+/* "zsp_ast_decl.pxd":67
  * ctypedef IExprAggregateLiteral *IExprAggregateLiteralP
  * ctypedef IExprOpenRangeList *IExprOpenRangeListP
  * ctypedef IExprOpenRangeValue *IExprOpenRangeValueP             # <<<<<<<<<<<<<<
  * ctypedef IExprRefPath *IExprRefPathP
- * ctypedef IExprRefPathElem *IExprRefPathElemP
+ * ctypedef IExprRefPathContext *IExprRefPathContextP
  */
-typedef pssp::ast::IExprOpenRangeValue *__pyx_t_9pssparser_11pssast_decl_IExprOpenRangeValueP;
+typedef zsp::ast::IExprOpenRangeValue *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprOpenRangeValueP;
 
-/* "pssast_decl.pxd":55
+/* "zsp_ast_decl.pxd":68
  * ctypedef IExprOpenRangeList *IExprOpenRangeListP
  * ctypedef IExprOpenRangeValue *IExprOpenRangeValueP
  * ctypedef IExprRefPath *IExprRefPathP             # <<<<<<<<<<<<<<
+ * ctypedef IExprRefPathContext *IExprRefPathContextP
+ * ctypedef IExprRefPathElem *IExprRefPathElemP
+ */
+typedef zsp::ast::IExprRefPath *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprRefPathP;
+
+/* "zsp_ast_decl.pxd":69
+ * ctypedef IExprOpenRangeValue *IExprOpenRangeValueP
+ * ctypedef IExprRefPath *IExprRefPathP
+ * ctypedef IExprRefPathContext *IExprRefPathContextP             # <<<<<<<<<<<<<<
  * ctypedef IExprRefPathElem *IExprRefPathElemP
  * ctypedef IExprRefPathStaticRooted *IExprRefPathStaticRootedP
  */
-typedef pssp::ast::IExprRefPath *__pyx_t_9pssparser_11pssast_decl_IExprRefPathP;
+typedef zsp::ast::IExprRefPathContext *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprRefPathContextP;
 
-/* "pssast_decl.pxd":56
- * ctypedef IExprOpenRangeValue *IExprOpenRangeValueP
+/* "zsp_ast_decl.pxd":70
  * ctypedef IExprRefPath *IExprRefPathP
+ * ctypedef IExprRefPathContext *IExprRefPathContextP
  * ctypedef IExprRefPathElem *IExprRefPathElemP             # <<<<<<<<<<<<<<
  * ctypedef IExprRefPathStaticRooted *IExprRefPathStaticRootedP
  * ctypedef IExprStaticRefPath *IExprStaticRefPathP
  */
-typedef pssp::ast::IExprRefPathElem *__pyx_t_9pssparser_11pssast_decl_IExprRefPathElemP;
+typedef zsp::ast::IExprRefPathElem *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprRefPathElemP;
 
-/* "pssast_decl.pxd":57
- * ctypedef IExprRefPath *IExprRefPathP
+/* "zsp_ast_decl.pxd":71
+ * ctypedef IExprRefPathContext *IExprRefPathContextP
  * ctypedef IExprRefPathElem *IExprRefPathElemP
  * ctypedef IExprRefPathStaticRooted *IExprRefPathStaticRootedP             # <<<<<<<<<<<<<<
  * ctypedef IExprStaticRefPath *IExprStaticRefPathP
  * ctypedef IExprString *IExprStringP
  */
-typedef pssp::ast::IExprRefPathStaticRooted *__pyx_t_9pssparser_11pssast_decl_IExprRefPathStaticRootedP;
+typedef zsp::ast::IExprRefPathStaticRooted *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprRefPathStaticRootedP;
 
-/* "pssast_decl.pxd":58
+/* "zsp_ast_decl.pxd":72
  * ctypedef IExprRefPathElem *IExprRefPathElemP
  * ctypedef IExprRefPathStaticRooted *IExprRefPathStaticRootedP
  * ctypedef IExprStaticRefPath *IExprStaticRefPathP             # <<<<<<<<<<<<<<
  * ctypedef IExprString *IExprStringP
  * ctypedef IExprSubscript *IExprSubscriptP
  */
-typedef pssp::ast::IExprStaticRefPath *__pyx_t_9pssparser_11pssast_decl_IExprStaticRefPathP;
+typedef zsp::ast::IExprStaticRefPath *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprStaticRefPathP;
 
-/* "pssast_decl.pxd":59
+/* "zsp_ast_decl.pxd":73
  * ctypedef IExprRefPathStaticRooted *IExprRefPathStaticRootedP
  * ctypedef IExprStaticRefPath *IExprStaticRefPathP
  * ctypedef IExprString *IExprStringP             # <<<<<<<<<<<<<<
  * ctypedef IExprSubscript *IExprSubscriptP
  * ctypedef IExprUnary *IExprUnaryP
  */
-typedef pssp::ast::IExprString *__pyx_t_9pssparser_11pssast_decl_IExprStringP;
+typedef zsp::ast::IExprString *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprStringP;
 
-/* "pssast_decl.pxd":60
+/* "zsp_ast_decl.pxd":74
  * ctypedef IExprStaticRefPath *IExprStaticRefPathP
  * ctypedef IExprString *IExprStringP
  * ctypedef IExprSubscript *IExprSubscriptP             # <<<<<<<<<<<<<<
  * ctypedef IExprUnary *IExprUnaryP
  * ctypedef IMethodParameterList *IMethodParameterListP
  */
-typedef pssp::ast::IExprSubscript *__pyx_t_9pssparser_11pssast_decl_IExprSubscriptP;
+typedef zsp::ast::IExprSubscript *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprSubscriptP;
 
-/* "pssast_decl.pxd":61
+/* "zsp_ast_decl.pxd":75
  * ctypedef IExprString *IExprStringP
  * ctypedef IExprSubscript *IExprSubscriptP
  * ctypedef IExprUnary *IExprUnaryP             # <<<<<<<<<<<<<<
  * ctypedef IMethodParameterList *IMethodParameterListP
  * ctypedef ITypeIdentifier *ITypeIdentifierP
  */
-typedef pssp::ast::IExprUnary *__pyx_t_9pssparser_11pssast_decl_IExprUnaryP;
+typedef zsp::ast::IExprUnary *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprUnaryP;
 
-/* "pssast_decl.pxd":62
+/* "zsp_ast_decl.pxd":76
  * ctypedef IExprSubscript *IExprSubscriptP
  * ctypedef IExprUnary *IExprUnaryP
  * ctypedef IMethodParameterList *IMethodParameterListP             # <<<<<<<<<<<<<<
  * ctypedef ITypeIdentifier *ITypeIdentifierP
  * ctypedef ITypeIdentifierElem *ITypeIdentifierElemP
  */
-typedef pssp::ast::IMethodParameterList *__pyx_t_9pssparser_11pssast_decl_IMethodParameterListP;
+typedef zsp::ast::IMethodParameterList *__pyx_t_13zuspec_parser_12zsp_ast_decl_IMethodParameterListP;
 
-/* "pssast_decl.pxd":63
+/* "zsp_ast_decl.pxd":77
  * ctypedef IExprUnary *IExprUnaryP
  * ctypedef IMethodParameterList *IMethodParameterListP
  * ctypedef ITypeIdentifier *ITypeIdentifierP             # <<<<<<<<<<<<<<
  * ctypedef ITypeIdentifierElem *ITypeIdentifierElemP
- * ctypedef IRefExprTypeScopeGlobal *IRefExprTypeScopeGlobalP
+ * ctypedef IExtendEnum *IExtendEnumP
  */
-typedef pssp::ast::ITypeIdentifier *__pyx_t_9pssparser_11pssast_decl_ITypeIdentifierP;
+typedef zsp::ast::ITypeIdentifier *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITypeIdentifierP;
 
-/* "pssast_decl.pxd":64
+/* "zsp_ast_decl.pxd":78
  * ctypedef IMethodParameterList *IMethodParameterListP
  * ctypedef ITypeIdentifier *ITypeIdentifierP
  * ctypedef ITypeIdentifierElem *ITypeIdentifierElemP             # <<<<<<<<<<<<<<
+ * ctypedef IExtendEnum *IExtendEnumP
+ * ctypedef ISymbolScope *ISymbolScopeP
+ */
+typedef zsp::ast::ITypeIdentifierElem *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITypeIdentifierElemP;
+
+/* "zsp_ast_decl.pxd":79
+ * ctypedef ITypeIdentifier *ITypeIdentifierP
+ * ctypedef ITypeIdentifierElem *ITypeIdentifierElemP
+ * ctypedef IExtendEnum *IExtendEnumP             # <<<<<<<<<<<<<<
+ * ctypedef ISymbolScope *ISymbolScopeP
+ * ctypedef IRefExprTypeScopeGlobal *IRefExprTypeScopeGlobalP
+ */
+typedef zsp::ast::IExtendEnum *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExtendEnumP;
+
+/* "zsp_ast_decl.pxd":80
+ * ctypedef ITypeIdentifierElem *ITypeIdentifierElemP
+ * ctypedef IExtendEnum *IExtendEnumP
+ * ctypedef ISymbolScope *ISymbolScopeP             # <<<<<<<<<<<<<<
  * ctypedef IRefExprTypeScopeGlobal *IRefExprTypeScopeGlobalP
  * ctypedef IRefExprTypeScopeContext *IRefExprTypeScopeContextP
  */
-typedef pssp::ast::ITypeIdentifierElem *__pyx_t_9pssparser_11pssast_decl_ITypeIdentifierElemP;
+typedef zsp::ast::ISymbolScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_ISymbolScopeP;
 
-/* "pssast_decl.pxd":65
- * ctypedef ITypeIdentifier *ITypeIdentifierP
- * ctypedef ITypeIdentifierElem *ITypeIdentifierElemP
+/* "zsp_ast_decl.pxd":81
+ * ctypedef IExtendEnum *IExtendEnumP
+ * ctypedef ISymbolScope *ISymbolScopeP
  * ctypedef IRefExprTypeScopeGlobal *IRefExprTypeScopeGlobalP             # <<<<<<<<<<<<<<
  * ctypedef IRefExprTypeScopeContext *IRefExprTypeScopeContextP
  * ctypedef IRefExprScopeIndex *IRefExprScopeIndexP
  */
-typedef pssp::ast::IRefExprTypeScopeGlobal *__pyx_t_9pssparser_11pssast_decl_IRefExprTypeScopeGlobalP;
+typedef zsp::ast::IRefExprTypeScopeGlobal *__pyx_t_13zuspec_parser_12zsp_ast_decl_IRefExprTypeScopeGlobalP;
 
-/* "pssast_decl.pxd":66
- * ctypedef ITypeIdentifierElem *ITypeIdentifierElemP
+/* "zsp_ast_decl.pxd":82
+ * ctypedef ISymbolScope *ISymbolScopeP
  * ctypedef IRefExprTypeScopeGlobal *IRefExprTypeScopeGlobalP
  * ctypedef IRefExprTypeScopeContext *IRefExprTypeScopeContextP             # <<<<<<<<<<<<<<
  * ctypedef IRefExprScopeIndex *IRefExprScopeIndexP
  * ctypedef ITemplateGenericTypeParamDecl *ITemplateGenericTypeParamDeclP
  */
-typedef pssp::ast::IRefExprTypeScopeContext *__pyx_t_9pssparser_11pssast_decl_IRefExprTypeScopeContextP;
+typedef zsp::ast::IRefExprTypeScopeContext *__pyx_t_13zuspec_parser_12zsp_ast_decl_IRefExprTypeScopeContextP;
 
-/* "pssast_decl.pxd":67
+/* "zsp_ast_decl.pxd":83
  * ctypedef IRefExprTypeScopeGlobal *IRefExprTypeScopeGlobalP
  * ctypedef IRefExprTypeScopeContext *IRefExprTypeScopeContextP
  * ctypedef IRefExprScopeIndex *IRefExprScopeIndexP             # <<<<<<<<<<<<<<
  * ctypedef ITemplateGenericTypeParamDecl *ITemplateGenericTypeParamDeclP
  * ctypedef ITemplateCategoryTypeParamDecl *ITemplateCategoryTypeParamDeclP
  */
-typedef pssp::ast::IRefExprScopeIndex *__pyx_t_9pssparser_11pssast_decl_IRefExprScopeIndexP;
+typedef zsp::ast::IRefExprScopeIndex *__pyx_t_13zuspec_parser_12zsp_ast_decl_IRefExprScopeIndexP;
 
-/* "pssast_decl.pxd":68
+/* "zsp_ast_decl.pxd":84
  * ctypedef IRefExprTypeScopeContext *IRefExprTypeScopeContextP
  * ctypedef IRefExprScopeIndex *IRefExprScopeIndexP
  * ctypedef ITemplateGenericTypeParamDecl *ITemplateGenericTypeParamDeclP             # <<<<<<<<<<<<<<
  * ctypedef ITemplateCategoryTypeParamDecl *ITemplateCategoryTypeParamDeclP
  * ctypedef ITemplateValueParamDecl *ITemplateValueParamDeclP
  */
-typedef pssp::ast::ITemplateGenericTypeParamDecl *__pyx_t_9pssparser_11pssast_decl_ITemplateGenericTypeParamDeclP;
+typedef zsp::ast::ITemplateGenericTypeParamDecl *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITemplateGenericTypeParamDeclP;
 
-/* "pssast_decl.pxd":69
+/* "zsp_ast_decl.pxd":85
  * ctypedef IRefExprScopeIndex *IRefExprScopeIndexP
  * ctypedef ITemplateGenericTypeParamDecl *ITemplateGenericTypeParamDeclP
  * ctypedef ITemplateCategoryTypeParamDecl *ITemplateCategoryTypeParamDeclP             # <<<<<<<<<<<<<<
  * ctypedef ITemplateValueParamDecl *ITemplateValueParamDeclP
- * ctypedef IConstraintBlock *IConstraintBlockP
+ * ctypedef IActivityBindStmt *IActivityBindStmtP
  */
-typedef pssp::ast::ITemplateCategoryTypeParamDecl *__pyx_t_9pssparser_11pssast_decl_ITemplateCategoryTypeParamDeclP;
+typedef zsp::ast::ITemplateCategoryTypeParamDecl *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITemplateCategoryTypeParamDeclP;
 
-/* "pssast_decl.pxd":70
+/* "zsp_ast_decl.pxd":86
  * ctypedef ITemplateGenericTypeParamDecl *ITemplateGenericTypeParamDeclP
  * ctypedef ITemplateCategoryTypeParamDecl *ITemplateCategoryTypeParamDeclP
  * ctypedef ITemplateValueParamDecl *ITemplateValueParamDeclP             # <<<<<<<<<<<<<<
- * ctypedef IConstraintBlock *IConstraintBlockP
- * ctypedef IConstraintScope *IConstraintScopeP
+ * ctypedef IActivityBindStmt *IActivityBindStmtP
+ * ctypedef IActivityConstraint *IActivityConstraintP
  */
-typedef pssp::ast::ITemplateValueParamDecl *__pyx_t_9pssparser_11pssast_decl_ITemplateValueParamDeclP;
+typedef zsp::ast::ITemplateValueParamDecl *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITemplateValueParamDeclP;
 
-/* "pssast_decl.pxd":71
+/* "zsp_ast_decl.pxd":87
  * ctypedef ITemplateCategoryTypeParamDecl *ITemplateCategoryTypeParamDeclP
  * ctypedef ITemplateValueParamDecl *ITemplateValueParamDeclP
- * ctypedef IConstraintBlock *IConstraintBlockP             # <<<<<<<<<<<<<<
- * ctypedef IConstraintScope *IConstraintScopeP
- * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP
+ * ctypedef IActivityBindStmt *IActivityBindStmtP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityConstraint *IActivityConstraintP
+ * ctypedef IActivityLabeledStmt *IActivityLabeledStmtP
  */
-typedef pssp::ast::IConstraintBlock *__pyx_t_9pssparser_11pssast_decl_IConstraintBlockP;
+typedef zsp::ast::IActivityBindStmt *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityBindStmtP;
 
-/* "pssast_decl.pxd":72
+/* "zsp_ast_decl.pxd":88
  * ctypedef ITemplateValueParamDecl *ITemplateValueParamDeclP
- * ctypedef IConstraintBlock *IConstraintBlockP
- * ctypedef IConstraintScope *IConstraintScopeP             # <<<<<<<<<<<<<<
- * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP
- * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP
+ * ctypedef IActivityBindStmt *IActivityBindStmtP
+ * ctypedef IActivityConstraint *IActivityConstraintP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityLabeledStmt *IActivityLabeledStmtP
+ * ctypedef IActivityLabeledScope *IActivityLabeledScopeP
  */
-typedef pssp::ast::IConstraintScope *__pyx_t_9pssparser_11pssast_decl_IConstraintScopeP;
+typedef zsp::ast::IActivityConstraint *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityConstraintP;
 
-/* "pssast_decl.pxd":73
- * ctypedef IConstraintBlock *IConstraintBlockP
+/* "zsp_ast_decl.pxd":89
+ * ctypedef IActivityBindStmt *IActivityBindStmtP
+ * ctypedef IActivityConstraint *IActivityConstraintP
+ * ctypedef IActivityLabeledStmt *IActivityLabeledStmtP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityLabeledScope *IActivityLabeledScopeP
  * ctypedef IConstraintScope *IConstraintScopeP
- * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP             # <<<<<<<<<<<<<<
- * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP
+ */
+typedef zsp::ast::IActivityLabeledStmt *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityLabeledStmtP;
+
+/* "zsp_ast_decl.pxd":90
+ * ctypedef IActivityConstraint *IActivityConstraintP
+ * ctypedef IActivityLabeledStmt *IActivityLabeledStmtP
+ * ctypedef IActivityLabeledScope *IActivityLabeledScopeP             # <<<<<<<<<<<<<<
+ * ctypedef IConstraintScope *IConstraintScopeP
  * ctypedef IConstraintStmtExpr *IConstraintStmtExprP
  */
-typedef pssp::ast::IConstraintStmtDefault *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtDefaultP;
+typedef zsp::ast::IActivityLabeledScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityLabeledScopeP;
 
-/* "pssast_decl.pxd":74
- * ctypedef IConstraintScope *IConstraintScopeP
- * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP
- * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP             # <<<<<<<<<<<<<<
+/* "zsp_ast_decl.pxd":91
+ * ctypedef IActivityLabeledStmt *IActivityLabeledStmtP
+ * ctypedef IActivityLabeledScope *IActivityLabeledScopeP
+ * ctypedef IConstraintScope *IConstraintScopeP             # <<<<<<<<<<<<<<
  * ctypedef IConstraintStmtExpr *IConstraintStmtExprP
  * ctypedef IConstraintStmtField *IConstraintStmtFieldP
  */
-typedef pssp::ast::IConstraintStmtDefaultDisable *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtDefaultDisableP;
+typedef zsp::ast::IConstraintScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintScopeP;
 
-/* "pssast_decl.pxd":75
- * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP
- * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP
+/* "zsp_ast_decl.pxd":92
+ * ctypedef IActivityLabeledScope *IActivityLabeledScopeP
+ * ctypedef IConstraintScope *IConstraintScopeP
  * ctypedef IConstraintStmtExpr *IConstraintStmtExprP             # <<<<<<<<<<<<<<
  * ctypedef IConstraintStmtField *IConstraintStmtFieldP
  * ctypedef IConstraintStmtIf *IConstraintStmtIfP
  */
-typedef pssp::ast::IConstraintStmtExpr *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtExprP;
+typedef zsp::ast::IConstraintStmtExpr *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtExprP;
 
-/* "pssast_decl.pxd":76
- * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP
+/* "zsp_ast_decl.pxd":93
+ * ctypedef IConstraintScope *IConstraintScopeP
  * ctypedef IConstraintStmtExpr *IConstraintStmtExprP
  * ctypedef IConstraintStmtField *IConstraintStmtFieldP             # <<<<<<<<<<<<<<
  * ctypedef IConstraintStmtIf *IConstraintStmtIfP
  * ctypedef IConstraintStmtUnique *IConstraintStmtUniqueP
  */
-typedef pssp::ast::IConstraintStmtField *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtFieldP;
+typedef zsp::ast::IConstraintStmtField *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtFieldP;
 
-/* "pssast_decl.pxd":77
+/* "zsp_ast_decl.pxd":94
  * ctypedef IConstraintStmtExpr *IConstraintStmtExprP
  * ctypedef IConstraintStmtField *IConstraintStmtFieldP
  * ctypedef IConstraintStmtIf *IConstraintStmtIfP             # <<<<<<<<<<<<<<
  * ctypedef IConstraintStmtUnique *IConstraintStmtUniqueP
- * ctypedef IGlobalScope *IGlobalScopeP
+ * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP
  */
-typedef pssp::ast::IConstraintStmtIf *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtIfP;
+typedef zsp::ast::IConstraintStmtIf *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtIfP;
 
-/* "pssast_decl.pxd":78
+/* "zsp_ast_decl.pxd":95
  * ctypedef IConstraintStmtField *IConstraintStmtFieldP
  * ctypedef IConstraintStmtIf *IConstraintStmtIfP
  * ctypedef IConstraintStmtUnique *IConstraintStmtUniqueP             # <<<<<<<<<<<<<<
+ * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP
+ * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP
+ */
+typedef zsp::ast::IConstraintStmtUnique *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtUniqueP;
+
+/* "zsp_ast_decl.pxd":96
+ * ctypedef IConstraintStmtIf *IConstraintStmtIfP
+ * ctypedef IConstraintStmtUnique *IConstraintStmtUniqueP
+ * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP             # <<<<<<<<<<<<<<
+ * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP
+ * ctypedef IGlobalScope *IGlobalScopeP
+ */
+typedef zsp::ast::IConstraintStmtDefault *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtDefaultP;
+
+/* "zsp_ast_decl.pxd":97
+ * ctypedef IConstraintStmtUnique *IConstraintStmtUniqueP
+ * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP
+ * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP             # <<<<<<<<<<<<<<
  * ctypedef IGlobalScope *IGlobalScopeP
  * ctypedef INamedScope *INamedScopeP
  */
-typedef pssp::ast::IConstraintStmtUnique *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtUniqueP;
+typedef zsp::ast::IConstraintStmtDefaultDisable *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtDefaultDisableP;
 
-/* "pssast_decl.pxd":79
- * ctypedef IConstraintStmtIf *IConstraintStmtIfP
- * ctypedef IConstraintStmtUnique *IConstraintStmtUniqueP
+/* "zsp_ast_decl.pxd":98
+ * ctypedef IConstraintStmtDefault *IConstraintStmtDefaultP
+ * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP
  * ctypedef IGlobalScope *IGlobalScopeP             # <<<<<<<<<<<<<<
  * ctypedef INamedScope *INamedScopeP
  * ctypedef IPackageScope *IPackageScopeP
  */
-typedef pssp::ast::IGlobalScope *__pyx_t_9pssparser_11pssast_decl_IGlobalScopeP;
+typedef zsp::ast::IGlobalScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_IGlobalScopeP;
 
-/* "pssast_decl.pxd":80
- * ctypedef IConstraintStmtUnique *IConstraintStmtUniqueP
+/* "zsp_ast_decl.pxd":99
+ * ctypedef IConstraintStmtDefaultDisable *IConstraintStmtDefaultDisableP
  * ctypedef IGlobalScope *IGlobalScopeP
  * ctypedef INamedScope *INamedScopeP             # <<<<<<<<<<<<<<
  * ctypedef IPackageScope *IPackageScopeP
  * ctypedef IDataTypeArray *IDataTypeArrayP
  */
-typedef pssp::ast::INamedScope *__pyx_t_9pssparser_11pssast_decl_INamedScopeP;
+typedef zsp::ast::INamedScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_INamedScopeP;
 
-/* "pssast_decl.pxd":81
+/* "zsp_ast_decl.pxd":100
  * ctypedef IGlobalScope *IGlobalScopeP
  * ctypedef INamedScope *INamedScopeP
  * ctypedef IPackageScope *IPackageScopeP             # <<<<<<<<<<<<<<
  * ctypedef IDataTypeArray *IDataTypeArrayP
  * ctypedef IDataTypeBool *IDataTypeBoolP
  */
-typedef pssp::ast::IPackageScope *__pyx_t_9pssparser_11pssast_decl_IPackageScopeP;
+typedef zsp::ast::IPackageScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_IPackageScopeP;
 
-/* "pssast_decl.pxd":82
+/* "zsp_ast_decl.pxd":101
  * ctypedef INamedScope *INamedScopeP
  * ctypedef IPackageScope *IPackageScopeP
  * ctypedef IDataTypeArray *IDataTypeArrayP             # <<<<<<<<<<<<<<
  * ctypedef IDataTypeBool *IDataTypeBoolP
  * ctypedef IDataTypeChandle *IDataTypeChandleP
  */
-typedef pssp::ast::IDataTypeArray *__pyx_t_9pssparser_11pssast_decl_IDataTypeArrayP;
+typedef zsp::ast::IDataTypeArray *__pyx_t_13zuspec_parser_12zsp_ast_decl_IDataTypeArrayP;
 
-/* "pssast_decl.pxd":83
+/* "zsp_ast_decl.pxd":102
  * ctypedef IPackageScope *IPackageScopeP
  * ctypedef IDataTypeArray *IDataTypeArrayP
  * ctypedef IDataTypeBool *IDataTypeBoolP             # <<<<<<<<<<<<<<
  * ctypedef IDataTypeChandle *IDataTypeChandleP
  * ctypedef IDataTypeEnum *IDataTypeEnumP
  */
-typedef pssp::ast::IDataTypeBool *__pyx_t_9pssparser_11pssast_decl_IDataTypeBoolP;
+typedef zsp::ast::IDataTypeBool *__pyx_t_13zuspec_parser_12zsp_ast_decl_IDataTypeBoolP;
 
-/* "pssast_decl.pxd":84
+/* "zsp_ast_decl.pxd":103
  * ctypedef IDataTypeArray *IDataTypeArrayP
  * ctypedef IDataTypeBool *IDataTypeBoolP
  * ctypedef IDataTypeChandle *IDataTypeChandleP             # <<<<<<<<<<<<<<
  * ctypedef IDataTypeEnum *IDataTypeEnumP
- * ctypedef IDataTypeInt *IDataTypeIntP
+ * ctypedef IEnumItem *IEnumItemP
  */
-typedef pssp::ast::IDataTypeChandle *__pyx_t_9pssparser_11pssast_decl_IDataTypeChandleP;
+typedef zsp::ast::IDataTypeChandle *__pyx_t_13zuspec_parser_12zsp_ast_decl_IDataTypeChandleP;
 
-/* "pssast_decl.pxd":85
+/* "zsp_ast_decl.pxd":104
  * ctypedef IDataTypeBool *IDataTypeBoolP
  * ctypedef IDataTypeChandle *IDataTypeChandleP
  * ctypedef IDataTypeEnum *IDataTypeEnumP             # <<<<<<<<<<<<<<
- * ctypedef IDataTypeInt *IDataTypeIntP
- * ctypedef IDataTypeString *IDataTypeStringP
+ * ctypedef IEnumItem *IEnumItemP
+ * ctypedef IEnumDecl *IEnumDeclP
  */
-typedef pssp::ast::IDataTypeEnum *__pyx_t_9pssparser_11pssast_decl_IDataTypeEnumP;
+typedef zsp::ast::IDataTypeEnum *__pyx_t_13zuspec_parser_12zsp_ast_decl_IDataTypeEnumP;
 
-/* "pssast_decl.pxd":86
+/* "zsp_ast_decl.pxd":105
  * ctypedef IDataTypeChandle *IDataTypeChandleP
  * ctypedef IDataTypeEnum *IDataTypeEnumP
+ * ctypedef IEnumItem *IEnumItemP             # <<<<<<<<<<<<<<
+ * ctypedef IEnumDecl *IEnumDeclP
+ * ctypedef IDataTypeInt *IDataTypeIntP
+ */
+typedef zsp::ast::IEnumItem *__pyx_t_13zuspec_parser_12zsp_ast_decl_IEnumItemP;
+
+/* "zsp_ast_decl.pxd":106
+ * ctypedef IDataTypeEnum *IDataTypeEnumP
+ * ctypedef IEnumItem *IEnumItemP
+ * ctypedef IEnumDecl *IEnumDeclP             # <<<<<<<<<<<<<<
+ * ctypedef IDataTypeInt *IDataTypeIntP
+ * ctypedef IDataTypeRef *IDataTypeRefP
+ */
+typedef zsp::ast::IEnumDecl *__pyx_t_13zuspec_parser_12zsp_ast_decl_IEnumDeclP;
+
+/* "zsp_ast_decl.pxd":107
+ * ctypedef IEnumItem *IEnumItemP
+ * ctypedef IEnumDecl *IEnumDeclP
  * ctypedef IDataTypeInt *IDataTypeIntP             # <<<<<<<<<<<<<<
+ * ctypedef IDataTypeRef *IDataTypeRefP
+ * ctypedef IDataTypeString *IDataTypeStringP
+ */
+typedef zsp::ast::IDataTypeInt *__pyx_t_13zuspec_parser_12zsp_ast_decl_IDataTypeIntP;
+
+/* "zsp_ast_decl.pxd":108
+ * ctypedef IEnumDecl *IEnumDeclP
+ * ctypedef IDataTypeInt *IDataTypeIntP
+ * ctypedef IDataTypeRef *IDataTypeRefP             # <<<<<<<<<<<<<<
  * ctypedef IDataTypeString *IDataTypeStringP
  * ctypedef IDataTypeUserDefined *IDataTypeUserDefinedP
  */
-typedef pssp::ast::IDataTypeInt *__pyx_t_9pssparser_11pssast_decl_IDataTypeIntP;
+typedef zsp::ast::IDataTypeRef *__pyx_t_13zuspec_parser_12zsp_ast_decl_IDataTypeRefP;
 
-/* "pssast_decl.pxd":87
- * ctypedef IDataTypeEnum *IDataTypeEnumP
+/* "zsp_ast_decl.pxd":109
  * ctypedef IDataTypeInt *IDataTypeIntP
+ * ctypedef IDataTypeRef *IDataTypeRefP
  * ctypedef IDataTypeString *IDataTypeStringP             # <<<<<<<<<<<<<<
  * ctypedef IDataTypeUserDefined *IDataTypeUserDefinedP
- * ctypedef IExprRefPathContext *IExprRefPathContextP
+ * ctypedef IExprRefPathStatic *IExprRefPathStaticP
  */
-typedef pssp::ast::IDataTypeString *__pyx_t_9pssparser_11pssast_decl_IDataTypeStringP;
+typedef zsp::ast::IDataTypeString *__pyx_t_13zuspec_parser_12zsp_ast_decl_IDataTypeStringP;
 
-/* "pssast_decl.pxd":88
- * ctypedef IDataTypeInt *IDataTypeIntP
+/* "zsp_ast_decl.pxd":110
+ * ctypedef IDataTypeRef *IDataTypeRefP
  * ctypedef IDataTypeString *IDataTypeStringP
  * ctypedef IDataTypeUserDefined *IDataTypeUserDefinedP             # <<<<<<<<<<<<<<
- * ctypedef IExprRefPathContext *IExprRefPathContextP
  * ctypedef IExprRefPathStatic *IExprRefPathStaticP
+ * ctypedef IExprRefPathSuper *IExprRefPathSuperP
  */
-typedef pssp::ast::IDataTypeUserDefined *__pyx_t_9pssparser_11pssast_decl_IDataTypeUserDefinedP;
+typedef zsp::ast::IDataTypeUserDefined *__pyx_t_13zuspec_parser_12zsp_ast_decl_IDataTypeUserDefinedP;
 
-/* "pssast_decl.pxd":89
+/* "zsp_ast_decl.pxd":111
  * ctypedef IDataTypeString *IDataTypeStringP
  * ctypedef IDataTypeUserDefined *IDataTypeUserDefinedP
- * ctypedef IExprRefPathContext *IExprRefPathContextP             # <<<<<<<<<<<<<<
- * ctypedef IExprRefPathStatic *IExprRefPathStaticP
+ * ctypedef IExprRefPathStatic *IExprRefPathStaticP             # <<<<<<<<<<<<<<
+ * ctypedef IExprRefPathSuper *IExprRefPathSuperP
  * ctypedef IExprSignedNumber *IExprSignedNumberP
  */
-typedef pssp::ast::IExprRefPathContext *__pyx_t_9pssparser_11pssast_decl_IExprRefPathContextP;
+typedef zsp::ast::IExprRefPathStatic *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprRefPathStaticP;
 
-/* "pssast_decl.pxd":90
+/* "zsp_ast_decl.pxd":112
  * ctypedef IDataTypeUserDefined *IDataTypeUserDefinedP
- * ctypedef IExprRefPathContext *IExprRefPathContextP
- * ctypedef IExprRefPathStatic *IExprRefPathStaticP             # <<<<<<<<<<<<<<
+ * ctypedef IExprRefPathStatic *IExprRefPathStaticP
+ * ctypedef IExprRefPathSuper *IExprRefPathSuperP             # <<<<<<<<<<<<<<
  * ctypedef IExprSignedNumber *IExprSignedNumberP
  * ctypedef IExprUnsignedNumber *IExprUnsignedNumberP
  */
-typedef pssp::ast::IExprRefPathStatic *__pyx_t_9pssparser_11pssast_decl_IExprRefPathStaticP;
+typedef zsp::ast::IExprRefPathSuper *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprRefPathSuperP;
 
-/* "pssast_decl.pxd":91
- * ctypedef IExprRefPathContext *IExprRefPathContextP
+/* "zsp_ast_decl.pxd":113
  * ctypedef IExprRefPathStatic *IExprRefPathStaticP
+ * ctypedef IExprRefPathSuper *IExprRefPathSuperP
  * ctypedef IExprSignedNumber *IExprSignedNumberP             # <<<<<<<<<<<<<<
  * ctypedef IExprUnsignedNumber *IExprUnsignedNumberP
- * ctypedef IConstraintStmtForall *IConstraintStmtForallP
+ * ctypedef IExtendType *IExtendTypeP
  */
-typedef pssp::ast::IExprSignedNumber *__pyx_t_9pssparser_11pssast_decl_IExprSignedNumberP;
+typedef zsp::ast::IExprSignedNumber *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprSignedNumberP;
 
-/* "pssast_decl.pxd":92
- * ctypedef IExprRefPathStatic *IExprRefPathStaticP
+/* "zsp_ast_decl.pxd":114
+ * ctypedef IExprRefPathSuper *IExprRefPathSuperP
  * ctypedef IExprSignedNumber *IExprSignedNumberP
  * ctypedef IExprUnsignedNumber *IExprUnsignedNumberP             # <<<<<<<<<<<<<<
- * ctypedef IConstraintStmtForall *IConstraintStmtForallP
- * ctypedef IConstraintStmtForeach *IConstraintStmtForeachP
+ * ctypedef IExtendType *IExtendTypeP
+ * ctypedef IField *IFieldP
  */
-typedef pssp::ast::IExprUnsignedNumber *__pyx_t_9pssparser_11pssast_decl_IExprUnsignedNumberP;
+typedef zsp::ast::IExprUnsignedNumber *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprUnsignedNumberP;
 
-/* "pssast_decl.pxd":93
+/* "zsp_ast_decl.pxd":115
  * ctypedef IExprSignedNumber *IExprSignedNumberP
  * ctypedef IExprUnsignedNumber *IExprUnsignedNumberP
- * ctypedef IConstraintStmtForall *IConstraintStmtForallP             # <<<<<<<<<<<<<<
- * ctypedef IConstraintStmtForeach *IConstraintStmtForeachP
- * ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP
+ * ctypedef IExtendType *IExtendTypeP             # <<<<<<<<<<<<<<
+ * ctypedef IField *IFieldP
+ * ctypedef IFieldRef *IFieldRefP
  */
-typedef pssp::ast::IConstraintStmtForall *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtForallP;
+typedef zsp::ast::IExtendType *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExtendTypeP;
 
-/* "pssast_decl.pxd":94
+/* "zsp_ast_decl.pxd":116
  * ctypedef IExprUnsignedNumber *IExprUnsignedNumberP
+ * ctypedef IExtendType *IExtendTypeP
+ * ctypedef IField *IFieldP             # <<<<<<<<<<<<<<
+ * ctypedef IFieldRef *IFieldRefP
+ * ctypedef IFieldClaim *IFieldClaimP
+ */
+typedef zsp::ast::IField *__pyx_t_13zuspec_parser_12zsp_ast_decl_IFieldP;
+
+/* "zsp_ast_decl.pxd":117
+ * ctypedef IExtendType *IExtendTypeP
+ * ctypedef IField *IFieldP
+ * ctypedef IFieldRef *IFieldRefP             # <<<<<<<<<<<<<<
+ * ctypedef IFieldClaim *IFieldClaimP
+ * ctypedef ISymbolTypeScope *ISymbolTypeScopeP
+ */
+typedef zsp::ast::IFieldRef *__pyx_t_13zuspec_parser_12zsp_ast_decl_IFieldRefP;
+
+/* "zsp_ast_decl.pxd":118
+ * ctypedef IField *IFieldP
+ * ctypedef IFieldRef *IFieldRefP
+ * ctypedef IFieldClaim *IFieldClaimP             # <<<<<<<<<<<<<<
+ * ctypedef ISymbolTypeScope *ISymbolTypeScopeP
+ * ctypedef ISymbolFunctionScope *ISymbolFunctionScopeP
+ */
+typedef zsp::ast::IFieldClaim *__pyx_t_13zuspec_parser_12zsp_ast_decl_IFieldClaimP;
+
+/* "zsp_ast_decl.pxd":119
+ * ctypedef IFieldRef *IFieldRefP
+ * ctypedef IFieldClaim *IFieldClaimP
+ * ctypedef ISymbolTypeScope *ISymbolTypeScopeP             # <<<<<<<<<<<<<<
+ * ctypedef ISymbolFunctionScope *ISymbolFunctionScopeP
+ * ctypedef IActivityActionHandleTraversal *IActivityActionHandleTraversalP
+ */
+typedef zsp::ast::ISymbolTypeScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_ISymbolTypeScopeP;
+
+/* "zsp_ast_decl.pxd":120
+ * ctypedef IFieldClaim *IFieldClaimP
+ * ctypedef ISymbolTypeScope *ISymbolTypeScopeP
+ * ctypedef ISymbolFunctionScope *ISymbolFunctionScopeP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityActionHandleTraversal *IActivityActionHandleTraversalP
+ * ctypedef IActivityActionTypeTraversal *IActivityActionTypeTraversalP
+ */
+typedef zsp::ast::ISymbolFunctionScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_ISymbolFunctionScopeP;
+
+/* "zsp_ast_decl.pxd":121
+ * ctypedef ISymbolTypeScope *ISymbolTypeScopeP
+ * ctypedef ISymbolFunctionScope *ISymbolFunctionScopeP
+ * ctypedef IActivityActionHandleTraversal *IActivityActionHandleTraversalP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityActionTypeTraversal *IActivityActionTypeTraversalP
+ * ctypedef IActivitySequence *IActivitySequenceP
+ */
+typedef zsp::ast::IActivityActionHandleTraversal *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityActionHandleTraversalP;
+
+/* "zsp_ast_decl.pxd":122
+ * ctypedef ISymbolFunctionScope *ISymbolFunctionScopeP
+ * ctypedef IActivityActionHandleTraversal *IActivityActionHandleTraversalP
+ * ctypedef IActivityActionTypeTraversal *IActivityActionTypeTraversalP             # <<<<<<<<<<<<<<
+ * ctypedef IActivitySequence *IActivitySequenceP
+ * ctypedef IActivityParallel *IActivityParallelP
+ */
+typedef zsp::ast::IActivityActionTypeTraversal *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityActionTypeTraversalP;
+
+/* "zsp_ast_decl.pxd":123
+ * ctypedef IActivityActionHandleTraversal *IActivityActionHandleTraversalP
+ * ctypedef IActivityActionTypeTraversal *IActivityActionTypeTraversalP
+ * ctypedef IActivitySequence *IActivitySequenceP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityParallel *IActivityParallelP
+ * ctypedef IActivitySchedule *IActivityScheduleP
+ */
+typedef zsp::ast::IActivitySequence *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivitySequenceP;
+
+/* "zsp_ast_decl.pxd":124
+ * ctypedef IActivityActionTypeTraversal *IActivityActionTypeTraversalP
+ * ctypedef IActivitySequence *IActivitySequenceP
+ * ctypedef IActivityParallel *IActivityParallelP             # <<<<<<<<<<<<<<
+ * ctypedef IActivitySchedule *IActivityScheduleP
+ * ctypedef IActivityRepeatCount *IActivityRepeatCountP
+ */
+typedef zsp::ast::IActivityParallel *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityParallelP;
+
+/* "zsp_ast_decl.pxd":125
+ * ctypedef IActivitySequence *IActivitySequenceP
+ * ctypedef IActivityParallel *IActivityParallelP
+ * ctypedef IActivitySchedule *IActivityScheduleP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityRepeatCount *IActivityRepeatCountP
+ * ctypedef IActivityRepeatWhile *IActivityRepeatWhileP
+ */
+typedef zsp::ast::IActivitySchedule *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityScheduleP;
+
+/* "zsp_ast_decl.pxd":126
+ * ctypedef IActivityParallel *IActivityParallelP
+ * ctypedef IActivitySchedule *IActivityScheduleP
+ * ctypedef IActivityRepeatCount *IActivityRepeatCountP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityRepeatWhile *IActivityRepeatWhileP
+ * ctypedef IActivityForeach *IActivityForeachP
+ */
+typedef zsp::ast::IActivityRepeatCount *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityRepeatCountP;
+
+/* "zsp_ast_decl.pxd":127
+ * ctypedef IActivitySchedule *IActivityScheduleP
+ * ctypedef IActivityRepeatCount *IActivityRepeatCountP
+ * ctypedef IActivityRepeatWhile *IActivityRepeatWhileP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityForeach *IActivityForeachP
+ * ctypedef IActivitySelect *IActivitySelectP
+ */
+typedef zsp::ast::IActivityRepeatWhile *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityRepeatWhileP;
+
+/* "zsp_ast_decl.pxd":128
+ * ctypedef IActivityRepeatCount *IActivityRepeatCountP
+ * ctypedef IActivityRepeatWhile *IActivityRepeatWhileP
+ * ctypedef IActivityForeach *IActivityForeachP             # <<<<<<<<<<<<<<
+ * ctypedef IActivitySelect *IActivitySelectP
+ * ctypedef IActivityIfElse *IActivityIfElseP
+ */
+typedef zsp::ast::IActivityForeach *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityForeachP;
+
+/* "zsp_ast_decl.pxd":129
+ * ctypedef IActivityRepeatWhile *IActivityRepeatWhileP
+ * ctypedef IActivityForeach *IActivityForeachP
+ * ctypedef IActivitySelect *IActivitySelectP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityIfElse *IActivityIfElseP
+ * ctypedef IActivityMatch *IActivityMatchP
+ */
+typedef zsp::ast::IActivitySelect *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivitySelectP;
+
+/* "zsp_ast_decl.pxd":130
+ * ctypedef IActivityForeach *IActivityForeachP
+ * ctypedef IActivitySelect *IActivitySelectP
+ * ctypedef IActivityIfElse *IActivityIfElseP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityMatch *IActivityMatchP
+ * ctypedef IActivityReplicate *IActivityReplicateP
+ */
+typedef zsp::ast::IActivityIfElse *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityIfElseP;
+
+/* "zsp_ast_decl.pxd":131
+ * ctypedef IActivitySelect *IActivitySelectP
+ * ctypedef IActivityIfElse *IActivityIfElseP
+ * ctypedef IActivityMatch *IActivityMatchP             # <<<<<<<<<<<<<<
+ * ctypedef IActivityReplicate *IActivityReplicateP
+ * ctypedef IActivitySuper *IActivitySuperP
+ */
+typedef zsp::ast::IActivityMatch *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityMatchP;
+
+/* "zsp_ast_decl.pxd":132
+ * ctypedef IActivityIfElse *IActivityIfElseP
+ * ctypedef IActivityMatch *IActivityMatchP
+ * ctypedef IActivityReplicate *IActivityReplicateP             # <<<<<<<<<<<<<<
+ * ctypedef IActivitySuper *IActivitySuperP
+ * ctypedef IConstraintBlock *IConstraintBlockP
+ */
+typedef zsp::ast::IActivityReplicate *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivityReplicateP;
+
+/* "zsp_ast_decl.pxd":133
+ * ctypedef IActivityMatch *IActivityMatchP
+ * ctypedef IActivityReplicate *IActivityReplicateP
+ * ctypedef IActivitySuper *IActivitySuperP             # <<<<<<<<<<<<<<
+ * ctypedef IConstraintBlock *IConstraintBlockP
+ * ctypedef IConstraintStmtForeach *IConstraintStmtForeachP
+ */
+typedef zsp::ast::IActivitySuper *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActivitySuperP;
+
+/* "zsp_ast_decl.pxd":134
+ * ctypedef IActivityReplicate *IActivityReplicateP
+ * ctypedef IActivitySuper *IActivitySuperP
+ * ctypedef IConstraintBlock *IConstraintBlockP             # <<<<<<<<<<<<<<
+ * ctypedef IConstraintStmtForeach *IConstraintStmtForeachP
  * ctypedef IConstraintStmtForall *IConstraintStmtForallP
+ */
+typedef zsp::ast::IConstraintBlock *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintBlockP;
+
+/* "zsp_ast_decl.pxd":135
+ * ctypedef IActivitySuper *IActivitySuperP
+ * ctypedef IConstraintBlock *IConstraintBlockP
  * ctypedef IConstraintStmtForeach *IConstraintStmtForeachP             # <<<<<<<<<<<<<<
- * ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP
- * ctypedef ITypeScope *ITypeScopeP
- */
-typedef pssp::ast::IConstraintStmtForeach *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtForeachP;
-
-/* "pssast_decl.pxd":95
  * ctypedef IConstraintStmtForall *IConstraintStmtForallP
+ * ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP
+ */
+typedef zsp::ast::IConstraintStmtForeach *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtForeachP;
+
+/* "zsp_ast_decl.pxd":136
+ * ctypedef IConstraintBlock *IConstraintBlockP
  * ctypedef IConstraintStmtForeach *IConstraintStmtForeachP
+ * ctypedef IConstraintStmtForall *IConstraintStmtForallP             # <<<<<<<<<<<<<<
+ * ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP
+ * ctypedef IExprRefPathStaticFunc *IExprRefPathStaticFuncP
+ */
+typedef zsp::ast::IConstraintStmtForall *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtForallP;
+
+/* "zsp_ast_decl.pxd":137
+ * ctypedef IConstraintStmtForeach *IConstraintStmtForeachP
+ * ctypedef IConstraintStmtForall *IConstraintStmtForallP
  * ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP             # <<<<<<<<<<<<<<
- * ctypedef ITypeScope *ITypeScopeP
  * ctypedef IExprRefPathStaticFunc *IExprRefPathStaticFuncP
- */
-typedef pssp::ast::IConstraintStmtImplication *__pyx_t_9pssparser_11pssast_decl_IConstraintStmtImplicationP;
-
-/* "pssast_decl.pxd":96
- * ctypedef IConstraintStmtForeach *IConstraintStmtForeachP
- * ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP
- * ctypedef ITypeScope *ITypeScopeP             # <<<<<<<<<<<<<<
- * ctypedef IExprRefPathStaticFunc *IExprRefPathStaticFuncP
- * ctypedef IExprRefPathSuper *IExprRefPathSuperP
- */
-typedef pssp::ast::ITypeScope *__pyx_t_9pssparser_11pssast_decl_ITypeScopeP;
-
-/* "pssast_decl.pxd":97
- * ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP
  * ctypedef ITypeScope *ITypeScopeP
+ */
+typedef zsp::ast::IConstraintStmtImplication *__pyx_t_13zuspec_parser_12zsp_ast_decl_IConstraintStmtImplicationP;
+
+/* "zsp_ast_decl.pxd":138
+ * ctypedef IConstraintStmtForall *IConstraintStmtForallP
+ * ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP
  * ctypedef IExprRefPathStaticFunc *IExprRefPathStaticFuncP             # <<<<<<<<<<<<<<
- * ctypedef IExprRefPathSuper *IExprRefPathSuperP
- * ctypedef IAction *IActionP
- */
-typedef pssp::ast::IExprRefPathStaticFunc *__pyx_t_9pssparser_11pssast_decl_IExprRefPathStaticFuncP;
-
-/* "pssast_decl.pxd":98
  * ctypedef ITypeScope *ITypeScopeP
- * ctypedef IExprRefPathStaticFunc *IExprRefPathStaticFuncP
- * ctypedef IExprRefPathSuper *IExprRefPathSuperP             # <<<<<<<<<<<<<<
- * ctypedef IAction *IActionP
  * ctypedef IComponent *IComponentP
  */
-typedef pssp::ast::IExprRefPathSuper *__pyx_t_9pssparser_11pssast_decl_IExprRefPathSuperP;
+typedef zsp::ast::IExprRefPathStaticFunc *__pyx_t_13zuspec_parser_12zsp_ast_decl_IExprRefPathStaticFuncP;
 
-/* "pssast_decl.pxd":99
+/* "zsp_ast_decl.pxd":139
+ * ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP
  * ctypedef IExprRefPathStaticFunc *IExprRefPathStaticFuncP
- * ctypedef IExprRefPathSuper *IExprRefPathSuperP
- * ctypedef IAction *IActionP             # <<<<<<<<<<<<<<
+ * ctypedef ITypeScope *ITypeScopeP             # <<<<<<<<<<<<<<
  * ctypedef IComponent *IComponentP
  * ctypedef IStruct *IStructP
  */
-typedef pssp::ast::IAction *__pyx_t_9pssparser_11pssast_decl_IActionP;
+typedef zsp::ast::ITypeScope *__pyx_t_13zuspec_parser_12zsp_ast_decl_ITypeScopeP;
 
-/* "pssast_decl.pxd":100
- * ctypedef IExprRefPathSuper *IExprRefPathSuperP
- * ctypedef IAction *IActionP
+/* "zsp_ast_decl.pxd":140
+ * ctypedef IExprRefPathStaticFunc *IExprRefPathStaticFuncP
+ * ctypedef ITypeScope *ITypeScopeP
  * ctypedef IComponent *IComponentP             # <<<<<<<<<<<<<<
  * ctypedef IStruct *IStructP
- * ctypedef IState *IStateP
- */
-typedef pssp::ast::IComponent *__pyx_t_9pssparser_11pssast_decl_IComponentP;
-
-/* "pssast_decl.pxd":101
  * ctypedef IAction *IActionP
+ */
+typedef zsp::ast::IComponent *__pyx_t_13zuspec_parser_12zsp_ast_decl_IComponentP;
+
+/* "zsp_ast_decl.pxd":141
+ * ctypedef ITypeScope *ITypeScopeP
  * ctypedef IComponent *IComponentP
  * ctypedef IStruct *IStructP             # <<<<<<<<<<<<<<
- * ctypedef IState *IStateP
- * ctypedef IStream *IStreamP
+ * ctypedef IAction *IActionP
+ * cdef extern from "zsp/ast/ExprBinOp.h" namespace "zsp::ast":
  */
-typedef pssp::ast::IStruct *__pyx_t_9pssparser_11pssast_decl_IStructP;
+typedef zsp::ast::IStruct *__pyx_t_13zuspec_parser_12zsp_ast_decl_IStructP;
 
-/* "pssast_decl.pxd":102
+/* "zsp_ast_decl.pxd":142
  * ctypedef IComponent *IComponentP
  * ctypedef IStruct *IStructP
- * ctypedef IState *IStateP             # <<<<<<<<<<<<<<
- * ctypedef IStream *IStreamP
- * ctypedef IBuffer *IBufferP
- */
-typedef pssp::ast::IState *__pyx_t_9pssparser_11pssast_decl_IStateP;
-
-/* "pssast_decl.pxd":103
- * ctypedef IStruct *IStructP
- * ctypedef IState *IStateP
- * ctypedef IStream *IStreamP             # <<<<<<<<<<<<<<
- * ctypedef IBuffer *IBufferP
- * ctypedef IResource *IResourceP
- */
-typedef pssp::ast::IStream *__pyx_t_9pssparser_11pssast_decl_IStreamP;
-
-/* "pssast_decl.pxd":104
- * ctypedef IState *IStateP
- * ctypedef IStream *IStreamP
- * ctypedef IBuffer *IBufferP             # <<<<<<<<<<<<<<
- * ctypedef IResource *IResourceP
- * cdef extern from "pssp/ast/ExprBinOp.h" namespace "pssp::ast":
- */
-typedef pssp::ast::IBuffer *__pyx_t_9pssparser_11pssast_decl_IBufferP;
-
-/* "pssast_decl.pxd":105
- * ctypedef IStream *IStreamP
- * ctypedef IBuffer *IBufferP
- * ctypedef IResource *IResourceP             # <<<<<<<<<<<<<<
- * cdef extern from "pssp/ast/ExprBinOp.h" namespace "pssp::ast":
+ * ctypedef IAction *IActionP             # <<<<<<<<<<<<<<
+ * cdef extern from "zsp/ast/ExprBinOp.h" namespace "zsp::ast":
  *     cdef enum ExprBinOp:
  */
-typedef pssp::ast::IResource *__pyx_t_9pssparser_11pssast_decl_IResourceP;
+typedef zsp::ast::IAction *__pyx_t_13zuspec_parser_12zsp_ast_decl_IActionP;
 
-/* "../python/lib/python3.7/site-packages/ciostream/__init__.pxd":38
+/* "packages/python/lib/python3.7/site-packages/ciostream/__init__.pxd":38
  *         _costream(cpy_ref.PyObject *)
  * 
  * cdef class cistream(object):             # <<<<<<<<<<<<<<
@@ -2123,7 +2533,7 @@ struct __pyx_obj_9ciostream_cistream {
 };
 
 
-/* "../python/lib/python3.7/site-packages/ciostream/__init__.pxd":42
+/* "packages/python/lib/python3.7/site-packages/ciostream/__init__.pxd":42
  *     cdef istream *stream(self)
  * 
  * cdef class costream(object):             # <<<<<<<<<<<<<<
@@ -2137,1115 +2547,1574 @@ struct __pyx_obj_9ciostream_costream {
 };
 
 
-/* "pssparser/pssast.pxd":23
+/* "zuspec_parser/zsp_ast.pxd":23
  * 
- * from pssparser cimport pssast_decl
+ * from zuspec_parser cimport zsp_ast_decl
  * cdef class Factory(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IFactory *_hndl
- *     cpdef ExecStmt mkExecStmt(self)
+ *     cdef zsp_ast_decl.IFactory *_hndl
+ *     cpdef ScopeChild mkScopeChild(self)
  */
-struct __pyx_obj_9pssparser_6pssast_Factory {
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_Factory *__pyx_vtab;
-  pssp::ast::IFactory *_hndl;
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Factory *__pyx_vtab;
+  zsp::ast::IFactory *_hndl;
 };
 
 
-/* "pssparser/pssast.pxd":224
+/* "zuspec_parser/zsp_ast.pxd":318
  *     @staticmethod
- *     cdef mk(pssast_decl.IFactory *hndl)
- * cdef class ExecStmt(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IExecStmt    *_hndl
- *     cdef bool           _owned
- */
-struct __pyx_obj_9pssparser_6pssast_ExecStmt {
-  PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_ExecStmt *__pyx_vtab;
-  pssp::ast::IExecStmt *_hndl;
-  bool _owned;
-};
-
-
-/* "pssparser/pssast.pxd":233
- *     cdef ExecStmt mk(pssast_decl.IExecStmt *hndl, bool owned)
- * 
- * cdef class Expr(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IExpr    *_hndl
- *     cdef bool           _owned
- */
-struct __pyx_obj_9pssparser_6pssast_Expr {
-  PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr *__pyx_vtab;
-  pssp::ast::IExpr *_hndl;
-  bool _owned;
-};
-
-
-/* "pssparser/pssast.pxd":242
- *     cdef Expr mk(pssast_decl.IExpr *hndl, bool owned)
- * 
- * cdef class RefExpr(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IRefExpr    *_hndl
- *     cdef bool           _owned
- */
-struct __pyx_obj_9pssparser_6pssast_RefExpr {
-  PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_RefExpr *__pyx_vtab;
-  pssp::ast::IRefExpr *_hndl;
-  bool _owned;
-};
-
-
-/* "pssparser/pssast.pxd":251
- *     cdef RefExpr mk(pssast_decl.IRefExpr *hndl, bool owned)
- * 
- * cdef class TemplateParamDeclList(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamDeclList    *_hndl
- *     cdef bool           _owned
- */
-struct __pyx_obj_9pssparser_6pssast_TemplateParamDeclList {
-  PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDeclList *__pyx_vtab;
-  pssp::ast::ITemplateParamDeclList *_hndl;
-  bool _owned;
-};
-
-
-/* "pssparser/pssast.pxd":260
- *     cdef TemplateParamDeclList mk(pssast_decl.ITemplateParamDeclList *hndl, bool owned)
- * 
- * cdef class TemplateParamDecl(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamDecl    *_hndl
- *     cdef bool           _owned
- */
-struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl {
-  PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDecl *__pyx_vtab;
-  pssp::ast::ITemplateParamDecl *_hndl;
-  bool _owned;
-};
-
-
-/* "pssparser/pssast.pxd":269
- *     cdef TemplateParamDecl mk(pssast_decl.ITemplateParamDecl *hndl, bool owned)
- * 
+ *     cdef mk(zsp_ast_decl.IFactory *hndl)
  * cdef class ScopeChild(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IScopeChild    *_hndl
+ *     cdef zsp_ast_decl.IScopeChild    *_hndl
  *     cdef bool           _owned
  */
-struct __pyx_obj_9pssparser_6pssast_ScopeChild {
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_ScopeChild *__pyx_vtab;
-  pssp::ast::IScopeChild *_hndl;
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild *__pyx_vtab;
+  zsp::ast::IScopeChild *_hndl;
   bool _owned;
 };
 
 
-/* "pssparser/pssast.pxd":280
+/* "zuspec_parser/zsp_ast.pxd":332
  *     cpdef int32_t getIndex(self)
  * 
- * cdef class TemplateParamValueList(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamValueList    *_hndl
+ * cdef class SymbolImportSpec(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.ISymbolImportSpec    *_hndl
  *     cdef bool           _owned
  */
-struct __pyx_obj_9pssparser_6pssast_TemplateParamValueList {
+struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolImportSpec {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamValueList *__pyx_vtab;
-  pssp::ast::ITemplateParamValueList *_hndl;
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolImportSpec *__pyx_vtab;
+  zsp::ast::ISymbolImportSpec *_hndl;
   bool _owned;
 };
 
 
-/* "pssparser/pssast.pxd":289
- *     cdef TemplateParamValueList mk(pssast_decl.ITemplateParamValueList *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":341
+ *     cdef SymbolImportSpec mk(zsp_ast_decl.ISymbolImportSpec *hndl, bool owned)
+ * 
+ * cdef class ActivityJoinSpec(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IActivityJoinSpec    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpec *__pyx_vtab;
+  zsp::ast::IActivityJoinSpec *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":350
+ *     cdef ActivityJoinSpec mk(zsp_ast_decl.IActivityJoinSpec *hndl, bool owned)
+ * 
+ * cdef class RefExpr(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IRefExpr    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExpr *__pyx_vtab;
+  zsp::ast::IRefExpr *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":359
+ *     cdef RefExpr mk(zsp_ast_decl.IRefExpr *hndl, bool owned)
+ * 
+ * cdef class RefTarget(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IRefTarget    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefTarget {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefTarget *__pyx_vtab;
+  zsp::ast::IRefTarget *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":368
+ *     cdef RefTarget mk(zsp_ast_decl.IRefTarget *hndl, bool owned)
+ * 
+ * cdef class TemplateParamDeclList(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.ITemplateParamDeclList    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDeclList {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDeclList *__pyx_vtab;
+  zsp::ast::ITemplateParamDeclList *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":377
+ *     cdef TemplateParamDeclList mk(zsp_ast_decl.ITemplateParamDeclList *hndl, bool owned)
+ * 
+ * cdef class TemplateParamDecl(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.ITemplateParamDecl    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDecl *__pyx_vtab;
+  zsp::ast::ITemplateParamDecl *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":386
+ *     cdef TemplateParamDecl mk(zsp_ast_decl.ITemplateParamDecl *hndl, bool owned)
+ * 
+ * cdef class ActivitySelectBranch(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IActivitySelectBranch    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelectBranch {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySelectBranch *__pyx_vtab;
+  zsp::ast::IActivitySelectBranch *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":395
+ *     cdef ActivitySelectBranch mk(zsp_ast_decl.IActivitySelectBranch *hndl, bool owned)
+ * 
+ * cdef class TemplateParamValueList(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.ITemplateParamValueList    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValueList {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamValueList *__pyx_vtab;
+  zsp::ast::ITemplateParamValueList *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":404
+ *     cdef TemplateParamValueList mk(zsp_ast_decl.ITemplateParamValueList *hndl, bool owned)
  * 
  * cdef class TemplateParamValue(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamValue    *_hndl
+ *     cdef zsp_ast_decl.ITemplateParamValue    *_hndl
  *     cdef bool           _owned
  */
-struct __pyx_obj_9pssparser_6pssast_TemplateParamValue {
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValue {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamValue *__pyx_vtab;
-  pssp::ast::ITemplateParamValue *_hndl;
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamValue *__pyx_vtab;
+  zsp::ast::ITemplateParamValue *_hndl;
   bool _owned;
 };
 
 
-/* "pssparser/pssast.pxd":298
- *     cdef TemplateParamValue mk(pssast_decl.ITemplateParamValue *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":413
+ *     cdef TemplateParamValue mk(zsp_ast_decl.ITemplateParamValue *hndl, bool owned)
+ * 
+ * cdef class ActivityMatchChoice(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IActivityMatchChoice    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatchChoice {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityMatchChoice *__pyx_vtab;
+  zsp::ast::IActivityMatchChoice *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":423
+ *     cpdef bool getIs_default(self)
  * 
  * cdef class TemplateParamTypeValue(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamTypeValue    *_hndl
+ *     cdef zsp_ast_decl.ITemplateParamTypeValue    *_hndl
  *     cdef bool           _owned
  */
-struct __pyx_obj_9pssparser_6pssast_TemplateParamTypeValue {
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamTypeValue {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamTypeValue *__pyx_vtab;
-  pssp::ast::ITemplateParamTypeValue *_hndl;
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamTypeValue *__pyx_vtab;
+  zsp::ast::ITemplateParamTypeValue *_hndl;
   bool _owned;
 };
 
 
-/* "pssparser/pssast.pxd":307
- *     cdef TemplateParamTypeValue mk(pssast_decl.ITemplateParamTypeValue *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":432
+ *     cdef TemplateParamTypeValue mk(zsp_ast_decl.ITemplateParamTypeValue *hndl, bool owned)
  * 
  * cdef class TemplateParamExprValue(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamExprValue    *_hndl
+ *     cdef zsp_ast_decl.ITemplateParamExprValue    *_hndl
  *     cdef bool           _owned
  */
-struct __pyx_obj_9pssparser_6pssast_TemplateParamExprValue {
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamExprValue {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamExprValue *__pyx_vtab;
-  pssp::ast::ITemplateParamExprValue *_hndl;
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamExprValue *__pyx_vtab;
+  zsp::ast::ITemplateParamExprValue *_hndl;
   bool _owned;
 };
 
 
-/* "pssparser/pssast.pxd":316
- *     cdef TemplateParamExprValue mk(pssast_decl.ITemplateParamExprValue *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":441
+ *     cdef TemplateParamExprValue mk(zsp_ast_decl.ITemplateParamExprValue *hndl, bool owned)
+ * 
+ * cdef class ExecStmt(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IExecStmt    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExecStmt *__pyx_vtab;
+  zsp::ast::IExecStmt *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":450
+ *     cdef ExecStmt mk(zsp_ast_decl.IExecStmt *hndl, bool owned)
+ * 
+ * cdef class Expr(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IExpr    *_hndl
+ *     cdef bool           _owned
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr *__pyx_vtab;
+  zsp::ast::IExpr *_hndl;
+  bool _owned;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":459
+ *     cdef Expr mk(zsp_ast_decl.IExpr *hndl, bool owned)
+ * 
+ * cdef class ActivityStmt(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityStmt *asActivityStmt(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":465
+ *     cdef ActivityStmt mk(zsp_ast_decl.IActivityStmt *hndl, bool owned)
+ * 
+ * cdef class ActivitySchedulingConstraint(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySchedulingConstraint *asActivitySchedulingConstraint(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":472
+ *     cpdef bool getIs_parallel(self)
+ * 
+ * cdef class ActivityJoinSpecBranch(ActivityJoinSpec):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityJoinSpecBranch *asActivityJoinSpecBranch(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":478
+ *     cdef ActivityJoinSpecBranch mk(zsp_ast_decl.IActivityJoinSpecBranch *hndl, bool owned)
+ * 
+ * cdef class ActivityJoinSpecSelect(ActivityJoinSpec):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityJoinSpecSelect *asActivityJoinSpecSelect(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":484
+ *     cdef ActivityJoinSpecSelect mk(zsp_ast_decl.IActivityJoinSpecSelect *hndl, bool owned)
+ * 
+ * cdef class ActivityJoinSpecNone(ActivityJoinSpec):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityJoinSpecNone *asActivityJoinSpecNone(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":490
+ *     cdef ActivityJoinSpecNone mk(zsp_ast_decl.IActivityJoinSpecNone *hndl, bool owned)
+ * 
+ * cdef class ActivityJoinSpecFirst(ActivityJoinSpec):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityJoinSpecFirst *asActivityJoinSpecFirst(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":496
+ *     cdef ActivityJoinSpecFirst mk(zsp_ast_decl.IActivityJoinSpecFirst *hndl, bool owned)
  * 
  * cdef class ConstraintStmt(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmt *asConstraintStmt(self)
+ *     cdef zsp_ast_decl.IConstraintStmt *asConstraintStmt(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmt {
-  struct __pyx_obj_9pssparser_6pssast_ScopeChild __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":322
- *     cdef ConstraintStmt mk(pssast_decl.IConstraintStmt *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":502
+ *     cdef ConstraintStmt mk(zsp_ast_decl.IConstraintStmt *hndl, bool owned)
  * 
  * cdef class Scope(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IScope *asScope(self)
+ *     cdef zsp_ast_decl.IScope *asScope(self)
  */
-struct __pyx_obj_9pssparser_6pssast_Scope {
-  struct __pyx_obj_9pssparser_6pssast_ScopeChild __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":328
- *     cdef Scope mk(pssast_decl.IScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":508
+ *     cdef Scope mk(zsp_ast_decl.IScope *hndl, bool owned)
+ * 
+ * cdef class ScopeChildRef(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IScopeChildRef *asScopeChildRef(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChildRef {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":514
+ *     cdef ScopeChildRef mk(zsp_ast_decl.IScopeChildRef *hndl, bool owned)
  * 
  * cdef class NamedScopeChild(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.INamedScopeChild *asNamedScopeChild(self)
+ *     cdef zsp_ast_decl.INamedScopeChild *asNamedScopeChild(self)
  */
-struct __pyx_obj_9pssparser_6pssast_NamedScopeChild {
-  struct __pyx_obj_9pssparser_6pssast_ScopeChild __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":334
- *     cdef NamedScopeChild mk(pssast_decl.INamedScopeChild *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":520
+ *     cdef NamedScopeChild mk(zsp_ast_decl.INamedScopeChild *hndl, bool owned)
  * 
  * cdef class PackageImportStmt(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IPackageImportStmt *asPackageImportStmt(self)
+ *     cdef zsp_ast_decl.IPackageImportStmt *asPackageImportStmt(self)
  */
-struct __pyx_obj_9pssparser_6pssast_PackageImportStmt {
-  struct __pyx_obj_9pssparser_6pssast_ScopeChild __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageImportStmt {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":341
+/* "zuspec_parser/zsp_ast.pxd":527
  *     cpdef bool getWildcard(self)
  * 
  * cdef class DataType(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataType *asDataType(self)
+ *     cdef zsp_ast_decl.IDataType *asDataType(self)
  */
-struct __pyx_obj_9pssparser_6pssast_DataType {
-  struct __pyx_obj_9pssparser_6pssast_ScopeChild __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":347
- *     cdef DataType mk(pssast_decl.IDataType *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":533
+ *     cdef DataType mk(zsp_ast_decl.IDataType *hndl, bool owned)
  * 
  * cdef class ExecScope(ExecStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExecScope *asExecScope(self)
+ *     cdef zsp_ast_decl.IExecScope *asExecScope(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExecScope {
-  struct __pyx_obj_9pssparser_6pssast_ExecStmt __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":353
- *     cdef ExecScope mk(pssast_decl.IExecScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":539
+ *     cdef ExecScope mk(zsp_ast_decl.IExecScope *hndl, bool owned)
  * 
  * cdef class ProceduralStmtDataDeclaration(ExecStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IProceduralStmtDataDeclaration *asProceduralStmtDataDeclaration(self)
+ *     cdef zsp_ast_decl.IProceduralStmtDataDeclaration *asProceduralStmtDataDeclaration(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ProceduralStmtDataDeclaration {
-  struct __pyx_obj_9pssparser_6pssast_ExecStmt __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":359
- *     cdef ProceduralStmtDataDeclaration mk(pssast_decl.IProceduralStmtDataDeclaration *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":545
+ *     cdef ProceduralStmtDataDeclaration mk(zsp_ast_decl.IProceduralStmtDataDeclaration *hndl, bool owned)
  * 
  * cdef class ExprBin(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprBin *asExprBin(self)
+ *     cdef zsp_ast_decl.IExprBin *asExprBin(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprBin {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBin {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":365
- *     cdef ExprBin mk(pssast_decl.IExprBin *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":552
+ *     cpdef  getOp(self)
  * 
  * cdef class ExprBitSlice(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprBitSlice *asExprBitSlice(self)
+ *     cdef zsp_ast_decl.IExprBitSlice *asExprBitSlice(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprBitSlice {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBitSlice {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":371
- *     cdef ExprBitSlice mk(pssast_decl.IExprBitSlice *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":558
+ *     cdef ExprBitSlice mk(zsp_ast_decl.IExprBitSlice *hndl, bool owned)
  * 
  * cdef class ExprBool(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprBool *asExprBool(self)
+ *     cdef zsp_ast_decl.IExprBool *asExprBool(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprBool {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBool {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":378
+/* "zuspec_parser/zsp_ast.pxd":565
  *     cpdef bool getValue(self)
  * 
  * cdef class ExprCast(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprCast *asExprCast(self)
+ *     cdef zsp_ast_decl.IExprCast *asExprCast(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprCast {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCast {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":384
- *     cdef ExprCast mk(pssast_decl.IExprCast *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":571
+ *     cdef ExprCast mk(zsp_ast_decl.IExprCast *hndl, bool owned)
  * 
  * cdef class ExprCompileHas(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprCompileHas *asExprCompileHas(self)
+ *     cdef zsp_ast_decl.IExprCompileHas *asExprCompileHas(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprCompileHas {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCompileHas {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":390
- *     cdef ExprCompileHas mk(pssast_decl.IExprCompileHas *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":577
+ *     cdef ExprCompileHas mk(zsp_ast_decl.IExprCompileHas *hndl, bool owned)
  * 
  * cdef class ExprCond(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprCond *asExprCond(self)
+ *     cdef zsp_ast_decl.IExprCond *asExprCond(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprCond {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCond {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":396
- *     cdef ExprCond mk(pssast_decl.IExprCond *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":583
+ *     cdef ExprCond mk(zsp_ast_decl.IExprCond *hndl, bool owned)
  * 
  * cdef class ExprDomainOpenRangeList(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprDomainOpenRangeList *asExprDomainOpenRangeList(self)
+ *     cdef zsp_ast_decl.IExprDomainOpenRangeList *asExprDomainOpenRangeList(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeList {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":402
- *     cdef ExprDomainOpenRangeList mk(pssast_decl.IExprDomainOpenRangeList *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":589
+ *     cdef ExprDomainOpenRangeList mk(zsp_ast_decl.IExprDomainOpenRangeList *hndl, bool owned)
  * 
  * cdef class ExprDomainOpenRangeValue(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprDomainOpenRangeValue *asExprDomainOpenRangeValue(self)
+ *     cdef zsp_ast_decl.IExprDomainOpenRangeValue *asExprDomainOpenRangeValue(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeValue {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":409
+/* "zuspec_parser/zsp_ast.pxd":596
  *     cpdef bool getSingle(self)
  * 
  * cdef class ExprHierarchicalId(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprHierarchicalId *asExprHierarchicalId(self)
+ *     cdef zsp_ast_decl.IExprHierarchicalId *asExprHierarchicalId(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":415
- *     cdef ExprHierarchicalId mk(pssast_decl.IExprHierarchicalId *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":602
+ *     cdef ExprHierarchicalId mk(zsp_ast_decl.IExprHierarchicalId *hndl, bool owned)
  * 
  * cdef class ExprId(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprId *asExprId(self)
+ *     cdef zsp_ast_decl.IExprId *asExprId(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprId {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":423
- *     cpdef bool getIs_escaped(self)
+/* "zuspec_parser/zsp_ast.pxd":613
+ *     cpdef int32_t getLocation(self)
  * 
  * cdef class ExprIn(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprIn *asExprIn(self)
+ *     cdef zsp_ast_decl.IExprIn *asExprIn(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprIn {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprIn {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":429
- *     cdef ExprIn mk(pssast_decl.IExprIn *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":619
+ *     cdef ExprIn mk(zsp_ast_decl.IExprIn *hndl, bool owned)
  * 
  * cdef class ExprMemberPathElem(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprMemberPathElem *asExprMemberPathElem(self)
+ *     cdef zsp_ast_decl.IExprMemberPathElem *asExprMemberPathElem(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprMemberPathElem {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprMemberPathElem {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":436
+/* "zuspec_parser/zsp_ast.pxd":626
  *     cpdef int32_t getTarget(self)
+ * 
+ * cdef class ExprNull(Expr):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IExprNull *asExprNull(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNull {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":632
+ *     cdef ExprNull mk(zsp_ast_decl.IExprNull *hndl, bool owned)
  * 
  * cdef class ExprNumber(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprNumber *asExprNumber(self)
+ *     cdef zsp_ast_decl.IExprNumber *asExprNumber(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprNumber {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNumber {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":442
- *     cdef ExprNumber mk(pssast_decl.IExprNumber *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":638
+ *     cdef ExprNumber mk(zsp_ast_decl.IExprNumber *hndl, bool owned)
  * 
  * cdef class ExprAggregateLiteral(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprAggregateLiteral *asExprAggregateLiteral(self)
+ *     cdef zsp_ast_decl.IExprAggregateLiteral *asExprAggregateLiteral(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprAggregateLiteral {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprAggregateLiteral {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":448
- *     cdef ExprAggregateLiteral mk(pssast_decl.IExprAggregateLiteral *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":644
+ *     cdef ExprAggregateLiteral mk(zsp_ast_decl.IExprAggregateLiteral *hndl, bool owned)
  * 
  * cdef class ExprOpenRangeList(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprOpenRangeList *asExprOpenRangeList(self)
+ *     cdef zsp_ast_decl.IExprOpenRangeList *asExprOpenRangeList(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeList {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":454
- *     cdef ExprOpenRangeList mk(pssast_decl.IExprOpenRangeList *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":650
+ *     cdef ExprOpenRangeList mk(zsp_ast_decl.IExprOpenRangeList *hndl, bool owned)
  * 
  * cdef class ExprOpenRangeValue(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprOpenRangeValue *asExprOpenRangeValue(self)
+ *     cdef zsp_ast_decl.IExprOpenRangeValue *asExprOpenRangeValue(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeValue {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeValue {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":460
- *     cdef ExprOpenRangeValue mk(pssast_decl.IExprOpenRangeValue *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":656
+ *     cdef ExprOpenRangeValue mk(zsp_ast_decl.IExprOpenRangeValue *hndl, bool owned)
  * 
  * cdef class ExprRefPath(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPath *asExprRefPath(self)
+ *     cdef zsp_ast_decl.IExprRefPath *asExprRefPath(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprRefPath {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPath {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":466
- *     cdef ExprRefPath mk(pssast_decl.IExprRefPath *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":662
+ *     cdef ExprRefPath mk(zsp_ast_decl.IExprRefPath *hndl, bool owned)
+ * 
+ * cdef class ExprRefPathContext(Expr):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IExprRefPathContext *asExprRefPathContext(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":668
+ *     cdef ExprRefPathContext mk(zsp_ast_decl.IExprRefPathContext *hndl, bool owned)
  * 
  * cdef class ExprRefPathElem(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathElem *asExprRefPathElem(self)
+ *     cdef zsp_ast_decl.IExprRefPathElem *asExprRefPathElem(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathElem {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathElem {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":472
- *     cdef ExprRefPathElem mk(pssast_decl.IExprRefPathElem *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":674
+ *     cdef ExprRefPathElem mk(zsp_ast_decl.IExprRefPathElem *hndl, bool owned)
  * 
  * cdef class ExprRefPathStaticRooted(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathStaticRooted *asExprRefPathStaticRooted(self)
+ *     cdef zsp_ast_decl.IExprRefPathStaticRooted *asExprRefPathStaticRooted(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticRooted {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":478
- *     cdef ExprRefPathStaticRooted mk(pssast_decl.IExprRefPathStaticRooted *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":680
+ *     cdef ExprRefPathStaticRooted mk(zsp_ast_decl.IExprRefPathStaticRooted *hndl, bool owned)
  * 
  * cdef class ExprStaticRefPath(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprStaticRefPath *asExprStaticRefPath(self)
+ *     cdef zsp_ast_decl.IExprStaticRefPath *asExprStaticRefPath(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprStaticRefPath {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprStaticRefPath {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":485
+/* "zuspec_parser/zsp_ast.pxd":687
  *     cpdef bool getIs_global(self)
  * 
  * cdef class ExprString(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprString *asExprString(self)
+ *     cdef zsp_ast_decl.IExprString *asExprString(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprString {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprString {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":493
+/* "zuspec_parser/zsp_ast.pxd":695
  *     cpdef bool getIs_raw(self)
  * 
  * cdef class ExprSubscript(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprSubscript *asExprSubscript(self)
+ *     cdef zsp_ast_decl.IExprSubscript *asExprSubscript(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprSubscript {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSubscript {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":499
- *     cdef ExprSubscript mk(pssast_decl.IExprSubscript *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":701
+ *     cdef ExprSubscript mk(zsp_ast_decl.IExprSubscript *hndl, bool owned)
  * 
  * cdef class ExprUnary(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprUnary *asExprUnary(self)
+ *     cdef zsp_ast_decl.IExprUnary *asExprUnary(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprUnary {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnary {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":505
- *     cdef ExprUnary mk(pssast_decl.IExprUnary *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":708
+ *     cpdef  getOp(self)
  * 
  * cdef class MethodParameterList(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IMethodParameterList *asMethodParameterList(self)
+ *     cdef zsp_ast_decl.IMethodParameterList *asMethodParameterList(self)
  */
-struct __pyx_obj_9pssparser_6pssast_MethodParameterList {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_MethodParameterList {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":511
- *     cdef MethodParameterList mk(pssast_decl.IMethodParameterList *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":714
+ *     cdef MethodParameterList mk(zsp_ast_decl.IMethodParameterList *hndl, bool owned)
  * 
  * cdef class TypeIdentifier(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITypeIdentifier *asTypeIdentifier(self)
+ *     cdef zsp_ast_decl.ITypeIdentifier *asTypeIdentifier(self)
  */
-struct __pyx_obj_9pssparser_6pssast_TypeIdentifier {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":517
- *     cdef TypeIdentifier mk(pssast_decl.ITypeIdentifier *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":720
+ *     cdef TypeIdentifier mk(zsp_ast_decl.ITypeIdentifier *hndl, bool owned)
  * 
  * cdef class TypeIdentifierElem(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITypeIdentifierElem *asTypeIdentifierElem(self)
+ *     cdef zsp_ast_decl.ITypeIdentifierElem *asTypeIdentifierElem(self)
  */
-struct __pyx_obj_9pssparser_6pssast_TypeIdentifierElem {
-  struct __pyx_obj_9pssparser_6pssast_Expr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifierElem {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":523
- *     cdef TypeIdentifierElem mk(pssast_decl.ITypeIdentifierElem *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":726
+ *     cdef TypeIdentifierElem mk(zsp_ast_decl.ITypeIdentifierElem *hndl, bool owned)
+ * 
+ * cdef class ExtendEnum(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IExtendEnum *asExtendEnum(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendEnum {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":732
+ *     cdef ExtendEnum mk(zsp_ast_decl.IExtendEnum *hndl, bool owned)
+ * 
+ * cdef class SymbolScope(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.ISymbolScope *asSymbolScope(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":740
+ *     cpdef std_string getName(self)
  * 
  * cdef class RefExprTypeScopeGlobal(RefExpr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IRefExprTypeScopeGlobal *asRefExprTypeScopeGlobal(self)
+ *     cdef zsp_ast_decl.IRefExprTypeScopeGlobal *asRefExprTypeScopeGlobal(self)
  */
-struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeGlobal {
-  struct __pyx_obj_9pssparser_6pssast_RefExpr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":530
+/* "zuspec_parser/zsp_ast.pxd":747
  *     cpdef int32_t getFileid(self)
  * 
  * cdef class RefExprTypeScopeContext(RefExpr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IRefExprTypeScopeContext *asRefExprTypeScopeContext(self)
+ *     cdef zsp_ast_decl.IRefExprTypeScopeContext *asRefExprTypeScopeContext(self)
  */
-struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeContext {
-  struct __pyx_obj_9pssparser_6pssast_RefExpr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":537
+/* "zuspec_parser/zsp_ast.pxd":754
  *     cpdef int32_t getOffset(self)
  * 
  * cdef class RefExprScopeIndex(RefExpr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IRefExprScopeIndex *asRefExprScopeIndex(self)
+ *     cdef zsp_ast_decl.IRefExprScopeIndex *asRefExprScopeIndex(self)
  */
-struct __pyx_obj_9pssparser_6pssast_RefExprScopeIndex {
-  struct __pyx_obj_9pssparser_6pssast_RefExpr __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprScopeIndex {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":544
+/* "zuspec_parser/zsp_ast.pxd":761
  *     cpdef int32_t getOffset(self)
  * 
  * cdef class TemplateGenericTypeParamDecl(TemplateParamDecl):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITemplateGenericTypeParamDecl *asTemplateGenericTypeParamDecl(self)
+ *     cdef zsp_ast_decl.ITemplateGenericTypeParamDecl *asTemplateGenericTypeParamDecl(self)
  */
-struct __pyx_obj_9pssparser_6pssast_TemplateGenericTypeParamDecl {
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":550
- *     cdef TemplateGenericTypeParamDecl mk(pssast_decl.ITemplateGenericTypeParamDecl *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":767
+ *     cdef TemplateGenericTypeParamDecl mk(zsp_ast_decl.ITemplateGenericTypeParamDecl *hndl, bool owned)
  * 
  * cdef class TemplateCategoryTypeParamDecl(TemplateParamDecl):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITemplateCategoryTypeParamDecl *asTemplateCategoryTypeParamDecl(self)
+ *     cdef zsp_ast_decl.ITemplateCategoryTypeParamDecl *asTemplateCategoryTypeParamDecl(self)
  */
-struct __pyx_obj_9pssparser_6pssast_TemplateCategoryTypeParamDecl {
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":556
- *     cdef TemplateCategoryTypeParamDecl mk(pssast_decl.ITemplateCategoryTypeParamDecl *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":774
+ *     cpdef  getCategory(self)
  * 
  * cdef class TemplateValueParamDecl(TemplateParamDecl):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITemplateValueParamDecl *asTemplateValueParamDecl(self)
+ *     cdef zsp_ast_decl.ITemplateValueParamDecl *asTemplateValueParamDecl(self)
  */
-struct __pyx_obj_9pssparser_6pssast_TemplateValueParamDecl {
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateValueParamDecl {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":562
- *     cdef TemplateValueParamDecl mk(pssast_decl.ITemplateValueParamDecl *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":780
+ *     cdef TemplateValueParamDecl mk(zsp_ast_decl.ITemplateValueParamDecl *hndl, bool owned)
  * 
- * cdef class ConstraintBlock(ConstraintStmt):             # <<<<<<<<<<<<<<
+ * cdef class ActivityBindStmt(ActivityStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintBlock *asConstraintBlock(self)
+ *     cdef zsp_ast_decl.IActivityBindStmt *asActivityBindStmt(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintBlock {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityBindStmt {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":570
- *     cpdef bool getIs_dynamic(self)
+/* "zuspec_parser/zsp_ast.pxd":786
+ *     cdef ActivityBindStmt mk(zsp_ast_decl.IActivityBindStmt *hndl, bool owned)
+ * 
+ * cdef class ActivityConstraint(ActivityStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityConstraint *asActivityConstraint(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityConstraint {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":792
+ *     cdef ActivityConstraint mk(zsp_ast_decl.IActivityConstraint *hndl, bool owned)
+ * 
+ * cdef class ActivityLabeledStmt(ActivityStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityLabeledStmt *asActivityLabeledStmt(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":798
+ *     cdef ActivityLabeledStmt mk(zsp_ast_decl.IActivityLabeledStmt *hndl, bool owned)
+ * 
+ * cdef class ActivityLabeledScope(Scope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityLabeledScope *asActivityLabeledScope(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":804
+ *     cdef ActivityLabeledScope mk(zsp_ast_decl.IActivityLabeledScope *hndl, bool owned)
  * 
  * cdef class ConstraintScope(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintScope *asConstraintScope(self)
+ *     cdef zsp_ast_decl.IConstraintScope *asConstraintScope(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintScope {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":576
- *     cdef ConstraintScope mk(pssast_decl.IConstraintScope *hndl, bool owned)
- * 
- * cdef class ConstraintStmtDefault(ConstraintStmt):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IConstraintStmtDefault *asConstraintStmtDefault(self)
- */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefault {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt __pyx_base;
-};
-
-
-/* "pssparser/pssast.pxd":582
- *     cdef ConstraintStmtDefault mk(pssast_decl.IConstraintStmtDefault *hndl, bool owned)
- * 
- * cdef class ConstraintStmtDefaultDisable(ConstraintStmt):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IConstraintStmtDefaultDisable *asConstraintStmtDefaultDisable(self)
- */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefaultDisable {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt __pyx_base;
-};
-
-
-/* "pssparser/pssast.pxd":588
- *     cdef ConstraintStmtDefaultDisable mk(pssast_decl.IConstraintStmtDefaultDisable *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":810
+ *     cdef ConstraintScope mk(zsp_ast_decl.IConstraintScope *hndl, bool owned)
  * 
  * cdef class ConstraintStmtExpr(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtExpr *asConstraintStmtExpr(self)
+ *     cdef zsp_ast_decl.IConstraintStmtExpr *asConstraintStmtExpr(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtExpr {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtExpr {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":594
- *     cdef ConstraintStmtExpr mk(pssast_decl.IConstraintStmtExpr *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":816
+ *     cdef ConstraintStmtExpr mk(zsp_ast_decl.IConstraintStmtExpr *hndl, bool owned)
  * 
  * cdef class ConstraintStmtField(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtField *asConstraintStmtField(self)
+ *     cdef zsp_ast_decl.IConstraintStmtField *asConstraintStmtField(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtField {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtField {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":600
- *     cdef ConstraintStmtField mk(pssast_decl.IConstraintStmtField *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":822
+ *     cdef ConstraintStmtField mk(zsp_ast_decl.IConstraintStmtField *hndl, bool owned)
  * 
  * cdef class ConstraintStmtIf(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtIf *asConstraintStmtIf(self)
+ *     cdef zsp_ast_decl.IConstraintStmtIf *asConstraintStmtIf(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtIf {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtIf {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":606
- *     cdef ConstraintStmtIf mk(pssast_decl.IConstraintStmtIf *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":828
+ *     cdef ConstraintStmtIf mk(zsp_ast_decl.IConstraintStmtIf *hndl, bool owned)
  * 
  * cdef class ConstraintStmtUnique(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtUnique *asConstraintStmtUnique(self)
+ *     cdef zsp_ast_decl.IConstraintStmtUnique *asConstraintStmtUnique(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtUnique {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtUnique {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":612
- *     cdef ConstraintStmtUnique mk(pssast_decl.IConstraintStmtUnique *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":834
+ *     cdef ConstraintStmtUnique mk(zsp_ast_decl.IConstraintStmtUnique *hndl, bool owned)
+ * 
+ * cdef class ConstraintStmtDefault(ConstraintStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IConstraintStmtDefault *asConstraintStmtDefault(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefault {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":840
+ *     cdef ConstraintStmtDefault mk(zsp_ast_decl.IConstraintStmtDefault *hndl, bool owned)
+ * 
+ * cdef class ConstraintStmtDefaultDisable(ConstraintStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IConstraintStmtDefaultDisable *asConstraintStmtDefaultDisable(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":846
+ *     cdef ConstraintStmtDefaultDisable mk(zsp_ast_decl.IConstraintStmtDefaultDisable *hndl, bool owned)
  * 
  * cdef class GlobalScope(Scope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IGlobalScope *asGlobalScope(self)
+ *     cdef zsp_ast_decl.IGlobalScope *asGlobalScope(self)
  */
-struct __pyx_obj_9pssparser_6pssast_GlobalScope {
-  struct __pyx_obj_9pssparser_6pssast_Scope __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":619
+/* "zuspec_parser/zsp_ast.pxd":853
  *     cpdef int32_t getFileid(self)
  * 
  * cdef class NamedScope(Scope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.INamedScope *asNamedScope(self)
+ *     cdef zsp_ast_decl.INamedScope *asNamedScope(self)
  */
-struct __pyx_obj_9pssparser_6pssast_NamedScope {
-  struct __pyx_obj_9pssparser_6pssast_Scope __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":625
- *     cdef NamedScope mk(pssast_decl.INamedScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":859
+ *     cdef NamedScope mk(zsp_ast_decl.INamedScope *hndl, bool owned)
  * 
  * cdef class PackageScope(Scope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IPackageScope *asPackageScope(self)
+ *     cdef zsp_ast_decl.IPackageScope *asPackageScope(self)
  */
-struct __pyx_obj_9pssparser_6pssast_PackageScope {
-  struct __pyx_obj_9pssparser_6pssast_Scope __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":631
- *     cdef PackageScope mk(pssast_decl.IPackageScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":865
+ *     cdef PackageScope mk(zsp_ast_decl.IPackageScope *hndl, bool owned)
  * 
  * cdef class DataTypeArray(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeArray *asDataTypeArray(self)
+ *     cdef zsp_ast_decl.IDataTypeArray *asDataTypeArray(self)
  */
-struct __pyx_obj_9pssparser_6pssast_DataTypeArray {
-  struct __pyx_obj_9pssparser_6pssast_DataType __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeArray {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":637
- *     cdef DataTypeArray mk(pssast_decl.IDataTypeArray *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":871
+ *     cdef DataTypeArray mk(zsp_ast_decl.IDataTypeArray *hndl, bool owned)
  * 
  * cdef class DataTypeBool(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeBool *asDataTypeBool(self)
+ *     cdef zsp_ast_decl.IDataTypeBool *asDataTypeBool(self)
  */
-struct __pyx_obj_9pssparser_6pssast_DataTypeBool {
-  struct __pyx_obj_9pssparser_6pssast_DataType __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeBool {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":643
- *     cdef DataTypeBool mk(pssast_decl.IDataTypeBool *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":877
+ *     cdef DataTypeBool mk(zsp_ast_decl.IDataTypeBool *hndl, bool owned)
  * 
  * cdef class DataTypeChandle(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeChandle *asDataTypeChandle(self)
+ *     cdef zsp_ast_decl.IDataTypeChandle *asDataTypeChandle(self)
  */
-struct __pyx_obj_9pssparser_6pssast_DataTypeChandle {
-  struct __pyx_obj_9pssparser_6pssast_DataType __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeChandle {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":649
- *     cdef DataTypeChandle mk(pssast_decl.IDataTypeChandle *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":883
+ *     cdef DataTypeChandle mk(zsp_ast_decl.IDataTypeChandle *hndl, bool owned)
  * 
  * cdef class DataTypeEnum(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeEnum *asDataTypeEnum(self)
+ *     cdef zsp_ast_decl.IDataTypeEnum *asDataTypeEnum(self)
  */
-struct __pyx_obj_9pssparser_6pssast_DataTypeEnum {
-  struct __pyx_obj_9pssparser_6pssast_DataType __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeEnum {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":655
- *     cdef DataTypeEnum mk(pssast_decl.IDataTypeEnum *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":889
+ *     cdef DataTypeEnum mk(zsp_ast_decl.IDataTypeEnum *hndl, bool owned)
+ * 
+ * cdef class EnumItem(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IEnumItem *asEnumItem(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumItem {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":895
+ *     cdef EnumItem mk(zsp_ast_decl.IEnumItem *hndl, bool owned)
+ * 
+ * cdef class EnumDecl(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IEnumDecl *asEnumDecl(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumDecl {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":901
+ *     cdef EnumDecl mk(zsp_ast_decl.IEnumDecl *hndl, bool owned)
  * 
  * cdef class DataTypeInt(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeInt *asDataTypeInt(self)
+ *     cdef zsp_ast_decl.IDataTypeInt *asDataTypeInt(self)
  */
-struct __pyx_obj_9pssparser_6pssast_DataTypeInt {
-  struct __pyx_obj_9pssparser_6pssast_DataType __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeInt {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":662
+/* "zuspec_parser/zsp_ast.pxd":908
  *     cpdef bool getIs_signed(self)
+ * 
+ * cdef class DataTypeRef(DataType):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IDataTypeRef *asDataTypeRef(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeRef {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":914
+ *     cdef DataTypeRef mk(zsp_ast_decl.IDataTypeRef *hndl, bool owned)
  * 
  * cdef class DataTypeString(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeString *asDataTypeString(self)
+ *     cdef zsp_ast_decl.IDataTypeString *asDataTypeString(self)
  */
-struct __pyx_obj_9pssparser_6pssast_DataTypeString {
-  struct __pyx_obj_9pssparser_6pssast_DataType __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeString {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":669
+/* "zuspec_parser/zsp_ast.pxd":921
  *     cpdef bool getHas_range(self)
  * 
  * cdef class DataTypeUserDefined(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeUserDefined *asDataTypeUserDefined(self)
+ *     cdef zsp_ast_decl.IDataTypeUserDefined *asDataTypeUserDefined(self)
  */
-struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined {
-  struct __pyx_obj_9pssparser_6pssast_DataType __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":676
+/* "zuspec_parser/zsp_ast.pxd":928
  *     cpdef bool getIs_global(self)
- * 
- * cdef class ExprRefPathContext(ExprRefPath):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IExprRefPathContext *asExprRefPathContext(self)
- */
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathContext {
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPath __pyx_base;
-};
-
-
-/* "pssparser/pssast.pxd":682
- *     cdef ExprRefPathContext mk(pssast_decl.IExprRefPathContext *hndl, bool owned)
  * 
  * cdef class ExprRefPathStatic(ExprRefPath):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathStatic *asExprRefPathStatic(self)
+ *     cdef zsp_ast_decl.IExprRefPathStatic *asExprRefPathStatic(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic {
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPath __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPath __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":689
+/* "zuspec_parser/zsp_ast.pxd":935
  *     cpdef bool getIs_global(self)
+ * 
+ * cdef class ExprRefPathSuper(ExprRefPathContext):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IExprRefPathSuper *asExprRefPathSuper(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathSuper {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":941
+ *     cdef ExprRefPathSuper mk(zsp_ast_decl.IExprRefPathSuper *hndl, bool owned)
  * 
  * cdef class ExprSignedNumber(ExprNumber):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprSignedNumber *asExprSignedNumber(self)
+ *     cdef zsp_ast_decl.IExprSignedNumber *asExprSignedNumber(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber {
-  struct __pyx_obj_9pssparser_6pssast_ExprNumber __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNumber __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":698
+/* "zuspec_parser/zsp_ast.pxd":950
  *     cpdef int64_t getValue(self)
  * 
  * cdef class ExprUnsignedNumber(ExprNumber):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprUnsignedNumber *asExprUnsignedNumber(self)
+ *     cdef zsp_ast_decl.IExprUnsignedNumber *asExprUnsignedNumber(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber {
-  struct __pyx_obj_9pssparser_6pssast_ExprNumber __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNumber __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":707
+/* "zuspec_parser/zsp_ast.pxd":959
  *     cpdef uint64_t getValue(self)
  * 
- * cdef class ConstraintStmtForall(ConstraintScope):             # <<<<<<<<<<<<<<
+ * cdef class ExtendType(Scope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtForall *asConstraintStmtForall(self)
+ *     cdef zsp_ast_decl.IExtendType *asExtendType(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForall {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintScope __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendType {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":713
- *     cdef ConstraintStmtForall mk(pssast_decl.IConstraintStmtForall *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":966
+ *     cpdef  getKind(self)
+ * 
+ * cdef class Field(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IField *asField(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Field {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":973
+ *     cpdef  getAttr(self)
+ * 
+ * cdef class FieldRef(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IFieldRef *asFieldRef(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldRef {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":980
+ *     cpdef bool getIs_input(self)
+ * 
+ * cdef class FieldClaim(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IFieldClaim *asFieldClaim(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldClaim {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":987
+ *     cpdef bool getIs_lock(self)
+ * 
+ * cdef class SymbolTypeScope(SymbolScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.ISymbolTypeScope *asSymbolTypeScope(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolTypeScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":993
+ *     cdef SymbolTypeScope mk(zsp_ast_decl.ISymbolTypeScope *hndl, bool owned)
+ * 
+ * cdef class SymbolFunctionScope(SymbolScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.ISymbolFunctionScope *asSymbolFunctionScope(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolFunctionScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":999
+ *     cdef SymbolFunctionScope mk(zsp_ast_decl.ISymbolFunctionScope *hndl, bool owned)
+ * 
+ * cdef class ActivityActionHandleTraversal(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityActionHandleTraversal *asActivityActionHandleTraversal(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1005
+ *     cdef ActivityActionHandleTraversal mk(zsp_ast_decl.IActivityActionHandleTraversal *hndl, bool owned)
+ * 
+ * cdef class ActivityActionTypeTraversal(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityActionTypeTraversal *asActivityActionTypeTraversal(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1011
+ *     cdef ActivityActionTypeTraversal mk(zsp_ast_decl.IActivityActionTypeTraversal *hndl, bool owned)
+ * 
+ * cdef class ActivitySequence(ActivityLabeledScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySequence *asActivitySequence(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySequence {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1017
+ *     cdef ActivitySequence mk(zsp_ast_decl.IActivitySequence *hndl, bool owned)
+ * 
+ * cdef class ActivityParallel(ActivityLabeledScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityParallel *asActivityParallel(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityParallel {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1023
+ *     cdef ActivityParallel mk(zsp_ast_decl.IActivityParallel *hndl, bool owned)
+ * 
+ * cdef class ActivitySchedule(ActivityLabeledScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySchedule *asActivitySchedule(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedule {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1029
+ *     cdef ActivitySchedule mk(zsp_ast_decl.IActivitySchedule *hndl, bool owned)
+ * 
+ * cdef class ActivityRepeatCount(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityRepeatCount *asActivityRepeatCount(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatCount {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1035
+ *     cdef ActivityRepeatCount mk(zsp_ast_decl.IActivityRepeatCount *hndl, bool owned)
+ * 
+ * cdef class ActivityRepeatWhile(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityRepeatWhile *asActivityRepeatWhile(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatWhile {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1041
+ *     cdef ActivityRepeatWhile mk(zsp_ast_decl.IActivityRepeatWhile *hndl, bool owned)
+ * 
+ * cdef class ActivityForeach(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityForeach *asActivityForeach(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityForeach {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1047
+ *     cdef ActivityForeach mk(zsp_ast_decl.IActivityForeach *hndl, bool owned)
+ * 
+ * cdef class ActivitySelect(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySelect *asActivitySelect(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelect {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1053
+ *     cdef ActivitySelect mk(zsp_ast_decl.IActivitySelect *hndl, bool owned)
+ * 
+ * cdef class ActivityIfElse(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityIfElse *asActivityIfElse(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityIfElse {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1059
+ *     cdef ActivityIfElse mk(zsp_ast_decl.IActivityIfElse *hndl, bool owned)
+ * 
+ * cdef class ActivityMatch(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityMatch *asActivityMatch(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatch {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1065
+ *     cdef ActivityMatch mk(zsp_ast_decl.IActivityMatch *hndl, bool owned)
+ * 
+ * cdef class ActivityReplicate(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityReplicate *asActivityReplicate(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityReplicate {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1071
+ *     cdef ActivityReplicate mk(zsp_ast_decl.IActivityReplicate *hndl, bool owned)
+ * 
+ * cdef class ActivitySuper(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySuper *asActivitySuper(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySuper {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1077
+ *     cdef ActivitySuper mk(zsp_ast_decl.IActivitySuper *hndl, bool owned)
+ * 
+ * cdef class ConstraintBlock(ConstraintScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IConstraintBlock *asConstraintBlock(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintBlock {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1085
+ *     cpdef bool getIs_dynamic(self)
  * 
  * cdef class ConstraintStmtForeach(ConstraintScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtForeach *asConstraintStmtForeach(self)
+ *     cdef zsp_ast_decl.IConstraintStmtForeach *asConstraintStmtForeach(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForeach {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintScope __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForeach {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":719
- *     cdef ConstraintStmtForeach mk(pssast_decl.IConstraintStmtForeach *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1091
+ *     cdef ConstraintStmtForeach mk(zsp_ast_decl.IConstraintStmtForeach *hndl, bool owned)
+ * 
+ * cdef class ConstraintStmtForall(ConstraintScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IConstraintStmtForall *asConstraintStmtForall(self)
+ */
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForall {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope __pyx_base;
+};
+
+
+/* "zuspec_parser/zsp_ast.pxd":1097
+ *     cdef ConstraintStmtForall mk(zsp_ast_decl.IConstraintStmtForall *hndl, bool owned)
  * 
  * cdef class ConstraintStmtImplication(ConstraintScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtImplication *asConstraintStmtImplication(self)
+ *     cdef zsp_ast_decl.IConstraintStmtImplication *asConstraintStmtImplication(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ConstraintStmtImplication {
-  struct __pyx_obj_9pssparser_6pssast_ConstraintScope __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtImplication {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":725
- *     cdef ConstraintStmtImplication mk(pssast_decl.IConstraintStmtImplication *hndl, bool owned)
- * 
- * cdef class TypeScope(NamedScope):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.ITypeScope *asTypeScope(self)
- */
-struct __pyx_obj_9pssparser_6pssast_TypeScope {
-  struct __pyx_obj_9pssparser_6pssast_NamedScope __pyx_base;
-};
-
-
-/* "pssparser/pssast.pxd":731
- *     cdef TypeScope mk(pssast_decl.ITypeScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1103
+ *     cdef ConstraintStmtImplication mk(zsp_ast_decl.IConstraintStmtImplication *hndl, bool owned)
  * 
  * cdef class ExprRefPathStaticFunc(ExprRefPathStatic):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathStaticFunc *asExprRefPathStaticFunc(self)
+ *     cdef zsp_ast_decl.IExprRefPathStaticFunc *asExprRefPathStaticFunc(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticFunc {
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":737
- *     cdef ExprRefPathStaticFunc mk(pssast_decl.IExprRefPathStaticFunc *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1109
+ *     cdef ExprRefPathStaticFunc mk(zsp_ast_decl.IExprRefPathStaticFunc *hndl, bool owned)
  * 
- * cdef class ExprRefPathSuper(ExprRefPathContext):             # <<<<<<<<<<<<<<
+ * cdef class TypeScope(NamedScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathSuper *asExprRefPathSuper(self)
+ *     cdef zsp_ast_decl.ITypeScope *asTypeScope(self)
  */
-struct __pyx_obj_9pssparser_6pssast_ExprRefPathSuper {
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathContext __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":743
- *     cdef ExprRefPathSuper mk(pssast_decl.IExprRefPathSuper *hndl, bool owned)
- * 
- * cdef class Action(TypeScope):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IAction *asAction(self)
- */
-struct __pyx_obj_9pssparser_6pssast_Action {
-  struct __pyx_obj_9pssparser_6pssast_TypeScope __pyx_base;
-};
-
-
-/* "pssparser/pssast.pxd":750
- *     cpdef bool getIs_abstract(self)
+/* "zuspec_parser/zsp_ast.pxd":1115
+ *     cdef TypeScope mk(zsp_ast_decl.ITypeScope *hndl, bool owned)
  * 
  * cdef class Component(TypeScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IComponent *asComponent(self)
+ *     cdef zsp_ast_decl.IComponent *asComponent(self)
  */
-struct __pyx_obj_9pssparser_6pssast_Component {
-  struct __pyx_obj_9pssparser_6pssast_TypeScope __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Component {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":756
- *     cdef Component mk(pssast_decl.IComponent *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1121
+ *     cdef Component mk(zsp_ast_decl.IComponent *hndl, bool owned)
  * 
  * cdef class Struct(TypeScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IStruct *asStruct(self)
+ *     cdef zsp_ast_decl.IStruct *asStruct(self)
  */
-struct __pyx_obj_9pssparser_6pssast_Struct {
-  struct __pyx_obj_9pssparser_6pssast_TypeScope __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Struct {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":762
- *     cdef Struct mk(pssast_decl.IStruct *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1128
+ *     cpdef  getKind(self)
  * 
- * cdef class State(Struct):             # <<<<<<<<<<<<<<
+ * cdef class Action(TypeScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IState *asState(self)
+ *     cdef zsp_ast_decl.IAction *asAction(self)
  */
-struct __pyx_obj_9pssparser_6pssast_State {
-  struct __pyx_obj_9pssparser_6pssast_Struct __pyx_base;
+struct __pyx_obj_13zuspec_parser_7zsp_ast_Action {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope __pyx_base;
 };
 
 
-/* "pssparser/pssast.pxd":768
- *     cdef State mk(pssast_decl.IState *hndl, bool owned)
- * 
- * cdef class Stream(Struct):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IStream *asStream(self)
- */
-struct __pyx_obj_9pssparser_6pssast_Stream {
-  struct __pyx_obj_9pssparser_6pssast_Struct __pyx_base;
-};
-
-
-/* "pssparser/pssast.pxd":774
- *     cdef Stream mk(pssast_decl.IStream *hndl, bool owned)
- * 
- * cdef class Buffer(Struct):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IBuffer *asBuffer(self)
- */
-struct __pyx_obj_9pssparser_6pssast_Buffer {
-  struct __pyx_obj_9pssparser_6pssast_Struct __pyx_base;
-};
-
-
-/* "pssparser/pssast.pxd":780
- *     cdef Buffer mk(pssast_decl.IBuffer *hndl, bool owned)
- * 
- * cdef class Resource(Struct):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IResource *asResource(self)
- */
-struct __pyx_obj_9pssparser_6pssast_Resource {
-  struct __pyx_obj_9pssparser_6pssast_Struct __pyx_base;
-};
-
-
-/* "pssparser/pssast.pxd":786
- *     cdef Resource mk(pssast_decl.IResource *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1135
+ *     cpdef bool getIs_abstract(self)
  * 
  * cdef class VisitorBase(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.PyBaseVisitor *_hndl
+ *     cdef zsp_ast_decl.PyBaseVisitor *_hndl
  *     cdef bool                  _owned
  */
-struct __pyx_obj_9pssparser_6pssast_VisitorBase {
+struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_6pssast_VisitorBase *__pyx_vtab;
-  pssp::ast::PyBaseVisitor *_hndl;
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_VisitorBase *__pyx_vtab;
+  zsp::ast::PyBaseVisitor *_hndl;
   bool _owned;
 };
 
 
-/* "pssparser/core.pxd":8
+/* "zuspec_parser/core.pxd":8
  * cimport ciostream
  * 
  * cdef class Factory(object):             # <<<<<<<<<<<<<<
  *     cdef decl.IFactory      *_hndl
  * 
  */
-struct __pyx_obj_9pssparser_4core_Factory {
+struct __pyx_obj_13zuspec_parser_4core_Factory {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_4core_Factory *__pyx_vtab;
-  pssp::IFactory *_hndl;
+  struct __pyx_vtabstruct_13zuspec_parser_4core_Factory *__pyx_vtab;
+  zsp::IFactory *_hndl;
 };
 
 
-/* "pssparser/core.pxd":19
+/* "zuspec_parser/core.pxd":19
  * 
  * 
  * cdef class AstBuilder(object):             # <<<<<<<<<<<<<<
  *     cdef decl.IAstBuilder      *_hndl
  * 
  */
-struct __pyx_obj_9pssparser_4core_AstBuilder {
+struct __pyx_obj_13zuspec_parser_4core_AstBuilder {
   PyObject_HEAD
-  struct __pyx_vtabstruct_9pssparser_4core_AstBuilder *__pyx_vtab;
-  pssp::IAstBuilder *_hndl;
+  struct __pyx_vtabstruct_13zuspec_parser_4core_AstBuilder *__pyx_vtab;
+  zsp::IAstBuilder *_hndl;
 };
 
 
-/* "pssparser/core.pxd":31
+/* "zuspec_parser/core.pxd":31
  * 
  * 
  * cdef class MarkerListener(object):             # <<<<<<<<<<<<<<
  *     cdef decl.IMarkerListener       *_hndl
  */
-struct __pyx_obj_9pssparser_4core_MarkerListener {
+struct __pyx_obj_13zuspec_parser_4core_MarkerListener {
   PyObject_HEAD
-  pssp::IMarkerListener *_hndl;
+  zsp::IMarkerListener *_hndl;
 };
 
 
 
-/* "../python/lib/python3.7/site-packages/ciostream/__init__.pxd":38
+/* "packages/python/lib/python3.7/site-packages/ciostream/__init__.pxd":38
  *         _costream(cpy_ref.PyObject *)
  * 
  * cdef class cistream(object):             # <<<<<<<<<<<<<<
@@ -3259,7 +4128,7 @@ struct __pyx_vtabstruct_9ciostream_cistream {
 static struct __pyx_vtabstruct_9ciostream_cistream *__pyx_vtabptr_9ciostream_cistream;
 
 
-/* "../python/lib/python3.7/site-packages/ciostream/__init__.pxd":42
+/* "packages/python/lib/python3.7/site-packages/ciostream/__init__.pxd":42
  *     cdef istream *stream(self)
  * 
  * cdef class costream(object):             # <<<<<<<<<<<<<<
@@ -3273,1571 +4142,2251 @@ struct __pyx_vtabstruct_9ciostream_costream {
 static struct __pyx_vtabstruct_9ciostream_costream *__pyx_vtabptr_9ciostream_costream;
 
 
-/* "pssparser/pssast.pxd":23
+/* "zuspec_parser/zsp_ast.pxd":23
  * 
- * from pssparser cimport pssast_decl
+ * from zuspec_parser cimport zsp_ast_decl
  * cdef class Factory(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IFactory *_hndl
- *     cpdef ExecStmt mkExecStmt(self)
+ *     cdef zsp_ast_decl.IFactory *_hndl
+ *     cpdef ScopeChild mkScopeChild(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_Factory {
-  struct __pyx_obj_9pssparser_6pssast_ExecStmt *(*mkExecStmt)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_Expr *(*mkExpr)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_RefExpr *(*mkRefExpr)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamDeclList *(*mkTemplateParamDeclList)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl *(*mkTemplateParamDecl)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ScopeChild *(*mkScopeChild)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamValueList *(*mkTemplateParamValueList)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamValue *(*mkTemplateParamValue)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamTypeValue *(*mkTemplateParamTypeValue)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamExprValue *(*mkTemplateParamExprValue)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt *(*mkConstraintStmt)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_Scope *(*mkScope)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_NamedScopeChild *(*mkNamedScopeChild)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_PackageImportStmt *(*mkPackageImportStmt)(struct __pyx_obj_9pssparser_6pssast_Factory *, bool, struct __pyx_obj_9pssparser_6pssast_ExprId *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_DataType *(*mkDataType)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExecScope *(*mkExecScope)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ProceduralStmtDataDeclaration *(*mkProceduralStmtDataDeclaration)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_DataType *, struct __pyx_obj_9pssparser_6pssast_ExprId *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprBin *(*mkExprBin)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, PyObject *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprBitSlice *(*mkExprBitSlice)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprBool *(*mkExprBool)(struct __pyx_obj_9pssparser_6pssast_Factory *, bool, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprCast *(*mkExprCast)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprCompileHas *(*mkExprCompileHas)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprCond *(*mkExprCond)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeList *(*mkExprDomainOpenRangeList)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeValue *(*mkExprDomainOpenRangeValue)(struct __pyx_obj_9pssparser_6pssast_Factory *, bool, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId *(*mkExprHierarchicalId)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprId *(*mkExprId)(struct __pyx_obj_9pssparser_6pssast_Factory *, std::string, bool, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprIn *(*mkExprIn)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeList *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprMemberPathElem *(*mkExprMemberPathElem)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_MethodParameterList *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprNumber *(*mkExprNumber)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprAggregateLiteral *(*mkExprAggregateLiteral)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeList *(*mkExprOpenRangeList)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeValue *(*mkExprOpenRangeValue)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPath *(*mkExprRefPath)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathElem *(*mkExprRefPathElem)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticRooted *(*mkExprRefPathStaticRooted)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic *, struct __pyx_obj_9pssparser_6pssast_ExprRefPathContext *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprStaticRefPath *(*mkExprStaticRefPath)(struct __pyx_obj_9pssparser_6pssast_Factory *, bool, struct __pyx_obj_9pssparser_6pssast_ExprMemberPathElem *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprString *(*mkExprString)(struct __pyx_obj_9pssparser_6pssast_Factory *, std::string, bool, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprSubscript *(*mkExprSubscript)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprUnary *(*mkExprUnary)(struct __pyx_obj_9pssparser_6pssast_Factory *, PyObject *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_MethodParameterList *(*mkMethodParameterList)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *(*mkTypeIdentifier)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TypeIdentifierElem *(*mkTypeIdentifierElem)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeGlobal *(*mkRefExprTypeScopeGlobal)(struct __pyx_obj_9pssparser_6pssast_Factory *, __pyx_t_9pssparser_6pssast_int32_t, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeContext *(*mkRefExprTypeScopeContext)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_RefExpr *, __pyx_t_9pssparser_6pssast_int32_t, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_RefExprScopeIndex *(*mkRefExprScopeIndex)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_RefExpr *, __pyx_t_9pssparser_6pssast_int32_t, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TemplateGenericTypeParamDecl *(*mkTemplateGenericTypeParamDecl)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TemplateCategoryTypeParamDecl *(*mkTemplateCategoryTypeParamDecl)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, PyObject *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TemplateValueParamDecl *(*mkTemplateValueParamDecl)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintBlock *(*mkConstraintBlock)(struct __pyx_obj_9pssparser_6pssast_Factory *, std::string, bool, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintScope *(*mkConstraintScope)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefault *(*mkConstraintStmtDefault)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefaultDisable *(*mkConstraintStmtDefaultDisable)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtExpr *(*mkConstraintStmtExpr)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtField *(*mkConstraintStmtField)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_DataType *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtIf *(*mkConstraintStmtIf)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_ConstraintScope *, struct __pyx_obj_9pssparser_6pssast_ConstraintScope *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtUnique *(*mkConstraintStmtUnique)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_GlobalScope *(*mkGlobalScope)(struct __pyx_obj_9pssparser_6pssast_Factory *, __pyx_t_9pssparser_6pssast_int32_t, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_NamedScope *(*mkNamedScope)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_PackageScope *(*mkPackageScope)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeArray *(*mkDataTypeArray)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_DataType *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeBool *(*mkDataTypeBool)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeChandle *(*mkDataTypeChandle)(struct __pyx_obj_9pssparser_6pssast_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeEnum *(*mkDataTypeEnum)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined *, struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeList *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeInt *(*mkDataTypeInt)(struct __pyx_obj_9pssparser_6pssast_Factory *, bool, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeList *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeString *(*mkDataTypeString)(struct __pyx_obj_9pssparser_6pssast_Factory *, bool, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined *(*mkDataTypeUserDefined)(struct __pyx_obj_9pssparser_6pssast_Factory *, bool, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathContext *(*mkExprRefPathContext)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic *(*mkExprRefPathStatic)(struct __pyx_obj_9pssparser_6pssast_Factory *, bool, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber *(*mkExprSignedNumber)(struct __pyx_obj_9pssparser_6pssast_Factory *, std::string, __pyx_t_9pssparser_6pssast_uint32_t, __pyx_t_9pssparser_6pssast_int64_t, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber *(*mkExprUnsignedNumber)(struct __pyx_obj_9pssparser_6pssast_Factory *, std::string, __pyx_t_9pssparser_6pssast_uint32_t, __pyx_t_9pssparser_6pssast_uint64_t, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForall *(*mkConstraintStmtForall)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined *, struct __pyx_obj_9pssparser_6pssast_ExprRefPath *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForeach *(*mkConstraintStmtForeach)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtImplication *(*mkConstraintStmtImplication)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_TypeScope *(*mkTypeScope)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticFunc *(*mkExprRefPathStaticFunc)(struct __pyx_obj_9pssparser_6pssast_Factory *, bool, struct __pyx_obj_9pssparser_6pssast_MethodParameterList *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathSuper *(*mkExprRefPathSuper)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_Action *(*mkAction)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, bool, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_Component *(*mkComponent)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_Struct *(*mkStruct)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_State *(*mkState)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_Stream *(*mkStream)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_Buffer *(*mkBuffer)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_6pssast_Resource *(*mkResource)(struct __pyx_obj_9pssparser_6pssast_Factory *, struct __pyx_obj_9pssparser_6pssast_ExprId *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  PyObject *(*mk)(pssp::ast::IFactory *);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Factory {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *(*mkScopeChild)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolImportSpec *(*mkSymbolImportSpec)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec *(*mkActivityJoinSpec)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr *(*mkRefExpr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefTarget *(*mkRefTarget)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDeclList *(*mkTemplateParamDeclList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl *(*mkTemplateParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelectBranch *(*mkActivitySelectBranch)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValueList *(*mkTemplateParamValueList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValue *(*mkTemplateParamValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatchChoice *(*mkActivityMatchChoice)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamTypeValue *(*mkTemplateParamTypeValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamExprValue *(*mkTemplateParamExprValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt *(*mkExecStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *(*mkExpr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt *(*mkActivityStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint *(*mkActivitySchedulingConstraint)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch *(*mkActivityJoinSpecBranch)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect *(*mkActivityJoinSpecSelect)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone *(*mkActivityJoinSpecNone)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst *(*mkActivityJoinSpecFirst)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt *(*mkConstraintStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope *(*mkScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChildRef *(*mkScopeChildRef)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild *(*mkNamedScopeChild)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageImportStmt *(*mkPackageImportStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType *(*mkDataType)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecScope *(*mkExecScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration *(*mkProceduralStmtDataDeclaration)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBin *(*mkExprBin)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, PyObject *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBitSlice *(*mkExprBitSlice)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBool *(*mkExprBool)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCast *(*mkExprCast)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCompileHas *(*mkExprCompileHas)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCond *(*mkExprCond)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList *(*mkExprDomainOpenRangeList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue *(*mkExprDomainOpenRangeValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId *(*mkExprHierarchicalId)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *(*mkExprId)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, std::string, bool, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprIn *(*mkExprIn)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprMemberPathElem *(*mkExprMemberPathElem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_MethodParameterList *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNull *(*mkExprNull)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNumber *(*mkExprNumber)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprAggregateLiteral *(*mkExprAggregateLiteral)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList *(*mkExprOpenRangeList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeValue *(*mkExprOpenRangeValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPath *(*mkExprRefPath)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext *(*mkExprRefPathContext)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathElem *(*mkExprRefPathElem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted *(*mkExprRefPathStaticRooted)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprStaticRefPath *(*mkExprStaticRefPath)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprMemberPathElem *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprString *(*mkExprString)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, std::string, bool, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSubscript *(*mkExprSubscript)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnary *(*mkExprUnary)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, PyObject *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_MethodParameterList *(*mkMethodParameterList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *(*mkTypeIdentifier)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifierElem *(*mkTypeIdentifierElem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendEnum *(*mkExtendEnum)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope *(*mkSymbolScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, __pyx_t_13zuspec_parser_7zsp_ast_int32_t, std::string, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal *(*mkRefExprTypeScopeGlobal)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, __pyx_t_13zuspec_parser_7zsp_ast_int32_t, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext *(*mkRefExprTypeScopeContext)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr *, __pyx_t_13zuspec_parser_7zsp_ast_int32_t, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprScopeIndex *(*mkRefExprScopeIndex)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr *, __pyx_t_13zuspec_parser_7zsp_ast_int32_t, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl *(*mkTemplateGenericTypeParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl *(*mkTemplateCategoryTypeParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, PyObject *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateValueParamDecl *(*mkTemplateValueParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityBindStmt *(*mkActivityBindStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityConstraint *(*mkActivityConstraint)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt *(*mkActivityLabeledStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope *(*mkActivityLabeledScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope *(*mkConstraintScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtExpr *(*mkConstraintStmtExpr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtField *(*mkConstraintStmtField)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtIf *(*mkConstraintStmtIf)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtUnique *(*mkConstraintStmtUnique)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefault *(*mkConstraintStmtDefault)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable *(*mkConstraintStmtDefaultDisable)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *(*mkGlobalScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, __pyx_t_13zuspec_parser_7zsp_ast_int32_t, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScope *(*mkNamedScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageScope *(*mkPackageScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeArray *(*mkDataTypeArray)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeBool *(*mkDataTypeBool)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeChandle *(*mkDataTypeChandle)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeEnum *(*mkDataTypeEnum)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumItem *(*mkEnumItem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumDecl *(*mkEnumDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeInt *(*mkDataTypeInt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeRef *(*mkDataTypeRef)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeString *(*mkDataTypeString)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *(*mkDataTypeUserDefined)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic *(*mkExprRefPathStatic)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBitSlice *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathSuper *(*mkExprRefPathSuper)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber *(*mkExprSignedNumber)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, std::string, __pyx_t_13zuspec_parser_7zsp_ast_int32_t, __pyx_t_13zuspec_parser_7zsp_ast_int64_t, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber *(*mkExprUnsignedNumber)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, std::string, __pyx_t_13zuspec_parser_7zsp_ast_int32_t, __pyx_t_13zuspec_parser_7zsp_ast_uint64_t, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendType *(*mkExtendType)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, PyObject *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Field *(*mkField)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType *, PyObject *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldRef *(*mkFieldRef)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, bool, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldClaim *(*mkFieldClaim)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, bool, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolTypeScope *(*mkSymbolTypeScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, __pyx_t_13zuspec_parser_7zsp_ast_int32_t, std::string, struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolFunctionScope *(*mkSymbolFunctionScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, __pyx_t_13zuspec_parser_7zsp_ast_int32_t, std::string, struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal *(*mkActivityActionHandleTraversal)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal *(*mkActivityActionTypeTraversal)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySequence *(*mkActivitySequence)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityParallel *(*mkActivityParallel)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedule *(*mkActivitySchedule)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatCount *(*mkActivityRepeatCount)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatWhile *(*mkActivityRepeatWhile)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityForeach *(*mkActivityForeach)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelect *(*mkActivitySelect)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityIfElse *(*mkActivityIfElse)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatch *(*mkActivityMatch)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityReplicate *(*mkActivityReplicate)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySuper *(*mkActivitySuper)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintBlock *(*mkConstraintBlock)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, std::string, bool, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForeach *(*mkConstraintStmtForeach)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForall *(*mkConstraintStmtForall)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPath *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtImplication *(*mkConstraintStmtImplication)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc *(*mkExprRefPathStaticFunc)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, bool, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBitSlice *, struct __pyx_obj_13zuspec_parser_7zsp_ast_MethodParameterList *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope *(*mkTypeScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Component *(*mkComponent)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Struct *(*mkStruct)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, PyObject *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Action *(*mkAction)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, bool, int __pyx_skip_dispatch);
+  PyObject *(*mk)(zsp::ast::IFactory *);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_Factory *__pyx_vtabptr_9pssparser_6pssast_Factory;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Factory *__pyx_vtabptr_13zuspec_parser_7zsp_ast_Factory;
 
 
-/* "pssparser/pssast.pxd":224
+/* "zuspec_parser/zsp_ast.pxd":318
  *     @staticmethod
- *     cdef mk(pssast_decl.IFactory *hndl)
- * cdef class ExecStmt(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IExecStmt    *_hndl
- *     cdef bool           _owned
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_ExecStmt {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_ExecStmt *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::IExecStmt *(*asExecStmt)(struct __pyx_obj_9pssparser_6pssast_ExecStmt *);
-  struct __pyx_obj_9pssparser_6pssast_ExecStmt *(*mk)(pssp::ast::IExecStmt *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExecStmt *__pyx_vtabptr_9pssparser_6pssast_ExecStmt;
-
-
-/* "pssparser/pssast.pxd":233
- *     cdef ExecStmt mk(pssast_decl.IExecStmt *hndl, bool owned)
- * 
- * cdef class Expr(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IExpr    *_hndl
- *     cdef bool           _owned
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_Expr {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_Expr *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::IExpr *(*asExpr)(struct __pyx_obj_9pssparser_6pssast_Expr *);
-  struct __pyx_obj_9pssparser_6pssast_Expr *(*mk)(pssp::ast::IExpr *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_Expr *__pyx_vtabptr_9pssparser_6pssast_Expr;
-
-
-/* "pssparser/pssast.pxd":242
- *     cdef Expr mk(pssast_decl.IExpr *hndl, bool owned)
- * 
- * cdef class RefExpr(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IRefExpr    *_hndl
- *     cdef bool           _owned
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_RefExpr {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_RefExpr *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::IRefExpr *(*asRefExpr)(struct __pyx_obj_9pssparser_6pssast_RefExpr *);
-  struct __pyx_obj_9pssparser_6pssast_RefExpr *(*mk)(pssp::ast::IRefExpr *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_RefExpr *__pyx_vtabptr_9pssparser_6pssast_RefExpr;
-
-
-/* "pssparser/pssast.pxd":251
- *     cdef RefExpr mk(pssast_decl.IRefExpr *hndl, bool owned)
- * 
- * cdef class TemplateParamDeclList(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamDeclList    *_hndl
- *     cdef bool           _owned
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDeclList {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_TemplateParamDeclList *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::ITemplateParamDeclList *(*asTemplateParamDeclList)(struct __pyx_obj_9pssparser_6pssast_TemplateParamDeclList *);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamDeclList *(*mk)(pssp::ast::ITemplateParamDeclList *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDeclList *__pyx_vtabptr_9pssparser_6pssast_TemplateParamDeclList;
-
-
-/* "pssparser/pssast.pxd":260
- *     cdef TemplateParamDeclList mk(pssast_decl.ITemplateParamDeclList *hndl, bool owned)
- * 
- * cdef class TemplateParamDecl(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamDecl    *_hndl
- *     cdef bool           _owned
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDecl {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::ITemplateParamDecl *(*asTemplateParamDecl)(struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl *);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl *(*mk)(pssp::ast::ITemplateParamDecl *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDecl *__pyx_vtabptr_9pssparser_6pssast_TemplateParamDecl;
-
-
-/* "pssparser/pssast.pxd":269
- *     cdef TemplateParamDecl mk(pssast_decl.ITemplateParamDecl *hndl, bool owned)
- * 
+ *     cdef mk(zsp_ast_decl.IFactory *hndl)
  * cdef class ScopeChild(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.IScopeChild    *_hndl
+ *     cdef zsp_ast_decl.IScopeChild    *_hndl
  *     cdef bool           _owned
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ScopeChild {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_ScopeChild *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::IScopeChild *(*asScopeChild)(struct __pyx_obj_9pssparser_6pssast_ScopeChild *);
-  struct __pyx_obj_9pssparser_6pssast_ScopeChild *(*mk)(pssp::ast::IScopeChild *, bool);
-  std::string (*getDocstring)(struct __pyx_obj_9pssparser_6pssast_ScopeChild *, int __pyx_skip_dispatch);
-  __pyx_t_9pssparser_6pssast_int32_t (*getIndex)(struct __pyx_obj_9pssparser_6pssast_ScopeChild *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::IScopeChild *(*asScopeChild)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *(*mk)(zsp::ast::IScopeChild *, bool);
+  std::string (*getDocstring)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getLocation)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getIndex)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ScopeChild *__pyx_vtabptr_9pssparser_6pssast_ScopeChild;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ScopeChild;
 
 
-/* "pssparser/pssast.pxd":280
+/* "zuspec_parser/zsp_ast.pxd":332
  *     cpdef int32_t getIndex(self)
  * 
- * cdef class TemplateParamValueList(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamValueList    *_hndl
+ * cdef class SymbolImportSpec(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.ISymbolImportSpec    *_hndl
  *     cdef bool           _owned
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamValueList {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_TemplateParamValueList *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::ITemplateParamValueList *(*asTemplateParamValueList)(struct __pyx_obj_9pssparser_6pssast_TemplateParamValueList *);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamValueList *(*mk)(pssp::ast::ITemplateParamValueList *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolImportSpec {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolImportSpec *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::ISymbolImportSpec *(*asSymbolImportSpec)(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolImportSpec *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolImportSpec *(*mk)(zsp::ast::ISymbolImportSpec *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamValueList *__pyx_vtabptr_9pssparser_6pssast_TemplateParamValueList;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolImportSpec *__pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolImportSpec;
 
 
-/* "pssparser/pssast.pxd":289
- *     cdef TemplateParamValueList mk(pssast_decl.ITemplateParamValueList *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":341
+ *     cdef SymbolImportSpec mk(zsp_ast_decl.ISymbolImportSpec *hndl, bool owned)
+ * 
+ * cdef class ActivityJoinSpec(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IActivityJoinSpec    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpec {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::IActivityJoinSpec *(*asActivityJoinSpec)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec *(*mk)(zsp::ast::IActivityJoinSpec *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpec *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpec;
+
+
+/* "zuspec_parser/zsp_ast.pxd":350
+ *     cdef ActivityJoinSpec mk(zsp_ast_decl.IActivityJoinSpec *hndl, bool owned)
+ * 
+ * cdef class RefExpr(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IRefExpr    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExpr {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::IRefExpr *(*asRefExpr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr *(*mk)(zsp::ast::IRefExpr *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExpr *__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExpr;
+
+
+/* "zuspec_parser/zsp_ast.pxd":359
+ *     cdef RefExpr mk(zsp_ast_decl.IRefExpr *hndl, bool owned)
+ * 
+ * cdef class RefTarget(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IRefTarget    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefTarget {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefTarget *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::IRefTarget *(*asRefTarget)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefTarget *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefTarget *(*mk)(zsp::ast::IRefTarget *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefTarget *__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefTarget;
+
+
+/* "zuspec_parser/zsp_ast.pxd":368
+ *     cdef RefTarget mk(zsp_ast_decl.IRefTarget *hndl, bool owned)
+ * 
+ * cdef class TemplateParamDeclList(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.ITemplateParamDeclList    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDeclList {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDeclList *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::ITemplateParamDeclList *(*asTemplateParamDeclList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDeclList *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDeclList *(*mk)(zsp::ast::ITemplateParamDeclList *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDeclList *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamDeclList;
+
+
+/* "zuspec_parser/zsp_ast.pxd":377
+ *     cdef TemplateParamDeclList mk(zsp_ast_decl.ITemplateParamDeclList *hndl, bool owned)
+ * 
+ * cdef class TemplateParamDecl(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.ITemplateParamDecl    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDecl {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::ITemplateParamDecl *(*asTemplateParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl *(*mk)(zsp::ast::ITemplateParamDecl *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDecl *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamDecl;
+
+
+/* "zuspec_parser/zsp_ast.pxd":386
+ *     cdef TemplateParamDecl mk(zsp_ast_decl.ITemplateParamDecl *hndl, bool owned)
+ * 
+ * cdef class ActivitySelectBranch(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IActivitySelectBranch    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySelectBranch {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelectBranch *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::IActivitySelectBranch *(*asActivitySelectBranch)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelectBranch *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelectBranch *(*mk)(zsp::ast::IActivitySelectBranch *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySelectBranch *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySelectBranch;
+
+
+/* "zuspec_parser/zsp_ast.pxd":395
+ *     cdef ActivitySelectBranch mk(zsp_ast_decl.IActivitySelectBranch *hndl, bool owned)
+ * 
+ * cdef class TemplateParamValueList(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.ITemplateParamValueList    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamValueList {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValueList *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::ITemplateParamValueList *(*asTemplateParamValueList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValueList *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValueList *(*mk)(zsp::ast::ITemplateParamValueList *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamValueList *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamValueList;
+
+
+/* "zuspec_parser/zsp_ast.pxd":404
+ *     cdef TemplateParamValueList mk(zsp_ast_decl.ITemplateParamValueList *hndl, bool owned)
  * 
  * cdef class TemplateParamValue(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamValue    *_hndl
+ *     cdef zsp_ast_decl.ITemplateParamValue    *_hndl
  *     cdef bool           _owned
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamValue {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_TemplateParamValue *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::ITemplateParamValue *(*asTemplateParamValue)(struct __pyx_obj_9pssparser_6pssast_TemplateParamValue *);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamValue *(*mk)(pssp::ast::ITemplateParamValue *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamValue {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValue *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::ITemplateParamValue *(*asTemplateParamValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValue *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValue *(*mk)(zsp::ast::ITemplateParamValue *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamValue *__pyx_vtabptr_9pssparser_6pssast_TemplateParamValue;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamValue *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamValue;
 
 
-/* "pssparser/pssast.pxd":298
- *     cdef TemplateParamValue mk(pssast_decl.ITemplateParamValue *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":413
+ *     cdef TemplateParamValue mk(zsp_ast_decl.ITemplateParamValue *hndl, bool owned)
+ * 
+ * cdef class ActivityMatchChoice(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IActivityMatchChoice    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityMatchChoice {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatchChoice *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::IActivityMatchChoice *(*asActivityMatchChoice)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatchChoice *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatchChoice *(*mk)(zsp::ast::IActivityMatchChoice *, bool);
+  bool (*getIs_default)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatchChoice *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityMatchChoice *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityMatchChoice;
+
+
+/* "zuspec_parser/zsp_ast.pxd":423
+ *     cpdef bool getIs_default(self)
  * 
  * cdef class TemplateParamTypeValue(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamTypeValue    *_hndl
+ *     cdef zsp_ast_decl.ITemplateParamTypeValue    *_hndl
  *     cdef bool           _owned
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamTypeValue {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_TemplateParamTypeValue *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::ITemplateParamTypeValue *(*asTemplateParamTypeValue)(struct __pyx_obj_9pssparser_6pssast_TemplateParamTypeValue *);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamTypeValue *(*mk)(pssp::ast::ITemplateParamTypeValue *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamTypeValue {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamTypeValue *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::ITemplateParamTypeValue *(*asTemplateParamTypeValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamTypeValue *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamTypeValue *(*mk)(zsp::ast::ITemplateParamTypeValue *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamTypeValue *__pyx_vtabptr_9pssparser_6pssast_TemplateParamTypeValue;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamTypeValue *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamTypeValue;
 
 
-/* "pssparser/pssast.pxd":307
- *     cdef TemplateParamTypeValue mk(pssast_decl.ITemplateParamTypeValue *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":432
+ *     cdef TemplateParamTypeValue mk(zsp_ast_decl.ITemplateParamTypeValue *hndl, bool owned)
  * 
  * cdef class TemplateParamExprValue(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.ITemplateParamExprValue    *_hndl
+ *     cdef zsp_ast_decl.ITemplateParamExprValue    *_hndl
  *     cdef bool           _owned
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamExprValue {
-  void (*accept)(struct __pyx_obj_9pssparser_6pssast_TemplateParamExprValue *, struct __pyx_obj_9pssparser_6pssast_VisitorBase *, int __pyx_skip_dispatch);
-  pssp::ast::ITemplateParamExprValue *(*asTemplateParamExprValue)(struct __pyx_obj_9pssparser_6pssast_TemplateParamExprValue *);
-  struct __pyx_obj_9pssparser_6pssast_TemplateParamExprValue *(*mk)(pssp::ast::ITemplateParamExprValue *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamExprValue {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamExprValue *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::ITemplateParamExprValue *(*asTemplateParamExprValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamExprValue *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamExprValue *(*mk)(zsp::ast::ITemplateParamExprValue *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamExprValue *__pyx_vtabptr_9pssparser_6pssast_TemplateParamExprValue;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamExprValue *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamExprValue;
 
 
-/* "pssparser/pssast.pxd":316
- *     cdef TemplateParamExprValue mk(pssast_decl.ITemplateParamExprValue *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":441
+ *     cdef TemplateParamExprValue mk(zsp_ast_decl.ITemplateParamExprValue *hndl, bool owned)
+ * 
+ * cdef class ExecStmt(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IExecStmt    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExecStmt {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::IExecStmt *(*asExecStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt *(*mk)(zsp::ast::IExecStmt *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExecStmt *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExecStmt;
+
+
+/* "zuspec_parser/zsp_ast.pxd":450
+ *     cdef ExecStmt mk(zsp_ast_decl.IExecStmt *hndl, bool owned)
+ * 
+ * cdef class Expr(object):             # <<<<<<<<<<<<<<
+ *     cdef zsp_ast_decl.IExpr    *_hndl
+ *     cdef bool           _owned
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr {
+  void (*accept)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, int __pyx_skip_dispatch);
+  zsp::ast::IExpr *(*asExpr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *(*mk)(zsp::ast::IExpr *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr *__pyx_vtabptr_13zuspec_parser_7zsp_ast_Expr;
+
+
+/* "zuspec_parser/zsp_ast.pxd":459
+ *     cdef Expr mk(zsp_ast_decl.IExpr *hndl, bool owned)
+ * 
+ * cdef class ActivityStmt(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityStmt *asActivityStmt(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityStmt {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::IActivityStmt *(*asActivityStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt *(*mk)(zsp::ast::IActivityStmt *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityStmt *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityStmt;
+
+
+/* "zuspec_parser/zsp_ast.pxd":465
+ *     cdef ActivityStmt mk(zsp_ast_decl.IActivityStmt *hndl, bool owned)
+ * 
+ * cdef class ActivitySchedulingConstraint(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySchedulingConstraint *asActivitySchedulingConstraint(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::IActivitySchedulingConstraint *(*asActivitySchedulingConstraint)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint *(*mk)(zsp::ast::IActivitySchedulingConstraint *, bool);
+  bool (*getIs_parallel)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint;
+
+
+/* "zuspec_parser/zsp_ast.pxd":472
+ *     cpdef bool getIs_parallel(self)
+ * 
+ * cdef class ActivityJoinSpecBranch(ActivityJoinSpec):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityJoinSpecBranch *asActivityJoinSpecBranch(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpec __pyx_base;
+  zsp::ast::IActivityJoinSpecBranch *(*asActivityJoinSpecBranch)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch *(*mk)(zsp::ast::IActivityJoinSpecBranch *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch;
+
+
+/* "zuspec_parser/zsp_ast.pxd":478
+ *     cdef ActivityJoinSpecBranch mk(zsp_ast_decl.IActivityJoinSpecBranch *hndl, bool owned)
+ * 
+ * cdef class ActivityJoinSpecSelect(ActivityJoinSpec):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityJoinSpecSelect *asActivityJoinSpecSelect(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpec __pyx_base;
+  zsp::ast::IActivityJoinSpecSelect *(*asActivityJoinSpecSelect)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect *(*mk)(zsp::ast::IActivityJoinSpecSelect *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect;
+
+
+/* "zuspec_parser/zsp_ast.pxd":484
+ *     cdef ActivityJoinSpecSelect mk(zsp_ast_decl.IActivityJoinSpecSelect *hndl, bool owned)
+ * 
+ * cdef class ActivityJoinSpecNone(ActivityJoinSpec):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityJoinSpecNone *asActivityJoinSpecNone(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpec __pyx_base;
+  zsp::ast::IActivityJoinSpecNone *(*asActivityJoinSpecNone)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone *(*mk)(zsp::ast::IActivityJoinSpecNone *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone;
+
+
+/* "zuspec_parser/zsp_ast.pxd":490
+ *     cdef ActivityJoinSpecNone mk(zsp_ast_decl.IActivityJoinSpecNone *hndl, bool owned)
+ * 
+ * cdef class ActivityJoinSpecFirst(ActivityJoinSpec):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityJoinSpecFirst *asActivityJoinSpecFirst(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpec __pyx_base;
+  zsp::ast::IActivityJoinSpecFirst *(*asActivityJoinSpecFirst)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst *(*mk)(zsp::ast::IActivityJoinSpecFirst *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst;
+
+
+/* "zuspec_parser/zsp_ast.pxd":496
+ *     cdef ActivityJoinSpecFirst mk(zsp_ast_decl.IActivityJoinSpecFirst *hndl, bool owned)
  * 
  * cdef class ConstraintStmt(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmt *asConstraintStmt(self)
+ *     cdef zsp_ast_decl.IConstraintStmt *asConstraintStmt(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ScopeChild __pyx_base;
-  pssp::ast::IConstraintStmt *(*asConstraintStmt)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmt *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmt *(*mk)(pssp::ast::IConstraintStmt *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::IConstraintStmt *(*asConstraintStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt *(*mk)(zsp::ast::IConstraintStmt *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmt;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmt;
 
 
-/* "pssparser/pssast.pxd":322
- *     cdef ConstraintStmt mk(pssast_decl.IConstraintStmt *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":502
+ *     cdef ConstraintStmt mk(zsp_ast_decl.IConstraintStmt *hndl, bool owned)
  * 
  * cdef class Scope(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IScope *asScope(self)
+ *     cdef zsp_ast_decl.IScope *asScope(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_Scope {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ScopeChild __pyx_base;
-  pssp::ast::IScope *(*asScope)(struct __pyx_obj_9pssparser_6pssast_Scope *);
-  struct __pyx_obj_9pssparser_6pssast_Scope *(*mk)(pssp::ast::IScope *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Scope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::IScope *(*asScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope *(*mk)(zsp::ast::IScope *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_Scope *__pyx_vtabptr_9pssparser_6pssast_Scope;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Scope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_Scope;
 
 
-/* "pssparser/pssast.pxd":328
- *     cdef Scope mk(pssast_decl.IScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":508
+ *     cdef Scope mk(zsp_ast_decl.IScope *hndl, bool owned)
+ * 
+ * cdef class ScopeChildRef(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IScopeChildRef *asScopeChildRef(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChildRef {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::IScopeChildRef *(*asScopeChildRef)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChildRef *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChildRef *(*mk)(zsp::ast::IScopeChildRef *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChildRef *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ScopeChildRef;
+
+
+/* "zuspec_parser/zsp_ast.pxd":514
+ *     cdef ScopeChildRef mk(zsp_ast_decl.IScopeChildRef *hndl, bool owned)
  * 
  * cdef class NamedScopeChild(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.INamedScopeChild *asNamedScopeChild(self)
+ *     cdef zsp_ast_decl.INamedScopeChild *asNamedScopeChild(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_NamedScopeChild {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ScopeChild __pyx_base;
-  pssp::ast::INamedScopeChild *(*asNamedScopeChild)(struct __pyx_obj_9pssparser_6pssast_NamedScopeChild *);
-  struct __pyx_obj_9pssparser_6pssast_NamedScopeChild *(*mk)(pssp::ast::INamedScopeChild *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScopeChild {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::INamedScopeChild *(*asNamedScopeChild)(struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild *(*mk)(zsp::ast::INamedScopeChild *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_NamedScopeChild *__pyx_vtabptr_9pssparser_6pssast_NamedScopeChild;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScopeChild *__pyx_vtabptr_13zuspec_parser_7zsp_ast_NamedScopeChild;
 
 
-/* "pssparser/pssast.pxd":334
- *     cdef NamedScopeChild mk(pssast_decl.INamedScopeChild *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":520
+ *     cdef NamedScopeChild mk(zsp_ast_decl.INamedScopeChild *hndl, bool owned)
  * 
  * cdef class PackageImportStmt(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IPackageImportStmt *asPackageImportStmt(self)
+ *     cdef zsp_ast_decl.IPackageImportStmt *asPackageImportStmt(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_PackageImportStmt {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ScopeChild __pyx_base;
-  pssp::ast::IPackageImportStmt *(*asPackageImportStmt)(struct __pyx_obj_9pssparser_6pssast_PackageImportStmt *);
-  struct __pyx_obj_9pssparser_6pssast_PackageImportStmt *(*mk)(pssp::ast::IPackageImportStmt *, bool);
-  bool (*getWildcard)(struct __pyx_obj_9pssparser_6pssast_PackageImportStmt *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_PackageImportStmt {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::IPackageImportStmt *(*asPackageImportStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageImportStmt *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageImportStmt *(*mk)(zsp::ast::IPackageImportStmt *, bool);
+  bool (*getWildcard)(struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageImportStmt *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_PackageImportStmt *__pyx_vtabptr_9pssparser_6pssast_PackageImportStmt;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_PackageImportStmt *__pyx_vtabptr_13zuspec_parser_7zsp_ast_PackageImportStmt;
 
 
-/* "pssparser/pssast.pxd":341
+/* "zuspec_parser/zsp_ast.pxd":527
  *     cpdef bool getWildcard(self)
  * 
  * cdef class DataType(ScopeChild):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataType *asDataType(self)
+ *     cdef zsp_ast_decl.IDataType *asDataType(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_DataType {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ScopeChild __pyx_base;
-  pssp::ast::IDataType *(*asDataType)(struct __pyx_obj_9pssparser_6pssast_DataType *);
-  struct __pyx_obj_9pssparser_6pssast_DataType *(*mk)(pssp::ast::IDataType *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::IDataType *(*asDataType)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType *(*mk)(zsp::ast::IDataType *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_DataType *__pyx_vtabptr_9pssparser_6pssast_DataType;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType *__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataType;
 
 
-/* "pssparser/pssast.pxd":347
- *     cdef DataType mk(pssast_decl.IDataType *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":533
+ *     cdef DataType mk(zsp_ast_decl.IDataType *hndl, bool owned)
  * 
  * cdef class ExecScope(ExecStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExecScope *asExecScope(self)
+ *     cdef zsp_ast_decl.IExecScope *asExecScope(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExecScope {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ExecStmt __pyx_base;
-  pssp::ast::IExecScope *(*asExecScope)(struct __pyx_obj_9pssparser_6pssast_ExecScope *);
-  struct __pyx_obj_9pssparser_6pssast_ExecScope *(*mk)(pssp::ast::IExecScope *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExecScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExecStmt __pyx_base;
+  zsp::ast::IExecScope *(*asExecScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecScope *(*mk)(zsp::ast::IExecScope *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExecScope *__pyx_vtabptr_9pssparser_6pssast_ExecScope;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExecScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExecScope;
 
 
-/* "pssparser/pssast.pxd":353
- *     cdef ExecScope mk(pssast_decl.IExecScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":539
+ *     cdef ExecScope mk(zsp_ast_decl.IExecScope *hndl, bool owned)
  * 
  * cdef class ProceduralStmtDataDeclaration(ExecStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IProceduralStmtDataDeclaration *asProceduralStmtDataDeclaration(self)
+ *     cdef zsp_ast_decl.IProceduralStmtDataDeclaration *asProceduralStmtDataDeclaration(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ProceduralStmtDataDeclaration {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ExecStmt __pyx_base;
-  pssp::ast::IProceduralStmtDataDeclaration *(*asProceduralStmtDataDeclaration)(struct __pyx_obj_9pssparser_6pssast_ProceduralStmtDataDeclaration *);
-  struct __pyx_obj_9pssparser_6pssast_ProceduralStmtDataDeclaration *(*mk)(pssp::ast::IProceduralStmtDataDeclaration *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExecStmt __pyx_base;
+  zsp::ast::IProceduralStmtDataDeclaration *(*asProceduralStmtDataDeclaration)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration *(*mk)(zsp::ast::IProceduralStmtDataDeclaration *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ProceduralStmtDataDeclaration *__pyx_vtabptr_9pssparser_6pssast_ProceduralStmtDataDeclaration;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration;
 
 
-/* "pssparser/pssast.pxd":359
- *     cdef ProceduralStmtDataDeclaration mk(pssast_decl.IProceduralStmtDataDeclaration *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":545
+ *     cdef ProceduralStmtDataDeclaration mk(zsp_ast_decl.IProceduralStmtDataDeclaration *hndl, bool owned)
  * 
  * cdef class ExprBin(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprBin *asExprBin(self)
+ *     cdef zsp_ast_decl.IExprBin *asExprBin(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprBin {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprBin *(*asExprBin)(struct __pyx_obj_9pssparser_6pssast_ExprBin *);
-  struct __pyx_obj_9pssparser_6pssast_ExprBin *(*mk)(pssp::ast::IExprBin *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprBin {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprBin *(*asExprBin)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBin *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBin *(*mk)(zsp::ast::IExprBin *, bool);
+  PyObject *(*getOp)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBin *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprBin *__pyx_vtabptr_9pssparser_6pssast_ExprBin;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprBin *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprBin;
 
 
-/* "pssparser/pssast.pxd":365
- *     cdef ExprBin mk(pssast_decl.IExprBin *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":552
+ *     cpdef  getOp(self)
  * 
  * cdef class ExprBitSlice(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprBitSlice *asExprBitSlice(self)
+ *     cdef zsp_ast_decl.IExprBitSlice *asExprBitSlice(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprBitSlice {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprBitSlice *(*asExprBitSlice)(struct __pyx_obj_9pssparser_6pssast_ExprBitSlice *);
-  struct __pyx_obj_9pssparser_6pssast_ExprBitSlice *(*mk)(pssp::ast::IExprBitSlice *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprBitSlice {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprBitSlice *(*asExprBitSlice)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBitSlice *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBitSlice *(*mk)(zsp::ast::IExprBitSlice *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprBitSlice *__pyx_vtabptr_9pssparser_6pssast_ExprBitSlice;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprBitSlice *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprBitSlice;
 
 
-/* "pssparser/pssast.pxd":371
- *     cdef ExprBitSlice mk(pssast_decl.IExprBitSlice *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":558
+ *     cdef ExprBitSlice mk(zsp_ast_decl.IExprBitSlice *hndl, bool owned)
  * 
  * cdef class ExprBool(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprBool *asExprBool(self)
+ *     cdef zsp_ast_decl.IExprBool *asExprBool(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprBool {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprBool *(*asExprBool)(struct __pyx_obj_9pssparser_6pssast_ExprBool *);
-  struct __pyx_obj_9pssparser_6pssast_ExprBool *(*mk)(pssp::ast::IExprBool *, bool);
-  bool (*getValue)(struct __pyx_obj_9pssparser_6pssast_ExprBool *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprBool {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprBool *(*asExprBool)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBool *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBool *(*mk)(zsp::ast::IExprBool *, bool);
+  bool (*getValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBool *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprBool *__pyx_vtabptr_9pssparser_6pssast_ExprBool;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprBool *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprBool;
 
 
-/* "pssparser/pssast.pxd":378
+/* "zuspec_parser/zsp_ast.pxd":565
  *     cpdef bool getValue(self)
  * 
  * cdef class ExprCast(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprCast *asExprCast(self)
+ *     cdef zsp_ast_decl.IExprCast *asExprCast(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprCast {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprCast *(*asExprCast)(struct __pyx_obj_9pssparser_6pssast_ExprCast *);
-  struct __pyx_obj_9pssparser_6pssast_ExprCast *(*mk)(pssp::ast::IExprCast *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprCast {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprCast *(*asExprCast)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCast *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCast *(*mk)(zsp::ast::IExprCast *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprCast *__pyx_vtabptr_9pssparser_6pssast_ExprCast;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprCast *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprCast;
 
 
-/* "pssparser/pssast.pxd":384
- *     cdef ExprCast mk(pssast_decl.IExprCast *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":571
+ *     cdef ExprCast mk(zsp_ast_decl.IExprCast *hndl, bool owned)
  * 
  * cdef class ExprCompileHas(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprCompileHas *asExprCompileHas(self)
+ *     cdef zsp_ast_decl.IExprCompileHas *asExprCompileHas(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprCompileHas {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprCompileHas *(*asExprCompileHas)(struct __pyx_obj_9pssparser_6pssast_ExprCompileHas *);
-  struct __pyx_obj_9pssparser_6pssast_ExprCompileHas *(*mk)(pssp::ast::IExprCompileHas *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprCompileHas {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprCompileHas *(*asExprCompileHas)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCompileHas *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCompileHas *(*mk)(zsp::ast::IExprCompileHas *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprCompileHas *__pyx_vtabptr_9pssparser_6pssast_ExprCompileHas;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprCompileHas *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprCompileHas;
 
 
-/* "pssparser/pssast.pxd":390
- *     cdef ExprCompileHas mk(pssast_decl.IExprCompileHas *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":577
+ *     cdef ExprCompileHas mk(zsp_ast_decl.IExprCompileHas *hndl, bool owned)
  * 
  * cdef class ExprCond(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprCond *asExprCond(self)
+ *     cdef zsp_ast_decl.IExprCond *asExprCond(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprCond {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprCond *(*asExprCond)(struct __pyx_obj_9pssparser_6pssast_ExprCond *);
-  struct __pyx_obj_9pssparser_6pssast_ExprCond *(*mk)(pssp::ast::IExprCond *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprCond {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprCond *(*asExprCond)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCond *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCond *(*mk)(zsp::ast::IExprCond *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprCond *__pyx_vtabptr_9pssparser_6pssast_ExprCond;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprCond *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprCond;
 
 
-/* "pssparser/pssast.pxd":396
- *     cdef ExprCond mk(pssast_decl.IExprCond *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":583
+ *     cdef ExprCond mk(zsp_ast_decl.IExprCond *hndl, bool owned)
  * 
  * cdef class ExprDomainOpenRangeList(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprDomainOpenRangeList *asExprDomainOpenRangeList(self)
+ *     cdef zsp_ast_decl.IExprDomainOpenRangeList *asExprDomainOpenRangeList(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprDomainOpenRangeList {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprDomainOpenRangeList *(*asExprDomainOpenRangeList)(struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeList *);
-  struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeList *(*mk)(pssp::ast::IExprDomainOpenRangeList *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprDomainOpenRangeList *(*asExprDomainOpenRangeList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList *(*mk)(zsp::ast::IExprDomainOpenRangeList *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprDomainOpenRangeList *__pyx_vtabptr_9pssparser_6pssast_ExprDomainOpenRangeList;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList;
 
 
-/* "pssparser/pssast.pxd":402
- *     cdef ExprDomainOpenRangeList mk(pssast_decl.IExprDomainOpenRangeList *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":589
+ *     cdef ExprDomainOpenRangeList mk(zsp_ast_decl.IExprDomainOpenRangeList *hndl, bool owned)
  * 
  * cdef class ExprDomainOpenRangeValue(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprDomainOpenRangeValue *asExprDomainOpenRangeValue(self)
+ *     cdef zsp_ast_decl.IExprDomainOpenRangeValue *asExprDomainOpenRangeValue(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprDomainOpenRangeValue {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprDomainOpenRangeValue *(*asExprDomainOpenRangeValue)(struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeValue *);
-  struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeValue *(*mk)(pssp::ast::IExprDomainOpenRangeValue *, bool);
-  bool (*getSingle)(struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeValue *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprDomainOpenRangeValue *(*asExprDomainOpenRangeValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue *(*mk)(zsp::ast::IExprDomainOpenRangeValue *, bool);
+  bool (*getSingle)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprDomainOpenRangeValue *__pyx_vtabptr_9pssparser_6pssast_ExprDomainOpenRangeValue;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue;
 
 
-/* "pssparser/pssast.pxd":409
+/* "zuspec_parser/zsp_ast.pxd":596
  *     cpdef bool getSingle(self)
  * 
  * cdef class ExprHierarchicalId(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprHierarchicalId *asExprHierarchicalId(self)
+ *     cdef zsp_ast_decl.IExprHierarchicalId *asExprHierarchicalId(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprHierarchicalId {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprHierarchicalId *(*asExprHierarchicalId)(struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId *);
-  struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId *(*mk)(pssp::ast::IExprHierarchicalId *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprHierarchicalId {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprHierarchicalId *(*asExprHierarchicalId)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId *(*mk)(zsp::ast::IExprHierarchicalId *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprHierarchicalId *__pyx_vtabptr_9pssparser_6pssast_ExprHierarchicalId;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprHierarchicalId *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprHierarchicalId;
 
 
-/* "pssparser/pssast.pxd":415
- *     cdef ExprHierarchicalId mk(pssast_decl.IExprHierarchicalId *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":602
+ *     cdef ExprHierarchicalId mk(zsp_ast_decl.IExprHierarchicalId *hndl, bool owned)
  * 
  * cdef class ExprId(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprId *asExprId(self)
+ *     cdef zsp_ast_decl.IExprId *asExprId(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprId {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprId *(*asExprId)(struct __pyx_obj_9pssparser_6pssast_ExprId *);
-  struct __pyx_obj_9pssparser_6pssast_ExprId *(*mk)(pssp::ast::IExprId *, bool);
-  std::string (*getId)(struct __pyx_obj_9pssparser_6pssast_ExprId *, int __pyx_skip_dispatch);
-  bool (*getIs_escaped)(struct __pyx_obj_9pssparser_6pssast_ExprId *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprId {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprId *(*asExprId)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *(*mk)(zsp::ast::IExprId *, bool);
+  std::string (*getId)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  bool (*getIs_escaped)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getLocation)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprId *__pyx_vtabptr_9pssparser_6pssast_ExprId;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprId *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprId;
 
 
-/* "pssparser/pssast.pxd":423
- *     cpdef bool getIs_escaped(self)
+/* "zuspec_parser/zsp_ast.pxd":613
+ *     cpdef int32_t getLocation(self)
  * 
  * cdef class ExprIn(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprIn *asExprIn(self)
+ *     cdef zsp_ast_decl.IExprIn *asExprIn(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprIn {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprIn *(*asExprIn)(struct __pyx_obj_9pssparser_6pssast_ExprIn *);
-  struct __pyx_obj_9pssparser_6pssast_ExprIn *(*mk)(pssp::ast::IExprIn *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprIn {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprIn *(*asExprIn)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprIn *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprIn *(*mk)(zsp::ast::IExprIn *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprIn *__pyx_vtabptr_9pssparser_6pssast_ExprIn;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprIn *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprIn;
 
 
-/* "pssparser/pssast.pxd":429
- *     cdef ExprIn mk(pssast_decl.IExprIn *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":619
+ *     cdef ExprIn mk(zsp_ast_decl.IExprIn *hndl, bool owned)
  * 
  * cdef class ExprMemberPathElem(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprMemberPathElem *asExprMemberPathElem(self)
+ *     cdef zsp_ast_decl.IExprMemberPathElem *asExprMemberPathElem(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprMemberPathElem {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprMemberPathElem *(*asExprMemberPathElem)(struct __pyx_obj_9pssparser_6pssast_ExprMemberPathElem *);
-  struct __pyx_obj_9pssparser_6pssast_ExprMemberPathElem *(*mk)(pssp::ast::IExprMemberPathElem *, bool);
-  __pyx_t_9pssparser_6pssast_int32_t (*getTarget)(struct __pyx_obj_9pssparser_6pssast_ExprMemberPathElem *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprMemberPathElem {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprMemberPathElem *(*asExprMemberPathElem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprMemberPathElem *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprMemberPathElem *(*mk)(zsp::ast::IExprMemberPathElem *, bool);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getTarget)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprMemberPathElem *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprMemberPathElem *__pyx_vtabptr_9pssparser_6pssast_ExprMemberPathElem;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprMemberPathElem *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprMemberPathElem;
 
 
-/* "pssparser/pssast.pxd":436
+/* "zuspec_parser/zsp_ast.pxd":626
  *     cpdef int32_t getTarget(self)
+ * 
+ * cdef class ExprNull(Expr):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IExprNull *asExprNull(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprNull {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprNull *(*asExprNull)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNull *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNull *(*mk)(zsp::ast::IExprNull *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprNull *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprNull;
+
+
+/* "zuspec_parser/zsp_ast.pxd":632
+ *     cdef ExprNull mk(zsp_ast_decl.IExprNull *hndl, bool owned)
  * 
  * cdef class ExprNumber(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprNumber *asExprNumber(self)
+ *     cdef zsp_ast_decl.IExprNumber *asExprNumber(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprNumber {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprNumber *(*asExprNumber)(struct __pyx_obj_9pssparser_6pssast_ExprNumber *);
-  struct __pyx_obj_9pssparser_6pssast_ExprNumber *(*mk)(pssp::ast::IExprNumber *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprNumber {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprNumber *(*asExprNumber)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNumber *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNumber *(*mk)(zsp::ast::IExprNumber *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprNumber *__pyx_vtabptr_9pssparser_6pssast_ExprNumber;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprNumber *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprNumber;
 
 
-/* "pssparser/pssast.pxd":442
- *     cdef ExprNumber mk(pssast_decl.IExprNumber *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":638
+ *     cdef ExprNumber mk(zsp_ast_decl.IExprNumber *hndl, bool owned)
  * 
  * cdef class ExprAggregateLiteral(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprAggregateLiteral *asExprAggregateLiteral(self)
+ *     cdef zsp_ast_decl.IExprAggregateLiteral *asExprAggregateLiteral(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprAggregateLiteral {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprAggregateLiteral *(*asExprAggregateLiteral)(struct __pyx_obj_9pssparser_6pssast_ExprAggregateLiteral *);
-  struct __pyx_obj_9pssparser_6pssast_ExprAggregateLiteral *(*mk)(pssp::ast::IExprAggregateLiteral *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprAggregateLiteral {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprAggregateLiteral *(*asExprAggregateLiteral)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprAggregateLiteral *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprAggregateLiteral *(*mk)(zsp::ast::IExprAggregateLiteral *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprAggregateLiteral *__pyx_vtabptr_9pssparser_6pssast_ExprAggregateLiteral;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprAggregateLiteral *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprAggregateLiteral;
 
 
-/* "pssparser/pssast.pxd":448
- *     cdef ExprAggregateLiteral mk(pssast_decl.IExprAggregateLiteral *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":644
+ *     cdef ExprAggregateLiteral mk(zsp_ast_decl.IExprAggregateLiteral *hndl, bool owned)
  * 
  * cdef class ExprOpenRangeList(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprOpenRangeList *asExprOpenRangeList(self)
+ *     cdef zsp_ast_decl.IExprOpenRangeList *asExprOpenRangeList(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprOpenRangeList {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprOpenRangeList *(*asExprOpenRangeList)(struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeList *);
-  struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeList *(*mk)(pssp::ast::IExprOpenRangeList *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprOpenRangeList {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprOpenRangeList *(*asExprOpenRangeList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList *(*mk)(zsp::ast::IExprOpenRangeList *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprOpenRangeList *__pyx_vtabptr_9pssparser_6pssast_ExprOpenRangeList;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprOpenRangeList *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprOpenRangeList;
 
 
-/* "pssparser/pssast.pxd":454
- *     cdef ExprOpenRangeList mk(pssast_decl.IExprOpenRangeList *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":650
+ *     cdef ExprOpenRangeList mk(zsp_ast_decl.IExprOpenRangeList *hndl, bool owned)
  * 
  * cdef class ExprOpenRangeValue(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprOpenRangeValue *asExprOpenRangeValue(self)
+ *     cdef zsp_ast_decl.IExprOpenRangeValue *asExprOpenRangeValue(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprOpenRangeValue {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprOpenRangeValue *(*asExprOpenRangeValue)(struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeValue *);
-  struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeValue *(*mk)(pssp::ast::IExprOpenRangeValue *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprOpenRangeValue {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprOpenRangeValue *(*asExprOpenRangeValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeValue *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeValue *(*mk)(zsp::ast::IExprOpenRangeValue *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprOpenRangeValue *__pyx_vtabptr_9pssparser_6pssast_ExprOpenRangeValue;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprOpenRangeValue *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprOpenRangeValue;
 
 
-/* "pssparser/pssast.pxd":460
- *     cdef ExprOpenRangeValue mk(pssast_decl.IExprOpenRangeValue *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":656
+ *     cdef ExprOpenRangeValue mk(zsp_ast_decl.IExprOpenRangeValue *hndl, bool owned)
  * 
  * cdef class ExprRefPath(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPath *asExprRefPath(self)
+ *     cdef zsp_ast_decl.IExprRefPath *asExprRefPath(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPath {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprRefPath *(*asExprRefPath)(struct __pyx_obj_9pssparser_6pssast_ExprRefPath *);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPath *(*mk)(pssp::ast::IExprRefPath *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPath {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprRefPath *(*asExprRefPath)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPath *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPath *(*mk)(zsp::ast::IExprRefPath *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPath *__pyx_vtabptr_9pssparser_6pssast_ExprRefPath;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPath *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPath;
 
 
-/* "pssparser/pssast.pxd":466
- *     cdef ExprRefPath mk(pssast_decl.IExprRefPath *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":662
+ *     cdef ExprRefPath mk(zsp_ast_decl.IExprRefPath *hndl, bool owned)
+ * 
+ * cdef class ExprRefPathContext(Expr):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IExprRefPathContext *asExprRefPathContext(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathContext {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprRefPathContext *(*asExprRefPathContext)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext *(*mk)(zsp::ast::IExprRefPathContext *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathContext *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathContext;
+
+
+/* "zuspec_parser/zsp_ast.pxd":668
+ *     cdef ExprRefPathContext mk(zsp_ast_decl.IExprRefPathContext *hndl, bool owned)
  * 
  * cdef class ExprRefPathElem(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathElem *asExprRefPathElem(self)
+ *     cdef zsp_ast_decl.IExprRefPathElem *asExprRefPathElem(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathElem {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprRefPathElem *(*asExprRefPathElem)(struct __pyx_obj_9pssparser_6pssast_ExprRefPathElem *);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathElem *(*mk)(pssp::ast::IExprRefPathElem *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathElem {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprRefPathElem *(*asExprRefPathElem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathElem *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathElem *(*mk)(zsp::ast::IExprRefPathElem *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathElem *__pyx_vtabptr_9pssparser_6pssast_ExprRefPathElem;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathElem *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathElem;
 
 
-/* "pssparser/pssast.pxd":472
- *     cdef ExprRefPathElem mk(pssast_decl.IExprRefPathElem *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":674
+ *     cdef ExprRefPathElem mk(zsp_ast_decl.IExprRefPathElem *hndl, bool owned)
  * 
  * cdef class ExprRefPathStaticRooted(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathStaticRooted *asExprRefPathStaticRooted(self)
+ *     cdef zsp_ast_decl.IExprRefPathStaticRooted *asExprRefPathStaticRooted(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStaticRooted {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprRefPathStaticRooted *(*asExprRefPathStaticRooted)(struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticRooted *);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticRooted *(*mk)(pssp::ast::IExprRefPathStaticRooted *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprRefPathStaticRooted *(*asExprRefPathStaticRooted)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted *(*mk)(zsp::ast::IExprRefPathStaticRooted *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStaticRooted *__pyx_vtabptr_9pssparser_6pssast_ExprRefPathStaticRooted;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted;
 
 
-/* "pssparser/pssast.pxd":478
- *     cdef ExprRefPathStaticRooted mk(pssast_decl.IExprRefPathStaticRooted *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":680
+ *     cdef ExprRefPathStaticRooted mk(zsp_ast_decl.IExprRefPathStaticRooted *hndl, bool owned)
  * 
  * cdef class ExprStaticRefPath(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprStaticRefPath *asExprStaticRefPath(self)
+ *     cdef zsp_ast_decl.IExprStaticRefPath *asExprStaticRefPath(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprStaticRefPath {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprStaticRefPath *(*asExprStaticRefPath)(struct __pyx_obj_9pssparser_6pssast_ExprStaticRefPath *);
-  struct __pyx_obj_9pssparser_6pssast_ExprStaticRefPath *(*mk)(pssp::ast::IExprStaticRefPath *, bool);
-  bool (*getIs_global)(struct __pyx_obj_9pssparser_6pssast_ExprStaticRefPath *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprStaticRefPath {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprStaticRefPath *(*asExprStaticRefPath)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprStaticRefPath *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprStaticRefPath *(*mk)(zsp::ast::IExprStaticRefPath *, bool);
+  bool (*getIs_global)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprStaticRefPath *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprStaticRefPath *__pyx_vtabptr_9pssparser_6pssast_ExprStaticRefPath;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprStaticRefPath *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprStaticRefPath;
 
 
-/* "pssparser/pssast.pxd":485
+/* "zuspec_parser/zsp_ast.pxd":687
  *     cpdef bool getIs_global(self)
  * 
  * cdef class ExprString(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprString *asExprString(self)
+ *     cdef zsp_ast_decl.IExprString *asExprString(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprString {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprString *(*asExprString)(struct __pyx_obj_9pssparser_6pssast_ExprString *);
-  struct __pyx_obj_9pssparser_6pssast_ExprString *(*mk)(pssp::ast::IExprString *, bool);
-  std::string (*getValue)(struct __pyx_obj_9pssparser_6pssast_ExprString *, int __pyx_skip_dispatch);
-  bool (*getIs_raw)(struct __pyx_obj_9pssparser_6pssast_ExprString *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprString {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprString *(*asExprString)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprString *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprString *(*mk)(zsp::ast::IExprString *, bool);
+  std::string (*getValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprString *, int __pyx_skip_dispatch);
+  bool (*getIs_raw)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprString *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprString *__pyx_vtabptr_9pssparser_6pssast_ExprString;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprString *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprString;
 
 
-/* "pssparser/pssast.pxd":493
+/* "zuspec_parser/zsp_ast.pxd":695
  *     cpdef bool getIs_raw(self)
  * 
  * cdef class ExprSubscript(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprSubscript *asExprSubscript(self)
+ *     cdef zsp_ast_decl.IExprSubscript *asExprSubscript(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprSubscript {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprSubscript *(*asExprSubscript)(struct __pyx_obj_9pssparser_6pssast_ExprSubscript *);
-  struct __pyx_obj_9pssparser_6pssast_ExprSubscript *(*mk)(pssp::ast::IExprSubscript *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprSubscript {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprSubscript *(*asExprSubscript)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSubscript *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSubscript *(*mk)(zsp::ast::IExprSubscript *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprSubscript *__pyx_vtabptr_9pssparser_6pssast_ExprSubscript;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprSubscript *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprSubscript;
 
 
-/* "pssparser/pssast.pxd":499
- *     cdef ExprSubscript mk(pssast_decl.IExprSubscript *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":701
+ *     cdef ExprSubscript mk(zsp_ast_decl.IExprSubscript *hndl, bool owned)
  * 
  * cdef class ExprUnary(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprUnary *asExprUnary(self)
+ *     cdef zsp_ast_decl.IExprUnary *asExprUnary(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprUnary {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IExprUnary *(*asExprUnary)(struct __pyx_obj_9pssparser_6pssast_ExprUnary *);
-  struct __pyx_obj_9pssparser_6pssast_ExprUnary *(*mk)(pssp::ast::IExprUnary *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprUnary {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IExprUnary *(*asExprUnary)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnary *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnary *(*mk)(zsp::ast::IExprUnary *, bool);
+  PyObject *(*getOp)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnary *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprUnary *__pyx_vtabptr_9pssparser_6pssast_ExprUnary;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprUnary *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprUnary;
 
 
-/* "pssparser/pssast.pxd":505
- *     cdef ExprUnary mk(pssast_decl.IExprUnary *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":708
+ *     cpdef  getOp(self)
  * 
  * cdef class MethodParameterList(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IMethodParameterList *asMethodParameterList(self)
+ *     cdef zsp_ast_decl.IMethodParameterList *asMethodParameterList(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_MethodParameterList {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::IMethodParameterList *(*asMethodParameterList)(struct __pyx_obj_9pssparser_6pssast_MethodParameterList *);
-  struct __pyx_obj_9pssparser_6pssast_MethodParameterList *(*mk)(pssp::ast::IMethodParameterList *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_MethodParameterList {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::IMethodParameterList *(*asMethodParameterList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_MethodParameterList *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_MethodParameterList *(*mk)(zsp::ast::IMethodParameterList *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_MethodParameterList *__pyx_vtabptr_9pssparser_6pssast_MethodParameterList;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_MethodParameterList *__pyx_vtabptr_13zuspec_parser_7zsp_ast_MethodParameterList;
 
 
-/* "pssparser/pssast.pxd":511
- *     cdef MethodParameterList mk(pssast_decl.IMethodParameterList *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":714
+ *     cdef MethodParameterList mk(zsp_ast_decl.IMethodParameterList *hndl, bool owned)
  * 
  * cdef class TypeIdentifier(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITypeIdentifier *asTypeIdentifier(self)
+ *     cdef zsp_ast_decl.ITypeIdentifier *asTypeIdentifier(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_TypeIdentifier {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::ITypeIdentifier *(*asTypeIdentifier)(struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *);
-  struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *(*mk)(pssp::ast::ITypeIdentifier *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeIdentifier {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::ITypeIdentifier *(*asTypeIdentifier)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *(*mk)(zsp::ast::ITypeIdentifier *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_TypeIdentifier *__pyx_vtabptr_9pssparser_6pssast_TypeIdentifier;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeIdentifier *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TypeIdentifier;
 
 
-/* "pssparser/pssast.pxd":517
- *     cdef TypeIdentifier mk(pssast_decl.ITypeIdentifier *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":720
+ *     cdef TypeIdentifier mk(zsp_ast_decl.ITypeIdentifier *hndl, bool owned)
  * 
  * cdef class TypeIdentifierElem(Expr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITypeIdentifierElem *asTypeIdentifierElem(self)
+ *     cdef zsp_ast_decl.ITypeIdentifierElem *asTypeIdentifierElem(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_TypeIdentifierElem {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Expr __pyx_base;
-  pssp::ast::ITypeIdentifierElem *(*asTypeIdentifierElem)(struct __pyx_obj_9pssparser_6pssast_TypeIdentifierElem *);
-  struct __pyx_obj_9pssparser_6pssast_TypeIdentifierElem *(*mk)(pssp::ast::ITypeIdentifierElem *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeIdentifierElem {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr __pyx_base;
+  zsp::ast::ITypeIdentifierElem *(*asTypeIdentifierElem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifierElem *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifierElem *(*mk)(zsp::ast::ITypeIdentifierElem *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_TypeIdentifierElem *__pyx_vtabptr_9pssparser_6pssast_TypeIdentifierElem;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeIdentifierElem *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TypeIdentifierElem;
 
 
-/* "pssparser/pssast.pxd":523
- *     cdef TypeIdentifierElem mk(pssast_decl.ITypeIdentifierElem *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":726
+ *     cdef TypeIdentifierElem mk(zsp_ast_decl.ITypeIdentifierElem *hndl, bool owned)
+ * 
+ * cdef class ExtendEnum(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IExtendEnum *asExtendEnum(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExtendEnum {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::IExtendEnum *(*asExtendEnum)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendEnum *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendEnum *(*mk)(zsp::ast::IExtendEnum *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExtendEnum *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExtendEnum;
+
+
+/* "zuspec_parser/zsp_ast.pxd":732
+ *     cdef ExtendEnum mk(zsp_ast_decl.IExtendEnum *hndl, bool owned)
+ * 
+ * cdef class SymbolScope(ScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.ISymbolScope *asSymbolScope(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild __pyx_base;
+  zsp::ast::ISymbolScope *(*asSymbolScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope *(*mk)(zsp::ast::ISymbolScope *, bool);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getId)(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope *, int __pyx_skip_dispatch);
+  std::string (*getName)(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolScope;
+
+
+/* "zuspec_parser/zsp_ast.pxd":740
+ *     cpdef std_string getName(self)
  * 
  * cdef class RefExprTypeScopeGlobal(RefExpr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IRefExprTypeScopeGlobal *asRefExprTypeScopeGlobal(self)
+ *     cdef zsp_ast_decl.IRefExprTypeScopeGlobal *asRefExprTypeScopeGlobal(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_RefExprTypeScopeGlobal {
-  struct __pyx_vtabstruct_9pssparser_6pssast_RefExpr __pyx_base;
-  pssp::ast::IRefExprTypeScopeGlobal *(*asRefExprTypeScopeGlobal)(struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeGlobal *);
-  struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeGlobal *(*mk)(pssp::ast::IRefExprTypeScopeGlobal *, bool);
-  __pyx_t_9pssparser_6pssast_int32_t (*getFileid)(struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeGlobal *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExpr __pyx_base;
+  zsp::ast::IRefExprTypeScopeGlobal *(*asRefExprTypeScopeGlobal)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal *(*mk)(zsp::ast::IRefExprTypeScopeGlobal *, bool);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getFileid)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_RefExprTypeScopeGlobal *__pyx_vtabptr_9pssparser_6pssast_RefExprTypeScopeGlobal;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal *__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal;
 
 
-/* "pssparser/pssast.pxd":530
+/* "zuspec_parser/zsp_ast.pxd":747
  *     cpdef int32_t getFileid(self)
  * 
  * cdef class RefExprTypeScopeContext(RefExpr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IRefExprTypeScopeContext *asRefExprTypeScopeContext(self)
+ *     cdef zsp_ast_decl.IRefExprTypeScopeContext *asRefExprTypeScopeContext(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_RefExprTypeScopeContext {
-  struct __pyx_vtabstruct_9pssparser_6pssast_RefExpr __pyx_base;
-  pssp::ast::IRefExprTypeScopeContext *(*asRefExprTypeScopeContext)(struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeContext *);
-  struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeContext *(*mk)(pssp::ast::IRefExprTypeScopeContext *, bool);
-  __pyx_t_9pssparser_6pssast_int32_t (*getOffset)(struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeContext *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExpr __pyx_base;
+  zsp::ast::IRefExprTypeScopeContext *(*asRefExprTypeScopeContext)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext *(*mk)(zsp::ast::IRefExprTypeScopeContext *, bool);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getOffset)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_RefExprTypeScopeContext *__pyx_vtabptr_9pssparser_6pssast_RefExprTypeScopeContext;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext *__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext;
 
 
-/* "pssparser/pssast.pxd":537
+/* "zuspec_parser/zsp_ast.pxd":754
  *     cpdef int32_t getOffset(self)
  * 
  * cdef class RefExprScopeIndex(RefExpr):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IRefExprScopeIndex *asRefExprScopeIndex(self)
+ *     cdef zsp_ast_decl.IRefExprScopeIndex *asRefExprScopeIndex(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_RefExprScopeIndex {
-  struct __pyx_vtabstruct_9pssparser_6pssast_RefExpr __pyx_base;
-  pssp::ast::IRefExprScopeIndex *(*asRefExprScopeIndex)(struct __pyx_obj_9pssparser_6pssast_RefExprScopeIndex *);
-  struct __pyx_obj_9pssparser_6pssast_RefExprScopeIndex *(*mk)(pssp::ast::IRefExprScopeIndex *, bool);
-  __pyx_t_9pssparser_6pssast_int32_t (*getOffset)(struct __pyx_obj_9pssparser_6pssast_RefExprScopeIndex *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExprScopeIndex {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExpr __pyx_base;
+  zsp::ast::IRefExprScopeIndex *(*asRefExprScopeIndex)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprScopeIndex *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprScopeIndex *(*mk)(zsp::ast::IRefExprScopeIndex *, bool);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getOffset)(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprScopeIndex *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_RefExprScopeIndex *__pyx_vtabptr_9pssparser_6pssast_RefExprScopeIndex;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExprScopeIndex *__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExprScopeIndex;
 
 
-/* "pssparser/pssast.pxd":544
+/* "zuspec_parser/zsp_ast.pxd":761
  *     cpdef int32_t getOffset(self)
  * 
  * cdef class TemplateGenericTypeParamDecl(TemplateParamDecl):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITemplateGenericTypeParamDecl *asTemplateGenericTypeParamDecl(self)
+ *     cdef zsp_ast_decl.ITemplateGenericTypeParamDecl *asTemplateGenericTypeParamDecl(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_TemplateGenericTypeParamDecl {
-  struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDecl __pyx_base;
-  pssp::ast::ITemplateGenericTypeParamDecl *(*asTemplateGenericTypeParamDecl)(struct __pyx_obj_9pssparser_6pssast_TemplateGenericTypeParamDecl *);
-  struct __pyx_obj_9pssparser_6pssast_TemplateGenericTypeParamDecl *(*mk)(pssp::ast::ITemplateGenericTypeParamDecl *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDecl __pyx_base;
+  zsp::ast::ITemplateGenericTypeParamDecl *(*asTemplateGenericTypeParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl *(*mk)(zsp::ast::ITemplateGenericTypeParamDecl *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_TemplateGenericTypeParamDecl *__pyx_vtabptr_9pssparser_6pssast_TemplateGenericTypeParamDecl;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl;
 
 
-/* "pssparser/pssast.pxd":550
- *     cdef TemplateGenericTypeParamDecl mk(pssast_decl.ITemplateGenericTypeParamDecl *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":767
+ *     cdef TemplateGenericTypeParamDecl mk(zsp_ast_decl.ITemplateGenericTypeParamDecl *hndl, bool owned)
  * 
  * cdef class TemplateCategoryTypeParamDecl(TemplateParamDecl):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITemplateCategoryTypeParamDecl *asTemplateCategoryTypeParamDecl(self)
+ *     cdef zsp_ast_decl.ITemplateCategoryTypeParamDecl *asTemplateCategoryTypeParamDecl(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_TemplateCategoryTypeParamDecl {
-  struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDecl __pyx_base;
-  pssp::ast::ITemplateCategoryTypeParamDecl *(*asTemplateCategoryTypeParamDecl)(struct __pyx_obj_9pssparser_6pssast_TemplateCategoryTypeParamDecl *);
-  struct __pyx_obj_9pssparser_6pssast_TemplateCategoryTypeParamDecl *(*mk)(pssp::ast::ITemplateCategoryTypeParamDecl *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDecl __pyx_base;
+  zsp::ast::ITemplateCategoryTypeParamDecl *(*asTemplateCategoryTypeParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl *(*mk)(zsp::ast::ITemplateCategoryTypeParamDecl *, bool);
+  PyObject *(*getCategory)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_TemplateCategoryTypeParamDecl *__pyx_vtabptr_9pssparser_6pssast_TemplateCategoryTypeParamDecl;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl;
 
 
-/* "pssparser/pssast.pxd":556
- *     cdef TemplateCategoryTypeParamDecl mk(pssast_decl.ITemplateCategoryTypeParamDecl *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":774
+ *     cpdef  getCategory(self)
  * 
  * cdef class TemplateValueParamDecl(TemplateParamDecl):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.ITemplateValueParamDecl *asTemplateValueParamDecl(self)
+ *     cdef zsp_ast_decl.ITemplateValueParamDecl *asTemplateValueParamDecl(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_TemplateValueParamDecl {
-  struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDecl __pyx_base;
-  pssp::ast::ITemplateValueParamDecl *(*asTemplateValueParamDecl)(struct __pyx_obj_9pssparser_6pssast_TemplateValueParamDecl *);
-  struct __pyx_obj_9pssparser_6pssast_TemplateValueParamDecl *(*mk)(pssp::ast::ITemplateValueParamDecl *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateValueParamDecl {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDecl __pyx_base;
+  zsp::ast::ITemplateValueParamDecl *(*asTemplateValueParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateValueParamDecl *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateValueParamDecl *(*mk)(zsp::ast::ITemplateValueParamDecl *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_TemplateValueParamDecl *__pyx_vtabptr_9pssparser_6pssast_TemplateValueParamDecl;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateValueParamDecl *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateValueParamDecl;
 
 
-/* "pssparser/pssast.pxd":562
- *     cdef TemplateValueParamDecl mk(pssast_decl.ITemplateValueParamDecl *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":780
+ *     cdef TemplateValueParamDecl mk(zsp_ast_decl.ITemplateValueParamDecl *hndl, bool owned)
  * 
- * cdef class ConstraintBlock(ConstraintStmt):             # <<<<<<<<<<<<<<
+ * cdef class ActivityBindStmt(ActivityStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintBlock *asConstraintBlock(self)
+ *     cdef zsp_ast_decl.IActivityBindStmt *asActivityBindStmt(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintBlock {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt __pyx_base;
-  pssp::ast::IConstraintBlock *(*asConstraintBlock)(struct __pyx_obj_9pssparser_6pssast_ConstraintBlock *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintBlock *(*mk)(pssp::ast::IConstraintBlock *, bool);
-  std::string (*getName)(struct __pyx_obj_9pssparser_6pssast_ConstraintBlock *, int __pyx_skip_dispatch);
-  bool (*getIs_dynamic)(struct __pyx_obj_9pssparser_6pssast_ConstraintBlock *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityBindStmt {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityStmt __pyx_base;
+  zsp::ast::IActivityBindStmt *(*asActivityBindStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityBindStmt *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityBindStmt *(*mk)(zsp::ast::IActivityBindStmt *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintBlock *__pyx_vtabptr_9pssparser_6pssast_ConstraintBlock;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityBindStmt *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityBindStmt;
 
 
-/* "pssparser/pssast.pxd":570
- *     cpdef bool getIs_dynamic(self)
+/* "zuspec_parser/zsp_ast.pxd":786
+ *     cdef ActivityBindStmt mk(zsp_ast_decl.IActivityBindStmt *hndl, bool owned)
+ * 
+ * cdef class ActivityConstraint(ActivityStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityConstraint *asActivityConstraint(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityConstraint {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityStmt __pyx_base;
+  zsp::ast::IActivityConstraint *(*asActivityConstraint)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityConstraint *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityConstraint *(*mk)(zsp::ast::IActivityConstraint *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityConstraint *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityConstraint;
+
+
+/* "zuspec_parser/zsp_ast.pxd":792
+ *     cdef ActivityConstraint mk(zsp_ast_decl.IActivityConstraint *hndl, bool owned)
+ * 
+ * cdef class ActivityLabeledStmt(ActivityStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityLabeledStmt *asActivityLabeledStmt(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityStmt __pyx_base;
+  zsp::ast::IActivityLabeledStmt *(*asActivityLabeledStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt *(*mk)(zsp::ast::IActivityLabeledStmt *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityLabeledStmt;
+
+
+/* "zuspec_parser/zsp_ast.pxd":798
+ *     cdef ActivityLabeledStmt mk(zsp_ast_decl.IActivityLabeledStmt *hndl, bool owned)
+ * 
+ * cdef class ActivityLabeledScope(Scope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityLabeledScope *asActivityLabeledScope(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Scope __pyx_base;
+  zsp::ast::IActivityLabeledScope *(*asActivityLabeledScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope *(*mk)(zsp::ast::IActivityLabeledScope *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityLabeledScope;
+
+
+/* "zuspec_parser/zsp_ast.pxd":804
+ *     cdef ActivityLabeledScope mk(zsp_ast_decl.IActivityLabeledScope *hndl, bool owned)
  * 
  * cdef class ConstraintScope(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintScope *asConstraintScope(self)
+ *     cdef zsp_ast_decl.IConstraintScope *asConstraintScope(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintScope {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt __pyx_base;
-  pssp::ast::IConstraintScope *(*asConstraintScope)(struct __pyx_obj_9pssparser_6pssast_ConstraintScope *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintScope *(*mk)(pssp::ast::IConstraintScope *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
+  zsp::ast::IConstraintScope *(*asConstraintScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope *(*mk)(zsp::ast::IConstraintScope *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintScope *__pyx_vtabptr_9pssparser_6pssast_ConstraintScope;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintScope;
 
 
-/* "pssparser/pssast.pxd":576
- *     cdef ConstraintScope mk(pssast_decl.IConstraintScope *hndl, bool owned)
- * 
- * cdef class ConstraintStmtDefault(ConstraintStmt):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IConstraintStmtDefault *asConstraintStmtDefault(self)
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtDefault {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt __pyx_base;
-  pssp::ast::IConstraintStmtDefault *(*asConstraintStmtDefault)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefault *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefault *(*mk)(pssp::ast::IConstraintStmtDefault *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtDefault *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtDefault;
-
-
-/* "pssparser/pssast.pxd":582
- *     cdef ConstraintStmtDefault mk(pssast_decl.IConstraintStmtDefault *hndl, bool owned)
- * 
- * cdef class ConstraintStmtDefaultDisable(ConstraintStmt):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IConstraintStmtDefaultDisable *asConstraintStmtDefaultDisable(self)
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtDefaultDisable {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt __pyx_base;
-  pssp::ast::IConstraintStmtDefaultDisable *(*asConstraintStmtDefaultDisable)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefaultDisable *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefaultDisable *(*mk)(pssp::ast::IConstraintStmtDefaultDisable *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtDefaultDisable *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtDefaultDisable;
-
-
-/* "pssparser/pssast.pxd":588
- *     cdef ConstraintStmtDefaultDisable mk(pssast_decl.IConstraintStmtDefaultDisable *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":810
+ *     cdef ConstraintScope mk(zsp_ast_decl.IConstraintScope *hndl, bool owned)
  * 
  * cdef class ConstraintStmtExpr(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtExpr *asConstraintStmtExpr(self)
+ *     cdef zsp_ast_decl.IConstraintStmtExpr *asConstraintStmtExpr(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtExpr {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt __pyx_base;
-  pssp::ast::IConstraintStmtExpr *(*asConstraintStmtExpr)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtExpr *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtExpr *(*mk)(pssp::ast::IConstraintStmtExpr *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtExpr {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
+  zsp::ast::IConstraintStmtExpr *(*asConstraintStmtExpr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtExpr *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtExpr *(*mk)(zsp::ast::IConstraintStmtExpr *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtExpr *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtExpr;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtExpr *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtExpr;
 
 
-/* "pssparser/pssast.pxd":594
- *     cdef ConstraintStmtExpr mk(pssast_decl.IConstraintStmtExpr *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":816
+ *     cdef ConstraintStmtExpr mk(zsp_ast_decl.IConstraintStmtExpr *hndl, bool owned)
  * 
  * cdef class ConstraintStmtField(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtField *asConstraintStmtField(self)
+ *     cdef zsp_ast_decl.IConstraintStmtField *asConstraintStmtField(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtField {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt __pyx_base;
-  pssp::ast::IConstraintStmtField *(*asConstraintStmtField)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtField *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtField *(*mk)(pssp::ast::IConstraintStmtField *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtField {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
+  zsp::ast::IConstraintStmtField *(*asConstraintStmtField)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtField *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtField *(*mk)(zsp::ast::IConstraintStmtField *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtField *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtField;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtField *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtField;
 
 
-/* "pssparser/pssast.pxd":600
- *     cdef ConstraintStmtField mk(pssast_decl.IConstraintStmtField *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":822
+ *     cdef ConstraintStmtField mk(zsp_ast_decl.IConstraintStmtField *hndl, bool owned)
  * 
  * cdef class ConstraintStmtIf(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtIf *asConstraintStmtIf(self)
+ *     cdef zsp_ast_decl.IConstraintStmtIf *asConstraintStmtIf(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtIf {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt __pyx_base;
-  pssp::ast::IConstraintStmtIf *(*asConstraintStmtIf)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtIf *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtIf *(*mk)(pssp::ast::IConstraintStmtIf *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtIf {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
+  zsp::ast::IConstraintStmtIf *(*asConstraintStmtIf)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtIf *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtIf *(*mk)(zsp::ast::IConstraintStmtIf *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtIf *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtIf;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtIf *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtIf;
 
 
-/* "pssparser/pssast.pxd":606
- *     cdef ConstraintStmtIf mk(pssast_decl.IConstraintStmtIf *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":828
+ *     cdef ConstraintStmtIf mk(zsp_ast_decl.IConstraintStmtIf *hndl, bool owned)
  * 
  * cdef class ConstraintStmtUnique(ConstraintStmt):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtUnique *asConstraintStmtUnique(self)
+ *     cdef zsp_ast_decl.IConstraintStmtUnique *asConstraintStmtUnique(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtUnique {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt __pyx_base;
-  pssp::ast::IConstraintStmtUnique *(*asConstraintStmtUnique)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtUnique *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtUnique *(*mk)(pssp::ast::IConstraintStmtUnique *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtUnique {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
+  zsp::ast::IConstraintStmtUnique *(*asConstraintStmtUnique)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtUnique *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtUnique *(*mk)(zsp::ast::IConstraintStmtUnique *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtUnique *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtUnique;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtUnique *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtUnique;
 
 
-/* "pssparser/pssast.pxd":612
- *     cdef ConstraintStmtUnique mk(pssast_decl.IConstraintStmtUnique *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":834
+ *     cdef ConstraintStmtUnique mk(zsp_ast_decl.IConstraintStmtUnique *hndl, bool owned)
+ * 
+ * cdef class ConstraintStmtDefault(ConstraintStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IConstraintStmtDefault *asConstraintStmtDefault(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtDefault {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
+  zsp::ast::IConstraintStmtDefault *(*asConstraintStmtDefault)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefault *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefault *(*mk)(zsp::ast::IConstraintStmtDefault *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtDefault *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtDefault;
+
+
+/* "zuspec_parser/zsp_ast.pxd":840
+ *     cdef ConstraintStmtDefault mk(zsp_ast_decl.IConstraintStmtDefault *hndl, bool owned)
+ * 
+ * cdef class ConstraintStmtDefaultDisable(ConstraintStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IConstraintStmtDefaultDisable *asConstraintStmtDefaultDisable(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt __pyx_base;
+  zsp::ast::IConstraintStmtDefaultDisable *(*asConstraintStmtDefaultDisable)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable *(*mk)(zsp::ast::IConstraintStmtDefaultDisable *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable;
+
+
+/* "zuspec_parser/zsp_ast.pxd":846
+ *     cdef ConstraintStmtDefaultDisable mk(zsp_ast_decl.IConstraintStmtDefaultDisable *hndl, bool owned)
  * 
  * cdef class GlobalScope(Scope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IGlobalScope *asGlobalScope(self)
+ *     cdef zsp_ast_decl.IGlobalScope *asGlobalScope(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_GlobalScope {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Scope __pyx_base;
-  pssp::ast::IGlobalScope *(*asGlobalScope)(struct __pyx_obj_9pssparser_6pssast_GlobalScope *);
-  struct __pyx_obj_9pssparser_6pssast_GlobalScope *(*mk)(pssp::ast::IGlobalScope *, bool);
-  __pyx_t_9pssparser_6pssast_int32_t (*getFileid)(struct __pyx_obj_9pssparser_6pssast_GlobalScope *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_GlobalScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Scope __pyx_base;
+  zsp::ast::IGlobalScope *(*asGlobalScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *(*mk)(zsp::ast::IGlobalScope *, bool);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getFileid)(struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_GlobalScope *__pyx_vtabptr_9pssparser_6pssast_GlobalScope;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_GlobalScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_GlobalScope;
 
 
-/* "pssparser/pssast.pxd":619
+/* "zuspec_parser/zsp_ast.pxd":853
  *     cpdef int32_t getFileid(self)
  * 
  * cdef class NamedScope(Scope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.INamedScope *asNamedScope(self)
+ *     cdef zsp_ast_decl.INamedScope *asNamedScope(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_NamedScope {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Scope __pyx_base;
-  pssp::ast::INamedScope *(*asNamedScope)(struct __pyx_obj_9pssparser_6pssast_NamedScope *);
-  struct __pyx_obj_9pssparser_6pssast_NamedScope *(*mk)(pssp::ast::INamedScope *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Scope __pyx_base;
+  zsp::ast::INamedScope *(*asNamedScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScope *(*mk)(zsp::ast::INamedScope *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_NamedScope *__pyx_vtabptr_9pssparser_6pssast_NamedScope;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_NamedScope;
 
 
-/* "pssparser/pssast.pxd":625
- *     cdef NamedScope mk(pssast_decl.INamedScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":859
+ *     cdef NamedScope mk(zsp_ast_decl.INamedScope *hndl, bool owned)
  * 
  * cdef class PackageScope(Scope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IPackageScope *asPackageScope(self)
+ *     cdef zsp_ast_decl.IPackageScope *asPackageScope(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_PackageScope {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Scope __pyx_base;
-  pssp::ast::IPackageScope *(*asPackageScope)(struct __pyx_obj_9pssparser_6pssast_PackageScope *);
-  struct __pyx_obj_9pssparser_6pssast_PackageScope *(*mk)(pssp::ast::IPackageScope *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_PackageScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Scope __pyx_base;
+  zsp::ast::IPackageScope *(*asPackageScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageScope *(*mk)(zsp::ast::IPackageScope *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_PackageScope *__pyx_vtabptr_9pssparser_6pssast_PackageScope;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_PackageScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_PackageScope;
 
 
-/* "pssparser/pssast.pxd":631
- *     cdef PackageScope mk(pssast_decl.IPackageScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":865
+ *     cdef PackageScope mk(zsp_ast_decl.IPackageScope *hndl, bool owned)
  * 
  * cdef class DataTypeArray(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeArray *asDataTypeArray(self)
+ *     cdef zsp_ast_decl.IDataTypeArray *asDataTypeArray(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeArray {
-  struct __pyx_vtabstruct_9pssparser_6pssast_DataType __pyx_base;
-  pssp::ast::IDataTypeArray *(*asDataTypeArray)(struct __pyx_obj_9pssparser_6pssast_DataTypeArray *);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeArray *(*mk)(pssp::ast::IDataTypeArray *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeArray {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType __pyx_base;
+  zsp::ast::IDataTypeArray *(*asDataTypeArray)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeArray *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeArray *(*mk)(zsp::ast::IDataTypeArray *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeArray *__pyx_vtabptr_9pssparser_6pssast_DataTypeArray;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeArray *__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeArray;
 
 
-/* "pssparser/pssast.pxd":637
- *     cdef DataTypeArray mk(pssast_decl.IDataTypeArray *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":871
+ *     cdef DataTypeArray mk(zsp_ast_decl.IDataTypeArray *hndl, bool owned)
  * 
  * cdef class DataTypeBool(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeBool *asDataTypeBool(self)
+ *     cdef zsp_ast_decl.IDataTypeBool *asDataTypeBool(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeBool {
-  struct __pyx_vtabstruct_9pssparser_6pssast_DataType __pyx_base;
-  pssp::ast::IDataTypeBool *(*asDataTypeBool)(struct __pyx_obj_9pssparser_6pssast_DataTypeBool *);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeBool *(*mk)(pssp::ast::IDataTypeBool *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeBool {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType __pyx_base;
+  zsp::ast::IDataTypeBool *(*asDataTypeBool)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeBool *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeBool *(*mk)(zsp::ast::IDataTypeBool *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeBool *__pyx_vtabptr_9pssparser_6pssast_DataTypeBool;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeBool *__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeBool;
 
 
-/* "pssparser/pssast.pxd":643
- *     cdef DataTypeBool mk(pssast_decl.IDataTypeBool *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":877
+ *     cdef DataTypeBool mk(zsp_ast_decl.IDataTypeBool *hndl, bool owned)
  * 
  * cdef class DataTypeChandle(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeChandle *asDataTypeChandle(self)
+ *     cdef zsp_ast_decl.IDataTypeChandle *asDataTypeChandle(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeChandle {
-  struct __pyx_vtabstruct_9pssparser_6pssast_DataType __pyx_base;
-  pssp::ast::IDataTypeChandle *(*asDataTypeChandle)(struct __pyx_obj_9pssparser_6pssast_DataTypeChandle *);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeChandle *(*mk)(pssp::ast::IDataTypeChandle *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeChandle {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType __pyx_base;
+  zsp::ast::IDataTypeChandle *(*asDataTypeChandle)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeChandle *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeChandle *(*mk)(zsp::ast::IDataTypeChandle *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeChandle *__pyx_vtabptr_9pssparser_6pssast_DataTypeChandle;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeChandle *__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeChandle;
 
 
-/* "pssparser/pssast.pxd":649
- *     cdef DataTypeChandle mk(pssast_decl.IDataTypeChandle *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":883
+ *     cdef DataTypeChandle mk(zsp_ast_decl.IDataTypeChandle *hndl, bool owned)
  * 
  * cdef class DataTypeEnum(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeEnum *asDataTypeEnum(self)
+ *     cdef zsp_ast_decl.IDataTypeEnum *asDataTypeEnum(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeEnum {
-  struct __pyx_vtabstruct_9pssparser_6pssast_DataType __pyx_base;
-  pssp::ast::IDataTypeEnum *(*asDataTypeEnum)(struct __pyx_obj_9pssparser_6pssast_DataTypeEnum *);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeEnum *(*mk)(pssp::ast::IDataTypeEnum *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeEnum {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType __pyx_base;
+  zsp::ast::IDataTypeEnum *(*asDataTypeEnum)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeEnum *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeEnum *(*mk)(zsp::ast::IDataTypeEnum *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeEnum *__pyx_vtabptr_9pssparser_6pssast_DataTypeEnum;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeEnum *__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeEnum;
 
 
-/* "pssparser/pssast.pxd":655
- *     cdef DataTypeEnum mk(pssast_decl.IDataTypeEnum *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":889
+ *     cdef DataTypeEnum mk(zsp_ast_decl.IDataTypeEnum *hndl, bool owned)
+ * 
+ * cdef class EnumItem(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IEnumItem *asEnumItem(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_EnumItem {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+  zsp::ast::IEnumItem *(*asEnumItem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumItem *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumItem *(*mk)(zsp::ast::IEnumItem *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_EnumItem *__pyx_vtabptr_13zuspec_parser_7zsp_ast_EnumItem;
+
+
+/* "zuspec_parser/zsp_ast.pxd":895
+ *     cdef EnumItem mk(zsp_ast_decl.IEnumItem *hndl, bool owned)
+ * 
+ * cdef class EnumDecl(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IEnumDecl *asEnumDecl(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_EnumDecl {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+  zsp::ast::IEnumDecl *(*asEnumDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumDecl *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumDecl *(*mk)(zsp::ast::IEnumDecl *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_EnumDecl *__pyx_vtabptr_13zuspec_parser_7zsp_ast_EnumDecl;
+
+
+/* "zuspec_parser/zsp_ast.pxd":901
+ *     cdef EnumDecl mk(zsp_ast_decl.IEnumDecl *hndl, bool owned)
  * 
  * cdef class DataTypeInt(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeInt *asDataTypeInt(self)
+ *     cdef zsp_ast_decl.IDataTypeInt *asDataTypeInt(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeInt {
-  struct __pyx_vtabstruct_9pssparser_6pssast_DataType __pyx_base;
-  pssp::ast::IDataTypeInt *(*asDataTypeInt)(struct __pyx_obj_9pssparser_6pssast_DataTypeInt *);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeInt *(*mk)(pssp::ast::IDataTypeInt *, bool);
-  bool (*getIs_signed)(struct __pyx_obj_9pssparser_6pssast_DataTypeInt *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeInt {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType __pyx_base;
+  zsp::ast::IDataTypeInt *(*asDataTypeInt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeInt *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeInt *(*mk)(zsp::ast::IDataTypeInt *, bool);
+  bool (*getIs_signed)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeInt *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeInt *__pyx_vtabptr_9pssparser_6pssast_DataTypeInt;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeInt *__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeInt;
 
 
-/* "pssparser/pssast.pxd":662
+/* "zuspec_parser/zsp_ast.pxd":908
  *     cpdef bool getIs_signed(self)
+ * 
+ * cdef class DataTypeRef(DataType):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IDataTypeRef *asDataTypeRef(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeRef {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType __pyx_base;
+  zsp::ast::IDataTypeRef *(*asDataTypeRef)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeRef *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeRef *(*mk)(zsp::ast::IDataTypeRef *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeRef *__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeRef;
+
+
+/* "zuspec_parser/zsp_ast.pxd":914
+ *     cdef DataTypeRef mk(zsp_ast_decl.IDataTypeRef *hndl, bool owned)
  * 
  * cdef class DataTypeString(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeString *asDataTypeString(self)
+ *     cdef zsp_ast_decl.IDataTypeString *asDataTypeString(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeString {
-  struct __pyx_vtabstruct_9pssparser_6pssast_DataType __pyx_base;
-  pssp::ast::IDataTypeString *(*asDataTypeString)(struct __pyx_obj_9pssparser_6pssast_DataTypeString *);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeString *(*mk)(pssp::ast::IDataTypeString *, bool);
-  bool (*getHas_range)(struct __pyx_obj_9pssparser_6pssast_DataTypeString *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeString {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType __pyx_base;
+  zsp::ast::IDataTypeString *(*asDataTypeString)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeString *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeString *(*mk)(zsp::ast::IDataTypeString *, bool);
+  bool (*getHas_range)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeString *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeString *__pyx_vtabptr_9pssparser_6pssast_DataTypeString;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeString *__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeString;
 
 
-/* "pssparser/pssast.pxd":669
+/* "zuspec_parser/zsp_ast.pxd":921
  *     cpdef bool getHas_range(self)
  * 
  * cdef class DataTypeUserDefined(DataType):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IDataTypeUserDefined *asDataTypeUserDefined(self)
+ *     cdef zsp_ast_decl.IDataTypeUserDefined *asDataTypeUserDefined(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeUserDefined {
-  struct __pyx_vtabstruct_9pssparser_6pssast_DataType __pyx_base;
-  pssp::ast::IDataTypeUserDefined *(*asDataTypeUserDefined)(struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined *);
-  struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined *(*mk)(pssp::ast::IDataTypeUserDefined *, bool);
-  bool (*getIs_global)(struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeUserDefined {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType __pyx_base;
+  zsp::ast::IDataTypeUserDefined *(*asDataTypeUserDefined)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *(*mk)(zsp::ast::IDataTypeUserDefined *, bool);
+  bool (*getIs_global)(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeUserDefined *__pyx_vtabptr_9pssparser_6pssast_DataTypeUserDefined;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeUserDefined *__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeUserDefined;
 
 
-/* "pssparser/pssast.pxd":676
+/* "zuspec_parser/zsp_ast.pxd":928
  *     cpdef bool getIs_global(self)
- * 
- * cdef class ExprRefPathContext(ExprRefPath):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IExprRefPathContext *asExprRefPathContext(self)
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathContext {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPath __pyx_base;
-  pssp::ast::IExprRefPathContext *(*asExprRefPathContext)(struct __pyx_obj_9pssparser_6pssast_ExprRefPathContext *);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathContext *(*mk)(pssp::ast::IExprRefPathContext *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathContext *__pyx_vtabptr_9pssparser_6pssast_ExprRefPathContext;
-
-
-/* "pssparser/pssast.pxd":682
- *     cdef ExprRefPathContext mk(pssast_decl.IExprRefPathContext *hndl, bool owned)
  * 
  * cdef class ExprRefPathStatic(ExprRefPath):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathStatic *asExprRefPathStatic(self)
+ *     cdef zsp_ast_decl.IExprRefPathStatic *asExprRefPathStatic(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStatic {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPath __pyx_base;
-  pssp::ast::IExprRefPathStatic *(*asExprRefPathStatic)(struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic *);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic *(*mk)(pssp::ast::IExprRefPathStatic *, bool);
-  bool (*getIs_global)(struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStatic {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPath __pyx_base;
+  zsp::ast::IExprRefPathStatic *(*asExprRefPathStatic)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic *(*mk)(zsp::ast::IExprRefPathStatic *, bool);
+  bool (*getIs_global)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStatic *__pyx_vtabptr_9pssparser_6pssast_ExprRefPathStatic;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStatic *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathStatic;
 
 
-/* "pssparser/pssast.pxd":689
+/* "zuspec_parser/zsp_ast.pxd":935
  *     cpdef bool getIs_global(self)
+ * 
+ * cdef class ExprRefPathSuper(ExprRefPathContext):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IExprRefPathSuper *asExprRefPathSuper(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathSuper {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathContext __pyx_base;
+  zsp::ast::IExprRefPathSuper *(*asExprRefPathSuper)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathSuper *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathSuper *(*mk)(zsp::ast::IExprRefPathSuper *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathSuper *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathSuper;
+
+
+/* "zuspec_parser/zsp_ast.pxd":941
+ *     cdef ExprRefPathSuper mk(zsp_ast_decl.IExprRefPathSuper *hndl, bool owned)
  * 
  * cdef class ExprSignedNumber(ExprNumber):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprSignedNumber *asExprSignedNumber(self)
+ *     cdef zsp_ast_decl.IExprSignedNumber *asExprSignedNumber(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprSignedNumber {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ExprNumber __pyx_base;
-  pssp::ast::IExprSignedNumber *(*asExprSignedNumber)(struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber *);
-  struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber *(*mk)(pssp::ast::IExprSignedNumber *, bool);
-  std::string (*getImage)(struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber *, int __pyx_skip_dispatch);
-  __pyx_t_9pssparser_6pssast_uint32_t (*getWidth)(struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber *, int __pyx_skip_dispatch);
-  __pyx_t_9pssparser_6pssast_int64_t (*getValue)(struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprSignedNumber {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprNumber __pyx_base;
+  zsp::ast::IExprSignedNumber *(*asExprSignedNumber)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber *(*mk)(zsp::ast::IExprSignedNumber *, bool);
+  std::string (*getImage)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber *, int __pyx_skip_dispatch);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getWidth)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber *, int __pyx_skip_dispatch);
+  __pyx_t_13zuspec_parser_7zsp_ast_int64_t (*getValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprSignedNumber *__pyx_vtabptr_9pssparser_6pssast_ExprSignedNumber;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprSignedNumber *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprSignedNumber;
 
 
-/* "pssparser/pssast.pxd":698
+/* "zuspec_parser/zsp_ast.pxd":950
  *     cpdef int64_t getValue(self)
  * 
  * cdef class ExprUnsignedNumber(ExprNumber):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprUnsignedNumber *asExprUnsignedNumber(self)
+ *     cdef zsp_ast_decl.IExprUnsignedNumber *asExprUnsignedNumber(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprUnsignedNumber {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ExprNumber __pyx_base;
-  pssp::ast::IExprUnsignedNumber *(*asExprUnsignedNumber)(struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber *);
-  struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber *(*mk)(pssp::ast::IExprUnsignedNumber *, bool);
-  std::string (*getImage)(struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber *, int __pyx_skip_dispatch);
-  __pyx_t_9pssparser_6pssast_uint32_t (*getWidth)(struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber *, int __pyx_skip_dispatch);
-  __pyx_t_9pssparser_6pssast_uint64_t (*getValue)(struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprUnsignedNumber {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprNumber __pyx_base;
+  zsp::ast::IExprUnsignedNumber *(*asExprUnsignedNumber)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber *(*mk)(zsp::ast::IExprUnsignedNumber *, bool);
+  std::string (*getImage)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber *, int __pyx_skip_dispatch);
+  __pyx_t_13zuspec_parser_7zsp_ast_int32_t (*getWidth)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber *, int __pyx_skip_dispatch);
+  __pyx_t_13zuspec_parser_7zsp_ast_uint64_t (*getValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprUnsignedNumber *__pyx_vtabptr_9pssparser_6pssast_ExprUnsignedNumber;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprUnsignedNumber *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprUnsignedNumber;
 
 
-/* "pssparser/pssast.pxd":707
+/* "zuspec_parser/zsp_ast.pxd":959
  *     cpdef uint64_t getValue(self)
  * 
- * cdef class ConstraintStmtForall(ConstraintScope):             # <<<<<<<<<<<<<<
+ * cdef class ExtendType(Scope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtForall *asConstraintStmtForall(self)
+ *     cdef zsp_ast_decl.IExtendType *asExtendType(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtForall {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintScope __pyx_base;
-  pssp::ast::IConstraintStmtForall *(*asConstraintStmtForall)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForall *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForall *(*mk)(pssp::ast::IConstraintStmtForall *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExtendType {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Scope __pyx_base;
+  zsp::ast::IExtendType *(*asExtendType)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendType *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendType *(*mk)(zsp::ast::IExtendType *, bool);
+  PyObject *(*getKind)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendType *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtForall *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtForall;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExtendType *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExtendType;
 
 
-/* "pssparser/pssast.pxd":713
- *     cdef ConstraintStmtForall mk(pssast_decl.IConstraintStmtForall *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":966
+ *     cpdef  getKind(self)
+ * 
+ * cdef class Field(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IField *asField(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Field {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+  zsp::ast::IField *(*asField)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Field *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Field *(*mk)(zsp::ast::IField *, bool);
+  PyObject *(*getAttr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Field *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Field *__pyx_vtabptr_13zuspec_parser_7zsp_ast_Field;
+
+
+/* "zuspec_parser/zsp_ast.pxd":973
+ *     cpdef  getAttr(self)
+ * 
+ * cdef class FieldRef(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IFieldRef *asFieldRef(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_FieldRef {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+  zsp::ast::IFieldRef *(*asFieldRef)(struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldRef *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldRef *(*mk)(zsp::ast::IFieldRef *, bool);
+  bool (*getIs_input)(struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldRef *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_FieldRef *__pyx_vtabptr_13zuspec_parser_7zsp_ast_FieldRef;
+
+
+/* "zuspec_parser/zsp_ast.pxd":980
+ *     cpdef bool getIs_input(self)
+ * 
+ * cdef class FieldClaim(NamedScopeChild):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IFieldClaim *asFieldClaim(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_FieldClaim {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScopeChild __pyx_base;
+  zsp::ast::IFieldClaim *(*asFieldClaim)(struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldClaim *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldClaim *(*mk)(zsp::ast::IFieldClaim *, bool);
+  bool (*getIs_lock)(struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldClaim *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_FieldClaim *__pyx_vtabptr_13zuspec_parser_7zsp_ast_FieldClaim;
+
+
+/* "zuspec_parser/zsp_ast.pxd":987
+ *     cpdef bool getIs_lock(self)
+ * 
+ * cdef class SymbolTypeScope(SymbolScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.ISymbolTypeScope *asSymbolTypeScope(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolTypeScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolScope __pyx_base;
+  zsp::ast::ISymbolTypeScope *(*asSymbolTypeScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolTypeScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolTypeScope *(*mk)(zsp::ast::ISymbolTypeScope *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolTypeScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolTypeScope;
+
+
+/* "zuspec_parser/zsp_ast.pxd":993
+ *     cdef SymbolTypeScope mk(zsp_ast_decl.ISymbolTypeScope *hndl, bool owned)
+ * 
+ * cdef class SymbolFunctionScope(SymbolScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.ISymbolFunctionScope *asSymbolFunctionScope(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolFunctionScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolScope __pyx_base;
+  zsp::ast::ISymbolFunctionScope *(*asSymbolFunctionScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolFunctionScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolFunctionScope *(*mk)(zsp::ast::ISymbolFunctionScope *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolFunctionScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolFunctionScope;
+
+
+/* "zuspec_parser/zsp_ast.pxd":999
+ *     cdef SymbolFunctionScope mk(zsp_ast_decl.ISymbolFunctionScope *hndl, bool owned)
+ * 
+ * cdef class ActivityActionHandleTraversal(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityActionHandleTraversal *asActivityActionHandleTraversal(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivityActionHandleTraversal *(*asActivityActionHandleTraversal)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal *(*mk)(zsp::ast::IActivityActionHandleTraversal *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1005
+ *     cdef ActivityActionHandleTraversal mk(zsp_ast_decl.IActivityActionHandleTraversal *hndl, bool owned)
+ * 
+ * cdef class ActivityActionTypeTraversal(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityActionTypeTraversal *asActivityActionTypeTraversal(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivityActionTypeTraversal *(*asActivityActionTypeTraversal)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal *(*mk)(zsp::ast::IActivityActionTypeTraversal *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1011
+ *     cdef ActivityActionTypeTraversal mk(zsp_ast_decl.IActivityActionTypeTraversal *hndl, bool owned)
+ * 
+ * cdef class ActivitySequence(ActivityLabeledScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySequence *asActivitySequence(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySequence {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledScope __pyx_base;
+  zsp::ast::IActivitySequence *(*asActivitySequence)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySequence *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySequence *(*mk)(zsp::ast::IActivitySequence *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySequence *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySequence;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1017
+ *     cdef ActivitySequence mk(zsp_ast_decl.IActivitySequence *hndl, bool owned)
+ * 
+ * cdef class ActivityParallel(ActivityLabeledScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityParallel *asActivityParallel(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityParallel {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledScope __pyx_base;
+  zsp::ast::IActivityParallel *(*asActivityParallel)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityParallel *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityParallel *(*mk)(zsp::ast::IActivityParallel *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityParallel *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityParallel;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1023
+ *     cdef ActivityParallel mk(zsp_ast_decl.IActivityParallel *hndl, bool owned)
+ * 
+ * cdef class ActivitySchedule(ActivityLabeledScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySchedule *asActivitySchedule(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySchedule {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledScope __pyx_base;
+  zsp::ast::IActivitySchedule *(*asActivitySchedule)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedule *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedule *(*mk)(zsp::ast::IActivitySchedule *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySchedule *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySchedule;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1029
+ *     cdef ActivitySchedule mk(zsp_ast_decl.IActivitySchedule *hndl, bool owned)
+ * 
+ * cdef class ActivityRepeatCount(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityRepeatCount *asActivityRepeatCount(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityRepeatCount {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivityRepeatCount *(*asActivityRepeatCount)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatCount *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatCount *(*mk)(zsp::ast::IActivityRepeatCount *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityRepeatCount *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityRepeatCount;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1035
+ *     cdef ActivityRepeatCount mk(zsp_ast_decl.IActivityRepeatCount *hndl, bool owned)
+ * 
+ * cdef class ActivityRepeatWhile(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityRepeatWhile *asActivityRepeatWhile(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityRepeatWhile {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivityRepeatWhile *(*asActivityRepeatWhile)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatWhile *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatWhile *(*mk)(zsp::ast::IActivityRepeatWhile *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityRepeatWhile *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityRepeatWhile;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1041
+ *     cdef ActivityRepeatWhile mk(zsp_ast_decl.IActivityRepeatWhile *hndl, bool owned)
+ * 
+ * cdef class ActivityForeach(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityForeach *asActivityForeach(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityForeach {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivityForeach *(*asActivityForeach)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityForeach *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityForeach *(*mk)(zsp::ast::IActivityForeach *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityForeach *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityForeach;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1047
+ *     cdef ActivityForeach mk(zsp_ast_decl.IActivityForeach *hndl, bool owned)
+ * 
+ * cdef class ActivitySelect(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySelect *asActivitySelect(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySelect {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivitySelect *(*asActivitySelect)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelect *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelect *(*mk)(zsp::ast::IActivitySelect *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySelect *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySelect;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1053
+ *     cdef ActivitySelect mk(zsp_ast_decl.IActivitySelect *hndl, bool owned)
+ * 
+ * cdef class ActivityIfElse(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityIfElse *asActivityIfElse(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityIfElse {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivityIfElse *(*asActivityIfElse)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityIfElse *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityIfElse *(*mk)(zsp::ast::IActivityIfElse *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityIfElse *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityIfElse;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1059
+ *     cdef ActivityIfElse mk(zsp_ast_decl.IActivityIfElse *hndl, bool owned)
+ * 
+ * cdef class ActivityMatch(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityMatch *asActivityMatch(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityMatch {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivityMatch *(*asActivityMatch)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatch *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatch *(*mk)(zsp::ast::IActivityMatch *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityMatch *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityMatch;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1065
+ *     cdef ActivityMatch mk(zsp_ast_decl.IActivityMatch *hndl, bool owned)
+ * 
+ * cdef class ActivityReplicate(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivityReplicate *asActivityReplicate(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityReplicate {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivityReplicate *(*asActivityReplicate)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityReplicate *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityReplicate *(*mk)(zsp::ast::IActivityReplicate *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityReplicate *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityReplicate;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1071
+ *     cdef ActivityReplicate mk(zsp_ast_decl.IActivityReplicate *hndl, bool owned)
+ * 
+ * cdef class ActivitySuper(ActivityLabeledStmt):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IActivitySuper *asActivitySuper(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySuper {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt __pyx_base;
+  zsp::ast::IActivitySuper *(*asActivitySuper)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySuper *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySuper *(*mk)(zsp::ast::IActivitySuper *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySuper *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySuper;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1077
+ *     cdef ActivitySuper mk(zsp_ast_decl.IActivitySuper *hndl, bool owned)
+ * 
+ * cdef class ConstraintBlock(ConstraintScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IConstraintBlock *asConstraintBlock(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintBlock {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintScope __pyx_base;
+  zsp::ast::IConstraintBlock *(*asConstraintBlock)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintBlock *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintBlock *(*mk)(zsp::ast::IConstraintBlock *, bool);
+  std::string (*getName)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintBlock *, int __pyx_skip_dispatch);
+  bool (*getIs_dynamic)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintBlock *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintBlock *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintBlock;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1085
+ *     cpdef bool getIs_dynamic(self)
  * 
  * cdef class ConstraintStmtForeach(ConstraintScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtForeach *asConstraintStmtForeach(self)
+ *     cdef zsp_ast_decl.IConstraintStmtForeach *asConstraintStmtForeach(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtForeach {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintScope __pyx_base;
-  pssp::ast::IConstraintStmtForeach *(*asConstraintStmtForeach)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForeach *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForeach *(*mk)(pssp::ast::IConstraintStmtForeach *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtForeach {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintScope __pyx_base;
+  zsp::ast::IConstraintStmtForeach *(*asConstraintStmtForeach)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForeach *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForeach *(*mk)(zsp::ast::IConstraintStmtForeach *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtForeach *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtForeach;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtForeach *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtForeach;
 
 
-/* "pssparser/pssast.pxd":719
- *     cdef ConstraintStmtForeach mk(pssast_decl.IConstraintStmtForeach *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1091
+ *     cdef ConstraintStmtForeach mk(zsp_ast_decl.IConstraintStmtForeach *hndl, bool owned)
+ * 
+ * cdef class ConstraintStmtForall(ConstraintScope):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef zsp_ast_decl.IConstraintStmtForall *asConstraintStmtForall(self)
+ */
+
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtForall {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintScope __pyx_base;
+  zsp::ast::IConstraintStmtForall *(*asConstraintStmtForall)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForall *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForall *(*mk)(zsp::ast::IConstraintStmtForall *, bool);
+};
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtForall *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtForall;
+
+
+/* "zuspec_parser/zsp_ast.pxd":1097
+ *     cdef ConstraintStmtForall mk(zsp_ast_decl.IConstraintStmtForall *hndl, bool owned)
  * 
  * cdef class ConstraintStmtImplication(ConstraintScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IConstraintStmtImplication *asConstraintStmtImplication(self)
+ *     cdef zsp_ast_decl.IConstraintStmtImplication *asConstraintStmtImplication(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtImplication {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintScope __pyx_base;
-  pssp::ast::IConstraintStmtImplication *(*asConstraintStmtImplication)(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtImplication *);
-  struct __pyx_obj_9pssparser_6pssast_ConstraintStmtImplication *(*mk)(pssp::ast::IConstraintStmtImplication *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtImplication {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintScope __pyx_base;
+  zsp::ast::IConstraintStmtImplication *(*asConstraintStmtImplication)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtImplication *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtImplication *(*mk)(zsp::ast::IConstraintStmtImplication *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtImplication *__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtImplication;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtImplication *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtImplication;
 
 
-/* "pssparser/pssast.pxd":725
- *     cdef ConstraintStmtImplication mk(pssast_decl.IConstraintStmtImplication *hndl, bool owned)
- * 
- * cdef class TypeScope(NamedScope):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.ITypeScope *asTypeScope(self)
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_TypeScope {
-  struct __pyx_vtabstruct_9pssparser_6pssast_NamedScope __pyx_base;
-  pssp::ast::ITypeScope *(*asTypeScope)(struct __pyx_obj_9pssparser_6pssast_TypeScope *);
-  struct __pyx_obj_9pssparser_6pssast_TypeScope *(*mk)(pssp::ast::ITypeScope *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_TypeScope *__pyx_vtabptr_9pssparser_6pssast_TypeScope;
-
-
-/* "pssparser/pssast.pxd":731
- *     cdef TypeScope mk(pssast_decl.ITypeScope *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1103
+ *     cdef ConstraintStmtImplication mk(zsp_ast_decl.IConstraintStmtImplication *hndl, bool owned)
  * 
  * cdef class ExprRefPathStaticFunc(ExprRefPathStatic):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathStaticFunc *asExprRefPathStaticFunc(self)
+ *     cdef zsp_ast_decl.IExprRefPathStaticFunc *asExprRefPathStaticFunc(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStaticFunc {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStatic __pyx_base;
-  pssp::ast::IExprRefPathStaticFunc *(*asExprRefPathStaticFunc)(struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticFunc *);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticFunc *(*mk)(pssp::ast::IExprRefPathStaticFunc *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStatic __pyx_base;
+  zsp::ast::IExprRefPathStaticFunc *(*asExprRefPathStaticFunc)(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc *(*mk)(zsp::ast::IExprRefPathStaticFunc *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStaticFunc *__pyx_vtabptr_9pssparser_6pssast_ExprRefPathStaticFunc;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc *__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc;
 
 
-/* "pssparser/pssast.pxd":737
- *     cdef ExprRefPathStaticFunc mk(pssast_decl.IExprRefPathStaticFunc *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1109
+ *     cdef ExprRefPathStaticFunc mk(zsp_ast_decl.IExprRefPathStaticFunc *hndl, bool owned)
  * 
- * cdef class ExprRefPathSuper(ExprRefPathContext):             # <<<<<<<<<<<<<<
+ * cdef class TypeScope(NamedScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IExprRefPathSuper *asExprRefPathSuper(self)
+ *     cdef zsp_ast_decl.ITypeScope *asTypeScope(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathSuper {
-  struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathContext __pyx_base;
-  pssp::ast::IExprRefPathSuper *(*asExprRefPathSuper)(struct __pyx_obj_9pssparser_6pssast_ExprRefPathSuper *);
-  struct __pyx_obj_9pssparser_6pssast_ExprRefPathSuper *(*mk)(pssp::ast::IExprRefPathSuper *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeScope {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScope __pyx_base;
+  zsp::ast::ITypeScope *(*asTypeScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope *(*mk)(zsp::ast::ITypeScope *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathSuper *__pyx_vtabptr_9pssparser_6pssast_ExprRefPathSuper;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeScope *__pyx_vtabptr_13zuspec_parser_7zsp_ast_TypeScope;
 
 
-/* "pssparser/pssast.pxd":743
- *     cdef ExprRefPathSuper mk(pssast_decl.IExprRefPathSuper *hndl, bool owned)
- * 
- * cdef class Action(TypeScope):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IAction *asAction(self)
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_Action {
-  struct __pyx_vtabstruct_9pssparser_6pssast_TypeScope __pyx_base;
-  pssp::ast::IAction *(*asAction)(struct __pyx_obj_9pssparser_6pssast_Action *);
-  struct __pyx_obj_9pssparser_6pssast_Action *(*mk)(pssp::ast::IAction *, bool);
-  bool (*getIs_abstract)(struct __pyx_obj_9pssparser_6pssast_Action *, int __pyx_skip_dispatch);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_Action *__pyx_vtabptr_9pssparser_6pssast_Action;
-
-
-/* "pssparser/pssast.pxd":750
- *     cpdef bool getIs_abstract(self)
+/* "zuspec_parser/zsp_ast.pxd":1115
+ *     cdef TypeScope mk(zsp_ast_decl.ITypeScope *hndl, bool owned)
  * 
  * cdef class Component(TypeScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IComponent *asComponent(self)
+ *     cdef zsp_ast_decl.IComponent *asComponent(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_Component {
-  struct __pyx_vtabstruct_9pssparser_6pssast_TypeScope __pyx_base;
-  pssp::ast::IComponent *(*asComponent)(struct __pyx_obj_9pssparser_6pssast_Component *);
-  struct __pyx_obj_9pssparser_6pssast_Component *(*mk)(pssp::ast::IComponent *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Component {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeScope __pyx_base;
+  zsp::ast::IComponent *(*asComponent)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Component *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Component *(*mk)(zsp::ast::IComponent *, bool);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_Component *__pyx_vtabptr_9pssparser_6pssast_Component;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Component *__pyx_vtabptr_13zuspec_parser_7zsp_ast_Component;
 
 
-/* "pssparser/pssast.pxd":756
- *     cdef Component mk(pssast_decl.IComponent *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1121
+ *     cdef Component mk(zsp_ast_decl.IComponent *hndl, bool owned)
  * 
  * cdef class Struct(TypeScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IStruct *asStruct(self)
+ *     cdef zsp_ast_decl.IStruct *asStruct(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_Struct {
-  struct __pyx_vtabstruct_9pssparser_6pssast_TypeScope __pyx_base;
-  pssp::ast::IStruct *(*asStruct)(struct __pyx_obj_9pssparser_6pssast_Struct *);
-  struct __pyx_obj_9pssparser_6pssast_Struct *(*mk)(pssp::ast::IStruct *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Struct {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeScope __pyx_base;
+  zsp::ast::IStruct *(*asStruct)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Struct *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Struct *(*mk)(zsp::ast::IStruct *, bool);
+  PyObject *(*getKind)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Struct *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_Struct *__pyx_vtabptr_9pssparser_6pssast_Struct;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Struct *__pyx_vtabptr_13zuspec_parser_7zsp_ast_Struct;
 
 
-/* "pssparser/pssast.pxd":762
- *     cdef Struct mk(pssast_decl.IStruct *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1128
+ *     cpdef  getKind(self)
  * 
- * cdef class State(Struct):             # <<<<<<<<<<<<<<
+ * cdef class Action(TypeScope):             # <<<<<<<<<<<<<<
  * 
- *     cdef pssast_decl.IState *asState(self)
+ *     cdef zsp_ast_decl.IAction *asAction(self)
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_State {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Struct __pyx_base;
-  pssp::ast::IState *(*asState)(struct __pyx_obj_9pssparser_6pssast_State *);
-  struct __pyx_obj_9pssparser_6pssast_State *(*mk)(pssp::ast::IState *, bool);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Action {
+  struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeScope __pyx_base;
+  zsp::ast::IAction *(*asAction)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Action *);
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_Action *(*mk)(zsp::ast::IAction *, bool);
+  bool (*getIs_abstract)(struct __pyx_obj_13zuspec_parser_7zsp_ast_Action *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_State *__pyx_vtabptr_9pssparser_6pssast_State;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Action *__pyx_vtabptr_13zuspec_parser_7zsp_ast_Action;
 
 
-/* "pssparser/pssast.pxd":768
- *     cdef State mk(pssast_decl.IState *hndl, bool owned)
- * 
- * cdef class Stream(Struct):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IStream *asStream(self)
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_Stream {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Struct __pyx_base;
-  pssp::ast::IStream *(*asStream)(struct __pyx_obj_9pssparser_6pssast_Stream *);
-  struct __pyx_obj_9pssparser_6pssast_Stream *(*mk)(pssp::ast::IStream *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_Stream *__pyx_vtabptr_9pssparser_6pssast_Stream;
-
-
-/* "pssparser/pssast.pxd":774
- *     cdef Stream mk(pssast_decl.IStream *hndl, bool owned)
- * 
- * cdef class Buffer(Struct):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IBuffer *asBuffer(self)
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_Buffer {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Struct __pyx_base;
-  pssp::ast::IBuffer *(*asBuffer)(struct __pyx_obj_9pssparser_6pssast_Buffer *);
-  struct __pyx_obj_9pssparser_6pssast_Buffer *(*mk)(pssp::ast::IBuffer *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_Buffer *__pyx_vtabptr_9pssparser_6pssast_Buffer;
-
-
-/* "pssparser/pssast.pxd":780
- *     cdef Buffer mk(pssast_decl.IBuffer *hndl, bool owned)
- * 
- * cdef class Resource(Struct):             # <<<<<<<<<<<<<<
- * 
- *     cdef pssast_decl.IResource *asResource(self)
- */
-
-struct __pyx_vtabstruct_9pssparser_6pssast_Resource {
-  struct __pyx_vtabstruct_9pssparser_6pssast_Struct __pyx_base;
-  pssp::ast::IResource *(*asResource)(struct __pyx_obj_9pssparser_6pssast_Resource *);
-  struct __pyx_obj_9pssparser_6pssast_Resource *(*mk)(pssp::ast::IResource *, bool);
-};
-static struct __pyx_vtabstruct_9pssparser_6pssast_Resource *__pyx_vtabptr_9pssparser_6pssast_Resource;
-
-
-/* "pssparser/pssast.pxd":786
- *     cdef Resource mk(pssast_decl.IResource *hndl, bool owned)
+/* "zuspec_parser/zsp_ast.pxd":1135
+ *     cpdef bool getIs_abstract(self)
  * 
  * cdef class VisitorBase(object):             # <<<<<<<<<<<<<<
- *     cdef pssast_decl.PyBaseVisitor *_hndl
+ *     cdef zsp_ast_decl.PyBaseVisitor *_hndl
  *     cdef bool                  _owned
  */
 
-struct __pyx_vtabstruct_9pssparser_6pssast_VisitorBase {
-  void (*visitExecStmt)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExecStmt *, int __pyx_skip_dispatch);
-  void (*visitExpr)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_Expr *, int __pyx_skip_dispatch);
-  void (*visitRefExpr)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_RefExpr *, int __pyx_skip_dispatch);
-  void (*visitTemplateParamDeclList)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TemplateParamDeclList *, int __pyx_skip_dispatch);
-  void (*visitTemplateParamDecl)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl *, int __pyx_skip_dispatch);
-  void (*visitScopeChild)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ScopeChild *, int __pyx_skip_dispatch);
-  void (*visitTemplateParamValueList)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TemplateParamValueList *, int __pyx_skip_dispatch);
-  void (*visitTemplateParamValue)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TemplateParamValue *, int __pyx_skip_dispatch);
-  void (*visitTemplateParamTypeValue)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TemplateParamTypeValue *, int __pyx_skip_dispatch);
-  void (*visitTemplateParamExprValue)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TemplateParamExprValue *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmt)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmt *, int __pyx_skip_dispatch);
-  void (*visitScope)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_Scope *, int __pyx_skip_dispatch);
-  void (*visitNamedScopeChild)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_NamedScopeChild *, int __pyx_skip_dispatch);
-  void (*visitPackageImportStmt)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_PackageImportStmt *, int __pyx_skip_dispatch);
-  void (*visitDataType)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_DataType *, int __pyx_skip_dispatch);
-  void (*visitExecScope)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExecScope *, int __pyx_skip_dispatch);
-  void (*visitProceduralStmtDataDeclaration)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ProceduralStmtDataDeclaration *, int __pyx_skip_dispatch);
-  void (*visitExprBin)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprBin *, int __pyx_skip_dispatch);
-  void (*visitExprBitSlice)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprBitSlice *, int __pyx_skip_dispatch);
-  void (*visitExprBool)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprBool *, int __pyx_skip_dispatch);
-  void (*visitExprCast)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprCast *, int __pyx_skip_dispatch);
-  void (*visitExprCompileHas)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprCompileHas *, int __pyx_skip_dispatch);
-  void (*visitExprCond)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprCond *, int __pyx_skip_dispatch);
-  void (*visitExprDomainOpenRangeList)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeList *, int __pyx_skip_dispatch);
-  void (*visitExprDomainOpenRangeValue)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeValue *, int __pyx_skip_dispatch);
-  void (*visitExprHierarchicalId)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId *, int __pyx_skip_dispatch);
-  void (*visitExprId)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprId *, int __pyx_skip_dispatch);
-  void (*visitExprIn)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprIn *, int __pyx_skip_dispatch);
-  void (*visitExprMemberPathElem)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprMemberPathElem *, int __pyx_skip_dispatch);
-  void (*visitExprNumber)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprNumber *, int __pyx_skip_dispatch);
-  void (*visitExprAggregateLiteral)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprAggregateLiteral *, int __pyx_skip_dispatch);
-  void (*visitExprOpenRangeList)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeList *, int __pyx_skip_dispatch);
-  void (*visitExprOpenRangeValue)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeValue *, int __pyx_skip_dispatch);
-  void (*visitExprRefPath)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprRefPath *, int __pyx_skip_dispatch);
-  void (*visitExprRefPathElem)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprRefPathElem *, int __pyx_skip_dispatch);
-  void (*visitExprRefPathStaticRooted)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticRooted *, int __pyx_skip_dispatch);
-  void (*visitExprStaticRefPath)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprStaticRefPath *, int __pyx_skip_dispatch);
-  void (*visitExprString)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprString *, int __pyx_skip_dispatch);
-  void (*visitExprSubscript)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprSubscript *, int __pyx_skip_dispatch);
-  void (*visitExprUnary)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprUnary *, int __pyx_skip_dispatch);
-  void (*visitMethodParameterList)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_MethodParameterList *, int __pyx_skip_dispatch);
-  void (*visitTypeIdentifier)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifier *, int __pyx_skip_dispatch);
-  void (*visitTypeIdentifierElem)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TypeIdentifierElem *, int __pyx_skip_dispatch);
-  void (*visitRefExprTypeScopeGlobal)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeGlobal *, int __pyx_skip_dispatch);
-  void (*visitRefExprTypeScopeContext)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeContext *, int __pyx_skip_dispatch);
-  void (*visitRefExprScopeIndex)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_RefExprScopeIndex *, int __pyx_skip_dispatch);
-  void (*visitTemplateGenericTypeParamDecl)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TemplateGenericTypeParamDecl *, int __pyx_skip_dispatch);
-  void (*visitTemplateCategoryTypeParamDecl)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TemplateCategoryTypeParamDecl *, int __pyx_skip_dispatch);
-  void (*visitTemplateValueParamDecl)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TemplateValueParamDecl *, int __pyx_skip_dispatch);
-  void (*visitConstraintBlock)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintBlock *, int __pyx_skip_dispatch);
-  void (*visitConstraintScope)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintScope *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmtDefault)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefault *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmtDefaultDisable)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefaultDisable *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmtExpr)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmtExpr *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmtField)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmtField *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmtIf)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmtIf *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmtUnique)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmtUnique *, int __pyx_skip_dispatch);
-  void (*visitGlobalScope)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_GlobalScope *, int __pyx_skip_dispatch);
-  void (*visitNamedScope)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_NamedScope *, int __pyx_skip_dispatch);
-  void (*visitPackageScope)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_PackageScope *, int __pyx_skip_dispatch);
-  void (*visitDataTypeArray)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_DataTypeArray *, int __pyx_skip_dispatch);
-  void (*visitDataTypeBool)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_DataTypeBool *, int __pyx_skip_dispatch);
-  void (*visitDataTypeChandle)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_DataTypeChandle *, int __pyx_skip_dispatch);
-  void (*visitDataTypeEnum)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_DataTypeEnum *, int __pyx_skip_dispatch);
-  void (*visitDataTypeInt)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_DataTypeInt *, int __pyx_skip_dispatch);
-  void (*visitDataTypeString)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_DataTypeString *, int __pyx_skip_dispatch);
-  void (*visitDataTypeUserDefined)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined *, int __pyx_skip_dispatch);
-  void (*visitExprRefPathContext)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprRefPathContext *, int __pyx_skip_dispatch);
-  void (*visitExprRefPathStatic)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic *, int __pyx_skip_dispatch);
-  void (*visitExprSignedNumber)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber *, int __pyx_skip_dispatch);
-  void (*visitExprUnsignedNumber)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmtForall)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForall *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmtForeach)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForeach *, int __pyx_skip_dispatch);
-  void (*visitConstraintStmtImplication)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ConstraintStmtImplication *, int __pyx_skip_dispatch);
-  void (*visitTypeScope)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_TypeScope *, int __pyx_skip_dispatch);
-  void (*visitExprRefPathStaticFunc)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticFunc *, int __pyx_skip_dispatch);
-  void (*visitExprRefPathSuper)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_ExprRefPathSuper *, int __pyx_skip_dispatch);
-  void (*visitAction)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_Action *, int __pyx_skip_dispatch);
-  void (*visitComponent)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_Component *, int __pyx_skip_dispatch);
-  void (*visitStruct)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_Struct *, int __pyx_skip_dispatch);
-  void (*visitState)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_State *, int __pyx_skip_dispatch);
-  void (*visitStream)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_Stream *, int __pyx_skip_dispatch);
-  void (*visitBuffer)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_Buffer *, int __pyx_skip_dispatch);
-  void (*visitResource)(struct __pyx_obj_9pssparser_6pssast_VisitorBase *, struct __pyx_obj_9pssparser_6pssast_Resource *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_VisitorBase {
+  void (*visitScopeChild)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild *, int __pyx_skip_dispatch);
+  void (*visitSymbolImportSpec)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolImportSpec *, int __pyx_skip_dispatch);
+  void (*visitActivityJoinSpec)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec *, int __pyx_skip_dispatch);
+  void (*visitRefExpr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr *, int __pyx_skip_dispatch);
+  void (*visitRefTarget)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_RefTarget *, int __pyx_skip_dispatch);
+  void (*visitTemplateParamDeclList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDeclList *, int __pyx_skip_dispatch);
+  void (*visitTemplateParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl *, int __pyx_skip_dispatch);
+  void (*visitActivitySelectBranch)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelectBranch *, int __pyx_skip_dispatch);
+  void (*visitTemplateParamValueList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValueList *, int __pyx_skip_dispatch);
+  void (*visitTemplateParamValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValue *, int __pyx_skip_dispatch);
+  void (*visitActivityMatchChoice)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatchChoice *, int __pyx_skip_dispatch);
+  void (*visitTemplateParamTypeValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamTypeValue *, int __pyx_skip_dispatch);
+  void (*visitTemplateParamExprValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamExprValue *, int __pyx_skip_dispatch);
+  void (*visitExecStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt *, int __pyx_skip_dispatch);
+  void (*visitExpr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr *, int __pyx_skip_dispatch);
+  void (*visitActivityStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt *, int __pyx_skip_dispatch);
+  void (*visitActivitySchedulingConstraint)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint *, int __pyx_skip_dispatch);
+  void (*visitActivityJoinSpecBranch)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch *, int __pyx_skip_dispatch);
+  void (*visitActivityJoinSpecSelect)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect *, int __pyx_skip_dispatch);
+  void (*visitActivityJoinSpecNone)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone *, int __pyx_skip_dispatch);
+  void (*visitActivityJoinSpecFirst)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt *, int __pyx_skip_dispatch);
+  void (*visitScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope *, int __pyx_skip_dispatch);
+  void (*visitScopeChildRef)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChildRef *, int __pyx_skip_dispatch);
+  void (*visitNamedScopeChild)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild *, int __pyx_skip_dispatch);
+  void (*visitPackageImportStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageImportStmt *, int __pyx_skip_dispatch);
+  void (*visitDataType)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType *, int __pyx_skip_dispatch);
+  void (*visitExecScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecScope *, int __pyx_skip_dispatch);
+  void (*visitProceduralStmtDataDeclaration)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration *, int __pyx_skip_dispatch);
+  void (*visitExprBin)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBin *, int __pyx_skip_dispatch);
+  void (*visitExprBitSlice)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBitSlice *, int __pyx_skip_dispatch);
+  void (*visitExprBool)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBool *, int __pyx_skip_dispatch);
+  void (*visitExprCast)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCast *, int __pyx_skip_dispatch);
+  void (*visitExprCompileHas)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCompileHas *, int __pyx_skip_dispatch);
+  void (*visitExprCond)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCond *, int __pyx_skip_dispatch);
+  void (*visitExprDomainOpenRangeList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList *, int __pyx_skip_dispatch);
+  void (*visitExprDomainOpenRangeValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue *, int __pyx_skip_dispatch);
+  void (*visitExprHierarchicalId)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId *, int __pyx_skip_dispatch);
+  void (*visitExprId)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId *, int __pyx_skip_dispatch);
+  void (*visitExprIn)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprIn *, int __pyx_skip_dispatch);
+  void (*visitExprMemberPathElem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprMemberPathElem *, int __pyx_skip_dispatch);
+  void (*visitExprNull)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNull *, int __pyx_skip_dispatch);
+  void (*visitExprNumber)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNumber *, int __pyx_skip_dispatch);
+  void (*visitExprAggregateLiteral)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprAggregateLiteral *, int __pyx_skip_dispatch);
+  void (*visitExprOpenRangeList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList *, int __pyx_skip_dispatch);
+  void (*visitExprOpenRangeValue)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeValue *, int __pyx_skip_dispatch);
+  void (*visitExprRefPath)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPath *, int __pyx_skip_dispatch);
+  void (*visitExprRefPathContext)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext *, int __pyx_skip_dispatch);
+  void (*visitExprRefPathElem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathElem *, int __pyx_skip_dispatch);
+  void (*visitExprRefPathStaticRooted)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted *, int __pyx_skip_dispatch);
+  void (*visitExprStaticRefPath)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprStaticRefPath *, int __pyx_skip_dispatch);
+  void (*visitExprString)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprString *, int __pyx_skip_dispatch);
+  void (*visitExprSubscript)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSubscript *, int __pyx_skip_dispatch);
+  void (*visitExprUnary)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnary *, int __pyx_skip_dispatch);
+  void (*visitMethodParameterList)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_MethodParameterList *, int __pyx_skip_dispatch);
+  void (*visitTypeIdentifier)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier *, int __pyx_skip_dispatch);
+  void (*visitTypeIdentifierElem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifierElem *, int __pyx_skip_dispatch);
+  void (*visitExtendEnum)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendEnum *, int __pyx_skip_dispatch);
+  void (*visitSymbolScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope *, int __pyx_skip_dispatch);
+  void (*visitRefExprTypeScopeGlobal)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal *, int __pyx_skip_dispatch);
+  void (*visitRefExprTypeScopeContext)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext *, int __pyx_skip_dispatch);
+  void (*visitRefExprScopeIndex)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprScopeIndex *, int __pyx_skip_dispatch);
+  void (*visitTemplateGenericTypeParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl *, int __pyx_skip_dispatch);
+  void (*visitTemplateCategoryTypeParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl *, int __pyx_skip_dispatch);
+  void (*visitTemplateValueParamDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateValueParamDecl *, int __pyx_skip_dispatch);
+  void (*visitActivityBindStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityBindStmt *, int __pyx_skip_dispatch);
+  void (*visitActivityConstraint)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityConstraint *, int __pyx_skip_dispatch);
+  void (*visitActivityLabeledStmt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt *, int __pyx_skip_dispatch);
+  void (*visitActivityLabeledScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope *, int __pyx_skip_dispatch);
+  void (*visitConstraintScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmtExpr)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtExpr *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmtField)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtField *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmtIf)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtIf *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmtUnique)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtUnique *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmtDefault)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefault *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmtDefaultDisable)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable *, int __pyx_skip_dispatch);
+  void (*visitGlobalScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *, int __pyx_skip_dispatch);
+  void (*visitNamedScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScope *, int __pyx_skip_dispatch);
+  void (*visitPackageScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageScope *, int __pyx_skip_dispatch);
+  void (*visitDataTypeArray)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeArray *, int __pyx_skip_dispatch);
+  void (*visitDataTypeBool)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeBool *, int __pyx_skip_dispatch);
+  void (*visitDataTypeChandle)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeChandle *, int __pyx_skip_dispatch);
+  void (*visitDataTypeEnum)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeEnum *, int __pyx_skip_dispatch);
+  void (*visitEnumItem)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumItem *, int __pyx_skip_dispatch);
+  void (*visitEnumDecl)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumDecl *, int __pyx_skip_dispatch);
+  void (*visitDataTypeInt)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeInt *, int __pyx_skip_dispatch);
+  void (*visitDataTypeRef)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeRef *, int __pyx_skip_dispatch);
+  void (*visitDataTypeString)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeString *, int __pyx_skip_dispatch);
+  void (*visitDataTypeUserDefined)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined *, int __pyx_skip_dispatch);
+  void (*visitExprRefPathStatic)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic *, int __pyx_skip_dispatch);
+  void (*visitExprRefPathSuper)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathSuper *, int __pyx_skip_dispatch);
+  void (*visitExprSignedNumber)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber *, int __pyx_skip_dispatch);
+  void (*visitExprUnsignedNumber)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber *, int __pyx_skip_dispatch);
+  void (*visitExtendType)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendType *, int __pyx_skip_dispatch);
+  void (*visitField)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Field *, int __pyx_skip_dispatch);
+  void (*visitFieldRef)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldRef *, int __pyx_skip_dispatch);
+  void (*visitFieldClaim)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldClaim *, int __pyx_skip_dispatch);
+  void (*visitSymbolTypeScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolTypeScope *, int __pyx_skip_dispatch);
+  void (*visitSymbolFunctionScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolFunctionScope *, int __pyx_skip_dispatch);
+  void (*visitActivityActionHandleTraversal)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal *, int __pyx_skip_dispatch);
+  void (*visitActivityActionTypeTraversal)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal *, int __pyx_skip_dispatch);
+  void (*visitActivitySequence)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySequence *, int __pyx_skip_dispatch);
+  void (*visitActivityParallel)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityParallel *, int __pyx_skip_dispatch);
+  void (*visitActivitySchedule)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedule *, int __pyx_skip_dispatch);
+  void (*visitActivityRepeatCount)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatCount *, int __pyx_skip_dispatch);
+  void (*visitActivityRepeatWhile)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatWhile *, int __pyx_skip_dispatch);
+  void (*visitActivityForeach)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityForeach *, int __pyx_skip_dispatch);
+  void (*visitActivitySelect)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelect *, int __pyx_skip_dispatch);
+  void (*visitActivityIfElse)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityIfElse *, int __pyx_skip_dispatch);
+  void (*visitActivityMatch)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatch *, int __pyx_skip_dispatch);
+  void (*visitActivityReplicate)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityReplicate *, int __pyx_skip_dispatch);
+  void (*visitActivitySuper)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySuper *, int __pyx_skip_dispatch);
+  void (*visitConstraintBlock)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintBlock *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmtForeach)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForeach *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmtForall)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForall *, int __pyx_skip_dispatch);
+  void (*visitConstraintStmtImplication)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtImplication *, int __pyx_skip_dispatch);
+  void (*visitExprRefPathStaticFunc)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc *, int __pyx_skip_dispatch);
+  void (*visitTypeScope)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope *, int __pyx_skip_dispatch);
+  void (*visitComponent)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Component *, int __pyx_skip_dispatch);
+  void (*visitStruct)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Struct *, int __pyx_skip_dispatch);
+  void (*visitAction)(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase *, struct __pyx_obj_13zuspec_parser_7zsp_ast_Action *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_9pssparser_6pssast_VisitorBase *__pyx_vtabptr_9pssparser_6pssast_VisitorBase;
+static struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_VisitorBase *__pyx_vtabptr_13zuspec_parser_7zsp_ast_VisitorBase;
 
 
 /* "python/core.pyx":5
@@ -4848,11 +6397,11 @@ static struct __pyx_vtabstruct_9pssparser_6pssast_VisitorBase *__pyx_vtabptr_9ps
  *         self._hndl = NULL
  */
 
-struct __pyx_vtabstruct_9pssparser_4core_Factory {
-  struct __pyx_obj_9pssparser_4core_AstBuilder *(*mkAstBuilder)(struct __pyx_obj_9pssparser_4core_Factory *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_4core_Factory *(*inst)(void);
+struct __pyx_vtabstruct_13zuspec_parser_4core_Factory {
+  struct __pyx_obj_13zuspec_parser_4core_AstBuilder *(*mkAstBuilder)(struct __pyx_obj_13zuspec_parser_4core_Factory *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_4core_Factory *(*inst)(void);
 };
-static struct __pyx_vtabstruct_9pssparser_4core_Factory *__pyx_vtabptr_9pssparser_4core_Factory;
+static struct __pyx_vtabstruct_13zuspec_parser_4core_Factory *__pyx_vtabptr_13zuspec_parser_4core_Factory;
 
 
 /* "python/core.pyx":31
@@ -4863,11 +6412,11 @@ static struct __pyx_vtabstruct_9pssparser_4core_Factory *__pyx_vtabptr_9pssparse
  *     def __dealloc__(self):
  */
 
-struct __pyx_vtabstruct_9pssparser_4core_AstBuilder {
-  PyObject *(*build)(struct __pyx_obj_9pssparser_4core_AstBuilder *, struct __pyx_obj_9pssparser_6pssast_GlobalScope *, struct __pyx_obj_9ciostream_cistream *, struct __pyx_obj_9pssparser_4core_MarkerListener *, int __pyx_skip_dispatch);
-  struct __pyx_obj_9pssparser_4core_AstBuilder *(*mk)(pssp::IAstBuilder *);
+struct __pyx_vtabstruct_13zuspec_parser_4core_AstBuilder {
+  PyObject *(*build)(struct __pyx_obj_13zuspec_parser_4core_AstBuilder *, struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *, struct __pyx_obj_9ciostream_cistream *, struct __pyx_obj_13zuspec_parser_4core_MarkerListener *, int __pyx_skip_dispatch);
+  struct __pyx_obj_13zuspec_parser_4core_AstBuilder *(*mk)(zsp::IAstBuilder *);
 };
-static struct __pyx_vtabstruct_9pssparser_4core_AstBuilder *__pyx_vtabptr_9pssparser_4core_AstBuilder;
+static struct __pyx_vtabstruct_13zuspec_parser_4core_AstBuilder *__pyx_vtabptr_13zuspec_parser_4core_AstBuilder;
 
 /* --- Runtime support code (head) --- */
 /* Refnanny.proto */
@@ -5233,10 +6782,10 @@ static int __Pyx_ExportVoidPtr(PyObject *name, void *p, const char *sig);
 /* InitStrings.proto */
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
-static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_7Factory_mkAstBuilder(struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
-static struct __pyx_obj_9pssparser_4core_Factory *__pyx_f_9pssparser_4core_7Factory_inst(void); /* proto*/
-static PyObject *__pyx_f_9pssparser_4core_10AstBuilder_build(struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self, struct __pyx_obj_9pssparser_6pssast_GlobalScope *__pyx_v_root, struct __pyx_obj_9ciostream_cistream *__pyx_v_in_s, struct __pyx_obj_9pssparser_4core_MarkerListener *__pyx_v_listener, int __pyx_skip_dispatch); /* proto*/
-static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_10AstBuilder_mk(pssp::IAstBuilder *__pyx_v_hndl); /* proto*/
+static struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_f_13zuspec_parser_4core_7Factory_mkAstBuilder(struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
+static struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_f_13zuspec_parser_4core_7Factory_inst(void); /* proto*/
+static PyObject *__pyx_f_13zuspec_parser_4core_10AstBuilder_build(struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self, struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *__pyx_v_root, struct __pyx_obj_9ciostream_cistream *__pyx_v_in_s, struct __pyx_obj_13zuspec_parser_4core_MarkerListener *__pyx_v_listener, int __pyx_skip_dispatch); /* proto*/
+static struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_f_13zuspec_parser_4core_10AstBuilder_mk(zsp::IAstBuilder *__pyx_v_hndl); /* proto*/
 
 /* Module declarations from 'libcpp.utility' */
 
@@ -5273,114 +6822,151 @@ static PyTypeObject *__pyx_ptype_7cpython_4type_type = 0;
 
 /* Module declarations from 'libcpp.map' */
 
-/* Module declarations from 'pssparser.pssast_decl' */
+/* Module declarations from 'zuspec_parser.zsp_ast_decl' */
 
 /* Module declarations from 'ciostream' */
 static PyTypeObject *__pyx_ptype_9ciostream_cistream = 0;
 static PyTypeObject *__pyx_ptype_9ciostream_costream = 0;
 
-/* Module declarations from 'pssparser.decl' */
+/* Module declarations from 'zuspec_parser.decl' */
 
-/* Module declarations from 'pssparser' */
+/* Module declarations from 'zuspec_parser' */
 
-/* Module declarations from 'pssparser.pssast' */
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_Factory = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExecStmt = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_Expr = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_RefExpr = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TemplateParamDeclList = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TemplateParamDecl = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ScopeChild = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TemplateParamValueList = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TemplateParamValue = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TemplateParamTypeValue = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TemplateParamExprValue = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmt = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_Scope = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_NamedScopeChild = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_PackageImportStmt = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_DataType = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExecScope = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ProceduralStmtDataDeclaration = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprBin = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprBitSlice = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprBool = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprCast = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprCompileHas = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprCond = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprDomainOpenRangeList = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprDomainOpenRangeValue = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprHierarchicalId = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprId = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprIn = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprMemberPathElem = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprNumber = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprAggregateLiteral = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprOpenRangeList = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprOpenRangeValue = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprRefPath = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprRefPathElem = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprRefPathStaticRooted = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprStaticRefPath = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprString = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprSubscript = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprUnary = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_MethodParameterList = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TypeIdentifier = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TypeIdentifierElem = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_RefExprTypeScopeGlobal = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_RefExprTypeScopeContext = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_RefExprScopeIndex = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TemplateGenericTypeParamDecl = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TemplateCategoryTypeParamDecl = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TemplateValueParamDecl = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintBlock = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintScope = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmtDefault = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmtDefaultDisable = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmtExpr = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmtField = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmtIf = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmtUnique = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_GlobalScope = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_NamedScope = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_PackageScope = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_DataTypeArray = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_DataTypeBool = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_DataTypeChandle = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_DataTypeEnum = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_DataTypeInt = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_DataTypeString = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_DataTypeUserDefined = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprRefPathContext = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprRefPathStatic = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprSignedNumber = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprUnsignedNumber = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmtForall = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmtForeach = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ConstraintStmtImplication = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_TypeScope = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprRefPathStaticFunc = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_ExprRefPathSuper = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_Action = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_Component = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_Struct = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_State = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_Stream = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_Buffer = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_Resource = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_6pssast_VisitorBase = 0;
+/* Module declarations from 'zuspec_parser.zsp_ast' */
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_Factory = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ScopeChild = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolImportSpec = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpec = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_RefExpr = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_RefTarget = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamDeclList = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamDecl = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySelectBranch = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamValueList = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamValue = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityMatchChoice = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamTypeValue = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamExprValue = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExecStmt = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_Expr = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityStmt = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmt = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_Scope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ScopeChildRef = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_NamedScopeChild = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_PackageImportStmt = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_DataType = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExecScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprBin = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprBitSlice = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprBool = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprCast = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprCompileHas = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprCond = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprHierarchicalId = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprId = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprIn = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprMemberPathElem = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprNull = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprNumber = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprAggregateLiteral = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprOpenRangeList = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprOpenRangeValue = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPath = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathContext = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathElem = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprStaticRefPath = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprString = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprSubscript = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprUnary = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_MethodParameterList = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TypeIdentifier = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TypeIdentifierElem = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExtendEnum = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_RefExprScopeIndex = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateValueParamDecl = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityBindStmt = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityConstraint = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityLabeledStmt = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityLabeledScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtExpr = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtField = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtIf = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtUnique = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtDefault = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_GlobalScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_NamedScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_PackageScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeArray = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeBool = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeChandle = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeEnum = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_EnumItem = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_EnumDecl = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeInt = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeRef = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeString = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeUserDefined = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStatic = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathSuper = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprSignedNumber = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprUnsignedNumber = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExtendType = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_Field = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_FieldRef = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_FieldClaim = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolTypeScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolFunctionScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySequence = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityParallel = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySchedule = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityRepeatCount = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityRepeatWhile = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityForeach = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySelect = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityIfElse = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityMatch = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityReplicate = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySuper = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintBlock = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtForeach = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtForall = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtImplication = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_TypeScope = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_Component = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_Struct = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_Action = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_7zsp_ast_VisitorBase = 0;
 
-/* Module declarations from 'pssparser.core' */
-static PyTypeObject *__pyx_ptype_9pssparser_4core_Factory = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_4core_AstBuilder = 0;
-static PyTypeObject *__pyx_ptype_9pssparser_4core_MarkerListener = 0;
-static struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_9pssparser_4core__factoryInst = 0;
-#define __Pyx_MODULE_NAME "pssparser.core"
-extern int __pyx_module_is_main_pssparser__core;
-int __pyx_module_is_main_pssparser__core = 0;
+/* Module declarations from 'zuspec_parser.core' */
+static PyTypeObject *__pyx_ptype_13zuspec_parser_4core_Factory = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_4core_AstBuilder = 0;
+static PyTypeObject *__pyx_ptype_13zuspec_parser_4core_MarkerListener = 0;
+static struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_13zuspec_parser_4core__factoryInst = 0;
+#define __Pyx_MODULE_NAME "zuspec_parser.core"
+extern int __pyx_module_is_main_zuspec_parser__core;
+int __pyx_module_is_main_zuspec_parser__core = 0;
 
-/* Implementation of 'pssparser.core' */
+/* Implementation of 'zuspec_parser.core' */
 static PyObject *__pyx_builtin_staticmethod;
 static PyObject *__pyx_builtin_print;
 static PyObject *__pyx_builtin_TypeError;
@@ -5408,10 +6994,10 @@ static const char __pyx_k_mkAstBuilder[] = "mkAstBuilder";
 static const char __pyx_k_staticmethod[] = "staticmethod";
 static const char __pyx_k_reduce_cython[] = "__reduce_cython__";
 static const char __pyx_k_MarkerListener[] = "MarkerListener";
-static const char __pyx_k_pssparser_core[] = "pssparser.core";
 static const char __pyx_k_python_core_pyx[] = "python/core.pyx";
 static const char __pyx_k_setstate_cython[] = "__setstate_cython__";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
+static const char __pyx_k_zuspec_parser_core[] = "zuspec_parser.core";
 static const char __pyx_k_TODO_must_create_factory[] = "TODO: must create factory";
 static const char __pyx_k_self__hndl_cannot_be_converted_t[] = "self._hndl cannot be converted to a Python object for pickling";
 static PyObject *__pyx_n_s_AstBuilder;
@@ -5430,7 +7016,6 @@ static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_mkAstBuilder;
 static PyObject *__pyx_n_s_name;
 static PyObject *__pyx_n_s_print;
-static PyObject *__pyx_n_s_pssparser_core;
 static PyObject *__pyx_kp_s_python_core_pyx;
 static PyObject *__pyx_n_s_pyx_capi;
 static PyObject *__pyx_n_s_pyx_vtable;
@@ -5444,18 +7029,19 @@ static PyObject *__pyx_n_s_setstate_cython;
 static PyObject *__pyx_n_u_static;
 static PyObject *__pyx_n_s_staticmethod;
 static PyObject *__pyx_n_s_test;
-static int __pyx_pf_9pssparser_4core_7Factory___init__(struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9pssparser_4core_7Factory_2mkAstBuilder(struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9pssparser_4core_7Factory_4inst(void); /* proto */
-static PyObject *__pyx_pf_9pssparser_4core_7Factory_6__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9pssparser_4core_7Factory_8__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
-static void __pyx_pf_9pssparser_4core_10AstBuilder___dealloc__(struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_2build(struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self, struct __pyx_obj_9pssparser_6pssast_GlobalScope *__pyx_v_root, struct __pyx_obj_9ciostream_cistream *__pyx_v_in_s, struct __pyx_obj_9pssparser_4core_MarkerListener *__pyx_v_listener); /* proto */
-static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_4__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_6__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
-static PyObject *__pyx_tp_new_9pssparser_4core_Factory(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_9pssparser_4core_AstBuilder(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_9pssparser_4core_MarkerListener(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_n_s_zuspec_parser_core;
+static int __pyx_pf_13zuspec_parser_4core_7Factory___init__(struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_13zuspec_parser_4core_7Factory_2mkAstBuilder(struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_13zuspec_parser_4core_7Factory_4inst(void); /* proto */
+static PyObject *__pyx_pf_13zuspec_parser_4core_7Factory_6__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_13zuspec_parser_4core_7Factory_8__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static void __pyx_pf_13zuspec_parser_4core_10AstBuilder___dealloc__(struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_13zuspec_parser_4core_10AstBuilder_2build(struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self, struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *__pyx_v_root, struct __pyx_obj_9ciostream_cistream *__pyx_v_in_s, struct __pyx_obj_13zuspec_parser_4core_MarkerListener *__pyx_v_listener); /* proto */
+static PyObject *__pyx_pf_13zuspec_parser_4core_10AstBuilder_4__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_13zuspec_parser_4core_10AstBuilder_6__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
+static PyObject *__pyx_tp_new_13zuspec_parser_4core_Factory(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_13zuspec_parser_4core_AstBuilder(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_13zuspec_parser_4core_MarkerListener(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tuple_;
 static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_tuple__3;
@@ -5474,22 +7060,22 @@ static PyObject *__pyx_codeobj__7;
  */
 
 /* Python wrapper */
-static int __pyx_pw_9pssparser_4core_7Factory_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_9pssparser_4core_7Factory_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_13zuspec_parser_4core_7Factory_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_13zuspec_parser_4core_7Factory_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__ (wrapper)", 0);
   if (unlikely(PyTuple_GET_SIZE(__pyx_args) > 0)) {
     __Pyx_RaiseArgtupleInvalid("__init__", 1, 0, 0, PyTuple_GET_SIZE(__pyx_args)); return -1;}
   if (unlikely(__pyx_kwds) && unlikely(PyDict_Size(__pyx_kwds) > 0) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "__init__", 0))) return -1;
-  __pyx_r = __pyx_pf_9pssparser_4core_7Factory___init__(((struct __pyx_obj_9pssparser_4core_Factory *)__pyx_v_self));
+  __pyx_r = __pyx_pf_13zuspec_parser_4core_7Factory___init__(((struct __pyx_obj_13zuspec_parser_4core_Factory *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_9pssparser_4core_7Factory___init__(struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self) {
+static int __pyx_pf_13zuspec_parser_4core_7Factory___init__(struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__", 0);
@@ -5525,9 +7111,9 @@ static int __pyx_pf_9pssparser_4core_7Factory___init__(struct __pyx_obj_9psspars
  *         pass
  */
 
-static PyObject *__pyx_pw_9pssparser_4core_7Factory_3mkAstBuilder(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_7Factory_mkAstBuilder(struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self, int __pyx_skip_dispatch) {
-  struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_r = NULL;
+static PyObject *__pyx_pw_13zuspec_parser_4core_7Factory_3mkAstBuilder(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_f_13zuspec_parser_4core_7Factory_mkAstBuilder(struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self, int __pyx_skip_dispatch) {
+  struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
@@ -5548,7 +7134,7 @@ static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_7F
       #endif
       __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_mkAstBuilder); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 10, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)(void*)__pyx_pw_9pssparser_4core_7Factory_3mkAstBuilder)) {
+      if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)(void*)__pyx_pw_13zuspec_parser_4core_7Factory_3mkAstBuilder)) {
         __Pyx_XDECREF(((PyObject *)__pyx_r));
         __Pyx_INCREF(__pyx_t_1);
         __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
@@ -5566,8 +7152,8 @@ static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_7F
         if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 10, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_9pssparser_4core_AstBuilder))))) __PYX_ERR(0, 10, __pyx_L1_error)
-        __pyx_r = ((struct __pyx_obj_9pssparser_4core_AstBuilder *)__pyx_t_2);
+        if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_13zuspec_parser_4core_AstBuilder))))) __PYX_ERR(0, 10, __pyx_L1_error)
+        __pyx_r = ((struct __pyx_obj_13zuspec_parser_4core_AstBuilder *)__pyx_t_2);
         __pyx_t_2 = 0;
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
         goto __pyx_L0;
@@ -5593,9 +7179,9 @@ static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_7F
  * 
  */
   __Pyx_XDECREF(((PyObject *)__pyx_r));
-  __pyx_t_1 = ((PyObject *)__pyx_f_9pssparser_4core_10AstBuilder_mk(__pyx_v_self->_hndl->mkAstBuilder())); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 11, __pyx_L1_error)
+  __pyx_t_1 = ((PyObject *)__pyx_f_13zuspec_parser_4core_10AstBuilder_mk(__pyx_v_self->_hndl->mkAstBuilder())); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 11, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = ((struct __pyx_obj_9pssparser_4core_AstBuilder *)__pyx_t_1);
+  __pyx_r = ((struct __pyx_obj_13zuspec_parser_4core_AstBuilder *)__pyx_t_1);
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
@@ -5613,7 +7199,7 @@ static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_7F
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("pssparser.core.Factory.mkAstBuilder", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.Factory.mkAstBuilder", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF((PyObject *)__pyx_r);
@@ -5622,19 +7208,19 @@ static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_7F
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9pssparser_4core_7Factory_3mkAstBuilder(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9pssparser_4core_7Factory_3mkAstBuilder(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_13zuspec_parser_4core_7Factory_3mkAstBuilder(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_13zuspec_parser_4core_7Factory_3mkAstBuilder(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("mkAstBuilder (wrapper)", 0);
-  __pyx_r = __pyx_pf_9pssparser_4core_7Factory_2mkAstBuilder(((struct __pyx_obj_9pssparser_4core_Factory *)__pyx_v_self));
+  __pyx_r = __pyx_pf_13zuspec_parser_4core_7Factory_2mkAstBuilder(((struct __pyx_obj_13zuspec_parser_4core_Factory *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9pssparser_4core_7Factory_2mkAstBuilder(struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self) {
+static PyObject *__pyx_pf_13zuspec_parser_4core_7Factory_2mkAstBuilder(struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5643,7 +7229,7 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_2mkAstBuilder(struct __pyx_o
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("mkAstBuilder", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_9pssparser_4core_7Factory_mkAstBuilder(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 10, __pyx_L1_error)
+  __pyx_t_1 = ((PyObject *)__pyx_f_13zuspec_parser_4core_7Factory_mkAstBuilder(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 10, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5652,7 +7238,7 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_2mkAstBuilder(struct __pyx_o
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("pssparser.core.Factory.mkAstBuilder", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.Factory.mkAstBuilder", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5668,8 +7254,8 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_2mkAstBuilder(struct __pyx_o
  *         if _factoryInst is None:
  */
 
-static struct __pyx_obj_9pssparser_4core_Factory *__pyx_f_9pssparser_4core_7Factory_inst(void) {
-  struct __pyx_obj_9pssparser_4core_Factory *__pyx_r = NULL;
+static struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_f_13zuspec_parser_4core_7Factory_inst(void) {
+  struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   int __pyx_t_2;
@@ -5686,7 +7272,7 @@ static struct __pyx_obj_9pssparser_4core_Factory *__pyx_f_9pssparser_4core_7Fact
  *             print("TODO: must create factory")
  *             pass
  */
-  __pyx_t_1 = (((PyObject *)__pyx_v_9pssparser_4core__factoryInst) == Py_None);
+  __pyx_t_1 = (((PyObject *)__pyx_v_13zuspec_parser_4core__factoryInst) == Py_None);
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
@@ -5719,11 +7305,11 @@ static struct __pyx_obj_9pssparser_4core_Factory *__pyx_f_9pssparser_4core_7Fact
  */
 
   /* function exit code */
-  __pyx_r = ((struct __pyx_obj_9pssparser_4core_Factory *)Py_None); __Pyx_INCREF(Py_None);
+  __pyx_r = ((struct __pyx_obj_13zuspec_parser_4core_Factory *)Py_None); __Pyx_INCREF(Py_None);
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("pssparser.core.Factory.inst", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.Factory.inst", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF((PyObject *)__pyx_r);
@@ -5740,23 +7326,23 @@ static struct __pyx_obj_9pssparser_4core_Factory *__pyx_f_9pssparser_4core_7Fact
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9pssparser_4core_7Factory_5inst(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_9pssparser_4core_7Factory_5inst = {"inst", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_9pssparser_4core_7Factory_5inst, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_9pssparser_4core_7Factory_5inst(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_13zuspec_parser_4core_7Factory_5inst(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_13zuspec_parser_4core_7Factory_5inst = {"inst", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_13zuspec_parser_4core_7Factory_5inst, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_13zuspec_parser_4core_7Factory_5inst(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("inst (wrapper)", 0);
   if (unlikely(PyTuple_GET_SIZE(__pyx_args) > 0)) {
     __Pyx_RaiseArgtupleInvalid("inst", 1, 0, 0, PyTuple_GET_SIZE(__pyx_args)); return NULL;}
   if (unlikely(__pyx_kwds) && unlikely(PyDict_Size(__pyx_kwds) > 0) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "inst", 0))) return NULL;
-  __pyx_r = __pyx_pf_9pssparser_4core_7Factory_4inst();
+  __pyx_r = __pyx_pf_13zuspec_parser_4core_7Factory_4inst();
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9pssparser_4core_7Factory_4inst(void) {
+static PyObject *__pyx_pf_13zuspec_parser_4core_7Factory_4inst(void) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -5774,7 +7360,7 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_4inst(void) {
  *             print("TODO: must create factory")
  *             _factoryInst = Factory()
  */
-  __pyx_t_1 = (((PyObject *)__pyx_v_9pssparser_4core__factoryInst) == Py_None);
+  __pyx_t_1 = (((PyObject *)__pyx_v_13zuspec_parser_4core__factoryInst) == Py_None);
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
@@ -5796,10 +7382,10 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_4inst(void) {
  *             pass
  *         print("static")
  */
-    __pyx_t_3 = __Pyx_PyObject_CallNoArg(((PyObject *)__pyx_ptype_9pssparser_4core_Factory)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 27, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallNoArg(((PyObject *)__pyx_ptype_13zuspec_parser_4core_Factory)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 27, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __Pyx_XGOTREF(((PyObject *)__pyx_v_9pssparser_4core__factoryInst));
-    __Pyx_DECREF_SET(__pyx_v_9pssparser_4core__factoryInst, ((struct __pyx_obj_9pssparser_4core_Factory *)__pyx_t_3));
+    __Pyx_XGOTREF(((PyObject *)__pyx_v_13zuspec_parser_4core__factoryInst));
+    __Pyx_DECREF_SET(__pyx_v_13zuspec_parser_4core__factoryInst, ((struct __pyx_obj_13zuspec_parser_4core_Factory *)__pyx_t_3));
     __Pyx_GIVEREF(__pyx_t_3);
     __pyx_t_3 = 0;
 
@@ -5836,7 +7422,7 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_4inst(void) {
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("pssparser.core.Factory.inst", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.Factory.inst", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -5851,19 +7437,19 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_4inst(void) {
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9pssparser_4core_7Factory_7__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9pssparser_4core_7Factory_7__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_13zuspec_parser_4core_7Factory_7__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_13zuspec_parser_4core_7Factory_7__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9pssparser_4core_7Factory_6__reduce_cython__(((struct __pyx_obj_9pssparser_4core_Factory *)__pyx_v_self));
+  __pyx_r = __pyx_pf_13zuspec_parser_4core_7Factory_6__reduce_cython__(((struct __pyx_obj_13zuspec_parser_4core_Factory *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9pssparser_4core_7Factory_6__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self) {
+static PyObject *__pyx_pf_13zuspec_parser_4core_7Factory_6__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5893,7 +7479,7 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_6__reduce_cython__(CYTHON_UN
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("pssparser.core.Factory.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.Factory.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
@@ -5908,19 +7494,19 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_6__reduce_cython__(CYTHON_UN
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9pssparser_4core_7Factory_9__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_9pssparser_4core_7Factory_9__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_13zuspec_parser_4core_7Factory_9__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_13zuspec_parser_4core_7Factory_9__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9pssparser_4core_7Factory_8__setstate_cython__(((struct __pyx_obj_9pssparser_4core_Factory *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_13zuspec_parser_4core_7Factory_8__setstate_cython__(((struct __pyx_obj_13zuspec_parser_4core_Factory *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9pssparser_4core_7Factory_8__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_9pssparser_4core_Factory *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_13zuspec_parser_4core_7Factory_8__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_13zuspec_parser_4core_Factory *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5950,7 +7536,7 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_8__setstate_cython__(CYTHON_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("pssparser.core.Factory.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.Factory.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
@@ -5966,17 +7552,17 @@ static PyObject *__pyx_pf_9pssparser_4core_7Factory_8__setstate_cython__(CYTHON_
  */
 
 /* Python wrapper */
-static void __pyx_pw_9pssparser_4core_10AstBuilder_1__dealloc__(PyObject *__pyx_v_self); /*proto*/
-static void __pyx_pw_9pssparser_4core_10AstBuilder_1__dealloc__(PyObject *__pyx_v_self) {
+static void __pyx_pw_13zuspec_parser_4core_10AstBuilder_1__dealloc__(PyObject *__pyx_v_self); /*proto*/
+static void __pyx_pw_13zuspec_parser_4core_10AstBuilder_1__dealloc__(PyObject *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__ (wrapper)", 0);
-  __pyx_pf_9pssparser_4core_10AstBuilder___dealloc__(((struct __pyx_obj_9pssparser_4core_AstBuilder *)__pyx_v_self));
+  __pyx_pf_13zuspec_parser_4core_10AstBuilder___dealloc__(((struct __pyx_obj_13zuspec_parser_4core_AstBuilder *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
 }
 
-static void __pyx_pf_9pssparser_4core_10AstBuilder___dealloc__(struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self) {
+static void __pyx_pf_13zuspec_parser_4core_10AstBuilder___dealloc__(struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
@@ -6009,8 +7595,8 @@ static void __pyx_pf_9pssparser_4core_10AstBuilder___dealloc__(struct __pyx_obj_
  *         ciostream.cistream      in_s,
  */
 
-static PyObject *__pyx_pw_9pssparser_4core_10AstBuilder_3build(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_f_9pssparser_4core_10AstBuilder_build(struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self, struct __pyx_obj_9pssparser_6pssast_GlobalScope *__pyx_v_root, struct __pyx_obj_9ciostream_cistream *__pyx_v_in_s, struct __pyx_obj_9pssparser_4core_MarkerListener *__pyx_v_listener, int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_13zuspec_parser_4core_10AstBuilder_3build(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_f_13zuspec_parser_4core_10AstBuilder_build(struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self, struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *__pyx_v_root, struct __pyx_obj_9ciostream_cistream *__pyx_v_in_s, struct __pyx_obj_13zuspec_parser_4core_MarkerListener *__pyx_v_listener, int __pyx_skip_dispatch) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6034,7 +7620,7 @@ static PyObject *__pyx_f_9pssparser_4core_10AstBuilder_build(struct __pyx_obj_9p
       #endif
       __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_build); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 36, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)(void*)__pyx_pw_9pssparser_4core_10AstBuilder_3build)) {
+      if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)(void*)__pyx_pw_13zuspec_parser_4core_10AstBuilder_3build)) {
         __Pyx_XDECREF(__pyx_r);
         __Pyx_INCREF(__pyx_t_1);
         __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
@@ -6110,7 +7696,7 @@ static PyObject *__pyx_f_9pssparser_4core_10AstBuilder_build(struct __pyx_obj_9p
  *             root.asGlobalScope(),
  *             in_s.stream(),
  */
-  __pyx_v_self->_hndl->build(((struct __pyx_vtabstruct_9pssparser_6pssast_GlobalScope *)__pyx_v_root->__pyx_base.__pyx_base.__pyx_vtab)->asGlobalScope(__pyx_v_root), ((struct __pyx_vtabstruct_9ciostream_cistream *)__pyx_v_in_s->__pyx_vtab)->stream(__pyx_v_in_s), __pyx_v_listener->_hndl);
+  __pyx_v_self->_hndl->build(((struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_GlobalScope *)__pyx_v_root->__pyx_base.__pyx_base.__pyx_vtab)->asGlobalScope(__pyx_v_root), ((struct __pyx_vtabstruct_9ciostream_cistream *)__pyx_v_in_s->__pyx_vtab)->stream(__pyx_v_in_s), __pyx_v_listener->_hndl);
 
   /* "python/core.pyx":36
  *         del self._hndl
@@ -6129,7 +7715,7 @@ static PyObject *__pyx_f_9pssparser_4core_10AstBuilder_build(struct __pyx_obj_9p
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("pssparser.core.AstBuilder.build", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.AstBuilder.build", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6138,11 +7724,11 @@ static PyObject *__pyx_f_9pssparser_4core_10AstBuilder_build(struct __pyx_obj_9p
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9pssparser_4core_10AstBuilder_3build(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_9pssparser_4core_10AstBuilder_3build(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  struct __pyx_obj_9pssparser_6pssast_GlobalScope *__pyx_v_root = 0;
+static PyObject *__pyx_pw_13zuspec_parser_4core_10AstBuilder_3build(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_13zuspec_parser_4core_10AstBuilder_3build(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *__pyx_v_root = 0;
   struct __pyx_obj_9ciostream_cistream *__pyx_v_in_s = 0;
-  struct __pyx_obj_9pssparser_4core_MarkerListener *__pyx_v_listener = 0;
+  struct __pyx_obj_13zuspec_parser_4core_MarkerListener *__pyx_v_listener = 0;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -6193,22 +7779,22 @@ static PyObject *__pyx_pw_9pssparser_4core_10AstBuilder_3build(PyObject *__pyx_v
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
     }
-    __pyx_v_root = ((struct __pyx_obj_9pssparser_6pssast_GlobalScope *)values[0]);
+    __pyx_v_root = ((struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *)values[0]);
     __pyx_v_in_s = ((struct __pyx_obj_9ciostream_cistream *)values[1]);
-    __pyx_v_listener = ((struct __pyx_obj_9pssparser_4core_MarkerListener *)values[2]);
+    __pyx_v_listener = ((struct __pyx_obj_13zuspec_parser_4core_MarkerListener *)values[2]);
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("build", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 36, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("pssparser.core.AstBuilder.build", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.AstBuilder.build", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_root), __pyx_ptype_9pssparser_6pssast_GlobalScope, 1, "root", 0))) __PYX_ERR(0, 37, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_root), __pyx_ptype_13zuspec_parser_7zsp_ast_GlobalScope, 1, "root", 0))) __PYX_ERR(0, 37, __pyx_L1_error)
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_in_s), __pyx_ptype_9ciostream_cistream, 1, "in_s", 0))) __PYX_ERR(0, 38, __pyx_L1_error)
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_listener), __pyx_ptype_9pssparser_4core_MarkerListener, 1, "listener", 0))) __PYX_ERR(0, 39, __pyx_L1_error)
-  __pyx_r = __pyx_pf_9pssparser_4core_10AstBuilder_2build(((struct __pyx_obj_9pssparser_4core_AstBuilder *)__pyx_v_self), __pyx_v_root, __pyx_v_in_s, __pyx_v_listener);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_listener), __pyx_ptype_13zuspec_parser_4core_MarkerListener, 1, "listener", 0))) __PYX_ERR(0, 39, __pyx_L1_error)
+  __pyx_r = __pyx_pf_13zuspec_parser_4core_10AstBuilder_2build(((struct __pyx_obj_13zuspec_parser_4core_AstBuilder *)__pyx_v_self), __pyx_v_root, __pyx_v_in_s, __pyx_v_listener);
 
   /* function exit code */
   goto __pyx_L0;
@@ -6219,7 +7805,7 @@ static PyObject *__pyx_pw_9pssparser_4core_10AstBuilder_3build(PyObject *__pyx_v
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_2build(struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self, struct __pyx_obj_9pssparser_6pssast_GlobalScope *__pyx_v_root, struct __pyx_obj_9ciostream_cistream *__pyx_v_in_s, struct __pyx_obj_9pssparser_4core_MarkerListener *__pyx_v_listener) {
+static PyObject *__pyx_pf_13zuspec_parser_4core_10AstBuilder_2build(struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self, struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *__pyx_v_root, struct __pyx_obj_9ciostream_cistream *__pyx_v_in_s, struct __pyx_obj_13zuspec_parser_4core_MarkerListener *__pyx_v_listener) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6228,7 +7814,7 @@ static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_2build(struct __pyx_obj_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("build", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_9pssparser_4core_10AstBuilder_build(__pyx_v_self, __pyx_v_root, __pyx_v_in_s, __pyx_v_listener, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_13zuspec_parser_4core_10AstBuilder_build(__pyx_v_self, __pyx_v_root, __pyx_v_in_s, __pyx_v_listener, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -6237,7 +7823,7 @@ static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_2build(struct __pyx_obj_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("pssparser.core.AstBuilder.build", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.AstBuilder.build", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -6253,9 +7839,9 @@ static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_2build(struct __pyx_obj_
  *         ret._hndl = hndl
  */
 
-static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_10AstBuilder_mk(pssp::IAstBuilder *__pyx_v_hndl) {
-  struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_ret = NULL;
-  struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_r = NULL;
+static struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_f_13zuspec_parser_4core_10AstBuilder_mk(zsp::IAstBuilder *__pyx_v_hndl) {
+  struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_ret = NULL;
+  struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   int __pyx_lineno = 0;
@@ -6270,9 +7856,9 @@ static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_10
  *         ret._hndl = hndl
  *         return ret
  */
-  __pyx_t_1 = __Pyx_PyObject_CallNoArg(((PyObject *)__pyx_ptype_9pssparser_4core_AstBuilder)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_CallNoArg(((PyObject *)__pyx_ptype_13zuspec_parser_4core_AstBuilder)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_v_ret = ((struct __pyx_obj_9pssparser_4core_AstBuilder *)__pyx_t_1);
+  __pyx_v_ret = ((struct __pyx_obj_13zuspec_parser_4core_AstBuilder *)__pyx_t_1);
   __pyx_t_1 = 0;
 
   /* "python/core.pyx":48
@@ -6304,7 +7890,7 @@ static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_10
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("pssparser.core.AstBuilder.mk", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.AstBuilder.mk", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF((PyObject *)__pyx_v_ret);
@@ -6320,19 +7906,19 @@ static struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_f_9pssparser_4core_10
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9pssparser_4core_10AstBuilder_5__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_9pssparser_4core_10AstBuilder_5__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_13zuspec_parser_4core_10AstBuilder_5__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_13zuspec_parser_4core_10AstBuilder_5__reduce_cython__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9pssparser_4core_10AstBuilder_4__reduce_cython__(((struct __pyx_obj_9pssparser_4core_AstBuilder *)__pyx_v_self));
+  __pyx_r = __pyx_pf_13zuspec_parser_4core_10AstBuilder_4__reduce_cython__(((struct __pyx_obj_13zuspec_parser_4core_AstBuilder *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_4__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self) {
+static PyObject *__pyx_pf_13zuspec_parser_4core_10AstBuilder_4__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6362,7 +7948,7 @@ static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_4__reduce_cython__(CYTHO
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("pssparser.core.AstBuilder.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.AstBuilder.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
@@ -6377,19 +7963,19 @@ static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_4__reduce_cython__(CYTHO
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_9pssparser_4core_10AstBuilder_7__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
-static PyObject *__pyx_pw_9pssparser_4core_10AstBuilder_7__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pw_13zuspec_parser_4core_10AstBuilder_7__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state); /*proto*/
+static PyObject *__pyx_pw_13zuspec_parser_4core_10AstBuilder_7__setstate_cython__(PyObject *__pyx_v_self, PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_9pssparser_4core_10AstBuilder_6__setstate_cython__(((struct __pyx_obj_9pssparser_4core_AstBuilder *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
+  __pyx_r = __pyx_pf_13zuspec_parser_4core_10AstBuilder_6__setstate_cython__(((struct __pyx_obj_13zuspec_parser_4core_AstBuilder *)__pyx_v_self), ((PyObject *)__pyx_v___pyx_state));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_6__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_9pssparser_4core_AstBuilder *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
+static PyObject *__pyx_pf_13zuspec_parser_4core_10AstBuilder_6__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_13zuspec_parser_4core_AstBuilder *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6419,16 +8005,16 @@ static PyObject *__pyx_pf_9pssparser_4core_10AstBuilder_6__setstate_cython__(CYT
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("pssparser.core.AstBuilder.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("zuspec_parser.core.AstBuilder.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
-static struct __pyx_vtabstruct_9pssparser_4core_Factory __pyx_vtable_9pssparser_4core_Factory;
+static struct __pyx_vtabstruct_13zuspec_parser_4core_Factory __pyx_vtable_13zuspec_parser_4core_Factory;
 
-static PyObject *__pyx_tp_new_9pssparser_4core_Factory(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
-  struct __pyx_obj_9pssparser_4core_Factory *p;
+static PyObject *__pyx_tp_new_13zuspec_parser_4core_Factory(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+  struct __pyx_obj_13zuspec_parser_4core_Factory *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -6436,12 +8022,12 @@ static PyObject *__pyx_tp_new_9pssparser_4core_Factory(PyTypeObject *t, CYTHON_U
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_9pssparser_4core_Factory *)o);
-  p->__pyx_vtab = __pyx_vtabptr_9pssparser_4core_Factory;
+  p = ((struct __pyx_obj_13zuspec_parser_4core_Factory *)o);
+  p->__pyx_vtab = __pyx_vtabptr_13zuspec_parser_4core_Factory;
   return o;
 }
 
-static void __pyx_tp_dealloc_9pssparser_4core_Factory(PyObject *o) {
+static void __pyx_tp_dealloc_13zuspec_parser_4core_Factory(PyObject *o) {
   #if CYTHON_USE_TP_FINALIZE
   if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -6450,20 +8036,20 @@ static void __pyx_tp_dealloc_9pssparser_4core_Factory(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_9pssparser_4core_Factory[] = {
-  {"mkAstBuilder", (PyCFunction)__pyx_pw_9pssparser_4core_7Factory_3mkAstBuilder, METH_NOARGS, 0},
-  {"inst", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_9pssparser_4core_7Factory_5inst, METH_VARARGS|METH_KEYWORDS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_9pssparser_4core_7Factory_7__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_9pssparser_4core_7Factory_9__setstate_cython__, METH_O, 0},
+static PyMethodDef __pyx_methods_13zuspec_parser_4core_Factory[] = {
+  {"mkAstBuilder", (PyCFunction)__pyx_pw_13zuspec_parser_4core_7Factory_3mkAstBuilder, METH_NOARGS, 0},
+  {"inst", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_13zuspec_parser_4core_7Factory_5inst, METH_VARARGS|METH_KEYWORDS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_13zuspec_parser_4core_7Factory_7__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_13zuspec_parser_4core_7Factory_9__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_9pssparser_4core_Factory = {
+static PyTypeObject __pyx_type_13zuspec_parser_4core_Factory = {
   PyVarObject_HEAD_INIT(0, 0)
-  "pssparser.core.Factory", /*tp_name*/
-  sizeof(struct __pyx_obj_9pssparser_4core_Factory), /*tp_basicsize*/
+  "zuspec_parser.core.Factory", /*tp_name*/
+  sizeof(struct __pyx_obj_13zuspec_parser_4core_Factory), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_9pssparser_4core_Factory, /*tp_dealloc*/
+  __pyx_tp_dealloc_13zuspec_parser_4core_Factory, /*tp_dealloc*/
   #if PY_VERSION_HEX < 0x030800b4
   0, /*tp_print*/
   #endif
@@ -6496,7 +8082,7 @@ static PyTypeObject __pyx_type_9pssparser_4core_Factory = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_9pssparser_4core_Factory, /*tp_methods*/
+  __pyx_methods_13zuspec_parser_4core_Factory, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -6504,9 +8090,9 @@ static PyTypeObject __pyx_type_9pssparser_4core_Factory = {
   0, /*tp_descr_get*/
   0, /*tp_descr_set*/
   0, /*tp_dictoffset*/
-  __pyx_pw_9pssparser_4core_7Factory_1__init__, /*tp_init*/
+  __pyx_pw_13zuspec_parser_4core_7Factory_1__init__, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_9pssparser_4core_Factory, /*tp_new*/
+  __pyx_tp_new_13zuspec_parser_4core_Factory, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -6529,10 +8115,10 @@ static PyTypeObject __pyx_type_9pssparser_4core_Factory = {
   0, /*tp_pypy_flags*/
   #endif
 };
-static struct __pyx_vtabstruct_9pssparser_4core_AstBuilder __pyx_vtable_9pssparser_4core_AstBuilder;
+static struct __pyx_vtabstruct_13zuspec_parser_4core_AstBuilder __pyx_vtable_13zuspec_parser_4core_AstBuilder;
 
-static PyObject *__pyx_tp_new_9pssparser_4core_AstBuilder(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
-  struct __pyx_obj_9pssparser_4core_AstBuilder *p;
+static PyObject *__pyx_tp_new_13zuspec_parser_4core_AstBuilder(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+  struct __pyx_obj_13zuspec_parser_4core_AstBuilder *p;
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -6540,12 +8126,12 @@ static PyObject *__pyx_tp_new_9pssparser_4core_AstBuilder(PyTypeObject *t, CYTHO
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_9pssparser_4core_AstBuilder *)o);
-  p->__pyx_vtab = __pyx_vtabptr_9pssparser_4core_AstBuilder;
+  p = ((struct __pyx_obj_13zuspec_parser_4core_AstBuilder *)o);
+  p->__pyx_vtab = __pyx_vtabptr_13zuspec_parser_4core_AstBuilder;
   return o;
 }
 
-static void __pyx_tp_dealloc_9pssparser_4core_AstBuilder(PyObject *o) {
+static void __pyx_tp_dealloc_13zuspec_parser_4core_AstBuilder(PyObject *o) {
   #if CYTHON_USE_TP_FINALIZE
   if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -6555,26 +8141,26 @@ static void __pyx_tp_dealloc_9pssparser_4core_AstBuilder(PyObject *o) {
     PyObject *etype, *eval, *etb;
     PyErr_Fetch(&etype, &eval, &etb);
     __Pyx_SET_REFCNT(o, Py_REFCNT(o) + 1);
-    __pyx_pw_9pssparser_4core_10AstBuilder_1__dealloc__(o);
+    __pyx_pw_13zuspec_parser_4core_10AstBuilder_1__dealloc__(o);
     __Pyx_SET_REFCNT(o, Py_REFCNT(o) - 1);
     PyErr_Restore(etype, eval, etb);
   }
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_9pssparser_4core_AstBuilder[] = {
-  {"build", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_9pssparser_4core_10AstBuilder_3build, METH_VARARGS|METH_KEYWORDS, 0},
-  {"__reduce_cython__", (PyCFunction)__pyx_pw_9pssparser_4core_10AstBuilder_5__reduce_cython__, METH_NOARGS, 0},
-  {"__setstate_cython__", (PyCFunction)__pyx_pw_9pssparser_4core_10AstBuilder_7__setstate_cython__, METH_O, 0},
+static PyMethodDef __pyx_methods_13zuspec_parser_4core_AstBuilder[] = {
+  {"build", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_13zuspec_parser_4core_10AstBuilder_3build, METH_VARARGS|METH_KEYWORDS, 0},
+  {"__reduce_cython__", (PyCFunction)__pyx_pw_13zuspec_parser_4core_10AstBuilder_5__reduce_cython__, METH_NOARGS, 0},
+  {"__setstate_cython__", (PyCFunction)__pyx_pw_13zuspec_parser_4core_10AstBuilder_7__setstate_cython__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_9pssparser_4core_AstBuilder = {
+static PyTypeObject __pyx_type_13zuspec_parser_4core_AstBuilder = {
   PyVarObject_HEAD_INIT(0, 0)
-  "pssparser.core.AstBuilder", /*tp_name*/
-  sizeof(struct __pyx_obj_9pssparser_4core_AstBuilder), /*tp_basicsize*/
+  "zuspec_parser.core.AstBuilder", /*tp_name*/
+  sizeof(struct __pyx_obj_13zuspec_parser_4core_AstBuilder), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_9pssparser_4core_AstBuilder, /*tp_dealloc*/
+  __pyx_tp_dealloc_13zuspec_parser_4core_AstBuilder, /*tp_dealloc*/
   #if PY_VERSION_HEX < 0x030800b4
   0, /*tp_print*/
   #endif
@@ -6607,7 +8193,7 @@ static PyTypeObject __pyx_type_9pssparser_4core_AstBuilder = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_9pssparser_4core_AstBuilder, /*tp_methods*/
+  __pyx_methods_13zuspec_parser_4core_AstBuilder, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -6617,7 +8203,7 @@ static PyTypeObject __pyx_type_9pssparser_4core_AstBuilder = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_9pssparser_4core_AstBuilder, /*tp_new*/
+  __pyx_tp_new_13zuspec_parser_4core_AstBuilder, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -6641,7 +8227,7 @@ static PyTypeObject __pyx_type_9pssparser_4core_AstBuilder = {
   #endif
 };
 
-static PyObject *__pyx_tp_new_9pssparser_4core_MarkerListener(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+static PyObject *__pyx_tp_new_13zuspec_parser_4core_MarkerListener(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -6652,7 +8238,7 @@ static PyObject *__pyx_tp_new_9pssparser_4core_MarkerListener(PyTypeObject *t, C
   return o;
 }
 
-static void __pyx_tp_dealloc_9pssparser_4core_MarkerListener(PyObject *o) {
+static void __pyx_tp_dealloc_13zuspec_parser_4core_MarkerListener(PyObject *o) {
   #if CYTHON_USE_TP_FINALIZE
   if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -6661,12 +8247,12 @@ static void __pyx_tp_dealloc_9pssparser_4core_MarkerListener(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyTypeObject __pyx_type_9pssparser_4core_MarkerListener = {
+static PyTypeObject __pyx_type_13zuspec_parser_4core_MarkerListener = {
   PyVarObject_HEAD_INIT(0, 0)
-  "pssparser.core.MarkerListener", /*tp_name*/
-  sizeof(struct __pyx_obj_9pssparser_4core_MarkerListener), /*tp_basicsize*/
+  "zuspec_parser.core.MarkerListener", /*tp_name*/
+  sizeof(struct __pyx_obj_13zuspec_parser_4core_MarkerListener), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_9pssparser_4core_MarkerListener, /*tp_dealloc*/
+  __pyx_tp_dealloc_13zuspec_parser_4core_MarkerListener, /*tp_dealloc*/
   #if PY_VERSION_HEX < 0x030800b4
   0, /*tp_print*/
   #endif
@@ -6709,7 +8295,7 @@ static PyTypeObject __pyx_type_9pssparser_4core_MarkerListener = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_9pssparser_4core_MarkerListener, /*tp_new*/
+  __pyx_tp_new_13zuspec_parser_4core_MarkerListener, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -6795,7 +8381,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_mkAstBuilder, __pyx_k_mkAstBuilder, sizeof(__pyx_k_mkAstBuilder), 0, 0, 1, 1},
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
   {&__pyx_n_s_print, __pyx_k_print, sizeof(__pyx_k_print), 0, 0, 1, 1},
-  {&__pyx_n_s_pssparser_core, __pyx_k_pssparser_core, sizeof(__pyx_k_pssparser_core), 0, 0, 1, 1},
   {&__pyx_kp_s_python_core_pyx, __pyx_k_python_core_pyx, sizeof(__pyx_k_python_core_pyx), 0, 0, 1, 0},
   {&__pyx_n_s_pyx_capi, __pyx_k_pyx_capi, sizeof(__pyx_k_pyx_capi), 0, 0, 1, 1},
   {&__pyx_n_s_pyx_vtable, __pyx_k_pyx_vtable, sizeof(__pyx_k_pyx_vtable), 0, 0, 1, 1},
@@ -6809,6 +8394,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_u_static, __pyx_k_static, sizeof(__pyx_k_static), 0, 1, 0, 1},
   {&__pyx_n_s_staticmethod, __pyx_k_staticmethod, sizeof(__pyx_k_staticmethod), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
+  {&__pyx_n_s_zuspec_parser_core, __pyx_k_zuspec_parser_core, sizeof(__pyx_k_zuspec_parser_core), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
 };
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
@@ -6918,7 +8504,7 @@ static int __Pyx_modinit_global_init_code(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_modinit_global_init_code", 0);
   /*--- Global init code ---*/
-  __pyx_v_9pssparser_4core__factoryInst = ((struct __pyx_obj_9pssparser_4core_Factory *)Py_None); Py_INCREF(Py_None);
+  __pyx_v_13zuspec_parser_4core__factoryInst = ((struct __pyx_obj_13zuspec_parser_4core_Factory *)Py_None); Py_INCREF(Py_None);
   __Pyx_RefNannyFinishContext();
   return 0;
 }
@@ -6930,7 +8516,7 @@ static int __Pyx_modinit_variable_export_code(void) {
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__Pyx_modinit_variable_export_code", 0);
   /*--- Variable export code ---*/
-  if (__Pyx_ExportVoidPtr(__pyx_n_s_factoryInst, (void *)&__pyx_v_9pssparser_4core__factoryInst, "struct __pyx_obj_9pssparser_4core_Factory *") < 0) __PYX_ERR(0, 2, __pyx_L1_error)
+  if (__Pyx_ExportVoidPtr(__pyx_n_s_factoryInst, (void *)&__pyx_v_13zuspec_parser_4core__factoryInst, "struct __pyx_obj_13zuspec_parser_4core_Factory *") < 0) __PYX_ERR(0, 2, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -6953,43 +8539,43 @@ static int __Pyx_modinit_type_init_code(void) {
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__Pyx_modinit_type_init_code", 0);
   /*--- Type init code ---*/
-  __pyx_vtabptr_9pssparser_4core_Factory = &__pyx_vtable_9pssparser_4core_Factory;
-  __pyx_vtable_9pssparser_4core_Factory.mkAstBuilder = (struct __pyx_obj_9pssparser_4core_AstBuilder *(*)(struct __pyx_obj_9pssparser_4core_Factory *, int __pyx_skip_dispatch))__pyx_f_9pssparser_4core_7Factory_mkAstBuilder;
-  __pyx_vtable_9pssparser_4core_Factory.inst = (struct __pyx_obj_9pssparser_4core_Factory *(*)(void))__pyx_f_9pssparser_4core_7Factory_inst;
-  if (PyType_Ready(&__pyx_type_9pssparser_4core_Factory) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_4core_Factory = &__pyx_vtable_13zuspec_parser_4core_Factory;
+  __pyx_vtable_13zuspec_parser_4core_Factory.mkAstBuilder = (struct __pyx_obj_13zuspec_parser_4core_AstBuilder *(*)(struct __pyx_obj_13zuspec_parser_4core_Factory *, int __pyx_skip_dispatch))__pyx_f_13zuspec_parser_4core_7Factory_mkAstBuilder;
+  __pyx_vtable_13zuspec_parser_4core_Factory.inst = (struct __pyx_obj_13zuspec_parser_4core_Factory *(*)(void))__pyx_f_13zuspec_parser_4core_7Factory_inst;
+  if (PyType_Ready(&__pyx_type_13zuspec_parser_4core_Factory) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
-  __pyx_type_9pssparser_4core_Factory.tp_print = 0;
+  __pyx_type_13zuspec_parser_4core_Factory.tp_print = 0;
   #endif
-  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_9pssparser_4core_Factory.tp_dictoffset && __pyx_type_9pssparser_4core_Factory.tp_getattro == PyObject_GenericGetAttr)) {
-    __pyx_type_9pssparser_4core_Factory.tp_getattro = __Pyx_PyObject_GenericGetAttr;
+  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_13zuspec_parser_4core_Factory.tp_dictoffset && __pyx_type_13zuspec_parser_4core_Factory.tp_getattro == PyObject_GenericGetAttr)) {
+    __pyx_type_13zuspec_parser_4core_Factory.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (__Pyx_SetVtable(__pyx_type_9pssparser_4core_Factory.tp_dict, __pyx_vtabptr_9pssparser_4core_Factory) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
-  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_Factory, (PyObject *)&__pyx_type_9pssparser_4core_Factory) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_9pssparser_4core_Factory) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
-  __pyx_ptype_9pssparser_4core_Factory = &__pyx_type_9pssparser_4core_Factory;
-  __pyx_vtabptr_9pssparser_4core_AstBuilder = &__pyx_vtable_9pssparser_4core_AstBuilder;
-  __pyx_vtable_9pssparser_4core_AstBuilder.build = (PyObject *(*)(struct __pyx_obj_9pssparser_4core_AstBuilder *, struct __pyx_obj_9pssparser_6pssast_GlobalScope *, struct __pyx_obj_9ciostream_cistream *, struct __pyx_obj_9pssparser_4core_MarkerListener *, int __pyx_skip_dispatch))__pyx_f_9pssparser_4core_10AstBuilder_build;
-  __pyx_vtable_9pssparser_4core_AstBuilder.mk = (struct __pyx_obj_9pssparser_4core_AstBuilder *(*)(pssp::IAstBuilder *))__pyx_f_9pssparser_4core_10AstBuilder_mk;
-  if (PyType_Ready(&__pyx_type_9pssparser_4core_AstBuilder) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (__Pyx_SetVtable(__pyx_type_13zuspec_parser_4core_Factory.tp_dict, __pyx_vtabptr_13zuspec_parser_4core_Factory) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
+  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_Factory, (PyObject *)&__pyx_type_13zuspec_parser_4core_Factory) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_13zuspec_parser_4core_Factory) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_4core_Factory = &__pyx_type_13zuspec_parser_4core_Factory;
+  __pyx_vtabptr_13zuspec_parser_4core_AstBuilder = &__pyx_vtable_13zuspec_parser_4core_AstBuilder;
+  __pyx_vtable_13zuspec_parser_4core_AstBuilder.build = (PyObject *(*)(struct __pyx_obj_13zuspec_parser_4core_AstBuilder *, struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope *, struct __pyx_obj_9ciostream_cistream *, struct __pyx_obj_13zuspec_parser_4core_MarkerListener *, int __pyx_skip_dispatch))__pyx_f_13zuspec_parser_4core_10AstBuilder_build;
+  __pyx_vtable_13zuspec_parser_4core_AstBuilder.mk = (struct __pyx_obj_13zuspec_parser_4core_AstBuilder *(*)(zsp::IAstBuilder *))__pyx_f_13zuspec_parser_4core_10AstBuilder_mk;
+  if (PyType_Ready(&__pyx_type_13zuspec_parser_4core_AstBuilder) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
-  __pyx_type_9pssparser_4core_AstBuilder.tp_print = 0;
+  __pyx_type_13zuspec_parser_4core_AstBuilder.tp_print = 0;
   #endif
-  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_9pssparser_4core_AstBuilder.tp_dictoffset && __pyx_type_9pssparser_4core_AstBuilder.tp_getattro == PyObject_GenericGetAttr)) {
-    __pyx_type_9pssparser_4core_AstBuilder.tp_getattro = __Pyx_PyObject_GenericGetAttr;
+  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_13zuspec_parser_4core_AstBuilder.tp_dictoffset && __pyx_type_13zuspec_parser_4core_AstBuilder.tp_getattro == PyObject_GenericGetAttr)) {
+    __pyx_type_13zuspec_parser_4core_AstBuilder.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (__Pyx_SetVtable(__pyx_type_9pssparser_4core_AstBuilder.tp_dict, __pyx_vtabptr_9pssparser_4core_AstBuilder) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
-  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_AstBuilder, (PyObject *)&__pyx_type_9pssparser_4core_AstBuilder) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_9pssparser_4core_AstBuilder) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
-  __pyx_ptype_9pssparser_4core_AstBuilder = &__pyx_type_9pssparser_4core_AstBuilder;
-  if (PyType_Ready(&__pyx_type_9pssparser_4core_MarkerListener) < 0) __PYX_ERR(2, 31, __pyx_L1_error)
+  if (__Pyx_SetVtable(__pyx_type_13zuspec_parser_4core_AstBuilder.tp_dict, __pyx_vtabptr_13zuspec_parser_4core_AstBuilder) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_AstBuilder, (PyObject *)&__pyx_type_13zuspec_parser_4core_AstBuilder) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&__pyx_type_13zuspec_parser_4core_AstBuilder) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_4core_AstBuilder = &__pyx_type_13zuspec_parser_4core_AstBuilder;
+  if (PyType_Ready(&__pyx_type_13zuspec_parser_4core_MarkerListener) < 0) __PYX_ERR(2, 31, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
-  __pyx_type_9pssparser_4core_MarkerListener.tp_print = 0;
+  __pyx_type_13zuspec_parser_4core_MarkerListener.tp_print = 0;
   #endif
-  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_9pssparser_4core_MarkerListener.tp_dictoffset && __pyx_type_9pssparser_4core_MarkerListener.tp_getattro == PyObject_GenericGetAttr)) {
-    __pyx_type_9pssparser_4core_MarkerListener.tp_getattro = __Pyx_PyObject_GenericGetAttr;
+  if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_13zuspec_parser_4core_MarkerListener.tp_dictoffset && __pyx_type_13zuspec_parser_4core_MarkerListener.tp_getattro == PyObject_GenericGetAttr)) {
+    __pyx_type_13zuspec_parser_4core_MarkerListener.tp_getattro = __Pyx_PyObject_GenericGetAttr;
   }
-  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_MarkerListener, (PyObject *)&__pyx_type_9pssparser_4core_MarkerListener) < 0) __PYX_ERR(2, 31, __pyx_L1_error)
-  __pyx_ptype_9pssparser_4core_MarkerListener = &__pyx_type_9pssparser_4core_MarkerListener;
+  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_MarkerListener, (PyObject *)&__pyx_type_13zuspec_parser_4core_MarkerListener) < 0) __PYX_ERR(2, 31, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_4core_MarkerListener = &__pyx_type_13zuspec_parser_4core_MarkerListener;
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -7025,266 +8611,377 @@ static int __Pyx_modinit_type_import_code(void) {
    if (!__pyx_ptype_9ciostream_costream) __PYX_ERR(4, 42, __pyx_L1_error)
   __pyx_vtabptr_9ciostream_costream = (struct __pyx_vtabstruct_9ciostream_costream*)__Pyx_GetVtable(__pyx_ptype_9ciostream_costream->tp_dict); if (unlikely(!__pyx_vtabptr_9ciostream_costream)) __PYX_ERR(4, 42, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyImport_ImportModule("pssparser.pssast"); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 23, __pyx_L1_error)
+  __pyx_t_1 = PyImport_ImportModule("zuspec_parser.zsp_ast"); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_ptype_9pssparser_6pssast_Factory = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "Factory", sizeof(struct __pyx_obj_9pssparser_6pssast_Factory), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_Factory) __PYX_ERR(5, 23, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_Factory = (struct __pyx_vtabstruct_9pssparser_6pssast_Factory*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_Factory->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_Factory)) __PYX_ERR(5, 23, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExecStmt = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExecStmt", sizeof(struct __pyx_obj_9pssparser_6pssast_ExecStmt), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExecStmt) __PYX_ERR(5, 224, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExecStmt = (struct __pyx_vtabstruct_9pssparser_6pssast_ExecStmt*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExecStmt->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExecStmt)) __PYX_ERR(5, 224, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_Expr = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "Expr", sizeof(struct __pyx_obj_9pssparser_6pssast_Expr), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_Expr) __PYX_ERR(5, 233, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_Expr = (struct __pyx_vtabstruct_9pssparser_6pssast_Expr*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_Expr->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_Expr)) __PYX_ERR(5, 233, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_RefExpr = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "RefExpr", sizeof(struct __pyx_obj_9pssparser_6pssast_RefExpr), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_RefExpr) __PYX_ERR(5, 242, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_RefExpr = (struct __pyx_vtabstruct_9pssparser_6pssast_RefExpr*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_RefExpr->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_RefExpr)) __PYX_ERR(5, 242, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TemplateParamDeclList = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TemplateParamDeclList", sizeof(struct __pyx_obj_9pssparser_6pssast_TemplateParamDeclList), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TemplateParamDeclList) __PYX_ERR(5, 251, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TemplateParamDeclList = (struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDeclList*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TemplateParamDeclList->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TemplateParamDeclList)) __PYX_ERR(5, 251, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TemplateParamDecl = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TemplateParamDecl", sizeof(struct __pyx_obj_9pssparser_6pssast_TemplateParamDecl), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TemplateParamDecl) __PYX_ERR(5, 260, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TemplateParamDecl = (struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamDecl*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TemplateParamDecl->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TemplateParamDecl)) __PYX_ERR(5, 260, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ScopeChild = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ScopeChild", sizeof(struct __pyx_obj_9pssparser_6pssast_ScopeChild), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ScopeChild) __PYX_ERR(5, 269, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ScopeChild = (struct __pyx_vtabstruct_9pssparser_6pssast_ScopeChild*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ScopeChild->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ScopeChild)) __PYX_ERR(5, 269, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TemplateParamValueList = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TemplateParamValueList", sizeof(struct __pyx_obj_9pssparser_6pssast_TemplateParamValueList), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TemplateParamValueList) __PYX_ERR(5, 280, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TemplateParamValueList = (struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamValueList*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TemplateParamValueList->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TemplateParamValueList)) __PYX_ERR(5, 280, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TemplateParamValue = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TemplateParamValue", sizeof(struct __pyx_obj_9pssparser_6pssast_TemplateParamValue), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TemplateParamValue) __PYX_ERR(5, 289, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TemplateParamValue = (struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamValue*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TemplateParamValue->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TemplateParamValue)) __PYX_ERR(5, 289, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TemplateParamTypeValue = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TemplateParamTypeValue", sizeof(struct __pyx_obj_9pssparser_6pssast_TemplateParamTypeValue), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TemplateParamTypeValue) __PYX_ERR(5, 298, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TemplateParamTypeValue = (struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamTypeValue*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TemplateParamTypeValue->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TemplateParamTypeValue)) __PYX_ERR(5, 298, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TemplateParamExprValue = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TemplateParamExprValue", sizeof(struct __pyx_obj_9pssparser_6pssast_TemplateParamExprValue), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TemplateParamExprValue) __PYX_ERR(5, 307, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TemplateParamExprValue = (struct __pyx_vtabstruct_9pssparser_6pssast_TemplateParamExprValue*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TemplateParamExprValue->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TemplateParamExprValue)) __PYX_ERR(5, 307, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmt = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmt", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmt), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmt) __PYX_ERR(5, 316, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmt = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmt*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmt->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmt)) __PYX_ERR(5, 316, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_Scope = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "Scope", sizeof(struct __pyx_obj_9pssparser_6pssast_Scope), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_Scope) __PYX_ERR(5, 322, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_Scope = (struct __pyx_vtabstruct_9pssparser_6pssast_Scope*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_Scope->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_Scope)) __PYX_ERR(5, 322, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_NamedScopeChild = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "NamedScopeChild", sizeof(struct __pyx_obj_9pssparser_6pssast_NamedScopeChild), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_NamedScopeChild) __PYX_ERR(5, 328, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_NamedScopeChild = (struct __pyx_vtabstruct_9pssparser_6pssast_NamedScopeChild*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_NamedScopeChild->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_NamedScopeChild)) __PYX_ERR(5, 328, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_PackageImportStmt = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "PackageImportStmt", sizeof(struct __pyx_obj_9pssparser_6pssast_PackageImportStmt), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_PackageImportStmt) __PYX_ERR(5, 334, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_PackageImportStmt = (struct __pyx_vtabstruct_9pssparser_6pssast_PackageImportStmt*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_PackageImportStmt->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_PackageImportStmt)) __PYX_ERR(5, 334, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_DataType = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "DataType", sizeof(struct __pyx_obj_9pssparser_6pssast_DataType), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_DataType) __PYX_ERR(5, 341, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_DataType = (struct __pyx_vtabstruct_9pssparser_6pssast_DataType*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_DataType->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_DataType)) __PYX_ERR(5, 341, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExecScope = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExecScope", sizeof(struct __pyx_obj_9pssparser_6pssast_ExecScope), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExecScope) __PYX_ERR(5, 347, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExecScope = (struct __pyx_vtabstruct_9pssparser_6pssast_ExecScope*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExecScope->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExecScope)) __PYX_ERR(5, 347, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ProceduralStmtDataDeclaration = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ProceduralStmtDataDeclaration", sizeof(struct __pyx_obj_9pssparser_6pssast_ProceduralStmtDataDeclaration), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ProceduralStmtDataDeclaration) __PYX_ERR(5, 353, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ProceduralStmtDataDeclaration = (struct __pyx_vtabstruct_9pssparser_6pssast_ProceduralStmtDataDeclaration*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ProceduralStmtDataDeclaration->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ProceduralStmtDataDeclaration)) __PYX_ERR(5, 353, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprBin = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprBin", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprBin), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprBin) __PYX_ERR(5, 359, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprBin = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprBin*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprBin->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprBin)) __PYX_ERR(5, 359, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprBitSlice = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprBitSlice", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprBitSlice), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprBitSlice) __PYX_ERR(5, 365, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprBitSlice = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprBitSlice*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprBitSlice->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprBitSlice)) __PYX_ERR(5, 365, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprBool = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprBool", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprBool), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprBool) __PYX_ERR(5, 371, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprBool = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprBool*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprBool->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprBool)) __PYX_ERR(5, 371, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprCast = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprCast", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprCast), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprCast) __PYX_ERR(5, 378, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprCast = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprCast*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprCast->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprCast)) __PYX_ERR(5, 378, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprCompileHas = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprCompileHas", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprCompileHas), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprCompileHas) __PYX_ERR(5, 384, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprCompileHas = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprCompileHas*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprCompileHas->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprCompileHas)) __PYX_ERR(5, 384, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprCond = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprCond", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprCond), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprCond) __PYX_ERR(5, 390, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprCond = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprCond*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprCond->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprCond)) __PYX_ERR(5, 390, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprDomainOpenRangeList = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprDomainOpenRangeList", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeList), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprDomainOpenRangeList) __PYX_ERR(5, 396, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprDomainOpenRangeList = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprDomainOpenRangeList*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprDomainOpenRangeList->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprDomainOpenRangeList)) __PYX_ERR(5, 396, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprDomainOpenRangeValue = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprDomainOpenRangeValue", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprDomainOpenRangeValue), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprDomainOpenRangeValue) __PYX_ERR(5, 402, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprDomainOpenRangeValue = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprDomainOpenRangeValue*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprDomainOpenRangeValue->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprDomainOpenRangeValue)) __PYX_ERR(5, 402, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprHierarchicalId = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprHierarchicalId", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprHierarchicalId), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprHierarchicalId) __PYX_ERR(5, 409, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprHierarchicalId = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprHierarchicalId*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprHierarchicalId->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprHierarchicalId)) __PYX_ERR(5, 409, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprId = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprId", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprId), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprId) __PYX_ERR(5, 415, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprId = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprId*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprId->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprId)) __PYX_ERR(5, 415, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprIn = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprIn", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprIn), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprIn) __PYX_ERR(5, 423, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprIn = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprIn*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprIn->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprIn)) __PYX_ERR(5, 423, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprMemberPathElem = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprMemberPathElem", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprMemberPathElem), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprMemberPathElem) __PYX_ERR(5, 429, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprMemberPathElem = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprMemberPathElem*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprMemberPathElem->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprMemberPathElem)) __PYX_ERR(5, 429, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprNumber = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprNumber", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprNumber), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprNumber) __PYX_ERR(5, 436, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprNumber = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprNumber*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprNumber->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprNumber)) __PYX_ERR(5, 436, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprAggregateLiteral = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprAggregateLiteral", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprAggregateLiteral), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprAggregateLiteral) __PYX_ERR(5, 442, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprAggregateLiteral = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprAggregateLiteral*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprAggregateLiteral->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprAggregateLiteral)) __PYX_ERR(5, 442, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprOpenRangeList = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprOpenRangeList", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeList), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprOpenRangeList) __PYX_ERR(5, 448, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprOpenRangeList = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprOpenRangeList*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprOpenRangeList->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprOpenRangeList)) __PYX_ERR(5, 448, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprOpenRangeValue = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprOpenRangeValue", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprOpenRangeValue), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprOpenRangeValue) __PYX_ERR(5, 454, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprOpenRangeValue = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprOpenRangeValue*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprOpenRangeValue->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprOpenRangeValue)) __PYX_ERR(5, 454, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprRefPath = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprRefPath", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprRefPath), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprRefPath) __PYX_ERR(5, 460, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprRefPath = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPath*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprRefPath->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprRefPath)) __PYX_ERR(5, 460, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprRefPathElem = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprRefPathElem", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprRefPathElem), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprRefPathElem) __PYX_ERR(5, 466, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprRefPathElem = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathElem*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprRefPathElem->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprRefPathElem)) __PYX_ERR(5, 466, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprRefPathStaticRooted = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprRefPathStaticRooted", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticRooted), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprRefPathStaticRooted) __PYX_ERR(5, 472, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprRefPathStaticRooted = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStaticRooted*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprRefPathStaticRooted->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprRefPathStaticRooted)) __PYX_ERR(5, 472, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprStaticRefPath = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprStaticRefPath", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprStaticRefPath), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprStaticRefPath) __PYX_ERR(5, 478, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprStaticRefPath = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprStaticRefPath*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprStaticRefPath->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprStaticRefPath)) __PYX_ERR(5, 478, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprString = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprString", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprString), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprString) __PYX_ERR(5, 485, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprString = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprString*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprString->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprString)) __PYX_ERR(5, 485, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprSubscript = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprSubscript", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprSubscript), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprSubscript) __PYX_ERR(5, 493, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprSubscript = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprSubscript*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprSubscript->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprSubscript)) __PYX_ERR(5, 493, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprUnary = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprUnary", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprUnary), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprUnary) __PYX_ERR(5, 499, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprUnary = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprUnary*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprUnary->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprUnary)) __PYX_ERR(5, 499, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_MethodParameterList = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "MethodParameterList", sizeof(struct __pyx_obj_9pssparser_6pssast_MethodParameterList), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_MethodParameterList) __PYX_ERR(5, 505, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_MethodParameterList = (struct __pyx_vtabstruct_9pssparser_6pssast_MethodParameterList*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_MethodParameterList->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_MethodParameterList)) __PYX_ERR(5, 505, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TypeIdentifier = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TypeIdentifier", sizeof(struct __pyx_obj_9pssparser_6pssast_TypeIdentifier), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TypeIdentifier) __PYX_ERR(5, 511, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TypeIdentifier = (struct __pyx_vtabstruct_9pssparser_6pssast_TypeIdentifier*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TypeIdentifier->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TypeIdentifier)) __PYX_ERR(5, 511, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TypeIdentifierElem = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TypeIdentifierElem", sizeof(struct __pyx_obj_9pssparser_6pssast_TypeIdentifierElem), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TypeIdentifierElem) __PYX_ERR(5, 517, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TypeIdentifierElem = (struct __pyx_vtabstruct_9pssparser_6pssast_TypeIdentifierElem*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TypeIdentifierElem->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TypeIdentifierElem)) __PYX_ERR(5, 517, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_RefExprTypeScopeGlobal = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "RefExprTypeScopeGlobal", sizeof(struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeGlobal), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_RefExprTypeScopeGlobal) __PYX_ERR(5, 523, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_RefExprTypeScopeGlobal = (struct __pyx_vtabstruct_9pssparser_6pssast_RefExprTypeScopeGlobal*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_RefExprTypeScopeGlobal->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_RefExprTypeScopeGlobal)) __PYX_ERR(5, 523, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_RefExprTypeScopeContext = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "RefExprTypeScopeContext", sizeof(struct __pyx_obj_9pssparser_6pssast_RefExprTypeScopeContext), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_RefExprTypeScopeContext) __PYX_ERR(5, 530, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_RefExprTypeScopeContext = (struct __pyx_vtabstruct_9pssparser_6pssast_RefExprTypeScopeContext*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_RefExprTypeScopeContext->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_RefExprTypeScopeContext)) __PYX_ERR(5, 530, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_RefExprScopeIndex = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "RefExprScopeIndex", sizeof(struct __pyx_obj_9pssparser_6pssast_RefExprScopeIndex), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_RefExprScopeIndex) __PYX_ERR(5, 537, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_RefExprScopeIndex = (struct __pyx_vtabstruct_9pssparser_6pssast_RefExprScopeIndex*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_RefExprScopeIndex->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_RefExprScopeIndex)) __PYX_ERR(5, 537, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TemplateGenericTypeParamDecl = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TemplateGenericTypeParamDecl", sizeof(struct __pyx_obj_9pssparser_6pssast_TemplateGenericTypeParamDecl), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TemplateGenericTypeParamDecl) __PYX_ERR(5, 544, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TemplateGenericTypeParamDecl = (struct __pyx_vtabstruct_9pssparser_6pssast_TemplateGenericTypeParamDecl*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TemplateGenericTypeParamDecl->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TemplateGenericTypeParamDecl)) __PYX_ERR(5, 544, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TemplateCategoryTypeParamDecl = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TemplateCategoryTypeParamDecl", sizeof(struct __pyx_obj_9pssparser_6pssast_TemplateCategoryTypeParamDecl), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TemplateCategoryTypeParamDecl) __PYX_ERR(5, 550, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TemplateCategoryTypeParamDecl = (struct __pyx_vtabstruct_9pssparser_6pssast_TemplateCategoryTypeParamDecl*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TemplateCategoryTypeParamDecl->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TemplateCategoryTypeParamDecl)) __PYX_ERR(5, 550, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TemplateValueParamDecl = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TemplateValueParamDecl", sizeof(struct __pyx_obj_9pssparser_6pssast_TemplateValueParamDecl), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TemplateValueParamDecl) __PYX_ERR(5, 556, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TemplateValueParamDecl = (struct __pyx_vtabstruct_9pssparser_6pssast_TemplateValueParamDecl*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TemplateValueParamDecl->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TemplateValueParamDecl)) __PYX_ERR(5, 556, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintBlock = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintBlock", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintBlock), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintBlock) __PYX_ERR(5, 562, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintBlock = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintBlock*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintBlock->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintBlock)) __PYX_ERR(5, 562, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintScope = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintScope", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintScope), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintScope) __PYX_ERR(5, 570, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintScope = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintScope*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintScope->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintScope)) __PYX_ERR(5, 570, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmtDefault = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmtDefault", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefault), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmtDefault) __PYX_ERR(5, 576, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmtDefault = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtDefault*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmtDefault->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtDefault)) __PYX_ERR(5, 576, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmtDefaultDisable = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmtDefaultDisable", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtDefaultDisable), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmtDefaultDisable) __PYX_ERR(5, 582, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmtDefaultDisable = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtDefaultDisable*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmtDefaultDisable->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtDefaultDisable)) __PYX_ERR(5, 582, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmtExpr = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmtExpr", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtExpr), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmtExpr) __PYX_ERR(5, 588, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmtExpr = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtExpr*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmtExpr->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtExpr)) __PYX_ERR(5, 588, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmtField = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmtField", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtField), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmtField) __PYX_ERR(5, 594, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmtField = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtField*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmtField->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtField)) __PYX_ERR(5, 594, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmtIf = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmtIf", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtIf), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmtIf) __PYX_ERR(5, 600, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmtIf = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtIf*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmtIf->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtIf)) __PYX_ERR(5, 600, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmtUnique = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmtUnique", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtUnique), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmtUnique) __PYX_ERR(5, 606, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmtUnique = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtUnique*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmtUnique->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtUnique)) __PYX_ERR(5, 606, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_GlobalScope = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "GlobalScope", sizeof(struct __pyx_obj_9pssparser_6pssast_GlobalScope), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_GlobalScope) __PYX_ERR(5, 612, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_GlobalScope = (struct __pyx_vtabstruct_9pssparser_6pssast_GlobalScope*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_GlobalScope->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_GlobalScope)) __PYX_ERR(5, 612, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_NamedScope = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "NamedScope", sizeof(struct __pyx_obj_9pssparser_6pssast_NamedScope), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_NamedScope) __PYX_ERR(5, 619, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_NamedScope = (struct __pyx_vtabstruct_9pssparser_6pssast_NamedScope*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_NamedScope->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_NamedScope)) __PYX_ERR(5, 619, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_PackageScope = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "PackageScope", sizeof(struct __pyx_obj_9pssparser_6pssast_PackageScope), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_PackageScope) __PYX_ERR(5, 625, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_PackageScope = (struct __pyx_vtabstruct_9pssparser_6pssast_PackageScope*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_PackageScope->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_PackageScope)) __PYX_ERR(5, 625, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_DataTypeArray = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "DataTypeArray", sizeof(struct __pyx_obj_9pssparser_6pssast_DataTypeArray), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_DataTypeArray) __PYX_ERR(5, 631, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_DataTypeArray = (struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeArray*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_DataTypeArray->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_DataTypeArray)) __PYX_ERR(5, 631, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_DataTypeBool = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "DataTypeBool", sizeof(struct __pyx_obj_9pssparser_6pssast_DataTypeBool), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_DataTypeBool) __PYX_ERR(5, 637, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_DataTypeBool = (struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeBool*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_DataTypeBool->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_DataTypeBool)) __PYX_ERR(5, 637, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_DataTypeChandle = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "DataTypeChandle", sizeof(struct __pyx_obj_9pssparser_6pssast_DataTypeChandle), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_DataTypeChandle) __PYX_ERR(5, 643, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_DataTypeChandle = (struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeChandle*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_DataTypeChandle->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_DataTypeChandle)) __PYX_ERR(5, 643, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_DataTypeEnum = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "DataTypeEnum", sizeof(struct __pyx_obj_9pssparser_6pssast_DataTypeEnum), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_DataTypeEnum) __PYX_ERR(5, 649, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_DataTypeEnum = (struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeEnum*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_DataTypeEnum->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_DataTypeEnum)) __PYX_ERR(5, 649, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_DataTypeInt = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "DataTypeInt", sizeof(struct __pyx_obj_9pssparser_6pssast_DataTypeInt), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_DataTypeInt) __PYX_ERR(5, 655, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_DataTypeInt = (struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeInt*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_DataTypeInt->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_DataTypeInt)) __PYX_ERR(5, 655, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_DataTypeString = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "DataTypeString", sizeof(struct __pyx_obj_9pssparser_6pssast_DataTypeString), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_DataTypeString) __PYX_ERR(5, 662, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_DataTypeString = (struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeString*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_DataTypeString->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_DataTypeString)) __PYX_ERR(5, 662, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_DataTypeUserDefined = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "DataTypeUserDefined", sizeof(struct __pyx_obj_9pssparser_6pssast_DataTypeUserDefined), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_DataTypeUserDefined) __PYX_ERR(5, 669, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_DataTypeUserDefined = (struct __pyx_vtabstruct_9pssparser_6pssast_DataTypeUserDefined*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_DataTypeUserDefined->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_DataTypeUserDefined)) __PYX_ERR(5, 669, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprRefPathContext = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprRefPathContext", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprRefPathContext), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprRefPathContext) __PYX_ERR(5, 676, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprRefPathContext = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathContext*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprRefPathContext->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprRefPathContext)) __PYX_ERR(5, 676, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprRefPathStatic = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprRefPathStatic", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprRefPathStatic), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprRefPathStatic) __PYX_ERR(5, 682, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprRefPathStatic = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStatic*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprRefPathStatic->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprRefPathStatic)) __PYX_ERR(5, 682, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprSignedNumber = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprSignedNumber", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprSignedNumber), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprSignedNumber) __PYX_ERR(5, 689, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprSignedNumber = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprSignedNumber*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprSignedNumber->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprSignedNumber)) __PYX_ERR(5, 689, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprUnsignedNumber = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprUnsignedNumber", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprUnsignedNumber), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprUnsignedNumber) __PYX_ERR(5, 698, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprUnsignedNumber = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprUnsignedNumber*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprUnsignedNumber->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprUnsignedNumber)) __PYX_ERR(5, 698, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmtForall = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmtForall", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForall), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmtForall) __PYX_ERR(5, 707, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmtForall = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtForall*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmtForall->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtForall)) __PYX_ERR(5, 707, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmtForeach = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmtForeach", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtForeach), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmtForeach) __PYX_ERR(5, 713, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmtForeach = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtForeach*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmtForeach->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtForeach)) __PYX_ERR(5, 713, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ConstraintStmtImplication = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ConstraintStmtImplication", sizeof(struct __pyx_obj_9pssparser_6pssast_ConstraintStmtImplication), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ConstraintStmtImplication) __PYX_ERR(5, 719, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ConstraintStmtImplication = (struct __pyx_vtabstruct_9pssparser_6pssast_ConstraintStmtImplication*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ConstraintStmtImplication->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ConstraintStmtImplication)) __PYX_ERR(5, 719, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_TypeScope = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "TypeScope", sizeof(struct __pyx_obj_9pssparser_6pssast_TypeScope), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_TypeScope) __PYX_ERR(5, 725, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_TypeScope = (struct __pyx_vtabstruct_9pssparser_6pssast_TypeScope*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_TypeScope->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_TypeScope)) __PYX_ERR(5, 725, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprRefPathStaticFunc = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprRefPathStaticFunc", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprRefPathStaticFunc), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprRefPathStaticFunc) __PYX_ERR(5, 731, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprRefPathStaticFunc = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathStaticFunc*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprRefPathStaticFunc->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprRefPathStaticFunc)) __PYX_ERR(5, 731, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_ExprRefPathSuper = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "ExprRefPathSuper", sizeof(struct __pyx_obj_9pssparser_6pssast_ExprRefPathSuper), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_ExprRefPathSuper) __PYX_ERR(5, 737, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_ExprRefPathSuper = (struct __pyx_vtabstruct_9pssparser_6pssast_ExprRefPathSuper*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_ExprRefPathSuper->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_ExprRefPathSuper)) __PYX_ERR(5, 737, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_Action = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "Action", sizeof(struct __pyx_obj_9pssparser_6pssast_Action), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_Action) __PYX_ERR(5, 743, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_Action = (struct __pyx_vtabstruct_9pssparser_6pssast_Action*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_Action->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_Action)) __PYX_ERR(5, 743, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_Component = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "Component", sizeof(struct __pyx_obj_9pssparser_6pssast_Component), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_Component) __PYX_ERR(5, 750, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_Component = (struct __pyx_vtabstruct_9pssparser_6pssast_Component*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_Component->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_Component)) __PYX_ERR(5, 750, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_Struct = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "Struct", sizeof(struct __pyx_obj_9pssparser_6pssast_Struct), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_Struct) __PYX_ERR(5, 756, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_Struct = (struct __pyx_vtabstruct_9pssparser_6pssast_Struct*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_Struct->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_Struct)) __PYX_ERR(5, 756, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_State = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "State", sizeof(struct __pyx_obj_9pssparser_6pssast_State), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_State) __PYX_ERR(5, 762, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_State = (struct __pyx_vtabstruct_9pssparser_6pssast_State*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_State->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_State)) __PYX_ERR(5, 762, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_Stream = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "Stream", sizeof(struct __pyx_obj_9pssparser_6pssast_Stream), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_Stream) __PYX_ERR(5, 768, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_Stream = (struct __pyx_vtabstruct_9pssparser_6pssast_Stream*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_Stream->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_Stream)) __PYX_ERR(5, 768, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_Buffer = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "Buffer", sizeof(struct __pyx_obj_9pssparser_6pssast_Buffer), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_Buffer) __PYX_ERR(5, 774, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_Buffer = (struct __pyx_vtabstruct_9pssparser_6pssast_Buffer*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_Buffer->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_Buffer)) __PYX_ERR(5, 774, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_Resource = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "Resource", sizeof(struct __pyx_obj_9pssparser_6pssast_Resource), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_Resource) __PYX_ERR(5, 780, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_Resource = (struct __pyx_vtabstruct_9pssparser_6pssast_Resource*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_Resource->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_Resource)) __PYX_ERR(5, 780, __pyx_L1_error)
-  __pyx_ptype_9pssparser_6pssast_VisitorBase = __Pyx_ImportType(__pyx_t_1, "pssparser.pssast", "VisitorBase", sizeof(struct __pyx_obj_9pssparser_6pssast_VisitorBase), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_9pssparser_6pssast_VisitorBase) __PYX_ERR(5, 786, __pyx_L1_error)
-  __pyx_vtabptr_9pssparser_6pssast_VisitorBase = (struct __pyx_vtabstruct_9pssparser_6pssast_VisitorBase*)__Pyx_GetVtable(__pyx_ptype_9pssparser_6pssast_VisitorBase->tp_dict); if (unlikely(!__pyx_vtabptr_9pssparser_6pssast_VisitorBase)) __PYX_ERR(5, 786, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_Factory = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "Factory", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_Factory), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_Factory) __PYX_ERR(5, 23, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_Factory = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Factory*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_Factory->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_Factory)) __PYX_ERR(5, 23, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ScopeChild = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ScopeChild", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChild), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ScopeChild) __PYX_ERR(5, 318, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ScopeChild = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChild*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ScopeChild->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ScopeChild)) __PYX_ERR(5, 318, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_SymbolImportSpec = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "SymbolImportSpec", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolImportSpec), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolImportSpec) __PYX_ERR(5, 332, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolImportSpec = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolImportSpec*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolImportSpec->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolImportSpec)) __PYX_ERR(5, 332, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpec = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityJoinSpec", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpec), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpec) __PYX_ERR(5, 341, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpec = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpec*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpec->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpec)) __PYX_ERR(5, 341, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_RefExpr = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "RefExpr", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExpr), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_RefExpr) __PYX_ERR(5, 350, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExpr = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExpr*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_RefExpr->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExpr)) __PYX_ERR(5, 350, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_RefTarget = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "RefTarget", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefTarget), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_RefTarget) __PYX_ERR(5, 359, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_RefTarget = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefTarget*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_RefTarget->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefTarget)) __PYX_ERR(5, 359, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamDeclList = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TemplateParamDeclList", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDeclList), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamDeclList) __PYX_ERR(5, 368, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamDeclList = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDeclList*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamDeclList->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamDeclList)) __PYX_ERR(5, 368, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamDecl = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TemplateParamDecl", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamDecl), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamDecl) __PYX_ERR(5, 377, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamDecl = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamDecl*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamDecl->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamDecl)) __PYX_ERR(5, 377, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySelectBranch = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivitySelectBranch", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelectBranch), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySelectBranch) __PYX_ERR(5, 386, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySelectBranch = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySelectBranch*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySelectBranch->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySelectBranch)) __PYX_ERR(5, 386, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamValueList = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TemplateParamValueList", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValueList), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamValueList) __PYX_ERR(5, 395, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamValueList = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamValueList*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamValueList->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamValueList)) __PYX_ERR(5, 395, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamValue = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TemplateParamValue", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamValue), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamValue) __PYX_ERR(5, 404, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamValue = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamValue*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamValue->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamValue)) __PYX_ERR(5, 404, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityMatchChoice = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityMatchChoice", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatchChoice), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityMatchChoice) __PYX_ERR(5, 413, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityMatchChoice = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityMatchChoice*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityMatchChoice->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityMatchChoice)) __PYX_ERR(5, 413, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamTypeValue = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TemplateParamTypeValue", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamTypeValue), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamTypeValue) __PYX_ERR(5, 423, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamTypeValue = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamTypeValue*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamTypeValue->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamTypeValue)) __PYX_ERR(5, 423, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamExprValue = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TemplateParamExprValue", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateParamExprValue), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamExprValue) __PYX_ERR(5, 432, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamExprValue = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateParamExprValue*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateParamExprValue->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateParamExprValue)) __PYX_ERR(5, 432, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExecStmt = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExecStmt", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecStmt), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExecStmt) __PYX_ERR(5, 441, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExecStmt = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExecStmt*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExecStmt->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExecStmt)) __PYX_ERR(5, 441, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_Expr = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "Expr", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_Expr), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_Expr) __PYX_ERR(5, 450, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_Expr = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Expr*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_Expr->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_Expr)) __PYX_ERR(5, 450, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityStmt = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityStmt", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityStmt), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityStmt) __PYX_ERR(5, 459, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityStmt = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityStmt*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityStmt->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityStmt)) __PYX_ERR(5, 459, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivitySchedulingConstraint", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint) __PYX_ERR(5, 465, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySchedulingConstraint)) __PYX_ERR(5, 465, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityJoinSpecBranch", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch) __PYX_ERR(5, 472, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecBranch)) __PYX_ERR(5, 472, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityJoinSpecSelect", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect) __PYX_ERR(5, 478, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecSelect)) __PYX_ERR(5, 478, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityJoinSpecNone", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone) __PYX_ERR(5, 484, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecNone)) __PYX_ERR(5, 484, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityJoinSpecFirst", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst) __PYX_ERR(5, 490, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityJoinSpecFirst)) __PYX_ERR(5, 490, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmt = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmt", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmt), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmt) __PYX_ERR(5, 496, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmt = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmt*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmt->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmt)) __PYX_ERR(5, 496, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_Scope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "Scope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_Scope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_Scope) __PYX_ERR(5, 502, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_Scope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Scope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_Scope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_Scope)) __PYX_ERR(5, 502, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ScopeChildRef = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ScopeChildRef", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ScopeChildRef), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ScopeChildRef) __PYX_ERR(5, 508, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ScopeChildRef = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ScopeChildRef*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ScopeChildRef->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ScopeChildRef)) __PYX_ERR(5, 508, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_NamedScopeChild = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "NamedScopeChild", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScopeChild), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_NamedScopeChild) __PYX_ERR(5, 514, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_NamedScopeChild = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScopeChild*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_NamedScopeChild->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_NamedScopeChild)) __PYX_ERR(5, 514, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_PackageImportStmt = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "PackageImportStmt", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageImportStmt), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_PackageImportStmt) __PYX_ERR(5, 520, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_PackageImportStmt = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_PackageImportStmt*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_PackageImportStmt->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_PackageImportStmt)) __PYX_ERR(5, 520, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_DataType = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "DataType", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataType), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_DataType) __PYX_ERR(5, 527, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_DataType = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataType*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_DataType->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataType)) __PYX_ERR(5, 527, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExecScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExecScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExecScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExecScope) __PYX_ERR(5, 533, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExecScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExecScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExecScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExecScope)) __PYX_ERR(5, 533, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ProceduralStmtDataDeclaration", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration) __PYX_ERR(5, 539, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ProceduralStmtDataDeclaration)) __PYX_ERR(5, 539, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprBin = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprBin", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBin), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprBin) __PYX_ERR(5, 545, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprBin = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprBin*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprBin->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprBin)) __PYX_ERR(5, 545, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprBitSlice = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprBitSlice", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBitSlice), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprBitSlice) __PYX_ERR(5, 552, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprBitSlice = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprBitSlice*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprBitSlice->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprBitSlice)) __PYX_ERR(5, 552, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprBool = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprBool", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprBool), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprBool) __PYX_ERR(5, 558, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprBool = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprBool*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprBool->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprBool)) __PYX_ERR(5, 558, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprCast = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprCast", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCast), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprCast) __PYX_ERR(5, 565, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprCast = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprCast*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprCast->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprCast)) __PYX_ERR(5, 565, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprCompileHas = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprCompileHas", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCompileHas), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprCompileHas) __PYX_ERR(5, 571, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprCompileHas = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprCompileHas*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprCompileHas->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprCompileHas)) __PYX_ERR(5, 571, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprCond = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprCond", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprCond), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprCond) __PYX_ERR(5, 577, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprCond = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprCond*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprCond->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprCond)) __PYX_ERR(5, 577, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprDomainOpenRangeList", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList) __PYX_ERR(5, 583, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeList)) __PYX_ERR(5, 583, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprDomainOpenRangeValue", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue) __PYX_ERR(5, 589, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprDomainOpenRangeValue)) __PYX_ERR(5, 589, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprHierarchicalId = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprHierarchicalId", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprHierarchicalId), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprHierarchicalId) __PYX_ERR(5, 596, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprHierarchicalId = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprHierarchicalId*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprHierarchicalId->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprHierarchicalId)) __PYX_ERR(5, 596, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprId = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprId", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprId), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprId) __PYX_ERR(5, 602, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprId = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprId*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprId->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprId)) __PYX_ERR(5, 602, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprIn = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprIn", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprIn), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprIn) __PYX_ERR(5, 613, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprIn = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprIn*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprIn->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprIn)) __PYX_ERR(5, 613, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprMemberPathElem = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprMemberPathElem", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprMemberPathElem), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprMemberPathElem) __PYX_ERR(5, 619, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprMemberPathElem = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprMemberPathElem*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprMemberPathElem->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprMemberPathElem)) __PYX_ERR(5, 619, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprNull = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprNull", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNull), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprNull) __PYX_ERR(5, 626, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprNull = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprNull*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprNull->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprNull)) __PYX_ERR(5, 626, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprNumber = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprNumber", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprNumber), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprNumber) __PYX_ERR(5, 632, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprNumber = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprNumber*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprNumber->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprNumber)) __PYX_ERR(5, 632, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprAggregateLiteral = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprAggregateLiteral", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprAggregateLiteral), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprAggregateLiteral) __PYX_ERR(5, 638, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprAggregateLiteral = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprAggregateLiteral*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprAggregateLiteral->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprAggregateLiteral)) __PYX_ERR(5, 638, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprOpenRangeList = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprOpenRangeList", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeList), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprOpenRangeList) __PYX_ERR(5, 644, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprOpenRangeList = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprOpenRangeList*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprOpenRangeList->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprOpenRangeList)) __PYX_ERR(5, 644, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprOpenRangeValue = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprOpenRangeValue", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprOpenRangeValue), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprOpenRangeValue) __PYX_ERR(5, 650, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprOpenRangeValue = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprOpenRangeValue*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprOpenRangeValue->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprOpenRangeValue)) __PYX_ERR(5, 650, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPath = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprRefPath", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPath), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPath) __PYX_ERR(5, 656, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPath = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPath*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPath->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPath)) __PYX_ERR(5, 656, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathContext = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprRefPathContext", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathContext), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathContext) __PYX_ERR(5, 662, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathContext = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathContext*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathContext->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathContext)) __PYX_ERR(5, 662, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathElem = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprRefPathElem", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathElem), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathElem) __PYX_ERR(5, 668, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathElem = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathElem*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathElem->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathElem)) __PYX_ERR(5, 668, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprRefPathStaticRooted", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted) __PYX_ERR(5, 674, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathStaticRooted)) __PYX_ERR(5, 674, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprStaticRefPath = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprStaticRefPath", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprStaticRefPath), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprStaticRefPath) __PYX_ERR(5, 680, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprStaticRefPath = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprStaticRefPath*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprStaticRefPath->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprStaticRefPath)) __PYX_ERR(5, 680, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprString = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprString", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprString), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprString) __PYX_ERR(5, 687, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprString = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprString*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprString->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprString)) __PYX_ERR(5, 687, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprSubscript = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprSubscript", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSubscript), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprSubscript) __PYX_ERR(5, 695, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprSubscript = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprSubscript*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprSubscript->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprSubscript)) __PYX_ERR(5, 695, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprUnary = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprUnary", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnary), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprUnary) __PYX_ERR(5, 701, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprUnary = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprUnary*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprUnary->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprUnary)) __PYX_ERR(5, 701, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_MethodParameterList = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "MethodParameterList", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_MethodParameterList), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_MethodParameterList) __PYX_ERR(5, 708, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_MethodParameterList = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_MethodParameterList*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_MethodParameterList->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_MethodParameterList)) __PYX_ERR(5, 708, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TypeIdentifier = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TypeIdentifier", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifier), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TypeIdentifier) __PYX_ERR(5, 714, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TypeIdentifier = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeIdentifier*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TypeIdentifier->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TypeIdentifier)) __PYX_ERR(5, 714, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TypeIdentifierElem = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TypeIdentifierElem", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeIdentifierElem), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TypeIdentifierElem) __PYX_ERR(5, 720, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TypeIdentifierElem = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeIdentifierElem*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TypeIdentifierElem->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TypeIdentifierElem)) __PYX_ERR(5, 720, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExtendEnum = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExtendEnum", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendEnum), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExtendEnum) __PYX_ERR(5, 726, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExtendEnum = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExtendEnum*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExtendEnum->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExtendEnum)) __PYX_ERR(5, 726, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_SymbolScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "SymbolScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolScope) __PYX_ERR(5, 732, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolScope)) __PYX_ERR(5, 732, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "RefExprTypeScopeGlobal", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal) __PYX_ERR(5, 740, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExprTypeScopeGlobal)) __PYX_ERR(5, 740, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "RefExprTypeScopeContext", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext) __PYX_ERR(5, 747, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExprTypeScopeContext)) __PYX_ERR(5, 747, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_RefExprScopeIndex = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "RefExprScopeIndex", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_RefExprScopeIndex), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_RefExprScopeIndex) __PYX_ERR(5, 754, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExprScopeIndex = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_RefExprScopeIndex*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_RefExprScopeIndex->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_RefExprScopeIndex)) __PYX_ERR(5, 754, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TemplateGenericTypeParamDecl", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl) __PYX_ERR(5, 761, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateGenericTypeParamDecl)) __PYX_ERR(5, 761, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TemplateCategoryTypeParamDecl", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl) __PYX_ERR(5, 767, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateCategoryTypeParamDecl)) __PYX_ERR(5, 767, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TemplateValueParamDecl = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TemplateValueParamDecl", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TemplateValueParamDecl), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateValueParamDecl) __PYX_ERR(5, 774, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateValueParamDecl = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TemplateValueParamDecl*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TemplateValueParamDecl->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TemplateValueParamDecl)) __PYX_ERR(5, 774, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityBindStmt = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityBindStmt", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityBindStmt), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityBindStmt) __PYX_ERR(5, 780, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityBindStmt = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityBindStmt*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityBindStmt->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityBindStmt)) __PYX_ERR(5, 780, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityConstraint = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityConstraint", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityConstraint), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityConstraint) __PYX_ERR(5, 786, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityConstraint = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityConstraint*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityConstraint->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityConstraint)) __PYX_ERR(5, 786, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityLabeledStmt = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityLabeledStmt", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledStmt), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityLabeledStmt) __PYX_ERR(5, 792, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityLabeledStmt = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledStmt*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityLabeledStmt->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityLabeledStmt)) __PYX_ERR(5, 792, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityLabeledScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityLabeledScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityLabeledScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityLabeledScope) __PYX_ERR(5, 798, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityLabeledScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityLabeledScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityLabeledScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityLabeledScope)) __PYX_ERR(5, 798, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintScope) __PYX_ERR(5, 804, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintScope)) __PYX_ERR(5, 804, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtExpr = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmtExpr", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtExpr), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtExpr) __PYX_ERR(5, 810, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtExpr = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtExpr*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtExpr->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtExpr)) __PYX_ERR(5, 810, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtField = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmtField", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtField), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtField) __PYX_ERR(5, 816, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtField = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtField*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtField->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtField)) __PYX_ERR(5, 816, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtIf = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmtIf", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtIf), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtIf) __PYX_ERR(5, 822, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtIf = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtIf*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtIf->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtIf)) __PYX_ERR(5, 822, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtUnique = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmtUnique", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtUnique), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtUnique) __PYX_ERR(5, 828, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtUnique = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtUnique*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtUnique->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtUnique)) __PYX_ERR(5, 828, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtDefault = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmtDefault", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefault), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtDefault) __PYX_ERR(5, 834, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtDefault = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtDefault*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtDefault->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtDefault)) __PYX_ERR(5, 834, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmtDefaultDisable", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable) __PYX_ERR(5, 840, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtDefaultDisable)) __PYX_ERR(5, 840, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_GlobalScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "GlobalScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_GlobalScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_GlobalScope) __PYX_ERR(5, 846, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_GlobalScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_GlobalScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_GlobalScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_GlobalScope)) __PYX_ERR(5, 846, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_NamedScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "NamedScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_NamedScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_NamedScope) __PYX_ERR(5, 853, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_NamedScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_NamedScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_NamedScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_NamedScope)) __PYX_ERR(5, 853, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_PackageScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "PackageScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_PackageScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_PackageScope) __PYX_ERR(5, 859, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_PackageScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_PackageScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_PackageScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_PackageScope)) __PYX_ERR(5, 859, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeArray = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "DataTypeArray", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeArray), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeArray) __PYX_ERR(5, 865, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeArray = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeArray*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeArray->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeArray)) __PYX_ERR(5, 865, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeBool = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "DataTypeBool", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeBool), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeBool) __PYX_ERR(5, 871, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeBool = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeBool*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeBool->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeBool)) __PYX_ERR(5, 871, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeChandle = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "DataTypeChandle", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeChandle), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeChandle) __PYX_ERR(5, 877, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeChandle = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeChandle*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeChandle->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeChandle)) __PYX_ERR(5, 877, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeEnum = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "DataTypeEnum", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeEnum), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeEnum) __PYX_ERR(5, 883, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeEnum = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeEnum*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeEnum->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeEnum)) __PYX_ERR(5, 883, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_EnumItem = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "EnumItem", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumItem), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_EnumItem) __PYX_ERR(5, 889, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_EnumItem = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_EnumItem*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_EnumItem->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_EnumItem)) __PYX_ERR(5, 889, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_EnumDecl = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "EnumDecl", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_EnumDecl), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_EnumDecl) __PYX_ERR(5, 895, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_EnumDecl = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_EnumDecl*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_EnumDecl->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_EnumDecl)) __PYX_ERR(5, 895, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeInt = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "DataTypeInt", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeInt), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeInt) __PYX_ERR(5, 901, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeInt = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeInt*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeInt->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeInt)) __PYX_ERR(5, 901, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeRef = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "DataTypeRef", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeRef), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeRef) __PYX_ERR(5, 908, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeRef = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeRef*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeRef->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeRef)) __PYX_ERR(5, 908, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeString = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "DataTypeString", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeString), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeString) __PYX_ERR(5, 914, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeString = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeString*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeString->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeString)) __PYX_ERR(5, 914, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeUserDefined = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "DataTypeUserDefined", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_DataTypeUserDefined), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeUserDefined) __PYX_ERR(5, 921, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeUserDefined = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_DataTypeUserDefined*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_DataTypeUserDefined->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_DataTypeUserDefined)) __PYX_ERR(5, 921, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStatic = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprRefPathStatic", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStatic), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStatic) __PYX_ERR(5, 928, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathStatic = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStatic*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStatic->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathStatic)) __PYX_ERR(5, 928, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathSuper = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprRefPathSuper", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathSuper), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathSuper) __PYX_ERR(5, 935, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathSuper = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathSuper*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathSuper->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathSuper)) __PYX_ERR(5, 935, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprSignedNumber = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprSignedNumber", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprSignedNumber), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprSignedNumber) __PYX_ERR(5, 941, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprSignedNumber = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprSignedNumber*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprSignedNumber->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprSignedNumber)) __PYX_ERR(5, 941, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprUnsignedNumber = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprUnsignedNumber", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprUnsignedNumber), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprUnsignedNumber) __PYX_ERR(5, 950, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprUnsignedNumber = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprUnsignedNumber*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprUnsignedNumber->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprUnsignedNumber)) __PYX_ERR(5, 950, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExtendType = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExtendType", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExtendType), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExtendType) __PYX_ERR(5, 959, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExtendType = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExtendType*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExtendType->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExtendType)) __PYX_ERR(5, 959, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_Field = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "Field", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_Field), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_Field) __PYX_ERR(5, 966, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_Field = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Field*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_Field->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_Field)) __PYX_ERR(5, 966, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_FieldRef = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "FieldRef", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldRef), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_FieldRef) __PYX_ERR(5, 973, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_FieldRef = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_FieldRef*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_FieldRef->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_FieldRef)) __PYX_ERR(5, 973, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_FieldClaim = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "FieldClaim", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_FieldClaim), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_FieldClaim) __PYX_ERR(5, 980, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_FieldClaim = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_FieldClaim*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_FieldClaim->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_FieldClaim)) __PYX_ERR(5, 980, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_SymbolTypeScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "SymbolTypeScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolTypeScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolTypeScope) __PYX_ERR(5, 987, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolTypeScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolTypeScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolTypeScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolTypeScope)) __PYX_ERR(5, 987, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_SymbolFunctionScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "SymbolFunctionScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_SymbolFunctionScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolFunctionScope) __PYX_ERR(5, 993, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolFunctionScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_SymbolFunctionScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_SymbolFunctionScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_SymbolFunctionScope)) __PYX_ERR(5, 993, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityActionHandleTraversal", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal) __PYX_ERR(5, 999, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityActionHandleTraversal)) __PYX_ERR(5, 999, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityActionTypeTraversal", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal) __PYX_ERR(5, 1005, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityActionTypeTraversal)) __PYX_ERR(5, 1005, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySequence = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivitySequence", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySequence), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySequence) __PYX_ERR(5, 1011, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySequence = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySequence*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySequence->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySequence)) __PYX_ERR(5, 1011, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityParallel = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityParallel", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityParallel), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityParallel) __PYX_ERR(5, 1017, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityParallel = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityParallel*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityParallel->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityParallel)) __PYX_ERR(5, 1017, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySchedule = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivitySchedule", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySchedule), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySchedule) __PYX_ERR(5, 1023, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySchedule = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySchedule*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySchedule->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySchedule)) __PYX_ERR(5, 1023, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityRepeatCount = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityRepeatCount", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatCount), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityRepeatCount) __PYX_ERR(5, 1029, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityRepeatCount = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityRepeatCount*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityRepeatCount->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityRepeatCount)) __PYX_ERR(5, 1029, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityRepeatWhile = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityRepeatWhile", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityRepeatWhile), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityRepeatWhile) __PYX_ERR(5, 1035, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityRepeatWhile = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityRepeatWhile*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityRepeatWhile->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityRepeatWhile)) __PYX_ERR(5, 1035, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityForeach = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityForeach", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityForeach), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityForeach) __PYX_ERR(5, 1041, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityForeach = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityForeach*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityForeach->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityForeach)) __PYX_ERR(5, 1041, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySelect = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivitySelect", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySelect), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySelect) __PYX_ERR(5, 1047, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySelect = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySelect*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySelect->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySelect)) __PYX_ERR(5, 1047, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityIfElse = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityIfElse", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityIfElse), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityIfElse) __PYX_ERR(5, 1053, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityIfElse = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityIfElse*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityIfElse->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityIfElse)) __PYX_ERR(5, 1053, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityMatch = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityMatch", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityMatch), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityMatch) __PYX_ERR(5, 1059, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityMatch = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityMatch*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityMatch->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityMatch)) __PYX_ERR(5, 1059, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivityReplicate = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivityReplicate", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivityReplicate), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityReplicate) __PYX_ERR(5, 1065, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityReplicate = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivityReplicate*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivityReplicate->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivityReplicate)) __PYX_ERR(5, 1065, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySuper = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ActivitySuper", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ActivitySuper), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySuper) __PYX_ERR(5, 1071, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySuper = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ActivitySuper*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ActivitySuper->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ActivitySuper)) __PYX_ERR(5, 1071, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintBlock = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintBlock", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintBlock), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintBlock) __PYX_ERR(5, 1077, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintBlock = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintBlock*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintBlock->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintBlock)) __PYX_ERR(5, 1077, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtForeach = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmtForeach", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForeach), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtForeach) __PYX_ERR(5, 1085, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtForeach = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtForeach*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtForeach->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtForeach)) __PYX_ERR(5, 1085, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtForall = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmtForall", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtForall), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtForall) __PYX_ERR(5, 1091, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtForall = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtForall*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtForall->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtForall)) __PYX_ERR(5, 1091, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtImplication = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ConstraintStmtImplication", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ConstraintStmtImplication), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtImplication) __PYX_ERR(5, 1097, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtImplication = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ConstraintStmtImplication*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ConstraintStmtImplication->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ConstraintStmtImplication)) __PYX_ERR(5, 1097, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "ExprRefPathStaticFunc", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc) __PYX_ERR(5, 1103, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_ExprRefPathStaticFunc)) __PYX_ERR(5, 1103, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_TypeScope = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "TypeScope", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_TypeScope), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_TypeScope) __PYX_ERR(5, 1109, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_TypeScope = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_TypeScope*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_TypeScope->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_TypeScope)) __PYX_ERR(5, 1109, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_Component = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "Component", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_Component), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_Component) __PYX_ERR(5, 1115, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_Component = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Component*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_Component->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_Component)) __PYX_ERR(5, 1115, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_Struct = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "Struct", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_Struct), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_Struct) __PYX_ERR(5, 1121, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_Struct = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Struct*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_Struct->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_Struct)) __PYX_ERR(5, 1121, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_Action = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "Action", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_Action), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_Action) __PYX_ERR(5, 1128, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_Action = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_Action*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_Action->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_Action)) __PYX_ERR(5, 1128, __pyx_L1_error)
+  __pyx_ptype_13zuspec_parser_7zsp_ast_VisitorBase = __Pyx_ImportType(__pyx_t_1, "zuspec_parser.zsp_ast", "VisitorBase", sizeof(struct __pyx_obj_13zuspec_parser_7zsp_ast_VisitorBase), __Pyx_ImportType_CheckSize_Warn);
+   if (!__pyx_ptype_13zuspec_parser_7zsp_ast_VisitorBase) __PYX_ERR(5, 1135, __pyx_L1_error)
+  __pyx_vtabptr_13zuspec_parser_7zsp_ast_VisitorBase = (struct __pyx_vtabstruct_13zuspec_parser_7zsp_ast_VisitorBase*)__Pyx_GetVtable(__pyx_ptype_13zuspec_parser_7zsp_ast_VisitorBase->tp_dict); if (unlikely(!__pyx_vtabptr_13zuspec_parser_7zsp_ast_VisitorBase)) __PYX_ERR(5, 1135, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_RefNannyFinishContext();
   return 0;
@@ -7483,14 +9180,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 2, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_pssparser__core) {
+  if (__pyx_module_is_main_zuspec_parser__core) {
     if (PyObject_SetAttr(__pyx_m, __pyx_n_s_name, __pyx_n_s_main) < 0) __PYX_ERR(0, 2, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 2, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "pssparser.core")) {
-      if (unlikely(PyDict_SetItemString(modules, "pssparser.core", __pyx_m) < 0)) __PYX_ERR(0, 2, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "zuspec_parser.core")) {
+      if (unlikely(PyDict_SetItemString(modules, "zuspec_parser.core", __pyx_m) < 0)) __PYX_ERR(0, 2, __pyx_L1_error)
     }
   }
   #endif
@@ -7518,11 +9215,11 @@ if (!__Pyx_RefNanny) {
  *         global _factoryInst
  *         if _factoryInst is None:
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_9pssparser_4core_7Factory_5inst, NULL, __pyx_n_s_pssparser_core); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 23, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_13zuspec_parser_4core_7Factory_5inst, NULL, __pyx_n_s_zuspec_parser_core); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem((PyObject *)__pyx_ptype_9pssparser_4core_Factory->tp_dict, __pyx_n_s_inst, __pyx_t_1) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
+  if (PyDict_SetItem((PyObject *)__pyx_ptype_13zuspec_parser_4core_Factory->tp_dict, __pyx_n_s_inst, __pyx_t_1) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  PyType_Modified(__pyx_ptype_9pssparser_4core_Factory);
+  PyType_Modified(__pyx_ptype_13zuspec_parser_4core_Factory);
 
   /* "python/core.pyx":22
  *         pass
@@ -7531,18 +9228,18 @@ if (!__Pyx_RefNanny) {
  *     def inst():
  *         global _factoryInst
  */
-  __Pyx_GetNameInClass(__pyx_t_1, (PyObject *)__pyx_ptype_9pssparser_4core_Factory, __pyx_n_s_inst); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 23, __pyx_L1_error)
+  __Pyx_GetNameInClass(__pyx_t_1, (PyObject *)__pyx_ptype_13zuspec_parser_4core_Factory, __pyx_n_s_inst); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_builtin_staticmethod, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (PyDict_SetItem((PyObject *)__pyx_ptype_9pssparser_4core_Factory->tp_dict, __pyx_n_s_inst, __pyx_t_2) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
+  if (PyDict_SetItem((PyObject *)__pyx_ptype_13zuspec_parser_4core_Factory->tp_dict, __pyx_n_s_inst, __pyx_t_2) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  PyType_Modified(__pyx_ptype_9pssparser_4core_Factory);
+  PyType_Modified(__pyx_ptype_13zuspec_parser_4core_Factory);
 
   /* "python/core.pyx":2
  * 
- * cimport pssparser.pssast as ast             # <<<<<<<<<<<<<<
+ * cimport zuspec_parser.zsp_ast as ast             # <<<<<<<<<<<<<<
  * cimport ciostream
  * 
  */
@@ -7559,11 +9256,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init pssparser.core", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init zuspec_parser.core", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_CLEAR(__pyx_m);
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init pssparser.core");
+    PyErr_SetString(PyExc_ImportError, "init zuspec_parser.core");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

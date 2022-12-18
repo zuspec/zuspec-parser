@@ -44,6 +44,7 @@ classes:
       - type: list<P<PackageImportStmt>>
     - symtab:
       - type: map<string,P<ScopeChild>>
+      - is_ctor: false
 
 #- SymbolAggregateScope:
 #    super: SymbolScope

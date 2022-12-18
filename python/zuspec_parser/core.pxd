@@ -1,8 +1,8 @@
 #****************************************************************************
-#* pssparser core.pxd
+#* zuspec_parser core.pxd
 #****************************************************************************
 cimport decl
-cimport pssparser.pssast as ast
+cimport zuspec_parser.zsp_ast as ast
 cimport ciostream
 
 cdef class Factory(object):
