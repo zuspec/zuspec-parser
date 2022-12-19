@@ -49,10 +49,10 @@ TaskResolveRef::~TaskResolveRef() {
 
 }
 
-ast::IScopeChild *TaskResolveRef::resolve(
-        ISymbolTableIterator            *scope,
+ast::ISymbolRefPath *TaskResolveRef::resolve(
+        const ISymbolTableIterator      *scope,
         ast::ITypeIdentifier            *type_id) {
-    ast::IScopeChild *ret = 0;
+    ast::ISymbolRefPath *ret = 0;
     DEBUG_ENTER("resolve");
 	ISymbolTableIteratorUP it(scope->clone());
 
@@ -65,30 +65,69 @@ ast::IScopeChild *TaskResolveRef::resolve(
 
 		if (ti_it == type_id->getElems().begin()) {
 			while (it->hasScopes()) {
-                if ((ret=it->findSymbol((*ti_it)->getId()->getId()))) {
+                if ((ret=it->findLocalSymbolPath((*ti_it)->getId()->getId()))) {
                     DEBUG("Found");
 
                     if (ti_it+1 != type_id->getElems().end()) {
-        				if (!it->pushNamedScope((*ti_it)->getId()->getId())) {
+        				if (it->pushNamedScope((*ti_it)->getId()->getId()) == -1) {
                             DEBUG("Error: found a symbol, but it's not a scope");
                             ret = 0;
                         }
                     }
 					break;
 				} else {
-					DEBUG("Uplevel");
-					it->popScope();
+					// Must now check imports
+					ast::ISymbolScope *scope = it->getScope();
+
+					if (scope->getImports()) {
+						std::map<std::string,ast::ISymbolRefPathUP>::const_iterator imp_sym;
+
+						imp_sym = scope->getImports()->getSymtab().find((*ti_it)->getId()->getId());
+						if (imp_sym != scope->getImports()->getSymtab().end()) {
+
+						} else {
+							// Need to search through imports
+							ast::ISymbolRefPath *ret_t = 0;
+							for (std::vector<ast::IPackageImportStmt *>::const_iterator
+								imp_it=scope->getImports()->getImports().begin();
+								imp_it!=scope->getImports()->getImports().end(); imp_it++) {
+								if ((ret_t=searchImport(it.get(), *imp_it, (*ti_it)->getId()->getId()))) {
+									// Found it.
+									if (ret) {
+										// Uh-oh. We have ambiguity...
+										delete ret_t;
+										fprintf(stdout, "TODO: ambiguous import");
+										break;
+									} else {
+										ret = ret_t;
+									}
+								} else {
+									// Keep going
+								}
+							}
+						}
+					}
+
+					if (ret) {
+						// Found via imports
+						break;
+					} else {
+						DEBUG("Uplevel");
+						it->popScope();
+					}
 				}
 			}
 
 			if (!ret) {
-				DEBUG("Error: Failed to find first type elem %s\n",
+				DEBUG("Error: Failed to find first type elem %s",
                     (*ti_it)->getId()->getId().c_str());
                 break;
 			}
 		} else {
-            if ((ret=it->findSymbol((*ti_it)->getId()->getId()))) {
+			int32_t idx;
+            if ((idx=it->findLocalSymbol((*ti_it)->getId()->getId())) != -1) {
                 DEBUG("Found");
+				ret->getPath().push_back(idx);
                 if (ti_it+1 != type_id->getElems().end()) {
      				if (!it->pushNamedScope((*ti_it)->getId()->getId())) {
                         DEBUG("Error: found a symbol, but it's not a scope");
@@ -97,6 +136,10 @@ ast::IScopeChild *TaskResolveRef::resolve(
                 }
             } else {
 				DEBUG("... failed to find subsequent element");
+				if (ret) {
+					delete ret;
+					ret = 0;
+				}
 				break;
 			}
 		}
@@ -104,6 +147,34 @@ ast::IScopeChild *TaskResolveRef::resolve(
 
     DEBUG_LEAVE("resolve %p", ret);
     return ret;
+}
+
+ast::ISymbolRefPath *TaskResolveRef::searchImport(
+        ISymbolTableIterator            *scope,
+        ast::IPackageImportStmt         *imp,
+        const std::string               &sym) {
+	DEBUG_ENTER("searchImport %s", sym.c_str());
+	ast::ISymbolRefPath *ret = 0;
+	if (!imp->getPath()->getTarget()) {
+		DEBUG("Skipping, due to unset import target");
+		return 0;
+	}
+	ast::IScopeChild *target_c = scope->resolveAbsPath(imp->getPath()->getTarget());
+	ast::ISymbolScope *target_s = dynamic_cast<ast::ISymbolScope *>(target_c);
+	DEBUG("target_c: %p ; target_s: %p", target_c, target_s);
+
+	if (target_s) {
+		DEBUG("Have a symbol scope");
+		std::map<std::string, int32_t>::const_iterator it;
+		it = target_s->getSymtab().find(sym);
+
+		if (it != target_s->getSymtab().end()) {
+
+		}
+	}
+
+	DEBUG_LEAVE("searchImport %s", sym.c_str());
+	return ret;
 }
 
 }

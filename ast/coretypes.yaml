@@ -58,10 +58,6 @@ classes:
         data:
         - name : UP<ExprId>
 
-    # RefTarget is treated as an abstract class.
-    # External tooling knows what more-specific type is actually in use
-    - RefTarget: {}
-
     - NamedScopeChild:
         super: ScopeChild
         data:

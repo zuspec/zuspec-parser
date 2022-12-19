@@ -122,7 +122,7 @@ classes:
         - data:
           - target:
               is_ctor: false
-              type: P<RefTarget>
+              type: UP<SymbolRefPath>
               init: 0
 #          - 
     - ExprRefPathContext:
@@ -131,7 +131,7 @@ classes:
           - hier_id : "UP<ExprHierarchicalId>"
           - target:
               is_ctor: false
-              type: P<RefTarget>
+              type: UP<SymbolRefPath>
               init: 0
     - ExprRefPathElem:
         - super: Expr
@@ -155,7 +155,7 @@ classes:
           - leaf: "UP<ExprRefPathContext>"
           - target:
               is_ctor: false
-              type: P<RefTarget>
+              type: UP<SymbolRefPath>
               init: 0
 
     - ExprRefPathSuper:

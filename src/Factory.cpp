@@ -58,7 +58,7 @@ ILinker *Factory::mkAstLinker() {
 
 ISymbolTableIterator *Factory::mkAstSymbolTableIterator(
         ast::ISymbolScope       *root) {
-    return new AstSymbolTableIterator(root);
+    return new AstSymbolTableIterator(m_ast_factory, root);
 }
 
 INameResolver *Factory::mkNameResolver(
@@ -82,5 +82,7 @@ IFactory *Factory::inst() {
 extern "C" IFactory *getZuspecParserFactory() {
     return Factory::inst();
 }
+
+FactoryUP Factory::m_inst;
 
 }

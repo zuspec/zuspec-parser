@@ -169,6 +169,19 @@ void TaskBuildSymbolTree::visitEnumItem(ast::IEnumItem *i) {
     DEBUG_LEAVE("visitEnumItem %s", i->getName()->getId().c_str());
 }
 
+void TaskBuildSymbolTree::visitPackageImportStmt(ast::IPackageImportStmt *i) {
+    DEBUG_ENTER("visitPackageImportStmt");
+    ast::ISymbolScope *scope = m_scope_s.back();
+
+    if (!scope->getImports()) {
+        scope->setImports(m_factory->mkSymbolImportSpec());
+    }
+
+    scope->getImports()->getImports().push_back(i);
+
+    DEBUG_LEAVE("visitPackageImportStmt");
+}
+
 void TaskBuildSymbolTree::visitScopeChild(ast::IScopeChild *i) {
     DEBUG_ENTER("visitScopeChild");
     m_scope_s.back()->getChildren().push_back(i);

@@ -1,5 +1,5 @@
 /**
- * TaskResolveRef.h
+ * TaskResolveImports.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,34 +19,31 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/IFactory.h"
 #include "zsp/IMarkerListener.h"
-#include "zsp/ISymbolTableIterator.h"
+#include "zsp/IFactory.h"
 #include "zsp/ast/impl/VisitorBase.h"
 
 namespace zsp {
 
-class TaskResolveRef : public ast::VisitorBase {
+
+class TaskResolveImports : public ast::VisitorBase {
 public:
-    TaskResolveRef(
+    TaskResolveImports(
         IFactory            *factory,
         IMarkerListener     *marker_l);
 
-    virtual ~TaskResolveRef();
+    virtual ~TaskResolveImports();
 
-    ast::ISymbolRefPath *resolve(
+    void resolve(
         const ISymbolTableIterator      *scope,
-        ast::ITypeIdentifier            *type_id);
+        ast::ISymbolScope               *sym_scope);
+
+    virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
 
 private:
-    ast::ISymbolRefPath *searchImport(
-        ISymbolTableIterator            *scope,
-        ast::IPackageImportStmt         *imp,
-        const std::string               &sym);
-
-private:
-    IFactory                            *m_factory;
-    IMarkerListener                     *m_marker_l;    
+    IFactory                    *m_factory;
+    IMarkerListener             *m_marker_l;
+    ISymbolTableIteratorUP      m_scope_it;
 
 };
 

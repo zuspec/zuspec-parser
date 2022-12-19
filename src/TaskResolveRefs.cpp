@@ -90,7 +90,7 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
 void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
     DEBUG_ENTER("visitDataTypeUserDefined");
-    ast::IScopeChild *target = TaskResolveRef(m_factory, m_marker_l).resolve(
+    ast::ISymbolRefPath *target = TaskResolveRef(m_factory, m_marker_l).resolve(
         m_symtab_it.get(),
         i->getType_id()
     );

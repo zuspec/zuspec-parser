@@ -190,8 +190,8 @@ extensions=[ast_ext, ext]
 
 setup(
     name="zuspec-parser",
-    packages=find_namespace_packages(where=pythondir),
-    package_dir={'' : pythondir },
+    packages=find_namespace_packages(where='python'),
+    package_dir={'' : 'python' },
     version=version,
     author="Matthew Ballance",
     author_email="matt.ballance@gmail.com",

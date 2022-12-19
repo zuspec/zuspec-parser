@@ -34,6 +34,9 @@ classes:
       - type: list<UP<ScopeChild>>
       - is_ctor: false
       - visit: false
+#    - failed:
+#      - type: set<string>
+#      - is_ctor: false
     - imports: 
       - type: UP<SymbolImportSpec>
       - is_ctor: false
@@ -43,7 +46,7 @@ classes:
     - imports:
       - type: list<P<PackageImportStmt>>
     - symtab:
-      - type: map<string,P<ScopeChild>>
+      - type: map<string,UP<SymbolRefPath>>
       - is_ctor: false
 
 #- SymbolAggregateScope:
@@ -62,6 +65,11 @@ classes:
       - plist:
         - type: UP<SymbolScope>
 
+- SymbolRefPath: 
+    data:
+    - path: 
+      - type: list<int32_t>
+      - is_ctor: false
 
 #- AggregateTypeScope:
 #    super: ScopeChild

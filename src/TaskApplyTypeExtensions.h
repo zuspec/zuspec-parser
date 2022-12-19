@@ -38,6 +38,15 @@ public:
 
     void apply(ast::ISymbolScope *root);
 
+    virtual void visitExtendEnum(ast::IExtendEnum *i) override;
+
+    virtual void visitExtendType(ast::IExtendType *i) override;
+
+    virtual void visitSymbolScope(ast::ISymbolScope *i) override;
+
+    virtual void visitPackageScope(ast::IPackageScope *i) override;
+
+
 private:
     IFactory                        *m_factory;
     IMarkerListener                 *m_marker_l;

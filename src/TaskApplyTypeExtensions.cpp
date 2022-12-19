@@ -19,7 +19,22 @@
  *     Author:
  */
 #include "TaskApplyTypeExtensions.h"
+#include "TaskResolveImports.h"
 
+#define DEBUG_ENTER(fmt, ...) \
+	fprintf(stdout, "--> TaskApplyTypeExtensions::"); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
+	fprintf(stdout, "\n");
+
+#define DEBUG(fmt, ...) \
+	fprintf(stdout, "TaskApplyTypeExtensions: "); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
+	fprintf(stdout, "\n");
+
+#define DEBUG_LEAVE(fmt, ...) \
+	fprintf(stdout, "<-- TaskApplyTypeExtensions::"); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
+	fprintf(stdout, "\n");
 
 namespace zsp {
 
@@ -36,11 +51,70 @@ TaskApplyTypeExtensions::~TaskApplyTypeExtensions() {
 }
 
 void TaskApplyTypeExtensions::apply(ast::ISymbolScope *root) {
-//    m_symtab_it = ISymbolTableIterator(m_factory->mkAstSym)
-    root->accept(this);
-
+    DEBUG_ENTER("apply");
     m_symtab_it = zsp::ISymbolTableIteratorUP(
         m_factory->mkAstSymbolTableIterator(root));
+
+    root->accept(this);
+
+    DEBUG_LEAVE("apply");
+}
+
+void TaskApplyTypeExtensions::visitExtendEnum(ast::IExtendEnum *i) {
+    DEBUG_ENTER("visitExtendEnum");
+
+    DEBUG_LEAVE("visitExtendEnum");
+}
+
+void TaskApplyTypeExtensions::visitExtendType(ast::IExtendType *i) {
+    DEBUG_ENTER("visitExtendType");
+
+    DEBUG_LEAVE("visitExtendType");
+}
+
+void TaskApplyTypeExtensions::visitSymbolScope(ast::ISymbolScope *i) {
+    DEBUG_ENTER("visitSymbolScope");
+
+    if (m_symtab_it->pushNamedScope(i->getName())) {
+        // Internal error
+    }
+
+    ast::ISymbolScope *scope = m_symtab_it->getScope();
+    if (scope->getImports()) {
+        TaskResolveImports(m_factory, m_marker_l).resolve(
+            m_symtab_it.get(),
+            scope
+        );
+    }
+
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(this);
+    }
+
+    m_symtab_it->popScope();
+
+    DEBUG_LEAVE("visitSymbolScope");
+}
+
+void TaskApplyTypeExtensions::visitPackageScope(ast::IPackageScope *i) {
+    DEBUG_ENTER("visitPackageScope");
+
+    if (m_symtab_it->pushNamedScope(i->getId().at(0)->getId()) == -1) {
+        // Internal error
+    }
+
+    ast::ISymbolScope *scope = m_symtab_it->getScope();
+    if (scope->getImports()) {
+        TaskResolveImports(m_factory, m_marker_l).resolve(
+            m_symtab_it.get(),
+            scope
+        );
+    }
+
+    m_symtab_it->popScope();
+    DEBUG_LEAVE("visitPackageScope");
 }
 
 }

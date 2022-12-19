@@ -20,6 +20,7 @@
  */
 #pragma once
 #include <vector>
+#include "zsp/ast/IFactory.h"
 #include "zsp/ast/ISymbolScope.h"
 #include "zsp/ISymbolTableIterator.h"
 
@@ -29,23 +30,35 @@ namespace zsp {
 
 class AstSymbolTableIterator : public virtual ISymbolTableIterator {
 public:
-    AstSymbolTableIterator(ast::ISymbolScope *root);
+    AstSymbolTableIterator(
+        ast::IFactory       *factory,
+        ast::ISymbolScope   *root);
 
     AstSymbolTableIterator(const AstSymbolTableIterator &other);
 
     virtual ~AstSymbolTableIterator();
 
-    virtual ast::IScopeChild *findSymbol(const std::string &name) override;
+    virtual int32_t findLocalSymbol(const std::string &name) override;
 
-    virtual bool pushNamedScope(const std::string &name) override;
+    virtual ast::ISymbolRefPath *findLocalSymbolPath(const std::string &name) override;
+
+    virtual ast::ISymbolScope *getScope() const override;
+
+    virtual ast::IScopeChild *getScopeChild(int32_t idx) const override;
+
+    virtual ast::IScopeChild *resolveAbsPath(const ast::ISymbolRefPath *path) override;
+
+    virtual int32_t pushNamedScope(const std::string &name) override;
 
     virtual void popScope() override;
 
     virtual bool hasScopes() override;
 
-    virtual ISymbolTableIterator *clone() override;
+    virtual ISymbolTableIterator *clone() const override;
 
 private:
+    ast::IFactory                           *m_factory;
+    std::vector<int32_t>                    m_path;
     std::vector<ast::ISymbolScope *>        m_scope_s;
 
 };

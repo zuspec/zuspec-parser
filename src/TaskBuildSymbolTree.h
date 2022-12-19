@@ -45,6 +45,8 @@ public:
 
     virtual void visitEnumItem(ast::IEnumItem *i) override;
 
+    virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
+
     virtual void visitScopeChild(ast::IScopeChild *i) override;
 
     virtual void visitTypeScope(ast::ITypeScope *i) override;;

@@ -57,6 +57,6 @@ classes:
       #  - type: SP<RefExpr>
     - target:
         is_ctor: false
-        type: UP<RefTarget>
+        type: UP<SymbolRefPath>
         init: 0
         visit: false

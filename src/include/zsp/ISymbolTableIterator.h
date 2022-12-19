@@ -32,15 +32,29 @@ public:
 
     virtual ~ISymbolTableIterator() { }
 
-    virtual ast::IScopeChild *findSymbol(const std::string &name) = 0;
+    virtual int32_t findLocalSymbol(const std::string &name) = 0;
 
-    virtual bool pushNamedScope(const std::string &name) = 0;
+    virtual ast::ISymbolRefPath *findLocalSymbolPath(const std::string &name) = 0;
+
+    virtual ast::ISymbolScope *getScope() const = 0;
+
+    virtual ast::IScopeChild *getScopeChild(int32_t idx) const = 0;
+
+    virtual ast::IScopeChild *resolveAbsPath(const ast::ISymbolRefPath *path) = 0;
+
+    /**
+     * @brief Finds and pushes a named scope.
+     * 
+     * @param name 
+     * @return int32_t <index> on success and -1 on failure
+     */
+    virtual int32_t pushNamedScope(const std::string &name) = 0;
 
     virtual void popScope() = 0;
 
     virtual bool hasScopes() = 0;
 
-    virtual ISymbolTableIterator *clone() = 0;
+    virtual ISymbolTableIterator *clone() const = 0;
 
 };
 

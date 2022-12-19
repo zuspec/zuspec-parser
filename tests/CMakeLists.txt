@@ -19,7 +19,7 @@ link_directories(
 	${CMAKE_BINARY_DIR}/gtest/lib64
 	${CMAKE_BINARY_DIR}/antlr4/lib
 	${CMAKE_BINARY_DIR}/antlr4/lib64
-	${CMAKE_BINARY_DIR}/zsp
+	${CMAKE_BINARY_DIR}/zuspec-parser
 	${CMAKE_BINARY_DIR}/zsp_ast/lib
 	)
 
@@ -57,10 +57,10 @@ target_include_directories(zsp_testmain PRIVATE
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Taking debug libs")
-    list(APPEND ZSP_TESTMAIN_LIBS gtestd gtest_maind zsp zsp_ast)
+    list(APPEND ZSP_TESTMAIN_LIBS gtestd gtest_maind zuspec-parser zsp_ast)
 else()
     message(STATUS "Taking release libs")
-    list(APPEND ZSP_TESTMAIN_LIBS gtest gtest_main zsp zsp_ast)
+    list(APPEND ZSP_TESTMAIN_LIBS gtest gtest_main zuspec-parser zsp_ast)
 endif()
 
 if (WIN32)
