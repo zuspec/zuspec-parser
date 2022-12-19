@@ -67,5 +67,7 @@ void TestBase::runTest(
 		&marker_c,
 		{global.get()}
 	);
+
+	ASSERT_FALSE(marker_c.hasSeverity(zsp::MarkerSeverityE::Error));
 }
 

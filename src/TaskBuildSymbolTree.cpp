@@ -91,6 +91,7 @@ void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
 
             fprintf(stdout, "Add package %s with id %d\n", (*id_it)->getId().c_str(), id);
             scope->getSymtab().insert({(*id_it)->getId(), id});
+            scope->getChildren().push_back(pkg);
             scope->getOwned().push_back(ast::IScopeChildUP(pkg));
             m_scope_s.push_back(pkg);
             scope = pkg;

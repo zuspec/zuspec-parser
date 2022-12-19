@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "TaskResolveRef.h"
+#include "Marker.h"
 
 #define DEBUG_ENTER(fmt, ...) \
 	fprintf(stdout, "--> TaskResolveRef::"); \
@@ -70,6 +71,14 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
 
                     if (ti_it+1 != type_id->getElems().end()) {
         				if (it->pushNamedScope((*ti_it)->getId()->getId()) == -1) {
+							std::string msg = "Found a symbol named ";
+							msg += (*ti_it)->getId()->getId() + ", but it is not a scope";
+
+							Marker m(
+								msg,
+								MarkerSeverityE::Error,
+								(*ti_it)->getId()->getLocation());
+							m_marker_l->marker(&m);
                             DEBUG("Error: found a symbol, but it's not a scope");
                             ret = 0;
                         }
@@ -119,6 +128,13 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
 			}
 
 			if (!ret) {
+				std::string msg = "Failed to find first type elem ";
+				msg += (*ti_it)->getId()->getId().c_str();
+				Marker m(
+					msg,
+					MarkerSeverityE::Error,
+					(*ti_it)->getId()->getLocation());
+				m_marker_l->marker(&m);
 				DEBUG("Error: Failed to find first type elem %s",
                     (*ti_it)->getId()->getId().c_str());
                 break;
@@ -145,6 +161,15 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
 		}
 	}
 
+	DEBUG("[%s] ret.path.size=%d", 
+		type_id->getElems().at(0)->getId()->getId().c_str(),
+		(ret)?ret->getPath().size():-1);
+	if (ret) {
+		for (uint32_t i=0; i<ret->getPath().size(); i++) {
+			DEBUG("  Elem[%d] %d", i, ret->getPath().at(i));
+		}
+	}
+
     DEBUG_LEAVE("resolve %p", ret);
     return ret;
 }
@@ -159,17 +184,26 @@ ast::ISymbolRefPath *TaskResolveRef::searchImport(
 		DEBUG("Skipping, due to unset import target");
 		return 0;
 	}
+	for (uint32_t i=0; i<imp->getPath()->getTarget()->getPath().size(); i++) {
+		DEBUG("Imp Path[%d] %d", i, imp->getPath()->getTarget()->getPath().at(i));
+	}
 	ast::IScopeChild *target_c = scope->resolveAbsPath(imp->getPath()->getTarget());
 	ast::ISymbolScope *target_s = dynamic_cast<ast::ISymbolScope *>(target_c);
 	DEBUG("target_c: %p ; target_s: %p", target_c, target_s);
 
 	if (target_s) {
-		DEBUG("Have a symbol scope");
+		DEBUG("Have a symbol scope (%s)", target_s->getName().c_str());
 		std::map<std::string, int32_t>::const_iterator it;
 		it = target_s->getSymtab().find(sym);
 
 		if (it != target_s->getSymtab().end()) {
-
+			DEBUG("Found the symbol (%s)", sym.c_str());
+			ret = m_factory->getAstFactory()->mkSymbolRefPath();
+			ret->getPath().insert(
+				ret->getPath().begin(),
+				imp->getPath()->getTarget()->getPath().begin(),
+				imp->getPath()->getTarget()->getPath().end());
+			ret->getPath().push_back(it->second);
 		}
 	}
 
