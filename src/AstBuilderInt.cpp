@@ -118,7 +118,7 @@ antlrcpp::Any AstBuilderInt::visitImport_stmt(PSSParser::Import_stmtContext *ctx
 
 	IPackageImportStmt *imp = m_factory->mkPackageImportStmt(is_wildcard, alias);
 
-	imp->setPath(mkDataTypeUserDefined(ctx->package_import_pattern()->type_identifier()));
+	imp->setPath(mkTypeId(ctx->package_import_pattern()->type_identifier()));
 	addChild(imp, ctx->start);
 	DEBUG_LEAVE("visitImport_stmt");
 	return 0;
@@ -372,6 +372,7 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 	if (super_t_ctx) {
 		super_t = mkTypeId(super_t_ctx->type_identifier());
 	}
+
 	ast::IStruct *s = m_factory->mkStruct(
 		id,
 		super_t,

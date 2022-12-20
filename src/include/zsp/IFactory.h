@@ -12,6 +12,8 @@ namespace zsp {
 class IAstBuilder;
 class IMarkerListener;
 
+class IFactory;
+using IFactoryUP=std::unique_ptr<IFactory>;
 class IFactory {
 public:
 

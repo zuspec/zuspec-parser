@@ -1,5 +1,5 @@
 /**
- * ILinker.h
+ * TestImportLink.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,25 +19,19 @@
  *     Author: 
  */
 #pragma once
-#include <memory>
-#include "zsp/IMarkerListener.h"
-#include "zsp/ast/ISymbolScope.h"
+#include "TestBase.h"
 
 namespace zsp {
 
-class ILinker;
-using ILinkerUP=std::unique_ptr<ILinker>;
-class ILinker {
+
+class TestImportLink : public TestBase {
 public:
+    TestImportLink();
 
-    virtual ~ILinker() { }
-
-    virtual ast::ISymbolScope *link(
-        IMarkerListener                         *marker_l,
-        const std::vector<ast::IGlobalScope *>  &scopes) = 0;
+    virtual ~TestImportLink();
 
 };
 
-} /* namespace zsp */
+}
 
 

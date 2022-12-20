@@ -199,6 +199,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
         id,
         i->getName()->getId(),
         plist);
+    ts->setTarget(i);
 
     std::map<std::string, int32_t>::const_iterator it =
         scope->getSymtab().find(i->getName()->getId());

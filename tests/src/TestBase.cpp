@@ -39,17 +39,25 @@ TestBase::~TestBase() {
 
 }
 
+void TestBase::SetUp() {
+    m_ast_factory = zsp::ast::IFactoryUP(new zsp::ast::Factory());
+	m_factory = zsp::IFactoryUP(new zsp::Factory(m_ast_factory.get()));
+
+}
+
+void TestBase::TearDown() {
+
+}
+
 void TestBase::runTest(
 		const std::string &content,
 		const std::string &name) {
 	std::stringstream s(content);
-    zsp::ast::Factory ast_factory;
-	zsp::Factory zsp_factory(&ast_factory);
 
-	zsp::ast::IGlobalScopeUP global(ast_factory.mkGlobalScope(0));
+	zsp::ast::IGlobalScopeUP global(m_ast_factory->mkGlobalScope(0));
 
 	zsp::MarkerCollector marker_c;
-	zsp::IAstBuilderUP ast_builder(zsp_factory.mkAstBuilder(&marker_c));
+	zsp::IAstBuilderUP ast_builder(m_factory->mkAstBuilder(&marker_c));
 
 	ast_builder->build(global.get(), &s);
 
@@ -61,13 +69,48 @@ void TestBase::runTest(
 
 	ASSERT_FALSE(marker_c.hasSeverity(zsp::MarkerSeverityE::Error));
 
-	zsp::ILinker *linker = zsp_factory.mkAstLinker();
+	zsp::ILinkerUP linker(m_factory->mkAstLinker());
 
-	zsp::ast::ISymbolScope *root = linker->link(
+	zsp::ast::ISymbolScopeUP root(linker->link(
 		&marker_c,
 		{global.get()}
-	);
+	));
 
 	ASSERT_FALSE(marker_c.hasSeverity(zsp::MarkerSeverityE::Error));
+}
+
+zsp::ast::IGlobalScope *TestBase::parse(
+		zsp::IMarkerListener		*marker_l,
+		const std::string 			&content,
+		const std::string 			&name) {
+	std::stringstream s(content);
+
+	zsp::ast::IGlobalScopeUP global(m_ast_factory->mkGlobalScope(0));
+
+	zsp::IAstBuilderUP ast_builder(m_factory->mkAstBuilder(marker_l));
+
+	ast_builder->build(global.get(), &s);
+
+	return global.release();
+}
+
+zsp::ast::ISymbolScope *TestBase::link(
+		zsp::IMarkerListener						*marker_l,
+		const std::vector<zsp::ast::IGlobalScopeUP>	&files) {
+	std::vector<zsp::ast::IGlobalScope *> files_p;
+
+	for (std::vector<zsp::ast::IGlobalScopeUP>::const_iterator
+		it=files.begin();
+		it!=files.end(); it++) {
+		files_p.push_back(it->get());
+	}
+
+	zsp::ILinkerUP linker(m_factory->mkAstLinker());
+	zsp::ast::ISymbolScopeUP root(linker->link(
+		marker_l,
+		files_p
+	));
+
+	return root.release();
 }
 

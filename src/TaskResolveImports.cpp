@@ -70,7 +70,7 @@ void TaskResolveImports::visitPackageImportStmt(ast::IPackageImportStmt *i) {
     if (!i->getPath()->getTarget()) {
         i->getPath()->setTarget(TaskResolveRef(m_factory, m_marker_l).resolve(
             m_scope_it.get(),
-            i->getPath()->getType_id()
+            i->getPath()
         ));
     }
     DEBUG_LEAVE("visitPackageImportStmt");

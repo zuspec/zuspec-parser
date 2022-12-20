@@ -93,7 +93,16 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
 
 						imp_sym = scope->getImports()->getSymtab().find((*ti_it)->getId()->getId());
 						if (imp_sym != scope->getImports()->getSymtab().end()) {
-
+							if (imp_sym->second.get()) {
+								DEBUG("Found in the import cache");
+								ret = m_factory->getAstFactory()->mkSymbolRefPath();
+								ret->getPath().insert(
+									ret->getPath().begin(),
+									imp_sym->second->getPath().begin(),
+									imp_sym->second->getPath().end());
+							} else {
+								DEBUG("Symbol is not present in imports");
+							}
 						} else {
 							// Need to search through imports
 							ast::ISymbolRefPath *ret_t = 0;
@@ -104,15 +113,39 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
 									// Found it.
 									if (ret) {
 										// Uh-oh. We have ambiguity...
+										std::string msg = "Ambiguous symbol resolution when looking up ";
+										msg += (*ti_it)->getId()->getId();
+										Marker m(
+											msg,
+											MarkerSeverityE::Error,
+											(*ti_it)->getId()->getLocation()
+										);
+										m_marker_l->marker(&m);
 										delete ret_t;
-										fprintf(stdout, "TODO: ambiguous import");
 										break;
 									} else {
 										ret = ret_t;
 									}
-								} else {
-									// Keep going
-								}
+								} 
+							}
+
+							if (ret) {
+								// Stuff this in the cache for faster lookup later
+								ast::ISymbolRefPath *c_ret = m_factory->getAstFactory()->mkSymbolRefPath();
+								c_ret->getPath().insert(
+									c_ret->getPath().begin(),
+									ret->getPath().begin(),
+									ret->getPath().end());
+								scope->getImports()->getSymtab().insert({
+									(*ti_it)->getId()->getId(), 
+									ast::ISymbolRefPathUP(c_ret)
+								});
+							} else {
+								// Don't bother searching imports for this symbol again
+								scope->getImports()->getSymtab().insert({
+									(*ti_it)->getId()->getId(), 
+									ast::ISymbolRefPathUP(nullptr)
+								});
 							}
 						}
 					}

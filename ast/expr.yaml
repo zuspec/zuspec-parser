@@ -202,6 +202,10 @@ classes:
         - super: Expr
         - data: 
             - elems : "list<UP<TypeIdentifierElem>>"
+            - target:
+                is_ctor: false
+                type: UP<SymbolRefPath>
+                visit: false
     - TypeIdentifierElem:
         - super: Expr
         - data:

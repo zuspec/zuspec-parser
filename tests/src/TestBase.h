@@ -19,6 +19,9 @@
  *     Author: 
  */
 #pragma once
+#include <vector>
+#include "zsp/IFactory.h"
+#include "zsp/ast/IFactory.h"
 #include "gtest/gtest.h"
 
 
@@ -28,9 +31,29 @@ public:
 
     virtual ~TestBase();
 
+	virtual void SetUp() override;
+
+	virtual void TearDown() override;
+
+protected:
+
 	void runTest(
 		const std::string &content,
 		const std::string &name);
+
+	zsp::ast::IGlobalScope *parse(
+		zsp::IMarkerListener		*marker_l,
+		const std::string 			&content,
+		const std::string 			&name);
+
+	zsp::ast::ISymbolScope *link(
+		zsp::IMarkerListener						*marker_l,
+		const std::vector<zsp::ast::IGlobalScopeUP>	&files
+	);
+
+protected:
+	zsp::ast::IFactoryUP				m_ast_factory;
+	zsp::IFactoryUP						m_factory;
 
 };
 

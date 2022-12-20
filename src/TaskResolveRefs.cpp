@@ -78,6 +78,10 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
         // TODO: internal error
     }
 
+    if (dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()) {
+        dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()->accept(this);
+    }
+
     for (std::vector<ast::IScopeChild *>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
@@ -97,10 +101,27 @@ void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
 
     if (target) {
         DEBUG("Success");
+        i->getType_id()->setTarget(target);
     } else {
         DEBUG("Failed");
     }
+
     DEBUG_LEAVE("visitDataTypeUserDefined");
+}
+
+void TaskResolveRefs::visitTypeIdentifier(ast::ITypeIdentifier *i) {
+    DEBUG_ENTER("visitTypeIdentifier");
+    ast::ISymbolRefPath *target = TaskResolveRef(m_factory, m_marker_l).resolve(
+        m_symtab_it.get(),
+        i
+    );
+    DEBUG_LEAVE("visitTypeIdentifier");
+}
+
+void TaskResolveRefs::visitStruct(ast::IStruct *i) {
+    DEBUG_ENTER("visitStruct");
+    VisitorBase::visitStruct(i);
+    DEBUG_LEAVE("visitStruct");
 }
 
 }

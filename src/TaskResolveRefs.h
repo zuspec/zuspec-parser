@@ -42,6 +42,10 @@ public:
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
 
     virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;
+    
+    virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) override;
+
+    virtual void visitStruct(ast::IStruct *i) override;
 
 private:
     IFactory                *m_factory;
