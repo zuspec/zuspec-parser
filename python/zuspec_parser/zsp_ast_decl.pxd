@@ -19,11 +19,11 @@ ctypedef unsigned int         uint32_t
 ctypedef long long            int64_t
 ctypedef unsigned long long   uint64_t
 
-ctypedef IScopeChild *IScopeChildP
 ctypedef ISymbolImportSpec *ISymbolImportSpecP
+ctypedef IScopeChild *IScopeChildP
 ctypedef IActivityJoinSpec *IActivityJoinSpecP
+ctypedef ISymbolRefPath *ISymbolRefPathP
 ctypedef IRefExpr *IRefExprP
-ctypedef IRefTarget *IRefTargetP
 ctypedef ITemplateParamDeclList *ITemplateParamDeclListP
 ctypedef ITemplateParamDecl *ITemplateParamDeclP
 ctypedef IActivitySelectBranch *IActivitySelectBranchP
@@ -137,9 +137,9 @@ ctypedef IConstraintStmtForall *IConstraintStmtForallP
 ctypedef IConstraintStmtImplication *IConstraintStmtImplicationP
 ctypedef IExprRefPathStaticFunc *IExprRefPathStaticFuncP
 ctypedef ITypeScope *ITypeScopeP
-ctypedef IComponent *IComponentP
 ctypedef IStruct *IStructP
 ctypedef IAction *IActionP
+ctypedef IComponent *IComponentP
 cdef extern from "zsp/ast/ExprBinOp.h" namespace "zsp::ast":
     cdef enum ExprBinOp:
         ExprBinOp_BinOp_LogOr "zsp::ast::ExprBinOp::BinOp_LogOr"
@@ -206,15 +206,15 @@ cdef extern from "zsp/ast/FieldAttr.h" namespace "zsp::ast":
         FieldAttr_Protected "zsp::ast::FieldAttr::Protected"
 cdef extern from "zsp/ast/IFactory.h" namespace "zsp::ast":
     cdef cppclass IFactory:
-        IScopeChild *mkScopeChild(
-                )
         ISymbolImportSpec *mkSymbolImportSpec(
+                )
+        IScopeChild *mkScopeChild(
                 )
         IActivityJoinSpec *mkActivityJoinSpec(
                 )
-        IRefExpr *mkRefExpr(
+        ISymbolRefPath *mkSymbolRefPath(
                 )
-        IRefTarget *mkRefTarget(
+        IRefExpr *mkRefExpr(
                 )
         ITemplateParamDeclList *mkTemplateParamDeclList(
                 )
@@ -523,9 +523,6 @@ cdef extern from "zsp/ast/IFactory.h" namespace "zsp::ast":
         ITypeScope *mkTypeScope(
                 IExprIdP name,
                 ITypeIdentifierP super_t)
-        IComponent *mkComponent(
-                IExprIdP name,
-                ITypeIdentifierP super_t)
         IStruct *mkStruct(
                 IExprIdP name,
                 ITypeIdentifierP super_t,
@@ -534,6 +531,15 @@ cdef extern from "zsp/ast/IFactory.h" namespace "zsp::ast":
                 IExprIdP name,
                 ITypeIdentifierP super_t,
                 bool is_abstract)
+        IComponent *mkComponent(
+                IExprIdP name,
+                ITypeIdentifierP super_t)
+cdef extern from "zsp/ast/ISymbolImportSpec.h" namespace "zsp::ast":
+    cpdef cppclass ISymbolImportSpec:
+        std_vector[IPackageImportStmtP] &getImports();
+        std_map[std_string,unique_ptr[ISymbolRefPath]] &getSymtab();
+        void accept(VisitorBase *v)
+
 cdef extern from "zsp/ast/IScopeChild.h" namespace "zsp::ast":
     cpdef cppclass IScopeChild:
         const std_string &getDocstring()
@@ -547,24 +553,18 @@ cdef extern from "zsp/ast/IScopeChild.h" namespace "zsp::ast":
         void setIndex(int32_t v)
         void accept(VisitorBase *v)
 
-cdef extern from "zsp/ast/ISymbolImportSpec.h" namespace "zsp::ast":
-    cpdef cppclass ISymbolImportSpec:
-        std_vector[IPackageImportStmtP] &getImports();
-        std_map[std_string,IScopeChildP] &getSymtab();
-        void accept(VisitorBase *v)
-
 cdef extern from "zsp/ast/IActivityJoinSpec.h" namespace "zsp::ast":
     cpdef cppclass IActivityJoinSpec:
         pass
         void accept(VisitorBase *v)
 
-cdef extern from "zsp/ast/IRefExpr.h" namespace "zsp::ast":
-    cpdef cppclass IRefExpr:
-        pass
+cdef extern from "zsp/ast/ISymbolRefPath.h" namespace "zsp::ast":
+    cpdef cppclass ISymbolRefPath:
+        std_vector[int32_t] &getPath();
         void accept(VisitorBase *v)
 
-cdef extern from "zsp/ast/IRefTarget.h" namespace "zsp::ast":
-    cpdef cppclass IRefTarget:
+cdef extern from "zsp/ast/IRefExpr.h" namespace "zsp::ast":
+    cpdef cppclass IRefExpr:
         pass
         void accept(VisitorBase *v)
 
@@ -700,9 +700,9 @@ cdef extern from "zsp/ast/IPackageImportStmt.h" namespace "zsp::ast":
         IExprIdgetAlias()
         
         void setAlias(IExprIdv)
-        IDataTypeUserDefinedgetPath()
+        ITypeIdentifiergetPath()
         
-        void setPath(IDataTypeUserDefinedv)
+        void setPath(ITypeIdentifierv)
 
 cdef extern from "zsp/ast/IDataType.h" namespace "zsp::ast":
     cpdef cppclass IDataType(IScopeChild):
@@ -858,18 +858,18 @@ cdef extern from "zsp/ast/IExprOpenRangeValue.h" namespace "zsp::ast":
 
 cdef extern from "zsp/ast/IExprRefPath.h" namespace "zsp::ast":
     cpdef cppclass IExprRefPath(IExpr):
-        IRefTargetPgetTarget();
+        ISymbolRefPathgetTarget()
         
-        void setTarget(IRefTargetPv)
+        void setTarget(ISymbolRefPathv)
 
 cdef extern from "zsp/ast/IExprRefPathContext.h" namespace "zsp::ast":
     cpdef cppclass IExprRefPathContext(IExpr):
         IExprHierarchicalIdgetHier_id()
         
         void setHier_id(IExprHierarchicalIdv)
-        IRefTargetPgetTarget();
+        ISymbolRefPathgetTarget()
         
-        void setTarget(IRefTargetPv)
+        void setTarget(ISymbolRefPathv)
 
 cdef extern from "zsp/ast/IExprRefPathElem.h" namespace "zsp::ast":
     cpdef cppclass IExprRefPathElem(IExpr):
@@ -883,9 +883,9 @@ cdef extern from "zsp/ast/IExprRefPathStaticRooted.h" namespace "zsp::ast":
         IExprRefPathContextgetLeaf()
         
         void setLeaf(IExprRefPathContextv)
-        IRefTargetPgetTarget();
+        ISymbolRefPathgetTarget()
         
-        void setTarget(IRefTargetPv)
+        void setTarget(ISymbolRefPathv)
 
 cdef extern from "zsp/ast/IExprStaticRefPath.h" namespace "zsp::ast":
     cpdef cppclass IExprStaticRefPath(IExpr):
@@ -931,6 +931,9 @@ cdef extern from "zsp/ast/IMethodParameterList.h" namespace "zsp::ast":
 cdef extern from "zsp/ast/ITypeIdentifier.h" namespace "zsp::ast":
     cpdef cppclass ITypeIdentifier(IExpr):
         std_vector[unique_ptr[ITypeIdentifierElem]] &getElems();
+        ISymbolRefPathgetTarget()
+        
+        void setTarget(ISymbolRefPathv)
 
 cdef extern from "zsp/ast/ITypeIdentifierElem.h" namespace "zsp::ast":
     cpdef cppclass ITypeIdentifierElem(IExpr):
@@ -1178,9 +1181,6 @@ cdef extern from "zsp/ast/IDataTypeUserDefined.h" namespace "zsp::ast":
         ITypeIdentifiergetType_id()
         
         void setType_id(ITypeIdentifierv)
-        IRefTargetgetTarget()
-        
-        void setTarget(IRefTargetv)
 
 cdef extern from "zsp/ast/IExprRefPathStatic.h" namespace "zsp::ast":
     cpdef cppclass IExprRefPathStatic(IExprRefPath):
@@ -1443,10 +1443,6 @@ cdef extern from "zsp/ast/ITypeScope.h" namespace "zsp::ast":
         
         void setParams(ITemplateParamDeclListv)
 
-cdef extern from "zsp/ast/IComponent.h" namespace "zsp::ast":
-    cpdef cppclass IComponent(ITypeScope):
-        pass
-
 cdef extern from "zsp/ast/IStruct.h" namespace "zsp::ast":
     cpdef cppclass IStruct(ITypeScope):
         StructKind getKind()
@@ -1459,13 +1455,17 @@ cdef extern from "zsp/ast/IAction.h" namespace "zsp::ast":
         
         void setIs_abstract(bool v)
 
+cdef extern from "zsp/ast/IComponent.h" namespace "zsp::ast":
+    cpdef cppclass IComponent(ITypeScope):
+        pass
+
 cdef extern from 'zsp/ast/impl/VisitorBase.h' namespace 'zsp::ast':
     cpdef cppclass VisitorBase:
-        void visitScopeChild(IScopeChildP i)
         void visitSymbolImportSpec(ISymbolImportSpecP i)
+        void visitScopeChild(IScopeChildP i)
         void visitActivityJoinSpec(IActivityJoinSpecP i)
+        void visitSymbolRefPath(ISymbolRefPathP i)
         void visitRefExpr(IRefExprP i)
-        void visitRefTarget(IRefTargetP i)
         void visitTemplateParamDeclList(ITemplateParamDeclListP i)
         void visitTemplateParamDecl(ITemplateParamDeclP i)
         void visitActivitySelectBranch(IActivitySelectBranchP i)
@@ -1579,17 +1579,17 @@ cdef extern from 'zsp/ast/impl/VisitorBase.h' namespace 'zsp::ast':
         void visitConstraintStmtImplication(IConstraintStmtImplicationP i)
         void visitExprRefPathStaticFunc(IExprRefPathStaticFuncP i)
         void visitTypeScope(ITypeScopeP i)
-        void visitComponent(IComponentP i)
         void visitStruct(IStructP i)
         void visitAction(IActionP i)
+        void visitComponent(IComponentP i)
 cdef extern from 'PyBaseVisitor.h' namespace 'zsp::ast':
     cpdef cppclass PyBaseVisitor(VisitorBase):
         PyBaseVisitor(cpy_ref.PyObject *)
-        void py_visitScopeChild(IScopeChild *i)
         void py_visitSymbolImportSpec(ISymbolImportSpec *i)
+        void py_visitScopeChild(IScopeChild *i)
         void py_visitActivityJoinSpec(IActivityJoinSpec *i)
+        void py_visitSymbolRefPath(ISymbolRefPath *i)
         void py_visitRefExpr(IRefExpr *i)
-        void py_visitRefTarget(IRefTarget *i)
         void py_visitTemplateParamDeclList(ITemplateParamDeclList *i)
         void py_visitTemplateParamDecl(ITemplateParamDecl *i)
         void py_visitActivitySelectBranch(IActivitySelectBranch *i)
@@ -1703,6 +1703,6 @@ cdef extern from 'PyBaseVisitor.h' namespace 'zsp::ast':
         void py_visitConstraintStmtImplication(IConstraintStmtImplication *i)
         void py_visitExprRefPathStaticFunc(IExprRefPathStaticFunc *i)
         void py_visitTypeScope(ITypeScope *i)
-        void py_visitComponent(IComponent *i)
         void py_visitStruct(IStruct *i)
         void py_visitAction(IAction *i)
+        void py_visitComponent(IComponent *i)

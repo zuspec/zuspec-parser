@@ -30,6 +30,11 @@ public:
     virtual ISymbolTableIterator *mkAstSymbolTableIterator(
         ast::ISymbolScope       *root) = 0;
 
+    virtual IMarker *mkMarker(
+        const std::string           &msg,
+        MarkerSeverityE             severity,
+        const ast::Location         &loc) = 0;
+
     virtual INameResolver *mkNameResolver(
         ISymbolTable            *symtab,
         IMarkerListener         *marker_l) = 0;

@@ -26,12 +26,24 @@ public:
 		return m_msg; 
 	}
 
+    virtual void setMsg(const std::string &m) override {
+		m_msg = m;
+	}
+
 	virtual MarkerSeverityE severity() const override { 
 		return m_severity; 
 	}
 
+    virtual void setSeverity(MarkerSeverityE s) override {
+		m_severity = s;
+	}
+
 	virtual const ast::Location &loc() const override { 
 		return m_loc; 
+	}
+
+    virtual void setLocation(const ast::Location &l) override {
+		m_loc = l;
 	}
 
 	virtual IMarker *clone() const override;

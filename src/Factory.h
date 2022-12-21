@@ -48,6 +48,12 @@ public:
     virtual ISymbolTableIterator *mkAstSymbolTableIterator(
         ast::ISymbolScope       *root) override;
 
+    virtual IMarker *mkMarker(
+        const std::string           &msg,
+        MarkerSeverityE             severity,
+        const ast::Location         &loc) override;
+
+
     virtual INameResolver *mkNameResolver(
         ISymbolTable            *symtab,
         IMarkerListener         *marker_l) override;

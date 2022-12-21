@@ -23,6 +23,7 @@
 #include "AstLinker.h"
 #include "AstSymbolTable.h"
 #include "AstSymbolTableIterator.h"
+#include "Marker.h"
 #include "NameResolver.h"
 
 
@@ -61,6 +62,13 @@ ISymbolTableIterator *Factory::mkAstSymbolTableIterator(
     return new AstSymbolTableIterator(m_ast_factory, root);
 }
 
+IMarker *Factory::mkMarker(
+        const std::string           &msg,
+        MarkerSeverityE             severity,
+        const ast::Location         &loc) {
+    return new Marker(msg, severity, loc);
+}
+
 INameResolver *Factory::mkNameResolver(
         ISymbolTable            *symtab,
         IMarkerListener         *marker_l) {
@@ -80,6 +88,10 @@ IFactory *Factory::inst() {
 }
 
 extern "C" IFactory *getZuspecParserFactory() {
+    return Factory::inst();
+}
+
+extern "C" IFactory *zsp_parser_getFactory() {
     return Factory::inst();
 }
 

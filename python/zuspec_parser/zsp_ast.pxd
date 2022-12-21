@@ -22,11 +22,11 @@ ctypedef unsigned long long   uint64_t
 from zuspec_parser cimport zsp_ast_decl
 cdef class Factory(object):
     cdef zsp_ast_decl.IFactory *_hndl
-    cpdef ScopeChild mkScopeChild(self)
     cpdef SymbolImportSpec mkSymbolImportSpec(self)
+    cpdef ScopeChild mkScopeChild(self)
     cpdef ActivityJoinSpec mkActivityJoinSpec(self)
+    cpdef SymbolRefPath mkSymbolRefPath(self)
     cpdef RefExpr mkRefExpr(self)
-    cpdef RefTarget mkRefTarget(self)
     cpdef TemplateParamDeclList mkTemplateParamDeclList(self)
     cpdef TemplateParamDecl mkTemplateParamDecl(self,
     ExprId name)
@@ -302,9 +302,6 @@ cdef class Factory(object):
     cpdef TypeScope mkTypeScope(self,
     ExprId name,
     TypeIdentifier super_t)
-    cpdef Component mkComponent(self,
-    ExprId name,
-    TypeIdentifier super_t)
     cpdef Struct mkStruct(self,
     ExprId name,
     TypeIdentifier super_t,
@@ -313,8 +310,20 @@ cdef class Factory(object):
     ExprId name,
     TypeIdentifier super_t,
     bool is_abstract)
+    cpdef Component mkComponent(self,
+    ExprId name,
+    TypeIdentifier super_t)
     @staticmethod
     cdef mk(zsp_ast_decl.IFactory *hndl)
+cdef class SymbolImportSpec(object):
+    cdef zsp_ast_decl.ISymbolImportSpec    *_hndl
+    cdef bool           _owned
+    
+    cpdef void accept(self, VisitorBase v)
+    cdef zsp_ast_decl.ISymbolImportSpec *asSymbolImportSpec(self)
+    @staticmethod
+    cdef SymbolImportSpec mk(zsp_ast_decl.ISymbolImportSpec *hndl, bool owned)
+
 cdef class ScopeChild(object):
     cdef zsp_ast_decl.IScopeChild    *_hndl
     cdef bool           _owned
@@ -326,15 +335,6 @@ cdef class ScopeChild(object):
     cpdef std_string getDocstring(self)
     cpdef int32_t getIndex(self)
 
-cdef class SymbolImportSpec(object):
-    cdef zsp_ast_decl.ISymbolImportSpec    *_hndl
-    cdef bool           _owned
-    
-    cpdef void accept(self, VisitorBase v)
-    cdef zsp_ast_decl.ISymbolImportSpec *asSymbolImportSpec(self)
-    @staticmethod
-    cdef SymbolImportSpec mk(zsp_ast_decl.ISymbolImportSpec *hndl, bool owned)
-
 cdef class ActivityJoinSpec(object):
     cdef zsp_ast_decl.IActivityJoinSpec    *_hndl
     cdef bool           _owned
@@ -344,6 +344,15 @@ cdef class ActivityJoinSpec(object):
     @staticmethod
     cdef ActivityJoinSpec mk(zsp_ast_decl.IActivityJoinSpec *hndl, bool owned)
 
+cdef class SymbolRefPath(object):
+    cdef zsp_ast_decl.ISymbolRefPath    *_hndl
+    cdef bool           _owned
+    
+    cpdef void accept(self, VisitorBase v)
+    cdef zsp_ast_decl.ISymbolRefPath *asSymbolRefPath(self)
+    @staticmethod
+    cdef SymbolRefPath mk(zsp_ast_decl.ISymbolRefPath *hndl, bool owned)
+
 cdef class RefExpr(object):
     cdef zsp_ast_decl.IRefExpr    *_hndl
     cdef bool           _owned
@@ -352,15 +361,6 @@ cdef class RefExpr(object):
     cdef zsp_ast_decl.IRefExpr *asRefExpr(self)
     @staticmethod
     cdef RefExpr mk(zsp_ast_decl.IRefExpr *hndl, bool owned)
-
-cdef class RefTarget(object):
-    cdef zsp_ast_decl.IRefTarget    *_hndl
-    cdef bool           _owned
-    
-    cpdef void accept(self, VisitorBase v)
-    cdef zsp_ast_decl.IRefTarget *asRefTarget(self)
-    @staticmethod
-    cdef RefTarget mk(zsp_ast_decl.IRefTarget *hndl, bool owned)
 
 cdef class TemplateParamDeclList(object):
     cdef zsp_ast_decl.ITemplateParamDeclList    *_hndl
@@ -1106,12 +1106,6 @@ cdef class TypeScope(NamedScope):
     @staticmethod
     cdef TypeScope mk(zsp_ast_decl.ITypeScope *hndl, bool owned)
 
-cdef class Component(TypeScope):
-    
-    cdef zsp_ast_decl.IComponent *asComponent(self)
-    @staticmethod
-    cdef Component mk(zsp_ast_decl.IComponent *hndl, bool owned)
-
 cdef class Struct(TypeScope):
     
     cdef zsp_ast_decl.IStruct *asStruct(self)
@@ -1126,14 +1120,20 @@ cdef class Action(TypeScope):
     cdef Action mk(zsp_ast_decl.IAction *hndl, bool owned)
     cpdef bool getIs_abstract(self)
 
+cdef class Component(TypeScope):
+    
+    cdef zsp_ast_decl.IComponent *asComponent(self)
+    @staticmethod
+    cdef Component mk(zsp_ast_decl.IComponent *hndl, bool owned)
+
 cdef class VisitorBase(object):
     cdef zsp_ast_decl.PyBaseVisitor *_hndl
     cdef bool                  _owned
-    cpdef void visitScopeChild(self, ScopeChild i)
     cpdef void visitSymbolImportSpec(self, SymbolImportSpec i)
+    cpdef void visitScopeChild(self, ScopeChild i)
     cpdef void visitActivityJoinSpec(self, ActivityJoinSpec i)
+    cpdef void visitSymbolRefPath(self, SymbolRefPath i)
     cpdef void visitRefExpr(self, RefExpr i)
-    cpdef void visitRefTarget(self, RefTarget i)
     cpdef void visitTemplateParamDeclList(self, TemplateParamDeclList i)
     cpdef void visitTemplateParamDecl(self, TemplateParamDecl i)
     cpdef void visitActivitySelectBranch(self, ActivitySelectBranch i)
@@ -1247,6 +1247,6 @@ cdef class VisitorBase(object):
     cpdef void visitConstraintStmtImplication(self, ConstraintStmtImplication i)
     cpdef void visitExprRefPathStaticFunc(self, ExprRefPathStaticFunc i)
     cpdef void visitTypeScope(self, TypeScope i)
-    cpdef void visitComponent(self, Component i)
     cpdef void visitStruct(self, Struct i)
     cpdef void visitAction(self, Action i)
+    cpdef void visitComponent(self, Component i)

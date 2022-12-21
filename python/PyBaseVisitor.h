@@ -11,16 +11,16 @@ public:
 private:
     PyObject *m_proxy;
     public:
-    virtual void visitScopeChild(IScopeChild *i) override;
-    void py_visitScopeChild(IScopeChild *i);
     virtual void visitSymbolImportSpec(ISymbolImportSpec *i) override;
     void py_visitSymbolImportSpec(ISymbolImportSpec *i);
+    virtual void visitScopeChild(IScopeChild *i) override;
+    void py_visitScopeChild(IScopeChild *i);
     virtual void visitActivityJoinSpec(IActivityJoinSpec *i) override;
     void py_visitActivityJoinSpec(IActivityJoinSpec *i);
+    virtual void visitSymbolRefPath(ISymbolRefPath *i) override;
+    void py_visitSymbolRefPath(ISymbolRefPath *i);
     virtual void visitRefExpr(IRefExpr *i) override;
     void py_visitRefExpr(IRefExpr *i);
-    virtual void visitRefTarget(IRefTarget *i) override;
-    void py_visitRefTarget(IRefTarget *i);
     virtual void visitTemplateParamDeclList(ITemplateParamDeclList *i) override;
     void py_visitTemplateParamDeclList(ITemplateParamDeclList *i);
     virtual void visitTemplateParamDecl(ITemplateParamDecl *i) override;
@@ -247,12 +247,12 @@ private:
     void py_visitExprRefPathStaticFunc(IExprRefPathStaticFunc *i);
     virtual void visitTypeScope(ITypeScope *i) override;
     void py_visitTypeScope(ITypeScope *i);
-    virtual void visitComponent(IComponent *i) override;
-    void py_visitComponent(IComponent *i);
     virtual void visitStruct(IStruct *i) override;
     void py_visitStruct(IStruct *i);
     virtual void visitAction(IAction *i) override;
     void py_visitAction(IAction *i);
+    virtual void visitComponent(IComponent *i) override;
+    void py_visitComponent(IComponent *i);
 };
 
 } // namespace zsp
