@@ -51,6 +51,27 @@ protected:
 		const std::vector<zsp::ast::IGlobalScopeUP>	&files
 	);
 
+	zsp::ast::ISymbolScope *link(
+		zsp::IMarkerListener						*marker_l,
+		const std::vector<zsp::ast::IGlobalScope *>	&files
+	);
+
+    using ParseLinkResultT=std::pair<
+        zsp::ast::IGlobalScope *,
+        zsp::ast::ISymbolScope *>;
+
+    void parseLink(
+        zsp::IMarkerListener        *marker_l,
+        const std::string           &content,
+        const std::string           &name,
+        zsp::ast::IGlobalScopeUP    &global,
+        zsp::ast::ISymbolScopeUP    &root);
+
+    zsp::ast::IScopeChild *findItem(
+        zsp::ast::ISymbolScope              *root,
+        const std::vector<std::string>      &path);
+
+
 protected:
 	zsp::ast::IFactoryUP				m_ast_factory;
 	zsp::IFactoryUP						m_factory;

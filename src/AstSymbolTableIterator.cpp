@@ -20,6 +20,21 @@
  */
 #include "AstSymbolTableIterator.h"
 
+#define DEBUG_ENTER(fmt, ...) \
+	fprintf(stdout, "--> AstSymbolTableIterator::"); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
+	fprintf(stdout, "\n");
+
+#define DEBUG(fmt, ...) \
+	fprintf(stdout, "AstSymbolTableIterator: "); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
+	fprintf(stdout, "\n");
+
+#define DEBUG_LEAVE(fmt, ...) \
+	fprintf(stdout, "<-- AstSymbolTableIterator::"); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
+	fprintf(stdout, "\n");
+
 
 namespace zsp {
 
@@ -36,6 +51,10 @@ AstSymbolTableIterator::AstSymbolTableIterator(
     m_path(other.m_path.begin(), other.m_path.end()),
     m_scope_s(other.m_scope_s.begin(), other.m_scope_s.end()) {
 
+    if (m_scope_s.size() == 0) {
+        fprintf(stdout, "Error: initial scope-stack size is 0\n");
+    }
+
 }
 
 AstSymbolTableIterator::~AstSymbolTableIterator() {
@@ -43,12 +62,15 @@ AstSymbolTableIterator::~AstSymbolTableIterator() {
 }
 
 int32_t AstSymbolTableIterator::findLocalSymbol(const std::string &name) {
+    DEBUG_ENTER("findLocalSymbol %s", name.c_str());
     std::map<std::string,int32_t>::const_iterator it =
         m_scope_s.back()->getSymtab().find(name);
 
     if (it != m_scope_s.back()->getSymtab().end()) {
+        DEBUG_LEAVE("findLocalSymbol %s - success", name.c_str());
         return it->second;
     } else {
+        DEBUG_LEAVE("findLocalSymbol %s - fail", name.c_str());
         return -1;
     }
 }
@@ -100,6 +122,7 @@ ast::IScopeChild *AstSymbolTableIterator::resolveAbsPath(const ast::ISymbolRefPa
 }
 
 int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
+    DEBUG_ENTER("pushNamedScope %s", name.c_str());
     std::map<std::string,int32_t>::const_iterator it =
         m_scope_s.back()->getSymtab().find(name);
 
@@ -109,22 +132,37 @@ int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
         if (scope) {
             m_scope_s.push_back(scope);
             m_path.push_back(it->second);
+            DEBUG_LEAVE("pushNamedScope %s - success sz=%d", 
+                name.c_str(), m_scope_s.size());
             return it->second;
         } else {
+            DEBUG_LEAVE("pushNamedScope %s - fail", name.c_str());
             return -1;
         }
     } else {
+        DEBUG_LEAVE("pushNamedScope %s - fail", name.c_str());
         return -1;
     }
 }
 
+void AstSymbolTableIterator::pushScope(ast::ISymbolScope *s) {
+    m_scope_s.push_back(s);
+    // TODO: what about indexing?
+    m_path.push_back(-1);
+}
+
 void AstSymbolTableIterator::popScope() {
+    DEBUG_ENTER("popScope %d", m_scope_s.size());
     if (m_scope_s.size() > 0) {
         m_scope_s.pop_back();
         m_path.pop_back();
+        if (m_scope_s.size() == 0) {
+            fprintf(stdout, "Error: emptied scope stack\n");
+        }
     } else {
         fprintf(stdout, "Error: attempt to pop an empty stack\n");
     }
+    DEBUG_LEAVE("popScope - sz=%d", m_scope_s.size());
 }
 
 bool AstSymbolTableIterator::hasScopes() {

@@ -7,11 +7,11 @@
 
 #pragma once
 #include <vector>
-#include "zsp/IMarkerListener.h"
+#include "zsp/IMarkerCollector.h"
 
 namespace zsp {
 
-class MarkerCollector : public virtual IMarkerListener {
+class MarkerCollector : public virtual IMarkerCollector {
 public:
 	MarkerCollector();
 

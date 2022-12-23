@@ -20,17 +20,17 @@
 
 #define DEBUG_ENTER(fmt, ...) \
 	fprintf(stdout, "--> AstBuilderInt::"); \
-	fprintf(stdout, fmt, #__VA_ARGS__); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
 	fprintf(stdout, "\n")
 
 #define DEBUG(fmt, ...) \
 	fprintf(stdout, "AstBuilderInt: "); \
-	fprintf(stdout, fmt, #__VA_ARGS__); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
 	fprintf(stdout, "\n")
 
 #define DEBUG_LEAVE(fmt, ...) \
 	fprintf(stdout, "<-- AstBuilderInt::"); \
-	fprintf(stdout, fmt, #__VA_ARGS__); \
+	fprintf(stdout, fmt, ##__VA_ARGS__); \
 	fprintf(stdout, "\n")
 
 
@@ -137,7 +137,23 @@ static std::map<std::string,ast::ExtendTargetE> ExtendKind_m = {
 
 antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx) {
 	DEBUG_ENTER("visitExtend_stmt");
-	ExtendTargetE kind = ExtendKind_m.find(ctx->ext_type->toString())->second;
+	ExtendTargetE kind;
+    
+    if (ctx->is_action) {
+        kind = ast::ExtendTargetE::Action;
+    } else if (ctx->is_component) {
+        kind = ast::ExtendTargetE::Component;
+    } else if (ctx->is_enum) {
+        kind = ast::ExtendTargetE::Enum;
+    } else {
+        std::map<std::string,ast::ExtendTargetE>::const_iterator it =
+            ExtendKind_m.find(ctx->struct_kind()->toString());
+        if (it != ExtendKind_m.end()) {
+            kind = it->second;
+        } else {
+            fprintf(stdout, "Error: No match for extend kind\n");
+        }
+    }
 
 	if (kind == ast::ExtendTargetE::Enum) {
 		IExtendEnum *ext = m_factory->mkExtendEnum(mkTypeId(ctx->type_identifier()));
@@ -168,6 +184,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 			case ast::ExtendTargetE::Action: {
 				std::vector<PSSParser::Action_body_itemContext *> items =
 					ctx->action_body_item();
+                DEBUG("Extend Action: %d items", items.size());
 				for (std::vector<PSSParser::Action_body_itemContext *>::const_iterator
 					it=items.begin();
 					it!=items.end(); it++) {
@@ -177,6 +194,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 			case ast::ExtendTargetE::Component: {
 				std::vector<PSSParser::Component_body_itemContext *> items =
 					ctx->component_body_item();
+                DEBUG("Extend Component: %d items", items.size());
 				for (std::vector<PSSParser::Component_body_itemContext *>::const_iterator
 					it=items.begin();
 					it!=items.end(); it++) {
@@ -190,6 +208,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 			case ast::ExtendTargetE::Struct: {
 				std::vector<PSSParser::Struct_body_itemContext *> items =
 					ctx->struct_body_item();
+                DEBUG("Extend Struct: %d items", items.size());
 				for (std::vector<PSSParser::Struct_body_itemContext *>::const_iterator
 					it=items.begin();
 					it!=items.end(); it++) {
@@ -197,6 +216,9 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 				}
 				
 			} break;
+            default:
+                fprintf(stdout, "Error: unhandled extension-type target: %d\n", kind);
+                break;
 		}
 
 		pop_scope();

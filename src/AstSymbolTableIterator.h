@@ -50,6 +50,8 @@ public:
 
     virtual int32_t pushNamedScope(const std::string &name) override;
 
+    virtual void pushScope(ast::ISymbolScope *s) override;
+
     virtual void popScope() override;
 
     virtual bool hasScopes() override;

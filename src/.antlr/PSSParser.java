@@ -966,7 +966,9 @@ public class PSSParser extends Parser {
 	}
 
 	public static class Extend_stmtContext extends ParserRuleContext {
-		public Token ext_type;
+		public Token is_action;
+		public Token is_component;
+		public Token is_enum;
 		public TerminalNode TOK_EXTEND() { return getToken(PSSParser.TOK_EXTEND, 0); }
 		public Type_identifierContext type_identifier() {
 			return getRuleContext(Type_identifierContext.class,0);
@@ -1029,7 +1031,7 @@ public class PSSParser extends Parser {
 				setState(612);
 				match(TOK_EXTEND);
 				setState(613);
-				((Extend_stmtContext)_localctx).ext_type = match(TOK_ACTION);
+				((Extend_stmtContext)_localctx).is_action = match(TOK_ACTION);
 				setState(614);
 				type_identifier();
 				setState(615);
@@ -1059,7 +1061,7 @@ public class PSSParser extends Parser {
 				setState(624);
 				match(TOK_EXTEND);
 				setState(625);
-				((Extend_stmtContext)_localctx).ext_type = match(TOK_COMPONENT);
+				((Extend_stmtContext)_localctx).is_component = match(TOK_COMPONENT);
 				setState(626);
 				type_identifier();
 				setState(627);
@@ -1119,7 +1121,7 @@ public class PSSParser extends Parser {
 				setState(648);
 				match(TOK_EXTEND);
 				setState(649);
-				((Extend_stmtContext)_localctx).ext_type = match(TOK_ENUM);
+				((Extend_stmtContext)_localctx).is_enum = match(TOK_ENUM);
 				setState(650);
 				type_identifier();
 				setState(651);

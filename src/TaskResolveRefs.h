@@ -39,6 +39,8 @@ public:
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
+    virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override;
+
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
 
     virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;

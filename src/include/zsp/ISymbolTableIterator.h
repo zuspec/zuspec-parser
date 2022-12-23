@@ -50,6 +50,8 @@ public:
      */
     virtual int32_t pushNamedScope(const std::string &name) = 0;
 
+    virtual void pushScope(ast::ISymbolScope *s) = 0;
+
     virtual void popScope() = 0;
 
     virtual bool hasScopes() = 0;

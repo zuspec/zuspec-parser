@@ -24,6 +24,7 @@
 #include "AstSymbolTable.h"
 #include "AstSymbolTableIterator.h"
 #include "Marker.h"
+#include "MarkerCollector.h"
 #include "NameResolver.h"
 
 
@@ -67,6 +68,10 @@ IMarker *Factory::mkMarker(
         MarkerSeverityE             severity,
         const ast::Location         &loc) {
     return new Marker(msg, severity, loc);
+}
+
+IMarkerCollector *Factory::mkMarkerCollector() {
+    return new MarkerCollector();
 }
 
 INameResolver *Factory::mkNameResolver(

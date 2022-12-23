@@ -53,6 +53,7 @@ public:
         MarkerSeverityE             severity,
         const ast::Location         &loc) override;
 
+    virtual IMarkerCollector *mkMarkerCollector() override;
 
     virtual INameResolver *mkNameResolver(
         ISymbolTable            *symtab,

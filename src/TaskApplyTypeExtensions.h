@@ -42,15 +42,36 @@ public:
 
     virtual void visitExtendType(ast::IExtendType *i) override;
 
+    virtual void visitSymbolEnumScope(ast::ISymbolEnumScope *i) override;
+
+    virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override;
+
+    virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override;
+
+    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
+
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
     virtual void visitPackageScope(ast::IPackageScope *i) override;
 
+    virtual void visitEnumDecl(ast::IEnumDecl *i) override;
+
+    virtual void visitEnumItem(ast::IEnumItem *i) override;
+
+    virtual void visitTypeScope(ast::ITypeScope *i) override;
+
+protected:
+    void addChild(
+        ast::ISymbolScope       *target,
+        ast::IScopeChild        *child,
+        const std::string       &name);
+
 
 private:
-    IFactory                        *m_factory;
-    IMarkerListener                 *m_marker_l;
-    ISymbolTableIteratorUP          m_symtab_it;
+    IFactory                                *m_factory;
+    IMarkerListener                         *m_marker_l;
+    ISymbolTableIteratorUP                  m_symtab_it;
+    ast::ISymbolScope                       *m_target_s;
 
 };
 

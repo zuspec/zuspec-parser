@@ -42,7 +42,6 @@ TestBase::~TestBase() {
 void TestBase::SetUp() {
     m_ast_factory = zsp::ast::IFactoryUP(new zsp::ast::Factory());
 	m_factory = zsp::IFactoryUP(new zsp::Factory(m_ast_factory.get()));
-
 }
 
 void TestBase::TearDown() {
@@ -112,5 +111,54 @@ zsp::ast::ISymbolScope *TestBase::link(
 	));
 
 	return root.release();
+}
+
+zsp::ast::ISymbolScope *TestBase::link(
+		zsp::IMarkerListener						*marker_l,
+		const std::vector<zsp::ast::IGlobalScope *>	&files) {
+	zsp::ILinkerUP linker(m_factory->mkAstLinker());
+	zsp::ast::ISymbolScopeUP root(linker->link(
+		marker_l,
+		files
+	));
+
+	return root.release();
+}
+
+void TestBase::parseLink(
+        zsp::IMarkerListener        *marker_l,
+        const std::string           &content,
+        const std::string           &name,
+        zsp::ast::IGlobalScopeUP    &global,
+        zsp::ast::ISymbolScopeUP    &root) {
+    global = zsp::ast::IGlobalScopeUP(parse(marker_l, content, name));
+    root = zsp::ast::ISymbolScopeUP(link(marker_l, {global.get()}));
+}
+
+zsp::ast::IScopeChild *TestBase::findItem(
+        zsp::ast::ISymbolScope              *root,
+        const std::vector<std::string>      &path) {
+    zsp::ast::IScopeChild *ret = 0;
+    zsp::ast::ISymbolScope *scope = root;
+
+    for (std::vector<std::string>::const_iterator
+        it=path.begin();
+        it!=path.end(); it++) {
+        std::map<std::string,int32_t>::const_iterator s_it =
+            scope->getSymtab().find(*it);
+        if (s_it != scope->getSymtab().end()) {
+            if (it+1 != path.end()) {
+                scope = dynamic_cast<zsp::ast::ISymbolScope *>(
+                    scope->getChildren().at(s_it->second));
+            } else {
+                ret = dynamic_cast<zsp::ast::ISymbolScope *>(
+                    scope->getChildren().at(s_it->second));
+            }
+        } else {
+            break;
+        }
+    }
+
+    return ret;
 }
 

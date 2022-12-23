@@ -89,11 +89,11 @@ package_import_alias:
 
 extend_stmt:
 		(
-			(TOK_EXTEND ext_type=TOK_ACTION type_identifier TOK_LCBRACE
+			(TOK_EXTEND is_action=TOK_ACTION type_identifier TOK_LCBRACE
 				action_body_item*
 				TOK_RCBRACE
 			) | 
-			(TOK_EXTEND ext_type=TOK_COMPONENT type_identifier TOK_LCBRACE
+			(TOK_EXTEND is_component=TOK_COMPONENT type_identifier TOK_LCBRACE
 				component_body_item*
 				TOK_RCBRACE
 			) |
@@ -101,7 +101,7 @@ extend_stmt:
 				struct_body_item*
 				TOK_RCBRACE
 			) |
-			(TOK_EXTEND ext_type=TOK_ENUM type_identifier TOK_LCBRACE
+			(TOK_EXTEND is_enum=TOK_ENUM type_identifier TOK_LCBRACE
 				(enum_item (TOK_COMMA enum_item)*)?
 				TOK_RCBRACE
 			)
@@ -350,6 +350,7 @@ function_return_type:
 	| data_type
 	;
 
+
 // TODO: refactor for performance
 function_parameter_list_prototype:
 	(
@@ -363,7 +364,7 @@ function_parameter_list_prototype:
 
 function_parameter:
 	(
-		function_parameter_dir? data_type identifier (TOK_SINGLE_EQ constant_expression)? 
+		function_parameter_dir? data_type identifier (TOK_SINGLE_EQ constant_expression)?
 	) | (
 		(TOK_TYPE | TOK_REF type_category | TOK_STRUCT) identifier
 	)

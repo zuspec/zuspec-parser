@@ -2,6 +2,7 @@
 #pragma once
 #include "zsp/IAstBuilder.h"
 #include "zsp/ILinker.h"
+#include "zsp/IMarkerCollector.h"
 #include "zsp/IMarkerListener.h"
 #include "zsp/INameResolver.h"
 #include "zsp/ISymbolTable.h"
@@ -34,6 +35,8 @@ public:
         const std::string           &msg,
         MarkerSeverityE             severity,
         const ast::Location         &loc) = 0;
+
+    virtual IMarkerCollector *mkMarkerCollector() = 0;
 
     virtual INameResolver *mkNameResolver(
         ISymbolTable            *symtab,

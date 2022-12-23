@@ -20,6 +20,7 @@
  */
 #include "TaskApplyTypeExtensions.h"
 #include "TaskResolveImports.h"
+#include "TaskResolveRef.h"
 
 #define DEBUG_ENTER(fmt, ...) \
 	fprintf(stdout, "--> TaskApplyTypeExtensions::"); \
@@ -43,7 +44,7 @@ TaskApplyTypeExtensions::TaskApplyTypeExtensions(
     IFactory                *factory,
     IMarkerListener         *marker_l) : 
         m_factory(factory), m_marker_l(marker_l) {
-
+    m_target_s = 0;
 }
 
 TaskApplyTypeExtensions::~TaskApplyTypeExtensions() {
@@ -62,20 +63,114 @@ void TaskApplyTypeExtensions::apply(ast::ISymbolScope *root) {
 
 void TaskApplyTypeExtensions::visitExtendEnum(ast::IExtendEnum *i) {
     DEBUG_ENTER("visitExtendEnum");
+    ast::IScopeChild *target = m_symtab_it->resolveAbsPath(i->getTarget()->getTarget());
+    ast::ISymbolEnumScope *target_s = dynamic_cast<ast::ISymbolEnumScope *>(target);
+
+    for (std::vector<ast::IEnumItemUP>::const_iterator
+        it=i->getItems().begin();
+        it!=i->getItems().end(); it++) {
+        std::map<std::string,int32_t>::const_iterator s_it 
+            = target_s->getSymtab().find((*it)->getName()->getId());
+        
+        if (s_it == target_s->getSymtab().end()) {
+            // 
+            int32_t id = target_s->getChildren().size();
+            target_s->getSymtab().insert({(*it)->getName()->getId(), id});
+            target_s->getChildren().push_back(it->get());
+        } else {
+            // TODO: duplicate name
+        }
+    }
 
     DEBUG_LEAVE("visitExtendEnum");
 }
 
 void TaskApplyTypeExtensions::visitExtendType(ast::IExtendType *i) {
     DEBUG_ENTER("visitExtendType");
+    i->getTarget()->setTarget(
+        TaskResolveRef(m_factory, m_marker_l).resolve(
+            m_symtab_it.get(),
+            i->getTarget()));
+
+    ast::IScopeChild *target = m_symtab_it->resolveAbsPath(i->getTarget()->getTarget());
+    ast::ISymbolTypeScope *target_s = dynamic_cast<ast::ISymbolTypeScope *>(target);
+    m_target_s = target_s;
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(this);
+    }
+    m_target_s = 0;
 
     DEBUG_LEAVE("visitExtendType");
+}
+
+void TaskApplyTypeExtensions::visitSymbolEnumScope(ast::ISymbolEnumScope *i) {
+    DEBUG_ENTER("visitSymbolEnumScope");
+    if (m_target_s) {
+        addChild(m_target_s, i, i->getName());
+    }
+    DEBUG_LEAVE("visitSymbolEnumScope");
+}
+
+void TaskApplyTypeExtensions::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
+    DEBUG_ENTER("visitSymbolExtendScope");
+    ast::IExtendType *ast_target = dynamic_cast<ast::IExtendType *>(i->getTarget());
+    ast::ISymbolRefPathUP ext_path(TaskResolveRef(m_factory, m_marker_l).resolve(
+            m_symtab_it.get(),
+            ast_target->getTarget()));
+    ast::IScopeChild *ext_target = m_symtab_it->resolveAbsPath(ext_path.get());
+    ast::ISymbolScope *target_s = dynamic_cast<ast::ISymbolScope *>(ext_target);
+    DEBUG("Target scope: %s", target_s->getName().c_str());
+    
+    m_target_s = target_s;
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(this);
+    }
+    m_target_s = 0;
+
+    DEBUG_LEAVE("visitSymbolExtendScope");
+}
+
+void TaskApplyTypeExtensions::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
+    DEBUG_ENTER("visitSymbolFunctionScope");
+    if (m_target_s) {
+        addChild(m_target_s, i, i->getName());
+    }
+    DEBUG_LEAVE("visitSymbolFunctionScope");
+}
+
+void TaskApplyTypeExtensions::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
+    DEBUG_ENTER("visitSymbolTypeScope %s", i->getName().c_str());
+    if (m_target_s) {
+        DEBUG("Adding to the target scope (%s)", m_target_s->getName().c_str());
+        addChild(m_target_s, i, i->getName());
+    }
+    DEBUG_LEAVE("visitSymbolTypeScope");
 }
 
 void TaskApplyTypeExtensions::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope");
 
-    if (m_symtab_it->pushNamedScope(i->getName())) {
+    if (m_target_s) {
+        addChild(m_target_s, i, i->getName());
+    } else {
+        for (std::vector<ast::IScopeChild *>::const_iterator
+            it=i->getChildren().begin();
+            it!=i->getChildren().end(); it++) {
+        (*it)->accept(this);
+        }
+    }
+
+    DEBUG_LEAVE("visitSymbolScope");
+}
+
+void TaskApplyTypeExtensions::visitPackageScope(ast::IPackageScope *i) {
+    DEBUG_ENTER("visitPackageScope");
+/*
+    if (m_symtab_it->pushNamedScope(i->getId().at(0)->getId()) == -1) {
         // Internal error
     }
 
@@ -94,27 +189,58 @@ void TaskApplyTypeExtensions::visitSymbolScope(ast::ISymbolScope *i) {
     }
 
     m_symtab_it->popScope();
-
-    DEBUG_LEAVE("visitSymbolScope");
+ */
+    DEBUG_LEAVE("visitPackageScope");
 }
 
-void TaskApplyTypeExtensions::visitPackageScope(ast::IPackageScope *i) {
-    DEBUG_ENTER("visitPackageScope");
+void TaskApplyTypeExtensions::visitEnumDecl(ast::IEnumDecl *i) {
 
-    if (m_symtab_it->pushNamedScope(i->getId().at(0)->getId()) == -1) {
-        // Internal error
+}
+
+void TaskApplyTypeExtensions::visitEnumItem(ast::IEnumItem *i) {
+
+}
+
+void TaskApplyTypeExtensions::visitTypeScope(ast::ITypeScope *i) {
+    DEBUG_ENTER("visitTypeScope");
+    if (m_target_s) {
+        std::map<std::string,int32_t>::const_iterator it =
+            m_target_s->getSymtab().find(i->getName()->getId());
+
+        if (it == m_target_s->getSymtab().end()) {
+            // Add new
+            m_target_s->getChildren().push_back(i);
+        } else {
+            // TODO: name collision
+        }
     }
 
-    ast::ISymbolScope *scope = m_symtab_it->getScope();
-    if (scope->getImports()) {
-        TaskResolveImports(m_factory, m_marker_l).resolve(
-            m_symtab_it.get(),
-            scope
-        );
-    }
+    DEBUG_LEAVE("visitTypeScope");
+}
 
-    m_symtab_it->popScope();
-    DEBUG_LEAVE("visitPackageScope");
+void TaskApplyTypeExtensions::addChild(
+        ast::ISymbolScope       *target,
+        ast::IScopeChild        *child,
+        const std::string       &name) {
+    DEBUG_ENTER("addChild %s to %s", name.c_str(), target->getName().c_str());
+    std::map<std::string,int32_t>::const_iterator it;
+
+    if ((it=target->getSymtab().find(name)) == target->getSymtab().end()) {
+        int32_t id = target->getChildren().size();
+        target->getSymtab().insert({name, id});
+        target->getChildren().push_back(child);
+    } else {
+        std::string msg = "Type extension of ";
+        msg += name + " conflicts with an existing declaration";
+
+        zsp::IMarkerUP marker(m_factory->mkMarker(
+            msg,
+            MarkerSeverityE::Error,
+            child->getLocation()
+        ));
+        m_marker_l->marker(marker.get());
+    }
+    DEBUG_LEAVE("addChild %s to %s", name.c_str(), target->getName().c_str());
 }
 
 }

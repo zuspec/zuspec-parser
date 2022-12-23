@@ -122,7 +122,7 @@ void TaskBuildSymbolTree::visitEnumDecl(ast::IEnumDecl *i) {
     ast::ISymbolScope *scope = m_scope_s.back();
 
     int32_t id = scope->getChildren().size();
-    ast::ISymbolScope *ts = m_factory->mkSymbolScope(
+    ast::ISymbolEnumScope *ts = m_factory->mkSymbolEnumScope(
         id,
         i->getName()->getId());
 
@@ -168,6 +168,26 @@ void TaskBuildSymbolTree::visitEnumItem(ast::IEnumItem *i) {
         scope->getChildren().push_back(i);
     }
     DEBUG_LEAVE("visitEnumItem %s", i->getName()->getId().c_str());
+}
+
+void TaskBuildSymbolTree::visitExtendType(ast::IExtendType *i) {
+    DEBUG_ENTER("visitExtendType");
+    int32_t id = m_scope_s.back()->getChildren().size();
+    ast::ISymbolExtendScope *ext = m_factory->mkSymbolExtendScope(id, "");
+    ext->setTarget(i);
+
+    m_scope_s.back()->getOwned().push_back(ast::IScopeChildUP(ext));
+    m_scope_s.back()->getChildren().push_back(ext);
+
+    m_scope_s.push_back(ext);
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(this);
+    }
+    m_scope_s.pop_back();
+
+    DEBUG_LEAVE("visitExtendType");
 }
 
 void TaskBuildSymbolTree::visitPackageImportStmt(ast::IPackageImportStmt *i) {

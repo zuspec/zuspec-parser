@@ -41,6 +41,14 @@ classes:
       - type: UP<SymbolImportSpec>
       - is_ctor: false
 
+- SymbolEnumScope:
+    super: SymbolScope
+    data: {}
+
+- SymbolExtendScope:
+    super: SymbolScope
+    data: {}
+
 - SymbolImportSpec:
     data:
     - imports:
