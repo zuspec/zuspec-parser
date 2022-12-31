@@ -48,7 +48,7 @@ install(TARGETS zuspec-parser
     DESTINATION lib
     EXPORT zsp-targets)
     
-add_dependencies(zuspec-parser AST libantlr4)
+add_dependencies(zuspec-parser AST libantlr4 PSSLexer PSSParser)
 
 if (WIN32)
 	if (BUILD_SHARED_LIBS)
@@ -68,6 +68,6 @@ add_library(zuspec-parser_static STATIC
 	${ANTLR_PSSParser_OUTPUTS}
 	${ANTLR_PSSLexer_OUTPUTS})
 
-add_dependencies(zuspec-parser_static AST libantlr4)
+add_dependencies(zuspec-parser_static AST libantlr4 PSSLexer PSSParser)
 	
 
