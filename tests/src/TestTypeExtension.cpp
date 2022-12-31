@@ -92,4 +92,88 @@ TEST_F(TestTypeExtension, comp_ext_action_dup) {
     ASSERT_TRUE(marker_c->hasSeverity(MarkerSeverityE::Error));
 }
 
+TEST_F(TestTypeExtension, ext_enum_empty) {
+    const char *content = R"(
+        enum MyEnum { }
+
+        extend enum MyEnum {
+            A,
+            B,
+            C
+        }
+    )";
+
+    ast::IGlobalScopeUP global;
+    ast::ISymbolScopeUP root;
+    IMarkerCollectorUP marker_c(m_factory->mkMarkerCollector());
+
+    parseLink(
+        marker_c.get(),
+        content,
+        "comp_ext_action.pss",
+        global,
+        root
+    );
+
+    // Expecting an error about duplicate symbol
+    ASSERT_FALSE(marker_c->hasSeverity(MarkerSeverityE::Error));
+    ast::IScopeChild *MyEnum_c = findItem(root.get(), {"MyEnum"});
+    ASSERT_TRUE(MyEnum_c);
+    ast::ISymbolEnumScope *MyEnum = dynamic_cast<ast::ISymbolEnumScope *>(MyEnum_c);
+    ASSERT_TRUE(MyEnum);
+    ASSERT_EQ(MyEnum->getChildren().size(), 3);
+}
+
+TEST_F(TestTypeExtension, ext_enum_unknown) {
+    const char *content = R"(
+        enum MyEnum { }
+
+        extend enum MyEnum2 {
+            A,
+            B,
+            C
+        }
+    )";
+
+    ast::IGlobalScopeUP global;
+    ast::ISymbolScopeUP root;
+    IMarkerCollectorUP marker_c(m_factory->mkMarkerCollector());
+
+    parseLink(
+        marker_c.get(),
+        content,
+        "comp_ext_action.pss",
+        global,
+        root
+    );
+
+    // Expecting an error about not being able to resolve MyEnum2
+    ASSERT_TRUE(marker_c->hasSeverity(MarkerSeverityE::Error));
+}
+
+TEST_F(TestTypeExtension, ext_struct_unknown) {
+    const char *content = R"(
+        struct S { }
+
+        extend struct S2 {
+            int i;
+        }
+    )";
+
+    ast::IGlobalScopeUP global;
+    ast::ISymbolScopeUP root;
+    IMarkerCollectorUP marker_c(m_factory->mkMarkerCollector());
+
+    parseLink(
+        marker_c.get(),
+        content,
+        "comp_ext_action.pss",
+        global,
+        root
+    );
+
+    // Expecting an error about not being able to resolve S2
+    ASSERT_TRUE(marker_c->hasSeverity(MarkerSeverityE::Error));
+}
+
 }

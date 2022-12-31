@@ -63,6 +63,18 @@ void TaskApplyTypeExtensions::apply(ast::ISymbolScope *root) {
 
 void TaskApplyTypeExtensions::visitExtendEnum(ast::IExtendEnum *i) {
     DEBUG_ENTER("visitExtendEnum");
+    ast::ISymbolRefPath *target_p = 
+        TaskResolveRef(m_factory, m_marker_l).resolve(
+            m_symtab_it.get(),
+            i->getTarget());
+
+    if (!target_p) {
+        DEBUG_LEAVE("visitExtendEnum - name resolution failure");
+        return;
+    }
+
+    i->getTarget()->setTarget(target_p);
+
     ast::IScopeChild *target = m_symtab_it->resolveAbsPath(i->getTarget()->getTarget());
     ast::ISymbolEnumScope *target_s = dynamic_cast<ast::ISymbolEnumScope *>(target);
 
@@ -87,10 +99,17 @@ void TaskApplyTypeExtensions::visitExtendEnum(ast::IExtendEnum *i) {
 
 void TaskApplyTypeExtensions::visitExtendType(ast::IExtendType *i) {
     DEBUG_ENTER("visitExtendType");
-    i->getTarget()->setTarget(
+    ast::ISymbolRefPath *target_p = 
         TaskResolveRef(m_factory, m_marker_l).resolve(
             m_symtab_it.get(),
-            i->getTarget()));
+            i->getTarget());
+
+    if (!target_p) {
+        DEBUG_LEAVE("visitExtendType - resolution failure");
+        return;
+    }
+
+    i->getTarget()->setTarget(target_p);
 
     ast::IScopeChild *target = m_symtab_it->resolveAbsPath(i->getTarget()->getTarget());
     ast::ISymbolTypeScope *target_s = dynamic_cast<ast::ISymbolTypeScope *>(target);
@@ -116,10 +135,18 @@ void TaskApplyTypeExtensions::visitSymbolEnumScope(ast::ISymbolEnumScope *i) {
 void TaskApplyTypeExtensions::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
     DEBUG_ENTER("visitSymbolExtendScope");
     ast::IExtendType *ast_target = dynamic_cast<ast::IExtendType *>(i->getTarget());
-    ast::ISymbolRefPathUP ext_path(TaskResolveRef(m_factory, m_marker_l).resolve(
+    ast::ISymbolRefPath *target_p = 
+        TaskResolveRef(m_factory, m_marker_l).resolve(
             m_symtab_it.get(),
-            ast_target->getTarget()));
-    ast::IScopeChild *ext_target = m_symtab_it->resolveAbsPath(ext_path.get());
+            ast_target->getTarget());
+
+    if (!target_p) {
+        DEBUG_LEAVE("visitSymbolExtendScope - resolution failure");
+        return;
+    }
+
+    ast_target->getTarget()->setTarget(target_p);
+    ast::IScopeChild *ext_target = m_symtab_it->resolveAbsPath(target_p);
     ast::ISymbolScope *target_s = dynamic_cast<ast::ISymbolScope *>(ext_target);
     DEBUG("Target scope: %s", target_s->getName().c_str());
     
