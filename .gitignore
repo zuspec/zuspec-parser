@@ -33,3 +33,9 @@
 
 build/
 packages/
+
+python/PyBaseVisitor.h
+python/core.cpp
+python/zuspec_parser/zsp_ast.pxd
+python/zuspec_parser/zsp_ast_decl.pxd
+
