@@ -21,6 +21,8 @@
 #include "AstMerger.h"
 
 namespace zsp {
+namespace parser {
+
 
 AstMerger::AstMerger(ast::IFactory *factory) : m_factory(factory) {
 
@@ -100,4 +102,5 @@ void AstMerger::visitScopeChild(ast::IScopeChild *i) {
     */
 }
 
+}
 }

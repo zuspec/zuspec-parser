@@ -8,6 +8,8 @@
 #include "RefExprUtil.h"
 
 namespace zsp {
+namespace parser {
+
 
 RefExprUtil::RefExprUtil() {
 	// TODO Auto-generated constructor stub
@@ -30,4 +32,5 @@ ast::IRefExprScopeIndexSP RefExprUtil::mkScopeIndex(ast::IRefExprSP base, int32_
 	return ast::IRefExprScopeIndexSP(0);
 }
 
+}
 } /* namespace zsp */

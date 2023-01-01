@@ -11,6 +11,8 @@
 #include "zsp/ast/IRefExprScopeIndex.h"
 
 namespace zsp {
+namespace parser {
+
 
 class RefExprUtil {
 public:
@@ -23,5 +25,6 @@ public:
 	static ast::IRefExprScopeIndexSP mkScopeIndex(ast::IRefExprSP base, int32_t index);
 };
 
+}
 } /* namespace zsp */
 

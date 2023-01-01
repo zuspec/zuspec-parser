@@ -19,9 +19,11 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/ISymbolTable.h"
+#include "zsp/parser/ISymbolTable.h"
 
 namespace zsp {
+namespace parser {
+
 
 
 class AstSymbolTable : public ISymbolTable {
@@ -97,6 +99,7 @@ private:
 
 };
 
+}
 }
 
 

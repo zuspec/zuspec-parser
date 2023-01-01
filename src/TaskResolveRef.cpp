@@ -37,6 +37,8 @@
 	fprintf(stdout, "\n");
 
 namespace zsp {
+namespace parser {
+
 
 
 TaskResolveRef::TaskResolveRef(
@@ -244,4 +246,5 @@ ast::ISymbolRefPath *TaskResolveRef::searchImport(
 	return ret;
 }
 
+}
 }

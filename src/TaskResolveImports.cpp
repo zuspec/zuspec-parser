@@ -37,6 +37,8 @@
 	fprintf(stdout, "\n");
 
 namespace zsp {
+namespace parser {
+
 
 
 TaskResolveImports::TaskResolveImports(
@@ -76,4 +78,5 @@ void TaskResolveImports::visitPackageImportStmt(ast::IPackageImportStmt *i) {
     DEBUG_LEAVE("visitPackageImportStmt");
 }
 
+}
 }

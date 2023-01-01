@@ -12,6 +12,8 @@
 #include "zsp/ast/IScopeChild.h"
 
 namespace zsp {
+namespace parser {
+
 
 class ScopeUtil {
 public:
@@ -26,5 +28,6 @@ public:
 	static void addChild(ast::IScope *s, ast::IScopeChild *c);
 };
 
+}
 } /* namespace zsp */
 

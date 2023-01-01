@@ -11,6 +11,8 @@
 #include "AstBuilderInt.h"
 
 namespace zsp {
+namespace parser {
+
 
 AstBuilder::AstBuilder(
 	ast::IFactory		*factory,
@@ -33,4 +35,5 @@ void AstBuilder::build(
 	m_builder_int->build(global, in);
 }
 
+}
 } /* namespace zsp */

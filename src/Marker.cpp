@@ -8,6 +8,8 @@
 #include "Marker.h"
 
 namespace zsp {
+namespace parser {
+
 
 Marker::Marker(
 		const std::string	&msg,
@@ -26,4 +28,5 @@ IMarker *Marker::clone() const {
 	return new Marker(m_msg, m_severity, m_loc);
 }
 
-} /* namespace pls */
+}
+} /* namespace zsp */

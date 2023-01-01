@@ -36,6 +36,8 @@
 	fprintf(stdout, "\n");
 
 namespace zsp {
+namespace parser {
+
 
 
 TaskBuildSymbolTree::TaskBuildSymbolTree(
@@ -253,4 +255,5 @@ void TaskBuildSymbolTree::reportDuplicateSymbol(
     fprintf(stdout, "Error: duplicate declaration");
 }
 
+}
 }

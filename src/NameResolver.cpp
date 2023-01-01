@@ -26,6 +26,8 @@
 	fprintf(stdout, "\n");
 
 namespace zsp {
+namespace parser {
+
 
 NameResolver::NameResolver(
 		IFactory								*factory,
@@ -212,4 +214,5 @@ ISymbolTableIterator *NameResolver::sym_it() const {
 	return (m_sym_it_s.size() > 0)?m_sym_it_s.back().get():0;
 }
 
+}
 } /* namespace zsp */

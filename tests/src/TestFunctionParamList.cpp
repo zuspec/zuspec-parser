@@ -22,6 +22,7 @@
 
 
 namespace zsp {
+namespace parser {
 
 
 TestFunctionParamList::TestFunctionParamList() {
@@ -58,4 +59,5 @@ TEST_F(TestFunctionParamList, specified) {
 //     runTest(content, "specified.pss");
 // }
 
+}
 }

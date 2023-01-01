@@ -8,12 +8,14 @@
 #pragma once
 #include <memory>
 #include <iostream>
-#include "zsp/IAstBuilder.h"
+#include "zsp/parser/IAstBuilder.h"
 #include "zsp/ast/IFactory.h"
 #include "zsp/ast/IGlobalScope.h"
-#include "zsp/IMarkerListener.h"
+#include "zsp/parser/IMarkerListener.h"
 
 namespace zsp {
+namespace parser {
+
 
 class AstBuilderInt;
 typedef std::unique_ptr<AstBuilderInt> AstBuilderIntUP;
@@ -34,5 +36,6 @@ private:
 	AstBuilderIntUP				m_builder_int;
 };
 
+}
 } /* namespace zsp */
 

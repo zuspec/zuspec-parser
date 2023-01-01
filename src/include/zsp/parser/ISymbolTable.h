@@ -20,10 +20,11 @@
  */
 #pragma once
 #include "zsp/ast/ITypeScope.h"
-#include "zsp/INameResolver.h"
-#include "zsp/ISymbolTableIterator.h"
+#include "zsp/parser/INameResolver.h"
+#include "zsp/parser/ISymbolTableIterator.h"
 
 namespace zsp {
+namespace parser {
 
 /*
 enum class SymbolKindE {
@@ -85,6 +86,7 @@ public:
 
 };
 
+}
 } /* namespace zsp */
 
 

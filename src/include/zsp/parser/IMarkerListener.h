@@ -6,9 +6,10 @@
  */
 
 #pragma once
-#include "zsp/IMarker.h"
+#include "zsp/parser/IMarker.h"
 
 namespace zsp {
+namespace parser {
 
 class IMarkerListener {
 public:
@@ -20,4 +21,5 @@ public:
 
 };
 
+}
 }

@@ -1,5 +1,5 @@
 /**
- * SymbolKindE.h
+ * ISymbol.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,21 +19,22 @@
  *     Author: 
  */
 #pragma once
+#include "zsp/parser/SymbolKindE.h"
 
 namespace zsp {
+namespace parser {
 
-enum class SymbolKindE {
-    Global,    // Un-named global namespace
-    Package,   // 
-    Action,
-    Buffer,
-    Component,
-    Resource,
-    State,
-    Stream,
-    Struct
+
+class ISymbol {
+public:
+
+    virtual ~ISymbol() { }
+
+    virtual SymbolKindE getKind() const = 0;
+
 };
-    
+
 }
+} /* namespace zsp */
 
 

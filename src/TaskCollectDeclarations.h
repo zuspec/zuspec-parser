@@ -20,12 +20,14 @@
  */
 #pragma once
 #include <vector>
-#include "zsp/IMarkerListener.h"
-#include "zsp/ISymbolScope.h"
-#include "zsp/ISymbolTable.h"
+#include "zsp/parser/IMarkerListener.h"
+#include "zsp/parser/ISymbolScope.h"
+#include "zsp/parser/ISymbolTable.h"
 #include "zsp/ast/impl/VisitorBase.h"
 
 namespace zsp {
+namespace parser {
+
 
 
 class TaskCollectDeclarations : public virtual ast::VisitorBase {
@@ -64,5 +66,6 @@ private:
     ISymbolTable                    *m_symtab;
 };
 
+}
 }
 

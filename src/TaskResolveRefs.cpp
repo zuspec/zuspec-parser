@@ -37,6 +37,8 @@
 	fprintf(stdout, "\n");
 
 namespace zsp {
+namespace parser {
+
 
 
 TaskResolveRefs::TaskResolveRefs(
@@ -150,4 +152,5 @@ void TaskResolveRefs::visitStruct(ast::IStruct *i) {
     DEBUG_LEAVE("visitStruct");
 }
 
+}
 }

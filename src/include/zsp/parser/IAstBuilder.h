@@ -8,11 +8,12 @@
 #pragma once
 #include <iostream>
 #include <memory>
-#include "zsp/IMarkerListener.h"
+#include "zsp/parser/IMarkerListener.h"
 #include "zsp/ast/IGlobalScope.h"
 
 
 namespace zsp {
+namespace parser {
 
 class IAstBuilder;
 using IAstBuilderUP=std::unique_ptr<IAstBuilder>;
@@ -27,4 +28,5 @@ public:
 
 };
 
+}
 }

@@ -22,6 +22,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 
 SymbolScopeUtils::SymbolScopeUtils() {
@@ -32,4 +34,5 @@ SymbolScopeUtils::~SymbolScopeUtils() {
 
 }
 
+}
 }

@@ -24,6 +24,7 @@
 #include "zsp/ast/IScopeChild.h"
 
 namespace zsp {
+namespace parser {
 
 class ISymbolTableIterator;
 using ISymbolTableIteratorUP=std::unique_ptr<ISymbolTableIterator>;
@@ -60,6 +61,7 @@ public:
 
 };
 
+}
 } /* namespace zsp */
 
 

@@ -3,6 +3,7 @@
 #include "zsp/ast/INamedScopeChild.h"
 
 namespace zsp {
+namespace parser {
 
 class ISymbolScope;
 
@@ -26,3 +27,5 @@ public:
 };
 
 }
+}
+

@@ -20,9 +20,12 @@
  */
 #pragma once
 #include <vector>
-#include "zsp/IFactory.h"
+#include "zsp/parser/IFactory.h"
 #include "zsp/ast/IFactory.h"
 #include "gtest/gtest.h"
+
+namespace zsp {
+namespace parser {
 
 
 class TestBase : public ::testing::Test {
@@ -41,41 +44,43 @@ protected:
 		const std::string &content,
 		const std::string &name);
 
-	zsp::ast::IGlobalScope *parse(
-		zsp::IMarkerListener		*marker_l,
-		const std::string 			&content,
-		const std::string 			&name);
+	ast::IGlobalScope *parse(
+		parser::IMarkerListener		        *marker_l,
+		const std::string 			        &content,
+		const std::string 			        &name);
 
-	zsp::ast::ISymbolScope *link(
-		zsp::IMarkerListener						*marker_l,
-		const std::vector<zsp::ast::IGlobalScopeUP>	&files
+	ast::ISymbolScope *link(
+		parser::IMarkerListener				        *marker_l,
+		const std::vector<ast::IGlobalScopeUP>	&files
 	);
 
-	zsp::ast::ISymbolScope *link(
-		zsp::IMarkerListener						*marker_l,
-		const std::vector<zsp::ast::IGlobalScope *>	&files
+	ast::ISymbolScope *link(
+		parser::IMarkerListener				        *marker_l,
+		const std::vector<ast::IGlobalScope *>	    &files
 	);
 
     using ParseLinkResultT=std::pair<
-        zsp::ast::IGlobalScope *,
-        zsp::ast::ISymbolScope *>;
+        ast::IGlobalScope *,
+        ast::ISymbolScope *>;
 
     void parseLink(
-        zsp::IMarkerListener        *marker_l,
-        const std::string           &content,
-        const std::string           &name,
-        zsp::ast::IGlobalScopeUP    &global,
-        zsp::ast::ISymbolScopeUP    &root);
+        parser::IMarkerListener        *marker_l,
+        const std::string              &content,
+        const std::string              &name,
+        ast::IGlobalScopeUP            &global,
+        ast::ISymbolScopeUP            &root);
 
-    zsp::ast::IScopeChild *findItem(
-        zsp::ast::ISymbolScope              *root,
+    ast::IScopeChild *findItem(
+        ast::ISymbolScope                   *root,
         const std::vector<std::string>      &path);
 
 
 protected:
-	zsp::ast::IFactoryUP				m_ast_factory;
-	zsp::IFactoryUP						m_factory;
+	ast::IFactoryUP				        m_ast_factory;
+	parser::IFactory				    *m_factory;
 
 };
 
 
+}
+}

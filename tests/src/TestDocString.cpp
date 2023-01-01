@@ -21,6 +21,10 @@
 #include "TestDocString.h"
 
 
+namespace zsp {
+namespace parser {
+
+
 
 
 TestDocString::TestDocString() {
@@ -45,3 +49,5 @@ TEST_F(TestDocString, smoke) {
     runTest(text, "smoke.pss");
 }
 
+}
+}

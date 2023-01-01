@@ -22,9 +22,11 @@
 #include <vector>
 #include "zsp/ast/IFactory.h"
 #include "zsp/ast/ISymbolScope.h"
-#include "zsp/ISymbolTableIterator.h"
+#include "zsp/parser/ISymbolTableIterator.h"
 
 namespace zsp {
+namespace parser {
+
 
 
 
@@ -65,6 +67,7 @@ private:
 
 };
 
+}
 }
 
 

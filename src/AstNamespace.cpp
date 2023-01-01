@@ -22,6 +22,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 
 AstNamespace::AstNamespace() {
@@ -32,4 +34,5 @@ AstNamespace::~AstNamespace() {
 
 }
 
+}
 }

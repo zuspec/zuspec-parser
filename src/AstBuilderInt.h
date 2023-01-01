@@ -8,7 +8,7 @@
 #pragma once
 #include <memory>
 #include <istream>
-#include "zsp/IMarkerListener.h"
+#include "zsp/parser/IMarkerListener.h"
 #include "PSSParserBaseVisitor.h"
 #include "BaseErrorListener.h"
 #include "zsp/ast/IExprId.h"
@@ -20,6 +20,8 @@ using namespace antlr4;
 using namespace antlrcpp;
 
 namespace zsp {
+namespace parser {
+
 
 class AstBuilderInt :
 		public PSSParserBaseVisitor,
@@ -225,5 +227,6 @@ private:
 
 };
 
+}
 }
 

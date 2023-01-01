@@ -35,6 +35,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 using namespace ast;
 
@@ -1551,4 +1553,5 @@ ast::IExpr *AstBuilderInt::mkExpr(
 	return m_expr;
 }
 
+}
 }

@@ -22,6 +22,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 
 AstTypeDecl::AstTypeDecl() {
@@ -32,4 +34,5 @@ AstTypeDecl::~AstTypeDecl() {
 
 }
 
+}
 }

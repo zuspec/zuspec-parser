@@ -21,6 +21,9 @@
 #pragma once
 #include "TestBase.h"
 
+namespace zsp {
+namespace parser {
+
 
 class TestDocString : public TestBase {
 public:
@@ -31,3 +34,5 @@ public:
 };
 
 
+}
+}

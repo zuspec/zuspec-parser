@@ -1,5 +1,5 @@
 /**
- * INameResolver.h
+ * NameResolverClientBase.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,33 +19,26 @@
  *     Author: 
  */
 #pragma once
-#include <vector>
-#include "zsp/ast/ITypeScope.h"
-#include "zsp/INamespace.h"
-#include "zsp/ITypeDecl.h"
+#include "zsp/parser/INameResolverClient.h"
 
 namespace zsp {
+namespace parser {
 
 
-class INameResolver;
-using INameResolverUP=std::unique_ptr<INameResolver>;
-class INameResolver {
+class NameResolverClientBase : public virtual INameResolverClient {
 public:
+    NameResolverClientBase() { }
 
-    virtual ~INameResolver() { }
+    virtual ~NameResolverClientBase() { }
 
-    virtual void resolve(ast::ISymbolScope *root) = 0;
+    virtual void init(INameResolver *resolver) override { m_resolver = resolver; }
 
-    // /**
-    //  * @brief Returns the active namespace stack
-    //  * 
-    //  * @return const std::vector<INamespace *>& 
-    //  */
-    // virtual const std::vector<INamespace *> &getNamespace() = 0;
-
+protected:
+    INameResolver                  *m_resolver;
 
 };
 
-} /* namespace zsp */
+}
+}
 
 

@@ -5,9 +5,10 @@
 #include <vector>
 #include "zsp/ast/INamedScopeChild.h"
 #include "zsp/ast/IScopeChild.h"
-#include "zsp/ISymbolResolver.h"
+#include "zsp/parser/ISymbolResolver.h"
 
 namespace zsp {
+namespace parser {
 
 enum class SymbolScopeKind {
     Namespace,
@@ -47,4 +48,5 @@ public:
 
 };
 
+}
 }

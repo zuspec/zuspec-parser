@@ -23,6 +23,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 
 TestImportLink::TestImportLink() {
@@ -79,3 +81,5 @@ TEST_F(TestImportLink, ambiguous_wildcard_imp) {
 }
 
 }
+}
+

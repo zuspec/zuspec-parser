@@ -1,5 +1,5 @@
 /**
- * ISymbol.h
+ * INameResolverClient.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,28 +19,32 @@
  *     Author: 
  */
 #pragma once
-#include <string>
-#include "zsp/SymbolKindE.h"
+#include "zsp/parser/INamespace.h"
+#include "zsp/parser/INameResolver.h"
 
 namespace zsp {
+namespace parser {
 
-class INamespace;
 
-class ISymbol {
+class INameResolverClient {
 public:
 
-    virtual ~ISymbol() { }
+    virtual ~INameResolverClient() { }
 
-    virtual INamespace *getParent() const = 0;
+    virtual void init(INameResolver *resolver) = 0;
 
-    virtual const std::string &getName() const = 0;
+    virtual INamespace *getGlobalNamespace() = 0;
 
-    virtual std::string getFullName() const = 0;
-
-    virtual SymbolKindE getKind() const = 0;
+    /**
+     * @brief Defines a new interface object to represent
+     *        the specified AST object. 
+     * 
+     */
+    virtual ITypeDecl *defineType(ast::ITypeScope *ast) = 0;
 
 };
 
+}
 } /* namespace zsp */
 
 

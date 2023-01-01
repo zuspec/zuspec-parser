@@ -24,6 +24,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 SymbolScope::SymbolScope(
     const std::string           &name,
     SymbolScopeKind             kind) : m_name(name), m_kind(kind) {
@@ -90,5 +92,6 @@ bool SymbolScope::resolve(
     }
 }
 
+}
 }
 

@@ -8,6 +8,8 @@
 #include "ScopeUtil.h"
 
 namespace zsp {
+namespace parser {
+
 
 ScopeUtil::ScopeUtil() {
 	// TODO Auto-generated constructor stub
@@ -46,4 +48,5 @@ void ScopeUtil::addChild(ast::IScope *s, ast::IScopeChild *c) {
 	c->setParent(s);
 }
 
+}
 } /* namespace zsp */

@@ -7,9 +7,11 @@
 
 #pragma once
 #include <vector>
-#include "zsp/IMarkerCollector.h"
+#include "zsp/parser/IMarkerCollector.h"
 
 namespace zsp {
+namespace parser {
+
 
 class MarkerCollector : public virtual IMarkerCollector {
 public:
@@ -32,5 +34,6 @@ private:
 
 };
 
+}
 } /* namespace zsp */
 

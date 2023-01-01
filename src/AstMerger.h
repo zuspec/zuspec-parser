@@ -26,6 +26,8 @@
 #include "zsp/ast/impl/VisitorBase.h"
 
 namespace zsp {
+namespace parser {
+
 
 class AstMerger : public virtual ast::VisitorBase {
 public:
@@ -57,4 +59,5 @@ private:
 
 };
 
+}
 }

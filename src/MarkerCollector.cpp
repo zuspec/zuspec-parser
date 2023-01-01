@@ -8,6 +8,8 @@
 #include "MarkerCollector.h"
 
 namespace zsp {
+namespace parser {
+
 
 MarkerCollector::MarkerCollector() {
 	for (uint32_t i=0; i<static_cast<uint32_t>(MarkerSeverityE::NumLevels); i++) {
@@ -28,4 +30,5 @@ bool MarkerCollector::hasSeverity(MarkerSeverityE s) {
 	return m_count[static_cast<uint32_t>(s)];
 }
 
+}
 } /* namespace zsp */

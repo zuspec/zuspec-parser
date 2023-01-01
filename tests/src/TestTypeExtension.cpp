@@ -22,6 +22,7 @@
 
 
 namespace zsp {
+namespace parser {
 
 
 TestTypeExtension::TestTypeExtension() {
@@ -176,4 +177,5 @@ TEST_F(TestTypeExtension, ext_struct_unknown) {
     ASSERT_TRUE(marker_c->hasSeverity(MarkerSeverityE::Error));
 }
 
+}
 }

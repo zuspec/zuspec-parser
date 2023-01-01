@@ -22,6 +22,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 
 AstNameResolverClient::AstNameResolverClient() {
@@ -32,4 +34,5 @@ AstNameResolverClient::~AstNameResolverClient() {
 
 }
 
+}
 }

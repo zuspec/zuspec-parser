@@ -1,14 +1,15 @@
 
 #pragma once
-#include "zsp/IAstBuilder.h"
-#include "zsp/ILinker.h"
-#include "zsp/IMarkerCollector.h"
-#include "zsp/IMarkerListener.h"
-#include "zsp/INameResolver.h"
-#include "zsp/ISymbolTable.h"
+#include "zsp/parser/IAstBuilder.h"
+#include "zsp/parser/ILinker.h"
+#include "zsp/parser/IMarkerCollector.h"
+#include "zsp/parser/IMarkerListener.h"
+#include "zsp/parser/INameResolver.h"
+#include "zsp/parser/ISymbolTable.h"
 #include "zsp/ast/IFactory.h"
 
 namespace zsp {
+namespace parser {
 
 class IAstBuilder;
 class IMarkerListener;
@@ -47,4 +48,5 @@ public:
 
 };
 
+}
 }

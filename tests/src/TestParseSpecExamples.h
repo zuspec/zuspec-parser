@@ -7,6 +7,9 @@
 #pragma once
 #include "TestBase.h"
 
+namespace zsp {
+namespace parser {
+
 class TestParseSpecExamples : public TestBase {
 public:
 	TestParseSpecExamples();
@@ -16,3 +19,5 @@ public:
 
 };
 
+}
+}

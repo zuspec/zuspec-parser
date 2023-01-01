@@ -37,6 +37,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 
 AstSymbolTableIterator::AstSymbolTableIterator(
@@ -173,5 +175,5 @@ ISymbolTableIterator *AstSymbolTableIterator::clone() const {
     return new AstSymbolTableIterator(*this);
 }
 
-
+}
 }

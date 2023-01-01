@@ -1,5 +1,5 @@
 /**
- * IMarkerCollector.h
+ * INamespace.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -20,21 +20,40 @@
  */
 #pragma once
 #include <memory>
-#include "zsp/IMarkerListener.h"
+#include <string>
+#include "zsp/parser/ISymbol.h"
+#include "zsp/parser/ISymbolRef.h"
 
 namespace zsp {
+namespace parser {
 
-class IMarkerCollector;
-using IMarkerCollectorUP=std::unique_ptr<IMarkerCollector>;
-class IMarkerCollector : public virtual IMarkerListener {
+class ITypeDecl;
+
+class INamespace;
+using INamespaceUP=std::unique_ptr<INamespace>;
+class INamespace : public virtual ISymbol {
 public:
 
-    virtual ~IMarkerCollector() { }
+    virtual ~INamespace() { }
 
-	virtual const std::vector<IMarkerUP> &markers() const = 0;
+    /**
+     * @brief Finds a named symbol in this namespace if it exists
+     * 
+     * @param name 
+     * @return ISymbolRef* relative to this namespace
+     */
+    virtual ISymbolRef *findSymbol(const std::string &name) = 0;
+
+    /**
+     * @brief Finds a named type in this namespace
+     * 
+     */
+    virtual ITypeDecl *findTypeDecl(const std::string &name) = 0;
+
 
 };
 
+}
 } /* namespace zsp */
 
 

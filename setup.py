@@ -82,9 +82,9 @@ if result.returncode != 0:
 #********************************************************************
 builddir = os.path.join(cwd, "build")
 file_m = {
-    os.path.join(builddir, "zsp_ast/ext/zsp_ast_decl.pxd") : os.path.join(pythondir, "zuspec_parser/zsp_ast_decl.pxd"),
-    os.path.join(builddir, "zsp_ast/ext/zsp_ast.pxd") : os.path.join(pythondir, "zuspec_parser/zsp_ast.pxd"),
-    os.path.join(builddir, "zsp_ast/ext/zsp_ast.pyx") : os.path.join(pythondir, "zsp_ast.pyx"),
+    os.path.join(builddir, "zsp_ast/ext/ast_decl.pxd") : os.path.join(pythondir, "zsp_parser/ast_decl.pxd"),
+    os.path.join(builddir, "zsp_ast/ext/ast.pxd") : os.path.join(pythondir, "zsp_parser/ast.pxd"),
+    os.path.join(builddir, "zsp_ast/ext/ast.pyx") : os.path.join(pythondir, "ast.pyx"),
     os.path.join(builddir, "zsp_ast/ext/PyBaseVisitor.h") : os.path.join(pythondir, "PyBaseVisitor.h")
 }
 
@@ -170,11 +170,10 @@ print("sources=" + str(sources))
 extra_link_args=[]
 #extra_link_args.append(os.path.join(os.getcwd(), "../antlr4/lib/libantlr4-runtime.a"))
 
-ast_ext_srcs = [os.path.join(pythondir, "zsp_ast.pyx")],
 ast_ext = Extension(
-    "zuspec_parser.zsp_ast", 
+    "zsp_parser.ast", 
     [
-        os.path.join(pythondir, "zsp_ast.pyx"),
+        os.path.join(pythondir, "ast.pyx"),
 #        os.path.join(pythondir, "PyBaseVisitor.cpp")
     ],
     include_dirs=include_dirs,
@@ -183,7 +182,7 @@ ast_ext = Extension(
     extra_link_args=extra_link_args,
     language="c++")
 ext = Extension(
-    "zuspec_parser.core", 
+    "zsp_parser.core", 
     sources,
     include_dirs=include_dirs,
     library_dirs=library_dirs,

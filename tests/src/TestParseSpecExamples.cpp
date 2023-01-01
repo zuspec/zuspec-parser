@@ -11,7 +11,10 @@
 #include "MarkerCollector.h"
 #include "zsp_ast/src/GlobalScope.h"
 #include "zsp_ast/src/Factory.h"
-#include "zsp/IMarker.h"
+#include "zsp/parser/IMarker.h"
+
+namespace zsp {
+namespace parser {
 
 TestParseSpecExamples::TestParseSpecExamples() {
 	// TODO Auto-generated constructor stub
@@ -3199,4 +3202,6 @@ compile assert(compile has(FIELD1), "FIELD1 not found");
     runTest(text, "243_compile_assert.pss");
 }
 
+}
+}
 

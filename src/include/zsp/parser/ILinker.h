@@ -1,5 +1,5 @@
 /**
- * ITypeDecl.h
+ * ILinker.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,17 +19,27 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/INamespace.h"
+#include <memory>
+#include "zsp/parser/IMarkerListener.h"
+#include "zsp/ast/ISymbolScope.h"
 
 namespace zsp {
+namespace parser {
 
-class ITypeDecl : public virtual INamespace {
+class ILinker;
+using ILinkerUP=std::unique_ptr<ILinker>;
+class ILinker {
 public:
 
-    virtual ~ITypeDecl() { }
+    virtual ~ILinker() { }
+
+    virtual ast::ISymbolScope *link(
+        IMarkerListener                         *marker_l,
+        const std::vector<ast::IGlobalScope *>  &scopes) = 0;
 
 };
 
+}
 } /* namespace zsp */
 
 

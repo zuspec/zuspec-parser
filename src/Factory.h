@@ -19,12 +19,13 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/IFactory.h"
 #include "zsp/ast/IFactory.h"
-#include "zsp/ISymbolTable.h"
-#include "zsp/ast/IFactory.h"
+#include "zsp/parser/IFactory.h"
+#include "zsp/parser/ISymbolTable.h"
 
 namespace zsp {
+namespace parser {
+
 
 
 class Factory;
@@ -70,6 +71,7 @@ private:
 
 };
 
+}
 }
 
 

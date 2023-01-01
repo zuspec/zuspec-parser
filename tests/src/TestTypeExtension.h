@@ -22,7 +22,7 @@
 #include "TestBase.h"
 
 namespace zsp {
-
+namespace parser {
 
 
 class TestTypeExtension : public TestBase {
@@ -33,6 +33,7 @@ public:
 
 };
 
+}
 }
 
 

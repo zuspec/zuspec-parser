@@ -19,9 +19,11 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/impl/NameResolverClientBase.h"
+#include "zsp/parser/impl/NameResolverClientBase.h"
 
 namespace zsp {
+namespace parser {
+
 
 class AstNameResolverClient : public virtual NameResolverClientBase {
 public:
@@ -33,6 +35,7 @@ private:
     
 };
 
+}
 }
 
 

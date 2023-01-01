@@ -19,11 +19,13 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/IMarkerListener.h"
-#include "zsp/IFactory.h"
+#include "zsp/parser/IMarkerListener.h"
+#include "zsp/parser/IFactory.h"
 #include "zsp/ast/impl/VisitorBase.h"
 
 namespace zsp {
+namespace parser {
+
 
 
 class TaskResolveImports : public ast::VisitorBase {
@@ -47,6 +49,7 @@ private:
 
 };
 
+}
 }
 
 

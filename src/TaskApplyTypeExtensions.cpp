@@ -38,6 +38,8 @@
 	fprintf(stdout, "\n");
 
 namespace zsp {
+namespace parser {
+
 
 
 TaskApplyTypeExtensions::TaskApplyTypeExtensions(
@@ -53,8 +55,7 @@ TaskApplyTypeExtensions::~TaskApplyTypeExtensions() {
 
 void TaskApplyTypeExtensions::apply(ast::ISymbolScope *root) {
     DEBUG_ENTER("apply");
-    m_symtab_it = zsp::ISymbolTableIteratorUP(
-        m_factory->mkAstSymbolTableIterator(root));
+    m_symtab_it = ISymbolTableIteratorUP(m_factory->mkAstSymbolTableIterator(root));
 
     root->accept(this);
 
@@ -260,7 +261,7 @@ void TaskApplyTypeExtensions::addChild(
         std::string msg = "Type extension of ";
         msg += name + " conflicts with an existing declaration";
 
-        zsp::IMarkerUP marker(m_factory->mkMarker(
+        IMarkerUP marker(m_factory->mkMarker(
             msg,
             MarkerSeverityE::Error,
             child->getLocation()
@@ -270,4 +271,5 @@ void TaskApplyTypeExtensions::addChild(
     DEBUG_LEAVE("addChild %s to %s", name.c_str(), target->getName().c_str());
 }
 
+}
 }

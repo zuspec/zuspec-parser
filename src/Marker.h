@@ -8,10 +8,12 @@
 #pragma once
 #include <memory>
 #include <string>
-#include "zsp/IMarker.h"
+#include "zsp/parser/IMarker.h"
 #include "zsp/ast/Location.h"
 
 namespace zsp {
+namespace parser {
+
 
 class Marker : public IMarker {
 public:
@@ -58,5 +60,6 @@ private:
 
 typedef std::unique_ptr<Marker> MarkerUP;
 
+}
 } /* namespace pls */
 

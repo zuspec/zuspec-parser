@@ -19,11 +19,13 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/IFactory.h"
-#include "zsp/ILinker.h"
+#include "zsp/parser/IFactory.h"
+#include "zsp/parser/ILinker.h"
 #include "zsp/ast/IFactory.h"
 
 namespace zsp {
+namespace parser {
+
 
 
 class AstLinker : public virtual ILinker {
@@ -41,6 +43,7 @@ private:
     ast::IFactory               *m_ast_factory;
 };
 
+}
 }
 
 

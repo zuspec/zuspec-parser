@@ -1,5 +1,5 @@
 /**
- * NameResolverClientBase.h
+ * ITypeDecl.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,24 +19,19 @@
  *     Author: 
  */
 #pragma once
-#include "zsp/INameResolverClient.h"
+#include "zsp/parser/INamespace.h"
 
 namespace zsp {
+namespace parser {
 
-
-class NameResolverClientBase : public virtual INameResolverClient {
+class ITypeDecl : public virtual INamespace {
 public:
-    NameResolverClientBase() { }
 
-    virtual ~NameResolverClientBase() { }
-
-    virtual void init(INameResolver *resolver) override { m_resolver = resolver; }
-
-protected:
-    INameResolver                  *m_resolver;
+    virtual ~ITypeDecl() { }
 
 };
 
 }
+} /* namespace zsp */
 
 

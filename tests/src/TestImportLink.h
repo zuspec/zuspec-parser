@@ -22,6 +22,7 @@
 #include "TestBase.h"
 
 namespace zsp {
+namespace parser {
 
 
 class TestImportLink : public TestBase {
@@ -32,6 +33,7 @@ public:
 
 };
 
+}
 }
 
 

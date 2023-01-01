@@ -25,6 +25,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 
 AstLinker::AstLinker(IFactory *factory) : m_factory(factory) {
@@ -51,4 +53,5 @@ ast::ISymbolScope *AstLinker::link(
     return symtree;
 }
 
+}
 }

@@ -6,6 +6,7 @@
 #include "zsp/ast/Location.h"
 
 namespace zsp {
+namespace parser {
 
 enum class MarkerSeverityE {
 	Error,
@@ -38,4 +39,5 @@ public:
 
 };
 
+}
 }

@@ -37,6 +37,8 @@
 	fprintf(stdout, "\n");
 
 namespace zsp {
+namespace parser {
+
 
 TaskCollectDeclarations::TaskCollectDeclarations(
     IMarkerListener     *listener,
@@ -161,4 +163,5 @@ void TaskCollectDeclarations::duplicateSymbolDeclError(
     fprintf(stdout, "Error: duplicate symbol\n");
 }
 
+}
 }

@@ -1,5 +1,5 @@
 /**
- * INamespace.h
+ * INameResolver.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,39 +19,35 @@
  *     Author: 
  */
 #pragma once
-#include <memory>
-#include <string>
-#include "zsp/ISymbol.h"
-#include "zsp/ISymbolRef.h"
+#include <vector>
+#include "zsp/ast/ITypeScope.h"
+#include "zsp/parser/INamespace.h"
+#include "zsp/parser/ITypeDecl.h"
 
 namespace zsp {
+namespace parser {
 
-class ITypeDecl;
 
-class INamespace;
-using INamespaceUP=std::unique_ptr<INamespace>;
-class INamespace : public virtual ISymbol {
+class INameResolver;
+using INameResolverUP=std::unique_ptr<INameResolver>;
+class INameResolver {
 public:
 
-    virtual ~INamespace() { }
+    virtual ~INameResolver() { }
 
-    /**
-     * @brief Finds a named symbol in this namespace if it exists
-     * 
-     * @param name 
-     * @return ISymbolRef* relative to this namespace
-     */
-    virtual ISymbolRef *findSymbol(const std::string &name) = 0;
+    virtual void resolve(ast::ISymbolScope *root) = 0;
 
-    /**
-     * @brief Finds a named type in this namespace
-     * 
-     */
-    virtual ITypeDecl *findTypeDecl(const std::string &name) = 0;
+    // /**
+    //  * @brief Returns the active namespace stack
+    //  * 
+    //  * @return const std::vector<INamespace *>& 
+    //  */
+    // virtual const std::vector<INamespace *> &getNamespace() = 0;
 
 
 };
 
+}
 } /* namespace zsp */
 
 

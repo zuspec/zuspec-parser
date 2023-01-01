@@ -29,6 +29,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 Factory::Factory() : m_ast_factory(0) {
 
@@ -102,4 +104,5 @@ extern "C" IFactory *zsp_parser_getFactory() {
 
 FactoryUP Factory::m_inst;
 
+}
 }

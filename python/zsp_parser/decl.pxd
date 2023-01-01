@@ -16,7 +16,7 @@ cimport zsp_ast_decl as ast
 cimport ciostream
 
 
-cdef extern from "zsp/IFactory.h" namespace "zsp":
+cdef extern from "zsp/parser/IFactory.h" namespace "zsp::parser":
     cdef cppclass IFactory:
         ast.IFactory *getAstFactory()
 
@@ -24,18 +24,18 @@ cdef extern from "zsp/IFactory.h" namespace "zsp":
 
         ILinker *mkAstLinker()
 
-cdef extern from "zsp/IAstBuilder.h" namespace "zsp":
+cdef extern from "zsp/parser/IAstBuilder.h" namespace "zsp::parser":
     cdef cppclass IAstBuilder:
 
         void build(
             ast.IGlobalScope        *scope,
             ciostream.istream       *in_s)
 
-cdef extern from "zsp/ILinker.h" namespace "zsp":
+cdef extern from "zsp/parser/ILinker.h" namespace "zsp::parser":
     cdef cppclass ILinker:
         pass
 
-cdef extern from "zsp/IMarker.h" namespace "zsp":
+cdef extern from "zsp/parser/IMarker.h" namespace "zsp::parser":
     cdef enum MarkerSeverityE:
         Error "zsp::MarkerSeverityE::Error"
         Warn "zsp::MarkerSeverityE::Warn"
@@ -54,7 +54,8 @@ cdef extern from "zsp/IMarker.h" namespace "zsp":
         const Location &loc() const;
         IMarker *clone() const
 
-cdef extern from "zsp/IMarkerListener.h" namespace "zsp":
+cdef extern from "zsp/parser/IMarkerListener.h" namespace "zsp::parser":
     cdef cppclass IMarkerListener:
         void marker(const IMarker *m)
         bool hasSeverity(MarkerSeverityE s)
+

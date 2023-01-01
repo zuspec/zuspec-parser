@@ -20,9 +20,11 @@
  */
 #pragma once
 #include <unordered_map>
-#include "zsp/ISymbolScope.h"
+#include "zsp/parser/ISymbolScope.h"
 
 namespace zsp {
+namespace parser {
+
 
 
 class SymbolScope : public virtual ISymbolScope {
@@ -83,5 +85,6 @@ private:
     std::unordered_map<std::string, ResolveResult>  m_symtab;
 };
 
+}
 }
 

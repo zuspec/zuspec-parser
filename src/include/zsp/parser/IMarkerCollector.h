@@ -1,5 +1,5 @@
 /**
- * ILinker.h
+ * IMarkerCollector.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -20,24 +20,23 @@
  */
 #pragma once
 #include <memory>
-#include "zsp/IMarkerListener.h"
-#include "zsp/ast/ISymbolScope.h"
+#include "zsp/parser/IMarkerListener.h"
 
 namespace zsp {
+namespace parser {
 
-class ILinker;
-using ILinkerUP=std::unique_ptr<ILinker>;
-class ILinker {
+class IMarkerCollector;
+using IMarkerCollectorUP=std::unique_ptr<IMarkerCollector>;
+class IMarkerCollector : public virtual IMarkerListener {
 public:
 
-    virtual ~ILinker() { }
+    virtual ~IMarkerCollector() { }
 
-    virtual ast::ISymbolScope *link(
-        IMarkerListener                         *marker_l,
-        const std::vector<ast::IGlobalScope *>  &scopes) = 0;
+	virtual const std::vector<IMarkerUP> &markers() const = 0;
 
 };
 
+}
 } /* namespace zsp */
 
 

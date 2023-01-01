@@ -23,6 +23,8 @@
 
 
 namespace zsp {
+namespace parser {
+
 
 
 AstSymbolTable::AstSymbolTable() : m_root(new AstSymbolTable::NameScope(0)) {
@@ -132,4 +134,5 @@ AstSymbolTable::NameScope *AstSymbolTable::findRootSymbol(
     }
 }
 
+}
 }

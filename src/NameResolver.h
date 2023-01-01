@@ -7,14 +7,16 @@
 
 #pragma once
 #include <vector>
-#include "zsp/IFactory.h"
-#include "zsp/INameResolver.h"
-#include "zsp/INameResolverClient.h"
+#include "zsp/parser/IFactory.h"
+#include "zsp//parser/INameResolver.h"
+#include "zsp/parser/INameResolverClient.h"
 #include "zsp/ast/impl/VisitorBase.h"
-#include "zsp/IMarkerListener.h"
-#include "zsp/ISymbolTable.h"
+#include "zsp/parser/IMarkerListener.h"
+#include "zsp/parser/ISymbolTable.h"
 
 namespace zsp {
+namespace parser {
+
 
 class NameResolver : 
     public virtual INameResolver,
@@ -56,5 +58,6 @@ private:
     std::vector<ast::IScope *>			m_scopes;
 };
 
+}
 } /* namespace zsp */
 

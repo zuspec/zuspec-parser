@@ -1,5 +1,5 @@
 /**
- * ISymbolRef.h
+ * ISymbol.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,25 +19,30 @@
  *     Author: 
  */
 #pragma once
+#include <string>
+#include "zsp/parser/SymbolKindE.h"
 
 namespace zsp {
+namespace parser {
 
-class ISymbol;
+class INamespace;
 
-class ISymbolRef {
+class ISymbol {
 public:
 
-    virtual ~ISymbolRef() { }
+    virtual ~ISymbol() { }
 
-    /**
-     * @brief Gets the declaration that this ref points to
-     * 
-     * @return ISymbol* 
-     */
-    virtual ISymbol *getTarget() const = 0;
+    virtual INamespace *getParent() const = 0;
+
+    virtual const std::string &getName() const = 0;
+
+    virtual std::string getFullName() const = 0;
+
+    virtual SymbolKindE getKind() const = 0;
 
 };
 
+}
 } /* namespace zsp */
 
 
