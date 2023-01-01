@@ -32,7 +32,7 @@ namespace zsp {
 namespace parser {
 
 
-Factory::Factory() : m_ast_factory(0) {
+Factory::Factory() : m_dmgr(0), m_ast_factory(0) {
 
 }
 
@@ -44,7 +44,10 @@ Factory::~Factory() {
 
 }
 
-void Factory::init(ast::IFactory *ast_factory) {
+void Factory::init(
+    dmgr::IDebugMgr     *dmgr,
+    ast::IFactory       *ast_factory) {
+    m_dmgr = dmgr;
     m_ast_factory = ast_factory;
 }
 
