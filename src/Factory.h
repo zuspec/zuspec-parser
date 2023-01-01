@@ -38,9 +38,15 @@ public:
 
     virtual ~Factory();
 
-    virtual void init(ast::IFactory *ast_factory) override;
+    virtual void init(
+        dmgr::IDebugMgr     *dmgr,
+        ast::IFactory       *ast_factory) override;
 
     virtual ast::IFactory *getAstFactory() override;
+
+    virtual dmgr::IDebugMgr *getDebugMgr() override {
+        return m_dmgr;
+    }
 
     virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) override;
 
@@ -67,6 +73,7 @@ public:
 
 private:
     static FactoryUP                    m_inst;
+    dmgr::IDebugMgr                     *m_dmgr;
     ast::IFactory                       *m_ast_factory;
 
 };

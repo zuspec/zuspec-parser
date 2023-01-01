@@ -20,6 +20,7 @@ include_directories(
     ${CMAKE_BINARY_DIR}/zsp_ast/src/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${DEBUG_MGR_DIR}/src/include
     )
 
 link_directories(

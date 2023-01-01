@@ -1,5 +1,6 @@
 
 #pragma once
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IAstBuilder.h"
 #include "zsp/parser/ILinker.h"
 #include "zsp/parser/IMarkerCollector.h"
@@ -21,9 +22,13 @@ public:
 
     virtual ~IFactory() { }
 
-    virtual void init(ast::IFactory *ast_factory) = 0;
+    virtual void init(
+        dmgr::IDebugMgr     *dmgr,
+        ast::IFactory       *ast_factory) = 0;
 
     virtual ast::IFactory *getAstFactory() = 0;
+
+    virtual dmgr::IDebugMgr *getDebugMgr() = 0;
 
     virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) = 0;
 

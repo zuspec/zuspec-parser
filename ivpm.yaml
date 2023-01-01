@@ -20,6 +20,8 @@ package:
       url: https://github.com/google/googletest/archive/release-1.10.0.tar.gz
     - name: pyastbuilder
       url: https://github.com/mballance/pyastbuilder.git
+    - name: debug-mgr
+      url: https://github.com/mballance/debug-mgr.git
     - name: toposort
       src: pypi
     - name: ciostream
@@ -41,6 +43,8 @@ package:
     - name: antlr4-cpp-runtime
       url: https://www.antlr.org/download/antlr4-cpp-runtime-4.8-source.zip
       # url: https://www.antlr.org/download/antlr4-cpp-runtime-4.11.1-source.zip
+    - name: debug-mgr
+      url: https://github.com/mballance/debug-mgr.git
 
 
 

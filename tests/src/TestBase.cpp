@@ -24,6 +24,7 @@
 #include "AstSymbolTable.h"
 #include "MarkerCollector.h"
 #include "AstMerger.h"
+#include "dmgr/FactoryExt.h"
 #include "zsp_ast/src/GlobalScope.h"
 #include "zsp_ast/src/Factory.h"
 #include "zsp/parser/IMarker.h"
@@ -44,9 +45,13 @@ TestBase::~TestBase() {
 
 }
 
+extern "C" ast::IFactory *ast_getFactory();
+
 void TestBase::SetUp() {
-    m_ast_factory = ast::IFactoryUP(new ast::Factory());
+    dmgr::IDebugMgr *dmgr = dmgr_getFactory()->getDebugMgr();
+    m_ast_factory = ast_getFactory();
 	m_factory = zsp_parser_getFactory();
+    m_factory->init(dmgr, m_ast_factory);
 }
 
 void TestBase::TearDown() {

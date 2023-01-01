@@ -21,6 +21,8 @@ link_directories(
 	${CMAKE_BINARY_DIR}/antlr4/lib64
 	${CMAKE_BINARY_DIR}/zuspec-parser
 	${CMAKE_BINARY_DIR}/zsp_ast/lib
+	${CMAKE_BINARY_DIR}/lib
+	${CMAKE_BINARY_DIR}/lib64
 	)
 
 set(CompilerFlags
@@ -44,7 +46,7 @@ add_executable(zsp_testmain ${TEST_SRCS})
 set_property(TARGET zsp_testmain PROPERTY
   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-add_dependencies(zsp_testmain GTEST AST libantlr4)
+add_dependencies(zsp_testmain GTEST AST libantlr4 DebugMgr)
 target_include_directories(zsp_testmain PRIVATE
 	${CMAKE_BINARY_DIR}
 	${CMAKE_BINARY_DIR}/gtest/include
@@ -52,16 +54,19 @@ target_include_directories(zsp_testmain PRIVATE
 	${CMAKE_BINARY_DIR}/zsp_ast/src/include
 	${CMAKE_CURRENT_SOURCE_DIR}/../src
 	${CMAKE_CURRENT_SOURCE_DIR}/../src/include
+    ${DEBUG_MGR_DIR}/src/include
 )
 
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Taking debug libs")
-    list(APPEND ZSP_TESTMAIN_LIBS gtestd gtest_maind zuspec-parser zsp_ast)
+    list(APPEND ZSP_TESTMAIN_LIBS gtestd gtest_maind)
 else()
     message(STATUS "Taking release libs")
-    list(APPEND ZSP_TESTMAIN_LIBS gtest gtest_main zuspec-parser zsp_ast)
+    list(APPEND ZSP_TESTMAIN_LIBS gtest gtest_main)
 endif()
+
+list(APPEND ZSP_TESTMAIN_LIBS zuspec-parser ast debug-mgr)
 
 if (WIN32)
 	if (BUILD_SHARED_LIBS)

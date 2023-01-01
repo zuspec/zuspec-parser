@@ -7,8 +7,8 @@ include(ExternalProject)
 if (NOT PACKAGES_DIR)
   set(PACKAGES_DIR ${CMAKE_SOURCE_DIR}/packages)
 
-  enable_testing()
-  add_subdirectory(tests)
+  set(ENABLE_TESTS True)
+
 endif()
 
 message("PSSParser: PACKAGES_DIR=${PACKAGES_DIR}")
@@ -58,6 +58,25 @@ foreach(CompilerFlag ${CompilerFlags})
   string(REPLACE "/MDd" "/MTd" ${CompilerFlag} "${${CompilerFlag}}")
 endforeach()
 
+set(DEBUG_MGR_DIR ${PACKAGES_DIR}/debug-mgr)
+
+ExternalProject_Add(DebugMgr
+  PREFIX debug-mgr
+  SOURCE_DIR ${DEBUG_MGR_DIR}
+  CMAKE_CACHE_ARGS
+    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION:BOOL=${CMAKE_INTERPROCEDURAL_OPTIMIZATION}
+    -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=${CMAKE_POSITION_INDEPENDENT_CODE}
+    -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
+    -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+    -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+    -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}
+    -DCMAKE_BUILD_TYPE:STRING=Release
+    -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
+    -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
+  )
+
 ExternalProject_Add(libantlr4
     PREFIX antlr4
     SOURCE_DIR "${PACKAGES_DIR}/antlr4-cpp-runtime"
@@ -82,6 +101,12 @@ ExternalProject_Add(AST
 
 
 add_subdirectory(src)
+
+
+if (ENABLE_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
 
 #if (NOT DEFINED ENV{EXT_PYTHON})
 #   set(ENV{EXT_PYTHON} ${PYTHON})

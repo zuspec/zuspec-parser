@@ -76,7 +76,7 @@ protected:
 
 
 protected:
-	ast::IFactoryUP				        m_ast_factory;
+	ast::IFactory				        *m_ast_factory;
 	parser::IFactory				    *m_factory;
 
 };
