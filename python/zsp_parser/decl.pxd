@@ -12,7 +12,7 @@ from libc.stdint cimport uint64_t
 from libc.stdint cimport int64_t
 from libcpp cimport bool
 cimport cpython.ref as cpy_ref
-cimport zsp_ast_decl as ast
+from zsp_parser cimport ast_decl as ast
 cimport ciostream
 
 

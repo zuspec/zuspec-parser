@@ -143,6 +143,7 @@ class build_ext(_build_ext):
 include_dirs=[]
 
 include_dirs.append(os.path.join(zuspecparser_dir, "src/include"))
+include_dirs.append(os.path.join(packages_dir, "debug-mgr/src/include"))
 
 build_dir = os.path.join(zuspecparser_dir, "build")
 
