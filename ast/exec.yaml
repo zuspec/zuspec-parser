@@ -3,6 +3,16 @@
 #*
 #* AST structures for exec constructs
 #****************************************************************************
+enums:
+  - AssignOp:
+      - AssignOp_Eq
+      - AssignOp_PlusEq
+      - AssignOp_MinusEq
+      - AssignOp_ShlEq
+      - AssignOp_ShrEq
+      - AssignOp_OrEq
+      - AssignOp_AndEq
+
 classes:
   - ExecStmt:
     - data: []
@@ -10,10 +20,76 @@ classes:
     - super: ExecStmt
     - data:
       - children: list<UP<ExecStmt>>
+  - ProceduralStmtSequenceBlock:
+    - super: ExecScope
+    - data: []
+  - ProceduralStmtAssignment:
+    - super: ExecStmt
+    - data:
+      - lhs: UP<ExprRefPath>
+      - op: AssignOp
+      - rhs: UP<Expr>
+  # TODO:
+  - ProceduralStmtFunctionCall:
+    - super: ExecStmt
+    - data: []
+  - ProceduralStmtReturn:
+    - super: ExecStmt
+    - data:
+        - expr: UP<Expr>
+  - ProceduralStmtRepeat:
+    - super: ExecStmt
+    - data:
+        - it_id: UP<ExprId>
+        - count: UP<Expr>
+        - body: UP<ExecStmt>
+  - ProceduralStmtRepeatWhile:
+    - super: ExecStmt
+    - data:
+        - expr: UP<Expr>
+        - body: UP<ExecStmt>
+  - ProceduralStmtWhile:
+    - super: ExecStmt
+    - data:
+        - expr: UP<Expr>
+        - body: UP<ExecStmt>
+  - ProceduralStmtForeach:
+    - super: ExecStmt
+    - data:
+        - path: UP<ExprRefPath>
+        - it_id: UP<ExprId>
+        - idx_id: UP<ExprId>
+        - body: UP<ExecStmt>
+  - ProceduralStmtIfElse:
+    - super: ExecStmt
+    - data:
+        - cond: UP<Expr>
+        - true_s: UP<ExecStmt>
+        - false_s: UP<ExecStmt>
+  - ProceduralStmtMatch:
+    - super: ExecStmt
+    - data:
+        - expr: UP<Expr>
+        - choices: 
+            type: list<UP<ProceduralStmtMatchChoice>>
+            is_ctor: false
+  - ProceduralStmtMatchChoice:
+    - super: ExecStmt
+    - data:
+        - is_default: bool
+        - cond: UP<ExprOpenRangeList>
+        - body: UP<ExecStmt>
+  - ProceduralStmtBreak:
+    - super: ExecStmt
+    - data: []
+  - ProceduralStmtContinue:
+    - super: ExecStmt
+    - data: []
   - ProceduralStmtDataDeclaration:
     - super: ExecStmt
     - data:
       - datatype: UP<DataType>
       - name: UP<ExprId>
+
 
 

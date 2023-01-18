@@ -1,6 +1,9 @@
 
 classes:
 
+- ActivityDecl:
+    super: Scope
+
 - ActivityStmt:
     super: ScopeChild
 

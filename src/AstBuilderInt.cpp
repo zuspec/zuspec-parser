@@ -296,6 +296,25 @@ antlrcpp::Any AstBuilderInt::visitAbstract_action_declaration(PSSParser::Abstrac
 	return 0;
 }
 
+antlrcpp::Any AstBuilderInt::visitActivity_declaration(PSSParser::Activity_declarationContext *ctx) {
+    DEBUG_ENTER("visitActivity_declaration");
+    ast::IActivityDecl *activity = m_factory->mkActivityDecl();
+
+	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
+	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+        addActivityStmt(activity, *it);
+	}
+    
+	m_activity_stmt = activity;
+
+    addChild(activity, ctx->start);
+    
+    DEBUG_LEAVE("visitActivity_declaration");
+    return 0;
+}
+
 antlrcpp::Any AstBuilderInt::visitFlow_ref_field_declaration(PSSParser::Flow_ref_field_declarationContext *ctx) {
 	DEBUG_ENTER("visitFlow_ref_field_declaration");
 
@@ -385,6 +404,7 @@ static std::map<std::string,ast::StructKind> StructKind_m = {
 	{"stream", ast::StructKind::Stream}
 };
 
+// B.3 Struct
 antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarationContext *ctx) {
 	DEBUG_ENTER("visitStruct_declaration");
 	ast::IExprId *id = mkId(ctx->identifier());
@@ -414,6 +434,165 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 
 	DEBUG_LEAVE("visitStruct_declaration");
 	return 0;
+}
+
+// B.4 Exec blocks
+antlrcpp::Any AstBuilderInt::visitExec_block(PSSParser::Exec_blockContext *ctx) {
+    DEBUG_ENTER("visitExec_block");
+
+    DEBUG_LEAVE("visitExec_block");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitTarget_code_exec_block(PSSParser::Target_code_exec_blockContext *ctx) {
+    DEBUG_ENTER("visitTarget_code_exec_block");
+    DEBUG("TODO: visitTarget_code_exec_block");
+    DEBUG_LEAVE("visitTarget_code_exec_block");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitTarget_file_exec_block(PSSParser::Target_file_exec_blockContext *ctx) {
+    DEBUG_ENTER("visitTarget_file_exec_block");
+    DEBUG("TODO: visitTarget_file_exec_block");
+    DEBUG_LEAVE("visitTarget_file_exec_block");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitExec_super_stmt(PSSParser::Exec_super_stmtContext *ctx) {
+    DEBUG_ENTER("visitExec_super_stmt");
+    DEBUG("TODO: visitExec_super_stmt");
+    DEBUG_LEAVE("visitExec_super_stmt");
+    return 0;
+}
+
+// B.5 Functions
+antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_functionContext *ctx) {
+    DEBUG_ENTER("visitProcedural_function");
+    DEBUG("TODO: visitProcedural_function");
+    DEBUG_LEAVE("visitProcedural_function");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitFunction_decl(PSSParser::Function_declContext *ctx) {
+    DEBUG_ENTER("visitFunction_decl");
+    DEBUG("TODO: visitFunction_decl");
+    DEBUG_LEAVE("visitFunction_decl");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitFunction_prototype(PSSParser::Function_prototypeContext *ctx) {
+    DEBUG_ENTER("visitFunction_prototype");
+    DEBUG("TODO: visitFunction_prototype");
+    DEBUG_LEAVE("visitFunction_prototype");
+    return 0;
+}
+
+// B.7 Procedural Statements
+antlrcpp::Any AstBuilderInt::visitProcedural_sequence_block_stmt(PSSParser::Procedural_sequence_block_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_sequence_block_stmt");
+    ast::IProceduralStmtSequenceBlock *block = m_factory->mkProceduralStmtSequenceBlock();
+    m_exec_scope_s.push_back(block);
+
+    std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
+    for (std::vector<PSSParser::Procedural_stmtContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        addExecStmt(*it);
+    }
+
+    m_exec_stmt = block;
+    DEBUG_LEAVE("visitProcedural_sequence_block_stmt");
+    return 0;
+}
+
+static std::map<std::string, ast::AssignOp> assign_op_m = {
+    { "=", ast::AssignOp::AssignOp_Eq },
+    { "+=", ast::AssignOp::AssignOp_PlusEq },
+    { "-=", ast::AssignOp::AssignOp_MinusEq },
+    { "<<=", ast::AssignOp::AssignOp_ShlEq },
+    { ">>=", ast::AssignOp::AssignOp_ShrEq },
+    { "|=", ast::AssignOp::AssignOp_OrEq },
+    { "&=", ast::AssignOp::AssignOp_AndEq }
+};
+
+antlrcpp::Any AstBuilderInt::visitProcedural_assignment_stmt(PSSParser::Procedural_assignment_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_assignment_stmt");
+    ast::IExprRefPath *lhs = 0; // TODO:
+    ast::AssignOp op = assign_op_m.find(ctx->assign_op()->toString())->second;
+    ast::IExpr *rhs = mkExpr(ctx->expression());
+
+    ast::IProceduralStmtAssignment *stmt = m_factory->mkProceduralStmtAssignment(
+        lhs,
+        op,
+        rhs);
+
+    m_exec_stmt = stmt;
+
+    DEBUG_LEAVE("visitProcedural_assignment_stmt");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::Procedural_void_function_call_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_void_function_call_stmt");
+
+    DEBUG_LEAVE("visitProcedural_void_function_call_stmt");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitProcedural_return_stmt(PSSParser::Procedural_return_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_return_stmt");
+
+    DEBUG_LEAVE("visitProcedural_return_stmt");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_repeat_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_repeat_stmt");
+
+    DEBUG_LEAVE("visitProcedural_repeat_stmt");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitProcedural_foreach_stmt(PSSParser::Procedural_foreach_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_foreach_stmt");
+
+    DEBUG_LEAVE("visitProcedural_foreach_stmt");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitProcedural_if_else_stmt(PSSParser::Procedural_if_else_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_if_else_stmt");
+
+    DEBUG_LEAVE("visitProcedural_if_else_stmt");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitProcedural_match_stmt(PSSParser::Procedural_match_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_match_stmt");
+
+    DEBUG_LEAVE("visitProcedural_match_stmt");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitProcedural_break_stmt(PSSParser::Procedural_break_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_break_stmt");
+
+    DEBUG_LEAVE("visitProcedural_break_stmt");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitProcedural_continue_stmt(PSSParser::Procedural_continue_stmtContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_continue_stmt");
+
+    DEBUG_LEAVE("visitProcedural_continue_stmt");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedural_data_declarationContext *ctx) { 
+    DEBUG_ENTER("visitProcedural_data_declaration");
+
+    DEBUG_LEAVE("visitProcedural_data_declaration");
+    return 0;
 }
 
 // B.8 Component declarations
@@ -514,7 +693,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_sequence_block_stmt(PSSParser::Activi
 	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-		seq->getChildren().push_back(ast::IScopeChildUP(mkActivityStmt(*it)));
+        addActivityStmt(seq, *it);
 	}
 
 	m_activity_stmt = seq;
@@ -543,7 +722,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_parallel_stmt(PSSParser::Activity_par
 	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-		par->getChildren().push_back(ast::IScopeChildUP(mkActivityStmt(*it)));
+        addActivityStmt(par, *it);
 	}
 
 	m_activity_stmt = par;
@@ -571,7 +750,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_schedule_stmt(PSSParser::Activity_sch
 	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-		sched->getChildren().push_back(ast::IScopeChildUP(mkActivityStmt(*it)));
+        addActivityStmt(sched, *it);
 	}
 
 	m_activity_stmt = sched;
@@ -587,10 +766,15 @@ antlrcpp::Any AstBuilderInt::visitActivity_repeat_stmt(PSSParser::Activity_repea
 
 	if (ctx->is_repeat) {
 		ast::IExprId *label = m_labeled_activity_id;
+        ast::IScopeChild *body = mkActivityStmt(ctx->activity_stmt());
+        if (!body) {
+            body = m_factory->mkActivitySequence();
+        }
+
 		ast::IActivityRepeatCount *stmt = m_factory->mkActivityRepeatCount(
 			(ctx->loop_var)?mkId(ctx->loop_var):0,
 			mkExpr(ctx->expression()),
-			mkActivityStmt(ctx->activity_stmt()));
+            body);
 
 	} else {
 
@@ -1418,6 +1602,15 @@ ast::IScopeChild *AstBuilderInt::mkActivityStmt(PSSParser::Activity_stmtContext 
 	return m_activity_stmt;
 }
 
+void AstBuilderInt::addActivityStmt(
+        ast::IScope                         *scope,
+        PSSParser::Activity_stmtContext     *ctx) {
+    ast::IScopeChild *a_stmt = mkActivityStmt(ctx);
+    if (a_stmt) {
+        scope->getChildren().push_back(ast::IScopeChildUP(a_stmt));
+    }
+}
+
 ast::IConstraintStmt *AstBuilderInt::mkConstraintSet(PSSParser::Constraint_setContext *ctx) {
 	m_constraint = 0;
 	ctx->accept(this);
@@ -1480,6 +1673,21 @@ ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::D
 	DEBUG_LEAVE("mkDomainOpenRangeList");
 	return ret;
 }
+
+ast::IExecStmt *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *ctx) {
+    m_exec_stmt = 0;
+    ctx->accept(this);
+    return m_exec_stmt;
+}
+
+void AstBuilderInt::addExecStmt(PSSParser::Procedural_stmtContext *ctx) {
+    ast::IExecStmt *stmt = mkExecStmt(ctx);
+
+    if (stmt) {
+        m_exec_scope_s.back()->getChildren().push_back(ast::IExecStmtUP(stmt));
+    }
+
+};
 
 IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 	IExprId *id;

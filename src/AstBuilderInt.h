@@ -52,6 +52,8 @@ public:
 
 	virtual antlrcpp::Any visitAbstract_action_declaration(PSSParser::Abstract_action_declarationContext *ctx);
 
+    virtual antlrcpp::Any visitActivity_declaration(PSSParser::Activity_declarationContext *ctx) override;
+
 	virtual antlrcpp::Any visitFlow_ref_field_declaration(PSSParser::Flow_ref_field_declarationContext *ctx) override;
 	
 	virtual antlrcpp::Any visitResource_ref_field_declaration(PSSParser::Resource_ref_field_declarationContext *ctx) override;
@@ -60,6 +62,45 @@ public:
 
 	// B.3 Struct declarations
 	virtual antlrcpp::Any visitStruct_declaration(PSSParser::Struct_declarationContext *ctx) override;
+
+	// B.4 Exec blocks
+    virtual antlrcpp::Any visitExec_block(PSSParser::Exec_blockContext *ctx) override;
+
+    virtual antlrcpp::Any visitTarget_code_exec_block(PSSParser::Target_code_exec_blockContext *ctx) override;
+
+    virtual antlrcpp::Any visitTarget_file_exec_block(PSSParser::Target_file_exec_blockContext *ctx) override;
+
+    virtual antlrcpp::Any visitExec_super_stmt(PSSParser::Exec_super_stmtContext *ctx) override;
+    
+	// B.5 Functions
+    virtual antlrcpp::Any visitProcedural_function(PSSParser::Procedural_functionContext *ctx) override;
+
+    virtual antlrcpp::Any visitFunction_decl(PSSParser::Function_declContext *ctx) override;
+
+    virtual antlrcpp::Any visitFunction_prototype(PSSParser::Function_prototypeContext *ctx) override;
+
+	// B.7 Procedural Statements
+    virtual antlrcpp::Any visitProcedural_sequence_block_stmt(PSSParser::Procedural_sequence_block_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_assignment_stmt(PSSParser::Procedural_assignment_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_void_function_call_stmt(PSSParser::Procedural_void_function_call_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_return_stmt(PSSParser::Procedural_return_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_repeat_stmt(PSSParser::Procedural_repeat_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_foreach_stmt(PSSParser::Procedural_foreach_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_if_else_stmt(PSSParser::Procedural_if_else_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_match_stmt(PSSParser::Procedural_match_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_break_stmt(PSSParser::Procedural_break_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_continue_stmt(PSSParser::Procedural_continue_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitProcedural_data_declaration(PSSParser::Procedural_data_declarationContext *ctx) override;
 
 	// B.8 Component declarations
 
@@ -179,6 +220,10 @@ private:
 
 	ast::IActivityJoinSpec *mkActivityJoinSpec(PSSParser::Activity_join_specContext *ctx);
 
+    void addActivityStmt(
+        ast::IScope                         *scope,
+        PSSParser::Activity_stmtContext     *ctx);
+
 	ast::IScopeChild *mkActivityStmt(PSSParser::Activity_stmtContext *ctx);
 
 	ast::IConstraintStmt *mkConstraintSet(PSSParser::Constraint_setContext *ctx);
@@ -192,6 +237,10 @@ private:
 	}
 
 	ast::IExprDomainOpenRangeList *mkDomainOpenRangeList(PSSParser::Domain_open_range_listContext *ctx);
+
+    ast::IExecStmt *mkExecStmt(PSSParser::Procedural_stmtContext *ctx);
+
+    void addExecStmt(PSSParser::Procedural_stmtContext *ctx);
 
 	ast::IExprId *mkId(PSSParser::IdentifierContext *ctx);
 
@@ -219,6 +268,8 @@ private:
 	ast::IScopeChild							*m_activity_stmt;
 	ast::IExprId								*m_labeled_activity_id;
 	ast::IConstraintStmt						*m_constraint;
+    ast::IExecStmt                              *m_exec_stmt;
+    std::vector<ast::IExecScope *>              m_exec_scope_s;
 	std::vector<ast::IConstraintScope *>		m_constraint_s;
     std::unique_ptr<CommonTokenStream>			m_tokens;
 	std::vector<ast::IExprIdUP>					*m_type_id;
