@@ -18,22 +18,8 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "TaskBuildSymbolTree.h"
-
-#define DEBUG_ENTER(fmt, ...) \
-	fprintf(stdout, "--> TaskBuildSymbolTree::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG(fmt, ...) \
-	fprintf(stdout, "TaskBuildSymbolTree: "); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG_LEAVE(fmt, ...) \
-	fprintf(stdout, "<-- TaskBuildSymbolTree::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
 
 namespace zsp {
 namespace parser {
@@ -41,9 +27,11 @@ namespace parser {
 
 
 TaskBuildSymbolTree::TaskBuildSymbolTree(
+    dmgr::IDebugMgr             *dmgr,
     ast::IFactory               *factory,
     IMarkerListener             *marker_l) :
     m_factory(factory), m_marker_l(marker_l) {
+    DEBUG_INIT("TaskBuildSymbolTree", dmgr);
 
 }
 
@@ -254,6 +242,8 @@ void TaskBuildSymbolTree::reportDuplicateSymbol(
         ast::IScopeChild        *dup) {
     fprintf(stdout, "Error: duplicate declaration");
 }
+
+dmgr::IDebug *TaskBuildSymbolTree::m_dbg = 0;
 
 }
 }

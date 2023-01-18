@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/ISymbolTable.h"
 
 namespace zsp {
@@ -44,7 +45,7 @@ public:
     };
 
 public:
-    AstSymbolTable();
+    AstSymbolTable(dmgr::IDebugMgr *dmgr);
 
     virtual ~AstSymbolTable();
 
@@ -94,6 +95,8 @@ public:
 private:
 
 private:
+    static dmgr::IDebug             *m_dbg;
+    dmgr::IDebugMgr                 *m_dmgr;
     NameScopeUP                     m_root;
     std::vector<NameScope *>        m_scope_s;
 

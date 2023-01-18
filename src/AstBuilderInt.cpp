@@ -6,6 +6,7 @@
  */
 
 #include <vector>
+#include "dmgr/impl/DebugMacros.h"
 #include "AstBuilderInt.h"
 #include "PSSLexer.h"
 #include "zsp/ast/IFactory.h"
@@ -18,22 +19,6 @@
 #include "ScopeUtil.h"
 #include "Marker.h"
 
-#define DEBUG_ENTER(fmt, ...) \
-	fprintf(stdout, "--> AstBuilderInt::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n")
-
-#define DEBUG(fmt, ...) \
-	fprintf(stdout, "AstBuilderInt: "); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n")
-
-#define DEBUG_LEAVE(fmt, ...) \
-	fprintf(stdout, "<-- AstBuilderInt::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n")
-
-
 namespace zsp {
 namespace parser {
 
@@ -41,8 +26,10 @@ namespace parser {
 using namespace ast;
 
 AstBuilderInt::AstBuilderInt(
+    dmgr::IDebugMgr     *dmgr,
 	ast::IFactory		*factory,
 	IMarkerListener 	*marker_l) : m_factory(factory), m_marker_l(marker_l) {
+    DEBUG_INIT("AstBuilderInt", dmgr);
 	m_collectDocStrings = false;
 	m_field_depth = 0;
 	m_labeled_activity_id = 0;
@@ -534,13 +521,17 @@ antlrcpp::Any AstBuilderInt::visitProcedural_assignment_stmt(PSSParser::Procedur
 
 antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::Procedural_void_function_call_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_void_function_call_stmt");
-
+    DEBUG("TODO: visitProcedural_void_function_call_stmt");
     DEBUG_LEAVE("visitProcedural_void_function_call_stmt");
     return 0;
 }
 
 antlrcpp::Any AstBuilderInt::visitProcedural_return_stmt(PSSParser::Procedural_return_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_return_stmt");
+    ast::IExpr *expr = ctx->expression()?mkExpr(ctx->expression()):0;
+    ast::IProceduralStmtReturn *stmt = m_factory->mkProceduralStmtReturn(expr);
+
+    m_exec_stmt = stmt;
 
     DEBUG_LEAVE("visitProcedural_return_stmt");
     return 0;
@@ -563,26 +554,40 @@ antlrcpp::Any AstBuilderInt::visitProcedural_foreach_stmt(PSSParser::Procedural_
 antlrcpp::Any AstBuilderInt::visitProcedural_if_else_stmt(PSSParser::Procedural_if_else_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_if_else_stmt");
 
+    ast::IExpr *cond = mkExpr(ctx->expression());
+    ast::IExecStmt *true_s = mkExecStmt(ctx->procedural_stmt(0));
+    ast::IExecStmt *false_s = ctx->procedural_stmt(1)?mkExecStmt(ctx->procedural_stmt(1)):0;
+    ast::IProceduralStmtIfElse *stmt = m_factory->mkProceduralStmtIfElse(
+        cond,
+        true_s,
+        false_s);
+
+    m_exec_stmt = stmt;
     DEBUG_LEAVE("visitProcedural_if_else_stmt");
     return 0;
 }
 
 antlrcpp::Any AstBuilderInt::visitProcedural_match_stmt(PSSParser::Procedural_match_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_match_stmt");
-
+    DEBUG("TODO: visitProcedural_match_stmt");
     DEBUG_LEAVE("visitProcedural_match_stmt");
     return 0;
 }
 
 antlrcpp::Any AstBuilderInt::visitProcedural_break_stmt(PSSParser::Procedural_break_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_break_stmt");
+    ast::IProceduralStmtBreak *stmt = m_factory->mkProceduralStmtBreak();
 
+    m_exec_stmt = stmt;
     DEBUG_LEAVE("visitProcedural_break_stmt");
     return 0;
 }
 
 antlrcpp::Any AstBuilderInt::visitProcedural_continue_stmt(PSSParser::Procedural_continue_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_continue_stmt");
+    ast::IProceduralStmtContinue *stmt = m_factory->mkProceduralStmtContinue();
+
+    m_exec_stmt = stmt;
 
     DEBUG_LEAVE("visitProcedural_continue_stmt");
     return 0;
@@ -590,6 +595,26 @@ antlrcpp::Any AstBuilderInt::visitProcedural_continue_stmt(PSSParser::Procedural
 
 antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedural_data_declarationContext *ctx) { 
     DEBUG_ENTER("visitProcedural_data_declaration");
+
+    std::vector<PSSParser::Procedural_data_instantiationContext *> items = ctx->procedural_data_instantiation();
+    for (std::vector<PSSParser::Procedural_data_instantiationContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        ast::IDataType *type = mkDataType(ctx->data_type());
+        ast::IExprId *name = mkId((*it)->identifier());
+        ast::IExpr *array_dim = ((*it)->array_dim())?mkExpr(
+            (*it)->array_dim()->constant_expression()->expression()):0;
+        ast::IExpr *init = ((*it)->expression())?mkExpr((*it)->expression()):0;
+        ast::IProceduralStmtDataDeclaration *decl = m_factory->mkProceduralStmtDataDeclaration(
+            name,
+            type,
+            array_dim,
+            init);
+        m_exec_scope_s.back()->getChildren().push_back(ast::IExecStmtUP(decl));
+    }
+
+    // We've already added to the super scope
+    m_exec_stmt = 0;
 
     DEBUG_LEAVE("visitProcedural_data_declaration");
     return 0;
@@ -1760,6 +1785,8 @@ ast::IExpr *AstBuilderInt::mkExpr(
 	ctx->accept(this);
 	return m_expr;
 }
+
+dmgr::IDebug *AstBuilderInt::m_dbg = 0;
 
 }
 }

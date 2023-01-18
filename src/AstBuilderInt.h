@@ -8,6 +8,7 @@
 #pragma once
 #include <memory>
 #include <istream>
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IMarkerListener.h"
 #include "PSSParserBaseVisitor.h"
 #include "BaseErrorListener.h"
@@ -28,6 +29,7 @@ class AstBuilderInt :
 		public BaseErrorListener {
 public:
 	AstBuilderInt(
+        dmgr::IDebugMgr         *dmgr,
 		ast::IFactory			*factory,
 		IMarkerListener 		*marker_l);
 
@@ -259,6 +261,7 @@ private:
 
 
 private:
+    static dmgr::IDebug                         *m_dbg;
 	bool										m_collectDocStrings;
     IMarkerListener								*m_marker_l;
 	ast::IFactory								*m_factory;

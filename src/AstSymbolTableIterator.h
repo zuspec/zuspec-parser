@@ -20,6 +20,7 @@
  */
 #pragma once
 #include <vector>
+#include "dmgr/IDebugMgr.h"
 #include "zsp/ast/IFactory.h"
 #include "zsp/ast/ISymbolScope.h"
 #include "zsp/parser/ISymbolTableIterator.h"
@@ -33,6 +34,7 @@ namespace parser {
 class AstSymbolTableIterator : public virtual ISymbolTableIterator {
 public:
     AstSymbolTableIterator(
+        dmgr::IDebugMgr     *dmgr,
         ast::IFactory       *factory,
         ast::ISymbolScope   *root);
 
@@ -61,6 +63,7 @@ public:
     virtual ISymbolTableIterator *clone() const override;
 
 private:
+    static dmgr::IDebug                     *m_dbg;
     ast::IFactory                           *m_factory;
     std::vector<int32_t>                    m_path;
     std::vector<ast::ISymbolScope *>        m_scope_s;

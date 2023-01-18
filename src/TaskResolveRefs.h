@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/ast/ISymbolScope.h"
@@ -32,6 +33,7 @@ namespace parser {
 class TaskResolveRefs : public ast::VisitorBase {
 public:
     TaskResolveRefs(
+        dmgr::IDebugMgr     *dmgr,
         IFactory            *factory,
         IMarkerListener     *marker_l);
 
@@ -52,6 +54,8 @@ public:
     virtual void visitStruct(ast::IStruct *i) override;
 
 private:
+    static dmgr::IDebug     *m_dbg;
+    dmgr::IDebugMgr         *m_dmgr;
     IFactory                *m_factory;
     IMarkerListener         *m_marker_l;
     ISymbolTableIteratorUP  m_symtab_it;

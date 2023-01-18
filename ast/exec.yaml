@@ -88,8 +88,10 @@ classes:
   - ProceduralStmtDataDeclaration:
     - super: ExecStmt
     - data:
-      - datatype: UP<DataType>
       - name: UP<ExprId>
+      - datatype: UP<DataType>
+      - array_dim: UP<Expr>
+      - init: UP<Expr>
 
 
 

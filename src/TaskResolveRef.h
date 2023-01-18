@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/parser/ISymbolTableIterator.h"
@@ -47,6 +48,7 @@ private:
         const std::string               &sym);
 
 private:
+    static dmgr::IDebug                 *m_dbg;
     IFactory                            *m_factory;
     IMarkerListener                     *m_marker_l;    
 

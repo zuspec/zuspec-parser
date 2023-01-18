@@ -18,23 +18,8 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "AstSymbolTableIterator.h"
-
-#define DEBUG_ENTER(fmt, ...) \
-	fprintf(stdout, "--> AstSymbolTableIterator::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG(fmt, ...) \
-	fprintf(stdout, "AstSymbolTableIterator: "); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG_LEAVE(fmt, ...) \
-	fprintf(stdout, "<-- AstSymbolTableIterator::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
 
 namespace zsp {
 namespace parser {
@@ -42,9 +27,11 @@ namespace parser {
 
 
 AstSymbolTableIterator::AstSymbolTableIterator(
+    dmgr::IDebugMgr         *dmgr,
     ast::IFactory           *factory,
     ast::ISymbolScope       *root) : m_factory(factory) {
     m_scope_s.push_back(root);
+    DEBUG_INIT("AstSymbolTableIterator", dmgr);
 }
 
 AstSymbolTableIterator::AstSymbolTableIterator(
@@ -174,6 +161,8 @@ bool AstSymbolTableIterator::hasScopes() {
 ISymbolTableIterator *AstSymbolTableIterator::clone() const {
     return new AstSymbolTableIterator(*this);
 }
+
+dmgr::IDebug *AstSymbolTableIterator::m_dbg = 0;
 
 }
 }

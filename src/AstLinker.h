@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/parser/ILinker.h"
 #include "zsp/ast/IFactory.h"
@@ -30,7 +31,9 @@ namespace parser {
 
 class AstLinker : public virtual ILinker {
 public:
-    AstLinker(IFactory *factory);
+    AstLinker(
+        dmgr::IDebugMgr     *dmgr,
+        IFactory            *factory);
 
     virtual ~AstLinker();
 
@@ -39,6 +42,8 @@ public:
         const std::vector<ast::IGlobalScope *>  &scopes) override;
 
 private:
+    static dmgr::IDebug         *m_dbg;
+    dmgr::IDebugMgr             *m_dmgr;
     IFactory                    *m_factory;
     ast::IFactory               *m_ast_factory;
 };

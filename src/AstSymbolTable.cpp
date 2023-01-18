@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "AstSymbolTable.h"
 #include "AstSymbolTableIterator.h"
 
@@ -27,9 +28,10 @@ namespace parser {
 
 
 
-AstSymbolTable::AstSymbolTable() : m_root(new AstSymbolTable::NameScope(0)) {
+AstSymbolTable::AstSymbolTable(dmgr::IDebugMgr *dmgr) : 
+        m_dmgr(dmgr), m_root(new AstSymbolTable::NameScope(0)) {
+    DEBUG_INIT("AstSymbolTable", dmgr);
     m_scope_s.push_back(m_root.get());
-
 }
 
 AstSymbolTable::~AstSymbolTable() {
@@ -133,6 +135,8 @@ AstSymbolTable::NameScope *AstSymbolTable::findRootSymbol(
         return 0;
     }
 }
+
+dmgr::IDebug *AstSymbolTable::m_dbg = 0;
 
 }
 }

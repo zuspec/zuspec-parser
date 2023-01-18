@@ -18,23 +18,9 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "TaskResolveRef.h"
 #include "Marker.h"
-
-#define DEBUG_ENTER(fmt, ...) \
-	fprintf(stdout, "--> TaskResolveRef::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG(fmt, ...) \
-	fprintf(stdout, "TaskResolveRef: "); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG_LEAVE(fmt, ...) \
-	fprintf(stdout, "<-- TaskResolveRef::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
 
 namespace zsp {
 namespace parser {
@@ -45,6 +31,7 @@ TaskResolveRef::TaskResolveRef(
     IFactory                        *factory,
     IMarkerListener                 *marker_l) 
         : m_factory(factory), m_marker_l(marker_l) {
+    DEBUG_INIT("TaskResolveRef", factory->getDebugMgr());
 
 }
 
@@ -245,6 +232,8 @@ ast::ISymbolRefPath *TaskResolveRef::searchImport(
 	DEBUG_LEAVE("searchImport %s", sym.c_str());
 	return ret;
 }
+
+dmgr::IDebug *TaskResolveRef::m_dbg = 0;
 
 }
 }

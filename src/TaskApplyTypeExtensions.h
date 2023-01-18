@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/parser/ISymbolTableIterator.h"
 #include "zsp/parser/IFactory.h"
@@ -28,11 +29,10 @@ namespace zsp {
 namespace parser {
 
 
-
-
 class TaskApplyTypeExtensions : public ast::VisitorBase {
 public:
     TaskApplyTypeExtensions(
+        dmgr::IDebugMgr     *dmgr,
         IFactory            *factory,
         IMarkerListener     *marker_l);
 
@@ -70,6 +70,7 @@ protected:
 
 
 private:
+    static dmgr::IDebug                     *m_dbg;
     IFactory                                *m_factory;
     IMarkerListener                         *m_marker_l;
     ISymbolTableIteratorUP                  m_symtab_it;

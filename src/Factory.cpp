@@ -56,16 +56,16 @@ ast::IFactory *Factory::getAstFactory() {
 }
 
 IAstBuilder *Factory::mkAstBuilder(IMarkerListener *marker_l) {
-    return new AstBuilder(m_ast_factory, marker_l);
+    return new AstBuilder(m_dmgr, m_ast_factory, marker_l);
 }
 
 ILinker *Factory::mkAstLinker() {
-    return new AstLinker(this);
+    return new AstLinker(m_dmgr, this);
 }
 
 ISymbolTableIterator *Factory::mkAstSymbolTableIterator(
         ast::ISymbolScope       *root) {
-    return new AstSymbolTableIterator(m_ast_factory, root);
+    return new AstSymbolTableIterator(m_dmgr, m_ast_factory, root);
 }
 
 IMarker *Factory::mkMarker(
@@ -86,7 +86,7 @@ INameResolver *Factory::mkNameResolver(
 }
 
 ISymbolTable *Factory::mkSymbolTable() {
-    return new AstSymbolTable();
+    return new AstSymbolTable(m_dmgr);
 //    return 0;
 }
 

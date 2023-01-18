@@ -18,23 +18,9 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "TaskResolveRef.h"
 #include "TaskResolveRefs.h"
-
-#define DEBUG_ENTER(fmt, ...) \
-	fprintf(stdout, "--> TaskResolveRefs::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG(fmt, ...) \
-	fprintf(stdout, "TaskResolveRefs: "); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG_LEAVE(fmt, ...) \
-	fprintf(stdout, "<-- TaskResolveRefs::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
 
 namespace zsp {
 namespace parser {
@@ -42,9 +28,11 @@ namespace parser {
 
 
 TaskResolveRefs::TaskResolveRefs(
+    dmgr::IDebugMgr     *dmgr,
     IFactory            *factory,
     IMarkerListener     *marker_l) : m_factory(factory), m_marker_l(marker_l) {
-
+    m_dmgr = dmgr;
+    DEBUG_INIT("TaskResolveRefs", dmgr);
 }
 
 TaskResolveRefs::~TaskResolveRefs() {
@@ -151,6 +139,8 @@ void TaskResolveRefs::visitStruct(ast::IStruct *i) {
     VisitorBase::visitStruct(i);
     DEBUG_LEAVE("visitStruct");
 }
+
+dmgr::IDebug *TaskResolveRefs::m_dbg = 0;
 
 }
 }

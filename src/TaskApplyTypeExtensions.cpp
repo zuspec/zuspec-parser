@@ -18,24 +18,10 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "TaskApplyTypeExtensions.h"
 #include "TaskResolveImports.h"
 #include "TaskResolveRef.h"
-
-#define DEBUG_ENTER(fmt, ...) \
-	fprintf(stdout, "--> TaskApplyTypeExtensions::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG(fmt, ...) \
-	fprintf(stdout, "TaskApplyTypeExtensions: "); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG_LEAVE(fmt, ...) \
-	fprintf(stdout, "<-- TaskApplyTypeExtensions::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
 
 namespace zsp {
 namespace parser {
@@ -43,9 +29,11 @@ namespace parser {
 
 
 TaskApplyTypeExtensions::TaskApplyTypeExtensions(
+    dmgr::IDebugMgr         *dmgr,
     IFactory                *factory,
     IMarkerListener         *marker_l) : 
         m_factory(factory), m_marker_l(marker_l) {
+    DEBUG_INIT("TaskApplyTypeExtensions", dmgr);
     m_target_s = 0;
 }
 
@@ -270,6 +258,8 @@ void TaskApplyTypeExtensions::addChild(
     }
     DEBUG_LEAVE("addChild %s to %s", name.c_str(), target->getName().c_str());
 }
+
+dmgr::IDebug *TaskApplyTypeExtensions::m_dbg = 0;
 
 }
 }

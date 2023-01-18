@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/ast/IFactory.h"
 #include "zsp/ast/impl/VisitorBase.h"
@@ -32,6 +33,7 @@ namespace parser {
 class TaskBuildSymbolTree : public virtual ast::VisitorBase {
 public:
     TaskBuildSymbolTree(
+        dmgr::IDebugMgr         *dmgr,
         ast::IFactory           *factory,
         IMarkerListener         *marker_l
     );
@@ -65,6 +67,7 @@ protected:
         ast::IScopeChild        *dup);
 
 private:
+    static dmgr::IDebug                 *m_dbg;
     ast::IFactory                       *m_factory;
     IMarkerListener                     *m_marker_l;
     std::vector<ast::ISymbolScope *>     m_scope_s;

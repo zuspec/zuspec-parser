@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "AstLinker.h"
 #include "TaskApplyTypeExtensions.h"
 #include "TaskBuildSymbolTree.h"
@@ -29,7 +30,10 @@ namespace parser {
 
 
 
-AstLinker::AstLinker(IFactory *factory) : m_factory(factory) {
+AstLinker::AstLinker(
+    dmgr::IDebugMgr     *dmgr,
+    IFactory            *factory) : m_dmgr(dmgr), m_factory(factory) {
+    DEBUG_INIT("AstLinker", dmgr);
     m_ast_factory = m_factory->getAstFactory();
 }
 
@@ -41,17 +45,20 @@ ast::ISymbolScope *AstLinker::link(
         IMarkerListener                         *marker_l,
         const std::vector<ast::IGlobalScope *>  &scopes) {
     ast::ISymbolScope *symtree = TaskBuildSymbolTree(
+        m_dmgr,
         m_ast_factory,
         marker_l).build(scopes);
 
     // Now, apply type extension
-    TaskApplyTypeExtensions(m_factory, marker_l).apply(symtree);
+    TaskApplyTypeExtensions(m_dmgr, m_factory, marker_l).apply(symtree);
 
     // Finally, resolve remaining names
-    TaskResolveRefs(m_factory, marker_l).resolve(symtree);
+    TaskResolveRefs(m_dmgr, m_factory, marker_l).resolve(symtree);
 
     return symtree;
 }
+
+dmgr::IDebug *AstLinker::m_dbg = 0;
 
 }
 }
