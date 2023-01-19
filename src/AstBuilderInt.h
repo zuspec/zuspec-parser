@@ -244,9 +244,13 @@ private:
 
     void addExecStmt(PSSParser::Procedural_stmtContext *ctx);
 
+    ast::IFunctionPrototype *mkFunctionPrototype(PSSParser::Function_prototypeContext *ctx);
+
 	ast::IExprId *mkId(PSSParser::IdentifierContext *ctx);
 
 	ast::IExprHierarchicalId *mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx);
+
+    ast::IExprMemberPathElem *mkMemberPathElem(PSSParser::Member_path_elemContext *ctx);
 
 	void mkTypeId(
 		std::vector<ast::IExprIdUP>				&type_id,
@@ -254,6 +258,9 @@ private:
 
 	ast::ITypeIdentifier *mkTypeId(
 		PSSParser::Type_identifierContext		*ctx);
+
+	ast::ITypeIdentifierElem *mkTypeIdElem(
+		PSSParser::Type_identifier_elemContext		*ctx);
 
 	ast::IExpr *mkExpr(
 		PSSParser::ExpressionContext 			*ctx);

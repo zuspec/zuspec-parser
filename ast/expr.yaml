@@ -141,7 +141,9 @@ classes:
         - data:
             - is_global: bool
             - base: "list<UP<TypeIdentifierElem>>"
-            - slice: UP<ExprBitSlice>
+            - slice: 
+                type: UP<ExprBitSlice>
+                is_ctor: false
 
     - ExprRefPathStaticFunc:
         - super: ExprRefPathStatic
@@ -196,8 +198,10 @@ classes:
             - value: uint64_t
     - MethodParameterList:
         - super: Expr
-#        - data: 
-
+        - data: 
+          - parameters: 
+              type: list<UP<Expr>>
+              is_ctor: false
     - TypeIdentifier:
         - super: Expr
         - data: 

@@ -333,6 +333,7 @@ target_file_exec_block:
 procedural_function:
 	platform_qualifier? TOK_PURE? TOK_FUNCTION function_prototype
 	TOK_LCBRACE
+	procedural_stmt*
 //EMTPTYSTR		procedural_stmt*
 	TOK_RCBRACE
 	;

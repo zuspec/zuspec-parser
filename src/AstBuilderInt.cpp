@@ -455,13 +455,28 @@ antlrcpp::Any AstBuilderInt::visitExec_super_stmt(PSSParser::Exec_super_stmtCont
 // B.5 Functions
 antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_functionContext *ctx) {
     DEBUG_ENTER("visitProcedural_function");
-    DEBUG("TODO: visitProcedural_function");
+
+    ast::IProceduralStmtSequenceBlock *body = m_factory->mkProceduralStmtSequenceBlock();
+    std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
+    for (std::vector<PSSParser::Procedural_stmtContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        body->getChildren().push_back(ast::IExecStmtUP(mkExecStmt(*it)));
+    }
+
+    ast::IFunctionDefinition *func = m_factory->mkFunctionDefinition(
+        mkFunctionPrototype(ctx->function_prototype()),
+        body
+    );
+
+    m_scopes.back()->getChildren().push_back(ast::IScopeChildUP(func));
     DEBUG_LEAVE("visitProcedural_function");
     return 0;
 }
 
 antlrcpp::Any AstBuilderInt::visitFunction_decl(PSSParser::Function_declContext *ctx) {
     DEBUG_ENTER("visitFunction_decl");
+    ast::IFunctionPrototype *proto = mkFunctionPrototype(ctx->function_prototype());
     DEBUG("TODO: visitFunction_decl");
     DEBUG_LEAVE("visitFunction_decl");
     return 0;
@@ -521,7 +536,57 @@ antlrcpp::Any AstBuilderInt::visitProcedural_assignment_stmt(PSSParser::Procedur
 
 antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::Procedural_void_function_call_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_void_function_call_stmt");
-    DEBUG("TODO: visitProcedural_void_function_call_stmt");
+    IExprRefPathStatic *prefix = 0;
+
+    if (ctx->function_call()->is_global || 
+        ctx->function_call()->type_identifier_elem().size() > 0) {
+        // Have a static component
+        prefix = m_factory->mkExprRefPathStatic(ctx->function_call()->is_global);
+
+        std::vector<PSSParser::Type_identifier_elemContext *> items =
+            ctx->function_call()->type_identifier_elem();
+        for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
+            it=items.begin();
+            it!=items.end(); it++) {
+            prefix->getBase().push_back(ast::ITypeIdentifierElemUP(mkTypeIdElem(*it)));
+        }
+    }
+
+    IExprHierarchicalId *hid = m_factory->mkExprHierarchicalId();
+    std::vector<PSSParser::Member_path_elemContext *> path =
+        ctx->function_call()->function_ref_path()->member_path_elem();
+    for (std::vector<PSSParser::Member_path_elemContext *>::const_iterator
+        it=path.begin();
+        it!=path.end(); it++) {
+        hid->getElems().push_back(ast::IExprMemberPathElemUP(mkMemberPathElem(*it)));
+    }
+
+    // Now, round up the parameter list
+    std::vector<PSSParser::ExpressionContext *> items =
+        ctx->function_call()->function_ref_path()->function_parameter_list()->expression();
+    ast::IMethodParameterList *params = m_factory->mkMethodParameterList();
+    for (std::vector<PSSParser::ExpressionContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        params->getParameters().push_back(ast::IExprUP(mkExpr(*it)));
+    }
+
+    hid->getElems().push_back(ast::IExprMemberPathElemUP(
+        m_factory->mkExprMemberPathElem(
+            mkId(ctx->function_call()->function_ref_path()->identifier()),
+            params,
+            0
+        )
+    ));
+
+    ast::IProceduralStmtExpr *stmt = m_factory->mkProceduralStmtExpr(
+        m_factory->mkExprRefPathStaticRooted(
+            prefix,
+            m_factory->mkExprRefPathContext(hid))
+    );
+
+    m_exec_stmt = stmt;
+
     DEBUG_LEAVE("visitProcedural_void_function_call_stmt");
     return 0;
 }
@@ -539,6 +604,10 @@ antlrcpp::Any AstBuilderInt::visitProcedural_return_stmt(PSSParser::Procedural_r
 
 antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_repeat_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_repeat_stmt");
+    if (ctx->is_repeat) {
+    } else if (ctx->is_repeat_while) {
+    } else { // 'while'
+    }
 
     DEBUG_LEAVE("visitProcedural_repeat_stmt");
     return 0;
@@ -1712,7 +1781,51 @@ void AstBuilderInt::addExecStmt(PSSParser::Procedural_stmtContext *ctx) {
         m_exec_scope_s.back()->getChildren().push_back(ast::IExecStmtUP(stmt));
     }
 
+}
+
+static std::map<std::string, ParamDir> param_dir_m = {
+    { "input", ParamDir::ParamDir_In},
+    { "output", ParamDir::ParamDir_Out},
+    { "inout", ParamDir::ParamDir_InOut}
 };
+
+ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
+    PSSParser::Function_prototypeContext *ctx) {
+    ast::IDataType *rtype = 0;
+
+    if (ctx->function_return_type()->data_type()) {
+        rtype = mkDataType(ctx->function_return_type()->data_type());
+    }
+
+    ast::IFunctionPrototype *proto = m_factory->mkFunctionPrototype(rtype);
+
+    std::vector<PSSParser::Function_parameterContext *> items =
+        ctx->function_parameter_list_prototype()->function_parameter();
+    for (std::vector<PSSParser::Function_parameterContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        ParamDir dir = ParamDir::ParamDir_Default;
+
+        if ((*it)->function_parameter_dir()) {
+            dir = param_dir_m.find((*it)->function_parameter_dir()->toString())->second;
+        }
+        ast::IDataType *type = mkDataType((*it)->data_type());
+        ast::IExprId *name = mkId((*it)->identifier());
+        ast::IExpr *dflt = 0;
+        if ((*it)->constant_expression()) {
+            dflt = mkExpr((*it)->constant_expression()->expression());
+        }
+        ast::IFunctionParamDecl *param = m_factory->mkFunctionParamDecl(
+            name,
+            type,
+            dir,
+            dflt,
+            false);
+        proto->getParameters().push_back(ast::IFunctionParamDeclUP(param));
+    }
+
+    return proto;
+}
 
 IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 	IExprId *id;
@@ -1746,6 +1859,35 @@ ast::IExprHierarchicalId *AstBuilderInt::mkHierarchicalId(PSSParser::Hierarchica
 	return ret;
 }
 
+ast::IExprMemberPathElem *AstBuilderInt::mkMemberPathElem(
+    PSSParser::Member_path_elemContext *ctx) {
+    ast::IExprId *id = 0;
+    ast::IMethodParameterList *params = 0;
+    ast::IExpr *subscript = 0;
+
+    id = mkId(ctx->identifier());
+
+    if (ctx->function_parameter_list()) {
+        params = m_factory->mkMethodParameterList();
+        std::vector<PSSParser::ExpressionContext *> plist =
+            ctx->function_parameter_list()->expression();
+        for (std::vector<PSSParser::ExpressionContext *>::const_iterator
+            it=plist.begin();
+            it!=plist.end(); it++) {
+            params->getParameters().push_back(ast::IExprUP(mkExpr(*it)));
+        }
+    }
+
+    if (ctx->expression()) {
+        subscript = mkExpr(ctx->expression());
+    }
+
+    return m_factory->mkExprMemberPathElem(
+        id,
+        params,
+        subscript);
+}
+
 void AstBuilderInt::mkTypeId(
 		std::vector<IExprIdUP>					&type_id,
 		PSSParser::Type_identifierContext		*ctx) {
@@ -1777,6 +1919,13 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 	}
 
 	return ret;
+}
+
+ast::ITypeIdentifierElem *AstBuilderInt::mkTypeIdElem(
+		PSSParser::Type_identifier_elemContext		*ctx) {
+	ast::ITypeIdentifierElem *elem = m_factory->mkTypeIdentifierElem(
+			mkId(ctx->identifier()));
+    return elem;
 }
 
 ast::IExpr *AstBuilderInt::mkExpr(

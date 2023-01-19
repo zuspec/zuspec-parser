@@ -30,9 +30,16 @@ classes:
       - op: AssignOp
       - rhs: UP<Expr>
   # TODO:
+  - ProceduralStmtExpr:
+    - super: ExecStmt
+    - data:
+      - expr: UP<Expr>
+
   - ProceduralStmtFunctionCall:
     - super: ExecStmt
-    - data: []
+    - data: 
+      - prefix: UP<ExprRefPathStaticRooted>
+      - params: list<UP<Expr>>
   - ProceduralStmtReturn:
     - super: ExecStmt
     - data:

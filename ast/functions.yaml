@@ -1,0 +1,56 @@
+
+enums:
+  - ParamDir:
+      - ParamDir_Default
+      - ParamDir_In
+      - ParamDir_Out
+      - ParamDir_InOut
+  - PlatQual:
+      - PlatQual_None
+      - PlatQual_Target
+      - PlatQual_Solve
+
+classes:
+  - FunctionDefinition:
+    - super: ScopeChild
+    - data:
+        - proto: UP<FunctionPrototype>
+        - body: UP<ProceduralStmtSequenceBlock>
+  - FunctionParamDecl:
+    - super: ScopeChild
+    - data:
+        - name: UP<ExprId>
+        - type: UP<DataType>
+        - dir: ParamDir
+        - dflt: UP<Expr>
+        - is_varargs: bool
+  - FunctionPrototype:
+    - super: ScopeChild
+    - data:
+        - rtype: UP<DataType>
+        - parameters: 
+            type: list<UP<FunctionParamDecl>>
+            is_ctor: false
+        - is_pure:
+            type: bool
+            is_ctor: false
+
+  - FunctionImport:
+    - super: ScopeChild
+    - data:
+        - plat: PlatQual
+        - lang: string
+
+  - FunctionImportType:
+    - super: FunctionImport
+    - data:
+        - type: UP<TypeIdentifier>
+
+  - FunctionImportProto:
+    - super: FunctionImport
+    - data:
+        - proto: UP<FunctionPrototype>
+
+
+
+
