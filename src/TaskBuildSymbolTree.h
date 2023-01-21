@@ -49,7 +49,17 @@ public:
 
     virtual void visitEnumItem(ast::IEnumItem *i) override;
 
+    virtual void visitExecStmt(ast::IExecStmt *i) override;
+
     virtual void visitExtendType(ast::IExtendType *i) override;
+
+    virtual void visitFunctionDefinition(ast::IFunctionDefinition *i) override;
+
+    virtual void visitFunctionImportProto(ast::IFunctionImportProto *i) override;
+
+    virtual void visitFunctionImportType(ast::IFunctionImportType *i) override;
+
+    virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override;
 
     virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
 
@@ -65,6 +75,8 @@ protected:
         ast::ISymbolScope       *scope,
         ast::IScopeChild        *orig,
         ast::IScopeChild        *dup);
+
+    ast::IScopeChild *findSymbol(const std::string &name);
 
 private:
     static dmgr::IDebug                 *m_dbg;

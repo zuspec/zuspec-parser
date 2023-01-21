@@ -25,7 +25,7 @@ classes:
         - dflt: UP<Expr>
         - is_varargs: bool
   - FunctionPrototype:
-    - super: ScopeChild
+    - super: NamedScopeChild
     - data:
         - rtype: UP<DataType>
         - parameters: 

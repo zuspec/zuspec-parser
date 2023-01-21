@@ -15,6 +15,7 @@ enums:
 
 classes:
   - ExecStmt:
+    - super: ScopeChild
     - data: []
   - ExecScope:
     - super: ExecStmt

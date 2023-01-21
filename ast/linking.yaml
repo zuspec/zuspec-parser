@@ -70,8 +70,21 @@ classes:
 - SymbolFunctionScope:
     super: SymbolScope
     data:
+      - prototypes: 
+        - type: list<P<FunctionPrototype>>
+        - is_ctor: false
+      - import_specs:
+        - type: list<P<FunctionImport>>
+        - is_ctor: false
+      - definition:
+        - type: P<FunctionDefinition>
+        - is_ctor: false
       - plist:
         - type: UP<SymbolScope>
+        - is_ctor: false
+      - body:
+        - type: UP<SymbolScope>
+        - is_ctor: false
 
 - SymbolRefPath: 
     data:

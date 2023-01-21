@@ -458,11 +458,13 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
 
     ast::IProceduralStmtSequenceBlock *body = m_factory->mkProceduralStmtSequenceBlock();
     std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
+    m_exec_scope_s.push_back(body);
     for (std::vector<PSSParser::Procedural_stmtContext *>::const_iterator
         it=items.begin();
         it!=items.end(); it++) {
-        body->getChildren().push_back(ast::IExecStmtUP(mkExecStmt(*it)));
+        addExecStmt(*it);
     }
+    m_exec_scope_s.pop_back();
 
     ast::IFunctionDefinition *func = m_factory->mkFunctionDefinition(
         mkFunctionPrototype(ctx->function_prototype()),
@@ -1797,7 +1799,9 @@ ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
         rtype = mkDataType(ctx->function_return_type()->data_type());
     }
 
-    ast::IFunctionPrototype *proto = m_factory->mkFunctionPrototype(rtype);
+    ast::IFunctionPrototype *proto = m_factory->mkFunctionPrototype(
+        mkId(ctx->function_identifier()->identifier()),
+        rtype);
 
     std::vector<PSSParser::Function_parameterContext *> items =
         ctx->function_parameter_list_prototype()->function_parameter();
