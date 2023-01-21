@@ -41,7 +41,6 @@ classes:
     - ExprBitSlice:
         - super: Expr
         - data: 
-            - expr: "UP<Expr>"
             - lhs:  "UP<Expr>"
             - rhs:  "UP<Expr>"
     - ExprBool:
@@ -124,15 +123,18 @@ classes:
               is_ctor: false
               type: UP<SymbolRefPath>
               init: 0
-#          - 
+
     - ExprRefPathContext:
-        - super: Expr
+        - super: ExprRefPath
         - data: 
-          - hier_id : "UP<ExprHierarchicalId>"
-          - target:
+          - is_super:
+              type: bool
+              is_ctor: false 
+            init: false
+          - hier_id: "UP<ExprHierarchicalId>"
+          - slice: 
+              type: UP<ExprBitSlice>
               is_ctor: false
-              type: UP<SymbolRefPath>
-              init: 0
     - ExprRefPathElem:
         - super: Expr
 
@@ -151,14 +153,13 @@ classes:
             - params: "UP<MethodParameterList>"
 
     - ExprRefPathStaticRooted:
-        super: Expr
+        super: ExprRefPath
         data: 
-          - root: "UP<ExprRefPathStatic>"
-          - leaf: "UP<ExprRefPathContext>"
-          - target:
+          - root: "UP<ExprStaticRefPath>"
+          - leaf: "UP<ExprHierarchicalId>"
+          - slice: 
+              type: UP<ExprBitSlice>
               is_ctor: false
-              type: UP<SymbolRefPath>
-              init: 0
 
     - ExprRefPathSuper:
         - super: ExprRefPathContext

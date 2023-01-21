@@ -265,6 +265,14 @@ private:
 	ast::IExpr *mkExpr(
 		PSSParser::ExpressionContext 			*ctx);
 
+    ast::IExprBitSlice *mkExprBitSlice(
+        PSSParser::Bit_sliceContext             *ctx);
+
+    ast::IExprRefPath *mkExprRefPath(
+        PSSParser::Ref_pathContext              *ctx);
+
+    ast::IExprStaticRefPath *mkExprStaticRefPath(
+        PSSParser::Static_ref_pathContext       *ctx);
 
 
 private:

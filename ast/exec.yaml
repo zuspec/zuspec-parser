@@ -27,7 +27,7 @@ classes:
   - ProceduralStmtAssignment:
     - super: ExecStmt
     - data:
-      - lhs: UP<ExprRefPath>
+      - lhs: UP<Expr>
       - op: AssignOp
       - rhs: UP<Expr>
   # TODO:

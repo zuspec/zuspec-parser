@@ -521,7 +521,7 @@ static std::map<std::string, ast::AssignOp> assign_op_m = {
 
 antlrcpp::Any AstBuilderInt::visitProcedural_assignment_stmt(PSSParser::Procedural_assignment_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_assignment_stmt");
-    ast::IExprRefPath *lhs = 0; // TODO:
+    ast::IExpr *lhs = mkExprRefPath(ctx->ref_path());
     ast::AssignOp op = assign_op_m.find(ctx->assign_op()->toString())->second;
     ast::IExpr *rhs = mkExpr(ctx->expression());
 
@@ -538,12 +538,14 @@ antlrcpp::Any AstBuilderInt::visitProcedural_assignment_stmt(PSSParser::Procedur
 
 antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::Procedural_void_function_call_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_void_function_call_stmt");
-    IExprRefPathStatic *prefix = 0;
+    IExprStaticRefPath *prefix = 0;
 
     if (ctx->function_call()->is_global || 
         ctx->function_call()->type_identifier_elem().size() > 0) {
         // Have a static component
-        prefix = m_factory->mkExprRefPathStatic(ctx->function_call()->is_global);
+        prefix = m_factory->mkExprStaticRefPath(
+            ctx->function_call()->is_global,
+            0);
 
         std::vector<PSSParser::Type_identifier_elemContext *> items =
             ctx->function_call()->type_identifier_elem();
@@ -584,7 +586,8 @@ antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::
     ast::IProceduralStmtExpr *stmt = m_factory->mkProceduralStmtExpr(
         m_factory->mkExprRefPathStaticRooted(
             prefix,
-            m_factory->mkExprRefPathContext(hid))
+            hid
+        )
     );
 
     m_exec_stmt = stmt;
@@ -1937,6 +1940,71 @@ ast::IExpr *AstBuilderInt::mkExpr(
 	m_expr = 0;
 	ctx->accept(this);
 	return m_expr;
+}
+
+ast::IExprBitSlice *AstBuilderInt::mkExprBitSlice(
+        PSSParser::Bit_sliceContext             *ctx) {
+    ast::IExprBitSlice *ret = m_factory->mkExprBitSlice(
+        mkExpr(ctx->constant_expression(0)->expression()),
+        mkExpr(ctx->constant_expression(0)->expression())
+    );
+
+    return ret;
+}
+
+ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
+        PSSParser::Ref_pathContext              *ctx) {
+    ast::IExprRefPath *ret = 0;
+    if (ctx->static_ref_path()) {
+        ast::IExprStaticRefPath *static_ref = mkExprStaticRefPath(ctx->static_ref_path());
+        ast::IExprHierarchicalId *context_ref = 0;
+
+        if (ctx->hierarchical_id()) {
+            // Has a context portion
+            context_ref = mkHierarchicalId(ctx->hierarchical_id());
+        }
+
+        ast::IExprRefPathStaticRooted *ref = m_factory->mkExprRefPathStaticRooted(
+            static_ref,
+            context_ref);
+
+        if (ctx->bit_slice()) {
+            ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
+        }
+        ret = ref;
+    } else {
+        // Context ref
+        ast::IExprRefPathContext *cref = m_factory->mkExprRefPathContext(
+            mkHierarchicalId(ctx->hierarchical_id())
+        );
+
+        if (ctx->bit_slice()) {
+            cref->setSlice(mkExprBitSlice(ctx->bit_slice()));
+        }
+
+        ret = cref;
+    }
+
+    return ret;
+}
+
+ast::IExprStaticRefPath *AstBuilderInt::mkExprStaticRefPath(
+        PSSParser::Static_ref_pathContext       *ctx) {
+    IExprStaticRefPath *ret = 0;
+
+    ret = m_factory->mkExprStaticRefPath(
+            ctx->is_global,
+            mkMemberPathElem(ctx->member_path_elem()));
+
+    std::vector<PSSParser::Type_identifier_elemContext *> items =
+        ctx->type_identifier_elem();
+    for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        ret->getBase().push_back(ast::ITypeIdentifierElemUP(mkTypeIdElem(*it)));
+    }
+
+    return ret;
 }
 
 dmgr::IDebug *AstBuilderInt::m_dbg = 0;
