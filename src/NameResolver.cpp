@@ -4,26 +4,11 @@
  *  Created on: Oct 29, 2020
  *      Author: ballance
  */
-
+#include "dmgr/impl/DebugMacros.h"
 #include "NameResolver.h"
 #include "RefExprUtil.h"
 #include "ScopeUtil.h"
 #include "TaskCollectDeclarations.h"
-
-#define DEBUG_ENTER(fmt, ...) \
-	fprintf(stdout, "--> NameResolver::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG(fmt, ...) \
-	fprintf(stdout, "NameResolver: "); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG_LEAVE(fmt, ...) \
-	fprintf(stdout, "<-- NameResolver::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
 
 namespace zsp {
 namespace parser {
@@ -33,7 +18,7 @@ NameResolver::NameResolver(
 		IFactory								*factory,
 		IMarkerListener							*marker_l) :
 			m_factory(factory), m_marker_l(marker_l), m_phase(0) {
-	// TODO Auto-generated constructor stub
+    DEBUG_INIT("NameResolver", factory->getDebugMgr());
 
 }
 
@@ -106,6 +91,12 @@ void NameResolver::visitComponent(ast::IComponent *i) {
 
 	sym_it()->popScope();
 	DEBUG_LEAVE("visitComponent %s", i->getName()->getId().c_str());
+}
+
+void NameResolver::visitExprRefPathId(ast::IExprRefPathId *i) {
+    DEBUG_ENTER("visitExprRefPathId");
+
+    DEBUG_LEAVE("visitExprRefPathId");
 }
 
 void NameResolver::visitEnumDecl(ast::IEnumDecl *i) {
@@ -213,6 +204,8 @@ void NameResolver::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
 ISymbolTableIterator *NameResolver::sym_it() const {
 	return (m_sym_it_s.size() > 0)?m_sym_it_s.back().get():0;
 }
+
+dmgr::IDebug *NameResolver::m_dbg = 0;
 
 }
 } /* namespace zsp */

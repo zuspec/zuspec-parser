@@ -1956,22 +1956,56 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
         PSSParser::Ref_pathContext              *ctx) {
     ast::IExprRefPath *ret = 0;
     if (ctx->static_ref_path()) {
-        ast::IExprStaticRefPath *static_ref = mkExprStaticRefPath(ctx->static_ref_path());
-        ast::IExprHierarchicalId *context_ref = 0;
 
         if (ctx->hierarchical_id()) {
             // Has a context portion
-            context_ref = mkHierarchicalId(ctx->hierarchical_id());
+            ast::IExprStaticRefPath *static_ref = mkExprStaticRefPath(ctx->static_ref_path());
+            ast::IExprHierarchicalId *context_ref = mkHierarchicalId(ctx->hierarchical_id());
+
+            ast::IExprRefPathStaticRooted *ref = m_factory->mkExprRefPathStaticRooted(
+                static_ref,
+                context_ref);
+
+            if (ctx->bit_slice()) {
+                ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
+            }
+
+            ret = ref;
+        } else {
+            std::vector<PSSParser::Type_identifier_elemContext *> items =
+                ctx->static_ref_path()->type_identifier_elem();
+            if (!ctx->static_ref_path()->is_global && items.size() == 0 && 
+                !ctx->static_ref_path()->member_path_elem()->function_parameter_list()) {
+                // This is just a simple identifier reference
+                ast::IExprRefPathId *ref = m_factory->mkExprRefPathId(
+                    mkId(ctx->static_ref_path()->member_path_elem()->identifier())
+                );
+
+                if (ctx->bit_slice()) {
+                    ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
+                }
+
+                ret = ref;
+            } else {
+                // This is a multi-element path
+                ast::IExprRefPathStatic *ref = m_factory->mkExprRefPathStatic(
+                    ctx->static_ref_path()->is_global
+                );
+
+                for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
+                    it=items.begin();
+                    it!=items.end(); it++) {
+                    ref->getBase().push_back(ast::ITypeIdentifierElemUP(mkTypeIdElem(*it)));
+                }
+
+                if (ctx->bit_slice()) {
+                    ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
+                }
+
+                ret = ref;
+            }
         }
 
-        ast::IExprRefPathStaticRooted *ref = m_factory->mkExprRefPathStaticRooted(
-            static_ref,
-            context_ref);
-
-        if (ctx->bit_slice()) {
-            ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
-        }
-        ret = ref;
     } else {
         // Context ref
         ast::IExprRefPathContext *cref = m_factory->mkExprRefPathContext(

@@ -41,6 +41,18 @@ public:
         const ISymbolTableIterator      *scope,
         ast::ITypeIdentifier            *type_id);
 
+    ast::ISymbolRefPath *resolve(
+        const ISymbolTableIterator      *scope,
+        ast::IExprRefPath               *ref);
+
+    virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) override;
+
+    virtual void visitExprRefPathId(ast::IExprRefPathId *i) override;
+
+    virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) override;
+
+    virtual void visitExprRefPathStatic(ast::IExprRefPathStatic *i) override;
+
 private:
     ast::ISymbolRefPath *searchImport(
         ISymbolTableIterator            *scope,
@@ -49,8 +61,10 @@ private:
 
 private:
     static dmgr::IDebug                 *m_dbg;
+    const ISymbolTableIterator          *m_scope;
     IFactory                            *m_factory;
     IMarkerListener                     *m_marker_l;    
+    ast::ISymbolRefPath                 *m_ref;
 
 };
 

@@ -1,4 +1,4 @@
-// Generated from /home/mballance/projects/zuspec/zuspec-fe-parser/packages/zuspec-parser/src/PSSLexer.g4 by ANTLR 4.9.2
+// Generated from /project/fun/zuspec/zuspec-fe-parser/packages/zuspec-parser/src/PSSLexer.g4 by ANTLR 4.9.2
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;

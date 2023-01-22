@@ -124,6 +124,14 @@ classes:
               type: UP<SymbolRefPath>
               init: 0
 
+    - ExprRefPathId:
+        - super: ExprRefPath
+        - data: 
+          - id: UP<ExprId>
+          - slice: 
+              type: UP<ExprBitSlice>
+              is_ctor: false
+
     - ExprRefPathContext:
         - super: ExprRefPath
         - data: 

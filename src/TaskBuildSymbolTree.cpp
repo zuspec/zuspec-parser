@@ -166,6 +166,23 @@ void TaskBuildSymbolTree::visitExecStmt(ast::IExecStmt *i) {
     DEBUG_LEAVE("visitExecStmt");
 }
 
+void TaskBuildSymbolTree::visitExecScope(ast::IExecScope *i) {
+    DEBUG_ENTER("visitExecScope");
+    int32_t id = m_scope_s.back()->getChildren().size();
+    ast::ISymbolScope *scope = m_factory->mkSymbolScope(id, "");
+    m_scope_s.back()->getChildren().push_back(scope);
+    m_scope_s.back()->getOwned().push_back(ast::IScopeChildUP(scope));
+    m_scope_s.push_back(scope);
+    for (std::vector<ast::IExecStmtUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    m_scope_s.pop_back();
+
+    DEBUG_LEAVE("visitExecScope");
+}
+
 void TaskBuildSymbolTree::visitExtendType(ast::IExtendType *i) {
     DEBUG_ENTER("visitExtendType");
     int32_t id = m_scope_s.back()->getChildren().size();
@@ -276,6 +293,28 @@ void TaskBuildSymbolTree::visitPackageImportStmt(ast::IPackageImportStmt *i) {
     scope->getImports()->getImports().push_back(i);
 
     DEBUG_LEAVE("visitPackageImportStmt");
+}
+
+void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) {
+    DEBUG_ENTER("visitProceduralStmtDataDeclaration");
+    ast::ISymbolScope *scope = m_scope_s.back();
+
+    std::map<std::string, int32_t>::const_iterator it =
+        scope->getSymtab().find(i->getName()->getId());
+    
+    if (it != scope->getSymtab().end()) {
+        reportDuplicateSymbol(
+            scope,
+            scope->getChildren().at(it->second),
+            i
+        );
+    } else {
+        int32_t id = scope->getChildren().size();
+        scope->getSymtab().insert({i->getName()->getId(), id});
+        scope->getChildren().push_back(i);
+    }
+
+    DEBUG_LEAVE("visitProceduralStmtDataDeclaration");
 }
 
 void TaskBuildSymbolTree::visitScopeChild(ast::IScopeChild *i) {

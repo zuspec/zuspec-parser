@@ -50,6 +50,19 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
     DEBUG_LEAVE("resolve");
 }
 
+void TaskResolveRefs::visitExprRefPathId(ast::IExprRefPathId *i) {
+    DEBUG_ENTER("visitExprRefPathId %s", i->getId()->getId().c_str());
+    ast::ISymbolRefPath *target = TaskResolveRef(m_factory, m_marker_l).resolve(
+        m_symtab_it.get(),
+        i
+    );
+    if (!target) {
+        fprintf(stdout, "Failed to resolve ref-path %s\n", i->getId()->getId().c_str());
+    }
+    i->setTarget(target);
+    DEBUG_LEAVE("visitExprRefPathId");
+}
+
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
     if (m_symtab_it->pushNamedScope(i->getName()) == -1) {
@@ -83,6 +96,20 @@ void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
     m_symtab_it->popScope();
 
     DEBUG_LEAVE("visitSymbolExtendScope");
+}
+
+void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
+    DEBUG_ENTER("visitSymbolFunctionScope %s", i->getName().c_str());
+    m_symtab_it->pushScope(i->getPlist());
+    m_symtab_it->pushScope(i->getBody());
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=i->getBody()->getChildren().begin();
+        it!=i->getBody()->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    m_symtab_it->popScope();
+    m_symtab_it->popScope();
+    DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
 }
 
 void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {

@@ -51,6 +51,8 @@ public:
 
     virtual void visitExecStmt(ast::IExecStmt *i) override;
 
+    virtual void visitExecScope(ast::IExecScope *i) override;
+
     virtual void visitExtendType(ast::IExtendType *i) override;
 
     virtual void visitFunctionDefinition(ast::IFunctionDefinition *i) override;
@@ -62,6 +64,8 @@ public:
     virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override;
 
     virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
+
+    virtual void visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) override;
 
     virtual void visitScopeChild(ast::IScopeChild *i) override;
 

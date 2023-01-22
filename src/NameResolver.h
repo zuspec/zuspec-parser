@@ -7,6 +7,7 @@
 
 #pragma once
 #include <vector>
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp//parser/INameResolver.h"
 #include "zsp/parser/INameResolverClient.h"
@@ -34,6 +35,8 @@ public:
 
     virtual void visitComponent(ast::IComponent *i) override;
 
+    virtual void visitExprRefPathId(ast::IExprRefPathId *i) override;
+
     virtual void visitEnumDecl(ast::IEnumDecl *i) override;
 
     virtual void visitStruct(ast::IStruct *i) override;
@@ -48,6 +51,7 @@ protected:
     ISymbolTableIterator *sym_it() const;
 
 private:
+    static dmgr::IDebug                 *m_dbg;
     IFactory                            *m_factory;
 
     std::vector<ISymbolTableIteratorUP> m_sym_it_s;
