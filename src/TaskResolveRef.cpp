@@ -224,6 +224,7 @@ void TaskResolveRef::visitExprRefPathId(ast::IExprRefPathId *i) {
 
 	DEBUG("Searching for %s", i->getId()->getId().c_str());
 	while (it->hasScopes()) {
+        DEBUG("    Begin scope");
         if ((m_ref=it->findLocalSymbolPath(i->getId()->getId()))) {
             DEBUG("Found");
             break;
@@ -290,30 +291,30 @@ void TaskResolveRef::visitExprRefPathId(ast::IExprRefPathId *i) {
 							});
 						}
 					}
-
-					if (m_ref) {
-						// Found via imports
-						break;
-					} else {
-						DEBUG("Uplevel");
-						it->popScope();
-					}
-				}
-			}
-
-			if (!m_ref) {
-				std::string msg = "Failed to find first type elem ";
-				msg += i->getId()->getId().c_str();
-				Marker m(
-					msg,
-					MarkerSeverityE::Error,
-					i->getId()->getLocation());
-				m_marker_l->marker(&m);
-				DEBUG("Error: Failed to find first type elem %s",
-                    i->getId()->getId().c_str());
-                break;
+        		}
 			}
 		}
+
+		if (m_ref) {
+			// Found via imports
+            DEBUG("Found via imports");
+			break;
+		} else {
+			DEBUG("Uplevel");
+			it->popScope();
+        }
+	}
+
+	if (!m_ref) {
+		std::string msg = "Failed to find first type elem ";
+		msg += i->getId()->getId().c_str();
+		Marker m(
+			msg,
+			MarkerSeverityE::Error,
+			i->getId()->getLocation());
+		m_marker_l->marker(&m);
+			DEBUG("Error: Failed to find first type elem %s",
+                    i->getId()->getId().c_str());
 	}
 
     DEBUG_LEAVE("visitExprRefPathId");

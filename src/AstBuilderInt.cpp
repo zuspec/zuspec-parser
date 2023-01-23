@@ -1415,15 +1415,7 @@ antlrcpp::Any AstBuilderInt::visitNull_ref(PSSParser::Null_refContext *ctx) {
 antlrcpp::Any AstBuilderInt::visitRef_path(PSSParser::Ref_pathContext *ctx) {
 	DEBUG_ENTER("visitRef_path");
 
-	DEBUG("TODO: visitRef_path");
-
-	if (ctx->TOK_SUPER()) {
-
-	} else if (ctx->static_ref_path()) {
-
-	} else {
-		// Just a regular context path
-	}
+    m_expr = mkExprRefPath(ctx);
 
 	DEBUG_LEAVE("visitRef_path");
 	return 0;
@@ -1719,6 +1711,9 @@ ast::IConstraintStmt *AstBuilderInt::mkConstraintSet(PSSParser::Constraint_setCo
 ast::IDataType *AstBuilderInt::mkDataType(PSSParser::Data_typeContext *ctx) {
 	m_type = 0;
 	ctx->accept(this);
+    if (!m_type) {
+        fprintf(stdout, "Internal Error: mkDataType returning null\n");
+    }
 	return m_type;
 }
 
