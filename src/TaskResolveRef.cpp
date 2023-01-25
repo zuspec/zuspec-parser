@@ -54,6 +54,7 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
 		ti_it!=type_id->getElems().end(); ti_it++) {
 
 		if (ti_it == type_id->getElems().begin()) {
+            int32_t levels_up = 0;
 			while (it->hasScopes()) {
                 if ((ret=it->findLocalSymbolPath((*ti_it)->getId()->getId()))) {
                     DEBUG("Found");
@@ -318,6 +319,117 @@ void TaskResolveRef::visitExprRefPathId(ast::IExprRefPathId *i) {
 	}
 
     DEBUG_LEAVE("visitExprRefPathId");
+}
+
+ast::ISymbolRefPath *TaskResolveRef::resolve(
+        const ISymbolTableIterator      *scope,
+        ast::IExprId                    *ref) {
+    DEBUG_ENTER("resolve");
+    m_scope = scope;
+
+	ISymbolTableIteratorUP it(m_scope->clone());
+
+	// Find the first element
+
+    m_ref = 0;
+
+	DEBUG("Searching for %s", ref->getId().c_str());
+	while (it->hasScopes()) {
+        DEBUG("    Begin scope");
+        if ((m_ref=it->findLocalSymbolPath(ref->getId()))) {
+            DEBUG("Found");
+            break;
+		} else {
+			// Must now check imports
+			ast::ISymbolScope *scope = it->getScope();
+
+			if (scope->getImports()) {
+				std::map<std::string,ast::ISymbolRefPathUP>::const_iterator imp_sym;
+
+				imp_sym = scope->getImports()->getSymtab().find(ref->getId());
+				if (imp_sym != scope->getImports()->getSymtab().end()) {
+					if (imp_sym->second.get()) {
+						DEBUG("Found in the import cache");
+						m_ref = m_factory->getAstFactory()->mkSymbolRefPath();
+						m_ref->getPath().insert(
+							m_ref->getPath().begin(),
+							imp_sym->second->getPath().begin(),
+							imp_sym->second->getPath().end());
+					} else {
+						DEBUG("Symbol is not present in imports");
+					}
+				} else {
+					// Need to search through imports
+					ast::ISymbolRefPath *ret_t = 0;
+					for (std::vector<ast::IPackageImportStmt *>::const_iterator
+						imp_it=scope->getImports()->getImports().begin();
+						imp_it!=scope->getImports()->getImports().end(); imp_it++) {
+						if ((ret_t=searchImport(it.get(), *imp_it, ref->getId()))) {
+							// Found it.
+							if (m_ref) {
+								// Uh-oh. We have ambiguity...
+								std::string msg = "Ambiguous symbol resolution when looking up ";
+								msg += ref->getId();
+								Marker m(
+									msg,
+									MarkerSeverityE::Error,
+									ref->getLocation()
+								);
+								m_marker_l->marker(&m);
+								delete ret_t;
+								break;
+							} else {
+								m_ref = ret_t;
+							}
+					    }
+
+						if (m_ref) {
+							// Stuff this in the cache for faster lookup later
+							ast::ISymbolRefPath *c_ret = m_factory->getAstFactory()->mkSymbolRefPath();
+							c_ret->getPath().insert(
+								c_ret->getPath().begin(),
+								m_ref->getPath().begin(),
+								m_ref->getPath().end());
+							scope->getImports()->getSymtab().insert({
+								ref->getId(), 
+								ast::ISymbolRefPathUP(c_ret)
+							});
+						} else {
+							// Don't bother searching imports for this symbol again
+							scope->getImports()->getSymtab().insert({
+								ref->getId(), 
+								ast::ISymbolRefPathUP(nullptr)
+							});
+						}
+					}
+        		}
+			}
+		}
+
+		if (m_ref) {
+			// Found via imports
+            DEBUG("Found via imports");
+			break;
+		} else {
+			DEBUG("Uplevel");
+			it->popScope();
+        }
+	}
+
+	if (!m_ref) {
+		std::string msg = "Failed to find first type elem ";
+		msg += ref->getId().c_str();
+		Marker m(
+			msg,
+			MarkerSeverityE::Error,
+			ref->getLocation());
+		m_marker_l->marker(&m);
+			DEBUG("Error: Failed to find first type elem %s",
+                    ref->getId().c_str());
+	}
+    DEBUG_LEAVE("resolve");
+
+    return m_ref;
 }
 
 void TaskResolveRef::visitExprRefPathContext(ast::IExprRefPathContext *i) {

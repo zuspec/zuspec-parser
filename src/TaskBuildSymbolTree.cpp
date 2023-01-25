@@ -43,7 +43,7 @@ ast::ISymbolScope *TaskBuildSymbolTree::build(
         const std::vector<ast::IGlobalScope *>  &roots) {
     DEBUG_ENTER("build");
     ast::ISymbolScope *root = m_factory->mkSymbolScope(
-        -1,
+        -100,
         "");
     m_scope_s.push_back(root);
 
@@ -225,25 +225,23 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
         m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
         m_scope_s.back()->getChildren().push_back(func_sym);
 
-        // TODO: add parameters to the plist scope
-        ast::ISymbolScope *plist = m_factory->mkSymbolScope(-1, "");
-        func_sym->setPlist(plist);
+        // Add parameters to the function symbol scope
         for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
             it=i->getProto()->getParameters().begin();
             it!=i->getProto()->getParameters().end(); it++) {
-            id = plist->getChildren().size();
+            id = func_sym->getChildren().size();
             std::map<std::string, int32_t>::const_iterator sym_it =
-                plist->getSymtab().find((*it)->getName()->getId());
+                func_sym->getSymtab().find((*it)->getName()->getId());
             
-            if (sym_it != plist->getSymtab().end()) {
+            if (sym_it != func_sym->getSymtab().end()) {
                 // Duplicate
                 reportDuplicateSymbol(
-                    plist,
-                    plist->getChildren().at(sym_it->second),
+                    func_sym,
+                    func_sym->getChildren().at(sym_it->second),
                     it->get());
             } else {
-                plist->getSymtab().insert({(*it)->getName()->getId(), id});
-                plist->getChildren().push_back(it->get());
+                func_sym->getSymtab().insert({(*it)->getName()->getId(), id});
+                func_sym->getChildren().push_back(it->get());
             }
         }
     }
@@ -253,9 +251,11 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
     }
 
     // Build the body (and subscopes) symbol scopes
-    ast::ISymbolScope *body = m_factory->mkSymbolScope(-1, "");
+    int32_t id = func_sym->getChildren().size();
+    ast::ISymbolScope *body = m_factory->mkSymbolScope(id, "");
     m_scope_s.push_back(body);
     func_sym->setBody(body);
+    func_sym->getChildren().push_back(body);
     for (std::vector<ast::IExecStmtUP>::const_iterator
         it=i->getBody()->getChildren().begin();
         it!=i->getBody()->getChildren().end(); it++) {

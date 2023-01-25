@@ -583,14 +583,17 @@ antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::
         )
     ));
 
-    ast::IProceduralStmtExpr *stmt = m_factory->mkProceduralStmtExpr(
-        m_factory->mkExprRefPathStaticRooted(
-            prefix,
-            hid
-        )
-    );
-
-    m_exec_stmt = stmt;
+    if (prefix && hid) {
+        ast::IProceduralStmtExpr *stmt = m_factory->mkProceduralStmtExpr(
+            m_factory->mkExprRefPathStaticRooted(
+                prefix,
+                hid));
+        m_exec_stmt = stmt;
+    } else {
+        ast::IProceduralStmtExpr *stmt = m_factory->mkProceduralStmtExpr(
+            m_factory->mkExprRefPathContext(hid));
+        m_exec_stmt = stmt;
+    }
 
     DEBUG_LEAVE("visitProcedural_void_function_call_stmt");
     return 0;
@@ -1957,6 +1960,7 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
             ast::IExprStaticRefPath *static_ref = mkExprStaticRefPath(ctx->static_ref_path());
             ast::IExprHierarchicalId *context_ref = mkHierarchicalId(ctx->hierarchical_id());
 
+            fprintf(stdout, "mkExprRefPath: static_ref=%p context_ref=%p\n", static_ref, context_ref);
             ast::IExprRefPathStaticRooted *ref = m_factory->mkExprRefPathStaticRooted(
                 static_ref,
                 context_ref);

@@ -88,6 +88,12 @@ classes:
 
 - SymbolRefPath: 
     data:
+    - levels_up: 
+      - type: int32_t
+      - is_ctor: false
+    - offset: 
+      - type: int32_t
+      - is_ctor: false
     - path: 
       - type: list<int32_t>
       - is_ctor: false

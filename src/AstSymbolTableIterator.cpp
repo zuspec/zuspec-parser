@@ -136,8 +136,7 @@ int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
 
 void AstSymbolTableIterator::pushScope(ast::ISymbolScope *s) {
     m_scope_s.push_back(s);
-    // TODO: what about indexing?
-    m_path.push_back(-1);
+    m_path.push_back(s->getId());
 }
 
 void AstSymbolTableIterator::popScope() {

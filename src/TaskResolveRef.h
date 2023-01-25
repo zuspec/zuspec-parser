@@ -45,6 +45,10 @@ public:
         const ISymbolTableIterator      *scope,
         ast::IExprRefPath               *ref);
 
+    ast::ISymbolRefPath *resolve(
+        const ISymbolTableIterator      *scope,
+        ast::IExprId                    *ref);
+
     virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) override;
 
     virtual void visitExprRefPathId(ast::IExprRefPathId *i) override;

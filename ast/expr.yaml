@@ -95,10 +95,10 @@ classes:
             - id : "UP<ExprId>"
             - params: "UP<MethodParameterList>"
             - subscript: "UP<Expr>"
-            - target: 
-                - type: int32_t
-                - is_ctor: false
-                - init: -1
+            - target:
+                is_ctor: false
+                type: UP<SymbolRefPath>
+                visit: false
     - ExprNull:
         - super: Expr
 

@@ -50,6 +50,22 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
     DEBUG_LEAVE("resolve");
 }
 
+void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
+    DEBUG_ENTER("visitExprRefPathContext");
+    // Find the first path element
+    ast::ISymbolRefPath *target = TaskResolveRef(m_factory, m_marker_l).resolve(
+        m_symtab_it.get(),
+        i->getHier_id()->getElems().at(0)->getId());
+    
+    i->setTarget(target);
+
+    if (i->getHier_id()->getElems().at(0)->getParams()) {
+        i->getHier_id()->getElems().at(0)->getParams()->accept(m_this);
+    }
+    DEBUG_LEAVE("visitExprRefPathContext");
+}
+
+
 void TaskResolveRefs::visitExprRefPathId(ast::IExprRefPathId *i) {
     DEBUG_ENTER("visitExprRefPathId %s", i->getId()->getId().c_str());
     ast::ISymbolRefPath *target = TaskResolveRef(m_factory, m_marker_l).resolve(
@@ -61,6 +77,12 @@ void TaskResolveRefs::visitExprRefPathId(ast::IExprRefPathId *i) {
     }
     i->setTarget(target);
     DEBUG_LEAVE("visitExprRefPathId");
+}
+
+void TaskResolveRefs::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) {
+    DEBUG_ENTER("visitExprRefPathStaticRooted");
+    DEBUG("TODO: visitExprRefPathStaticRooted");
+    DEBUG_LEAVE("visitExprRefPathStaticRooted");
 }
 
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
@@ -100,7 +122,7 @@ void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
 
 void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
     DEBUG_ENTER("visitSymbolFunctionScope %s", i->getName().c_str());
-    m_symtab_it->pushScope(i->getPlist());
+    m_symtab_it->pushScope(i);
     m_symtab_it->pushScope(i->getBody());
     for (std::vector<ast::IScopeChild *>::const_iterator
         it=i->getBody()->getChildren().begin();
