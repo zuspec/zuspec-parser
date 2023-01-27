@@ -73,7 +73,7 @@ ast::ISymbolRefPath *AstSymbolTableIterator::findLocalSymbolPath(const std::stri
             ret->getPath().begin(), 
             m_path.begin(), 
             m_path.end());
-        ret->getPath().push_back(idx);
+        ret->getPath().push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, idx});
         return ret;
     } else {
         return 0;
@@ -94,7 +94,8 @@ ast::IScopeChild *AstSymbolTableIterator::resolveAbsPath(const ast::ISymbolRefPa
     ast::ISymbolScope *scope = m_scope_s.at(0);
     for (uint32_t i=0; i<path->getPath().size(); i++) {
         fprintf(stdout, "Scope: %s @ %d\n", scope->getName().c_str(), path->getPath().at(i));
-        ast::IScopeChild *next = scope->getChildren().at(path->getPath().at(i));
+        const ast::SymbolRefPathElem &elem = path->getPath().at(i);
+        ast::IScopeChild *next = scope->getChildren().at(elem.idx);
 
         if (i+1 < path->getPath().size()) {
             if (!(scope=dynamic_cast<ast::ISymbolScope *>(next))) {
@@ -120,7 +121,7 @@ int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
             m_scope_s.back()->getChildren().at(it->second));
         if (scope) {
             m_scope_s.push_back(scope);
-            m_path.push_back(it->second);
+            m_path.push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second});
             DEBUG_LEAVE("pushNamedScope %s - success sz=%d", 
                 name.c_str(), m_scope_s.size());
             return it->second;
@@ -136,7 +137,7 @@ int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
 
 void AstSymbolTableIterator::pushScope(ast::ISymbolScope *s) {
     m_scope_s.push_back(s);
-    m_path.push_back(s->getId());
+    m_path.push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, s->getId()});
 }
 
 void AstSymbolTableIterator::popScope() {

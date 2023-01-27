@@ -203,6 +203,25 @@ void TaskBuildSymbolTree::visitExtendType(ast::IExtendType *i) {
     DEBUG_LEAVE("visitExtendType");
 }
 
+void TaskBuildSymbolTree::visitField(ast::IField *i) {
+    DEBUG_ENTER("visitField %s", i->getName()->getId().c_str());
+    ast::IScopeChild *ex_field = findSymbol(i->getName()->getId());
+
+    if (ex_field) {
+        reportDuplicateSymbol(
+            m_scope_s.back(),
+            ex_field,
+            i
+        );
+    } else {
+        int32_t id = m_scope_s.back()->getChildren().size();
+        m_scope_s.back()->getSymtab().insert({i->getName()->getId(), id});
+        m_scope_s.back()->getChildren().push_back(i);
+    }
+
+    DEBUG_LEAVE("visitField %s", i->getName()->getId().c_str());
+}
+
 void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) { 
     DEBUG_ENTER("visitFunctionDefinition %s", i->getProto()->getName()->getId().c_str());
 

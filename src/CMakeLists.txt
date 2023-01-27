@@ -19,6 +19,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/antlr4cpp_generated_src/PSSParser
     ${CMAKE_BINARY_DIR}/zsp_ast/src/include
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${DEBUG_MGR_DIR}/src/include
     )
@@ -42,6 +43,7 @@ file(GLOB zsp_SRC
 	"*.cpp")
 add_library(zuspec-parser SHARED
 	${zsp_SRC}
+    pss_stdlib.h
 	${ANTLR_PSSParser_OUTPUTS}
 	${ANTLR_PSSLexer_OUTPUTS})
 
@@ -64,11 +66,20 @@ endif()
 target_link_libraries(zuspec-parser ${ZUSPEC_PARSER_LIBS})
 set_target_properties(zuspec-parser PROPERTIES SKIP_BUILD_RPATH TRUE)
 
-add_library(zuspec-parser_static STATIC
-	${zsp_SRC}
-	${ANTLR_PSSParser_OUTPUTS}
-	${ANTLR_PSSLexer_OUTPUTS})
+file(GLOB pss_stdlib_SRC "stdlib/*.pss")
 
-add_dependencies(zuspec-parser_static AST libantlr4)
+add_custom_command(
+    OUTPUT pss_stdlib.h
+    DEPENDS ${pss_stdlib_SRC}
+    COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/stdlib/mk_pssstdlib.py
+        ${CMAKE_CURRENT_BINARY_DIR}/pss_stdlib.h
+)
+
+# add_library(zuspec-parser_static STATIC
+# 	${zsp_SRC}
+# 	${ANTLR_PSSParser_OUTPUTS}
+# 	${ANTLR_PSSLexer_OUTPUTS})
+
+# add_dependencies(zuspec-parser_static AST libantlr4)
 	
 

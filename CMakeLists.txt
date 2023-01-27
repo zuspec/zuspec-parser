@@ -85,6 +85,7 @@ ExternalProject_Add(libantlr4
       -DCMAKE_CXX_FLAGS:STRING=${ANTLR_CXXFLAGS}
       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
       -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+      -DBUILD_STATIC_LIBS:BOOL=False
     )
     
 ExternalProject_Add(AST

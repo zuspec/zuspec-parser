@@ -13,6 +13,17 @@ enums:
       - AssignOp_OrEq
       - AssignOp_AndEq
 
+  - ExecKind:
+      - ExecKind_Body
+      - ExecKind_Header
+      - ExecKind_Declaration
+      - ExecKind_RunStart
+      - ExecKind_RunEnd
+      - ExecKind_InitDown
+      - ExecKind_InitUp
+      - ExecKind_PreSolve
+      - ExecKind_PostSolve
+
 classes:
   - ExecStmt:
     - super: ScopeChild
@@ -21,6 +32,21 @@ classes:
     - super: ExecStmt
     - data:
       - children: list<UP<ExecStmt>>
+  - ExecBlock:
+    - super: ExecScope
+    - data:
+        - kind: ExecKind
+  - ExecTargetTemplateBlock:
+    - super: ScopeChild
+    - data:
+        - kind: ExecKind
+        - data: string
+        - parameters: list<UP<ExecTargetTemplateParam>>
+  - ExecTargetTemplateParam:
+    - data:
+        - expr: UP<Expr>
+        - start: int32_t
+        - end: int32_t
   - ProceduralStmtSequenceBlock:
     - super: ExecScope
     - data: []

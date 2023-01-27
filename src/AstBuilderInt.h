@@ -246,6 +246,8 @@ private:
 
     ast::IFunctionPrototype *mkFunctionPrototype(PSSParser::Function_prototypeContext *ctx);
 
+    ast::IFunctionParamDecl *mkFunctionParamDecl(PSSParser::Function_parameterContext *ctx);
+
 	ast::IExprId *mkId(PSSParser::IdentifierContext *ctx);
 
 	ast::IExprHierarchicalId *mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx);

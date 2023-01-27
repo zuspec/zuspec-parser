@@ -9,6 +9,17 @@ enums:
       - PlatQual_None
       - PlatQual_Target
       - PlatQual_Solve
+  - FunctionParamDeclKind:
+      - ParamKind_DataType
+      - ParamKind_Type
+      - ParamKind_RefAction
+      - ParamKind_RefComponent
+      - ParamKind_RefBuffer
+      - ParamKind_RefResource
+      - ParamKind_RefState
+      - ParamKind_RefStream
+      - ParamKind_RefStruct
+      - ParamKind_Struct
 
 classes:
   - FunctionDefinition:
@@ -19,11 +30,15 @@ classes:
   - FunctionParamDecl:
     - super: ScopeChild
     - data:
+        - kind: FunctionParamDeclKind
         - name: UP<ExprId>
         - type: UP<DataType>
         - dir: ParamDir
         - dflt: UP<Expr>
-        - is_varargs: bool
+        - is_varargs: 
+            - type: bool
+            - is_ctor: false
+            - init: false
   - FunctionPrototype:
     - super: NamedScopeChild
     - data:

@@ -1,0 +1,4 @@
+
+struct packed<type T> {
+
+}

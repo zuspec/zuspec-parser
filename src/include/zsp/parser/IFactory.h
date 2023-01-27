@@ -30,6 +30,10 @@ public:
 
     virtual dmgr::IDebugMgr *getDebugMgr() = 0;
 
+    virtual void loadStandardLibrary(
+        IAstBuilder             *ast_builder,
+        ast::IGlobalScope       *global) = 0;
+
     virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) = 0;
 
     virtual ILinker *mkAstLinker() = 0;

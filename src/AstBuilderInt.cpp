@@ -424,8 +424,36 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 }
 
 // B.4 Exec blocks
+
+static std::map<std::string, ast::ExecKind> exec_kind_m = {
+    { "body", ast::ExecKind::ExecKind_Body },
+    { "header", ast::ExecKind::ExecKind_Header },
+    { "declaration", ast::ExecKind::ExecKind_Declaration },
+    { "run_start", ast::ExecKind::ExecKind_RunStart },
+    { "run_end", ast::ExecKind::ExecKind_RunEnd },
+    { "init", ast::ExecKind::ExecKind_InitUp },
+    { "init_down", ast::ExecKind::ExecKind_InitDown },
+    { "init_up", ast::ExecKind::ExecKind_InitUp },
+    { "pre_solve", ast::ExecKind::ExecKind_PreSolve },
+    { "post_solve", ast::ExecKind::ExecKind_PostSolve }
+};
+
 antlrcpp::Any AstBuilderInt::visitExec_block(PSSParser::Exec_blockContext *ctx) {
     DEBUG_ENTER("visitExec_block");
+    ast::IExecBlock *exec = m_factory->mkExecBlock(
+        exec_kind_m.find(ctx->exec_kind()->toString())->second
+    );
+
+    m_exec_scope_s.push_back(exec);
+    std::vector<PSSParser::Exec_stmtContext *> items = ctx->exec_stmt();
+    for (std::vector<PSSParser::Exec_stmtContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        addExecStmt((*it)->procedural_stmt());
+    }
+    m_exec_scope_s.pop_back();
+
+    addChild(exec, ctx->start);
 
     DEBUG_LEAVE("visitExec_block");
     return 0;
@@ -1791,6 +1819,15 @@ static std::map<std::string, ParamDir> param_dir_m = {
     { "output", ParamDir::ParamDir_Out},
     { "inout", ParamDir::ParamDir_InOut}
 };
+static std::map<std::string, FunctionParamDeclKind> ref_param_kind_m = {
+    { "action", FunctionParamDeclKind::ParamKind_RefAction },
+    { "component", FunctionParamDeclKind::ParamKind_RefComponent },
+    { "struct", FunctionParamDeclKind::ParamKind_RefStruct },
+    { "buffer", FunctionParamDeclKind::ParamKind_RefBuffer },
+    { "stream", FunctionParamDeclKind::ParamKind_RefStream },
+    { "state", FunctionParamDeclKind::ParamKind_RefState },
+    { "resource", FunctionParamDeclKind::ParamKind_RefResource }
+};
 
 ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
     PSSParser::Function_prototypeContext *ctx) {
@@ -1809,27 +1846,90 @@ ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
     for (std::vector<PSSParser::Function_parameterContext *>::const_iterator
         it=items.begin();
         it!=items.end(); it++) {
-        ParamDir dir = ParamDir::ParamDir_Default;
+        ast::IFunctionParamDecl *param = mkFunctionParamDecl(*it);
 
-        if ((*it)->function_parameter_dir()) {
-            dir = param_dir_m.find((*it)->function_parameter_dir()->toString())->second;
-        }
-        ast::IDataType *type = mkDataType((*it)->data_type());
-        ast::IExprId *name = mkId((*it)->identifier());
+        proto->getParameters().push_back(ast::IFunctionParamDeclUP(param));
+    }
+
+    if (ctx->function_parameter_list_prototype()->is_varargs) {
+        // Pick up the final parameter
+        PSSParser::Varargs_parameterContext *va_p = ctx->function_parameter_list_prototype()->varargs_parameter();
+
+        ParamDir dir = ParamDir::ParamDir_Default;
+        FunctionParamDeclKind kind = FunctionParamDeclKind::ParamKind_DataType;
+        ast::IDataType *type = 0;
         ast::IExpr *dflt = 0;
-        if ((*it)->constant_expression()) {
-            dflt = mkExpr((*it)->constant_expression()->expression());
+
+        if (va_p->data_type()) {
+            type = mkDataType(va_p->data_type());
+        } else if (va_p->is_ref) {
+            if (va_p->is_type) {
+                kind = FunctionParamDeclKind::ParamKind_Type;
+            } else if (va_p->is_ref) {
+                kind = ref_param_kind_m.find(va_p->type_category()->toString())->second;
+            } else if (va_p->is_struct) {
+                kind = FunctionParamDeclKind::ParamKind_Struct;
+            } else {
+                // TODO: should not occur
+            }
         }
+
         ast::IFunctionParamDecl *param = m_factory->mkFunctionParamDecl(
-            name,
+            kind,
+            mkId(va_p->identifier()),
             type,
             dir,
-            dflt,
-            false);
+            dflt);
+
+        param->setIs_varargs(true);
         proto->getParameters().push_back(ast::IFunctionParamDeclUP(param));
     }
 
     return proto;
+}
+
+
+
+ast::IFunctionParamDecl *AstBuilderInt::mkFunctionParamDecl(PSSParser::Function_parameterContext *ctx) {
+    ast::IFunctionParamDecl *ret = 0;
+    DEBUG_ENTER("mkFunctionParamDecl");
+    ParamDir dir = ParamDir::ParamDir_Default;
+    FunctionParamDeclKind kind = FunctionParamDeclKind::ParamKind_DataType;
+    ast::IDataType *type = 0;
+    ast::IExpr *dflt = 0;
+
+    if (ctx->data_type()) {
+        // Regular parameter with direction, type, etc
+        if (ctx->function_parameter_dir()) {
+            dir = param_dir_m.find(ctx->function_parameter_dir()->toString())->second;
+        }
+        type = mkDataType(ctx->data_type());
+
+        if (ctx->constant_expression()) {
+            dflt = mkExpr(ctx->constant_expression()->expression());
+        }
+    } else {
+        // type, ref-category, parameter
+        if (ctx->is_type) {
+            kind = FunctionParamDeclKind::ParamKind_Type;
+        } else if (ctx->is_ref) {
+            kind = ref_param_kind_m.find(ctx->type_category()->toString())->second;
+        } else if (ctx->is_struct) {
+            kind = FunctionParamDeclKind::ParamKind_Struct;
+        } else {
+            // TODO: should not occur
+        }
+    }
+
+    ret = m_factory->mkFunctionParamDecl(
+        kind,
+        mkId(ctx->identifier()),
+        type,
+        dir,
+        dflt);
+
+    DEBUG_LEAVE("mkFunctionParamDecl");
+    return ret;
 }
 
 IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {

@@ -358,7 +358,7 @@ function_parameter_list_prototype:
 		(
 			TOK_LPAREN (function_parameter (TOK_COMMA function_parameter)*)? TOK_RPAREN
 		) | (
-			TOK_LPAREN (function_parameter TOK_COMMA)* varargs_parameter TOK_RPAREN
+			is_varargs=TOK_LPAREN (function_parameter TOK_COMMA)* varargs_parameter TOK_RPAREN
 		)
 	)
 	;
@@ -367,7 +367,7 @@ function_parameter:
 	(
 		function_parameter_dir? data_type identifier (TOK_SINGLE_EQ constant_expression)?
 	) | (
-		(TOK_TYPE | TOK_REF type_category | TOK_STRUCT) identifier
+		(is_type=TOK_TYPE | is_ref=TOK_REF type_category | is_struct=TOK_STRUCT) identifier
 	)
 	;
 
@@ -378,7 +378,7 @@ function_parameter_dir:
 	;
 
 varargs_parameter:
-	(data_type | TOK_TYPE | TOK_REF type_category | TOK_STRUCT) TOK_TRIPLE_ELIPSIS identifier
+	(data_type | is_type=TOK_TYPE | is_ref=TOK_REF type_category | is_struct=TOK_STRUCT) TOK_TRIPLE_ELIPSIS identifier
 	;
 
 /********************************************************************
@@ -851,8 +851,8 @@ template_param_value_list:
 	;
 
 template_param_value: 
-	constant_expression 
-	| type_identifier
+	constant_expression
+	| data_type
 	;
 
 /********************************************************************

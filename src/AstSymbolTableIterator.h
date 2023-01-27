@@ -65,7 +65,7 @@ public:
 private:
     static dmgr::IDebug                     *m_dbg;
     ast::IFactory                           *m_factory;
-    std::vector<int32_t>                    m_path;
+    std::vector<ast::SymbolRefPathElem>     m_path;
     std::vector<ast::ISymbolScope *>        m_scope_s;
 
 };

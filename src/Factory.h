@@ -47,6 +47,10 @@ public:
     virtual dmgr::IDebugMgr *getDebugMgr() override {
         return m_dmgr;
     }
+    
+    virtual void loadStandardLibrary(
+        IAstBuilder             *ast_builder,
+        ast::IGlobalScope       *global) override;
 
     virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) override;
 

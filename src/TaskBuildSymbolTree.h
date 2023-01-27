@@ -55,6 +55,8 @@ public:
 
     virtual void visitExtendType(ast::IExtendType *i) override;
 
+    virtual void visitField(ast::IField *i) override;
+
     virtual void visitFunctionDefinition(ast::IFunctionDefinition *i) override;
 
     virtual void visitFunctionImportProto(ast::IFunctionImportProto *i) override;
@@ -70,7 +72,6 @@ public:
     virtual void visitScopeChild(ast::IScopeChild *i) override;
 
     virtual void visitTypeScope(ast::ITypeScope *i) override;;
-
 
 
 protected:

@@ -68,12 +68,14 @@ void TestBase::runTest(
 	MarkerCollector marker_c;
 	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(&marker_c));
 
+//    m_factory->loadStandardLibrary(ast_builder.get(), global.get());
+
 	ast_builder->build(global.get(), &s);
 
 	for (std::vector<IMarkerUP>::const_iterator
 			it=marker_c.markers().begin();
 			it!=marker_c.markers().end(); it++) {
-		fprintf(stdout, "Marker: %s\n", (*it)->msg().c_str());
+		fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
 	}
 
 	ASSERT_FALSE(marker_c.hasSeverity(parser::MarkerSeverityE::Error));
@@ -84,6 +86,12 @@ void TestBase::runTest(
 		&marker_c,
 		{global.get()}
 	));
+
+	for (std::vector<IMarkerUP>::const_iterator
+			it=marker_c.markers().begin();
+			it!=marker_c.markers().end(); it++) {
+		fprintf(stdout, "Link Error: %s\n", (*it)->msg().c_str());
+	}
 
 	ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
 }

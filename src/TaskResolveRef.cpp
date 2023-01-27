@@ -166,7 +166,7 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
 			int32_t idx;
             if ((idx=it->findLocalSymbol((*ti_it)->getId()->getId())) != -1) {
                 DEBUG("Found");
-				ret->getPath().push_back(idx);
+				ret->getPath().push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, idx});
                 if (ti_it+1 != type_id->getElems().end()) {
      				if (!it->pushNamedScope((*ti_it)->getId()->getId())) {
                         DEBUG("Error: found a symbol, but it's not a scope");
@@ -473,7 +473,9 @@ ast::ISymbolRefPath *TaskResolveRef::searchImport(
 				ret->getPath().begin(),
 				imp->getPath()->getTarget()->getPath().begin(),
 				imp->getPath()->getTarget()->getPath().end());
-			ret->getPath().push_back(it->second);
+			ret->getPath().push_back({
+                ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second
+            });
 		}
 	}
 

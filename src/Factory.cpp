@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include <sstream>
 #include "Factory.h"
 #include "AstBuilder.h"
 #include "AstLinker.h"
@@ -26,6 +27,7 @@
 #include "Marker.h"
 #include "MarkerCollector.h"
 #include "NameResolver.h"
+#include "pss_stdlib.h"
 
 
 namespace zsp {
@@ -53,6 +55,17 @@ void Factory::init(
 
 ast::IFactory *Factory::getAstFactory() {
     return m_ast_factory;
+}
+
+void Factory::loadStandardLibrary(
+    IAstBuilder             *ast_builder,
+    ast::IGlobalScope       *global) {
+    
+    for (uint32_t i=0; pss_stdlib[i]; i++) {
+        std::stringstream s(pss_stdlib[i]);
+
+        ast_builder->build(global, &s);
+    }
 }
 
 IAstBuilder *Factory::mkAstBuilder(IMarkerListener *marker_l) {
