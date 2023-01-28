@@ -57,6 +57,8 @@ public:
 
     virtual void visitField(ast::IField *i) override;
 
+    virtual void visitFieldCompRef(ast::IFieldCompRef *i) override;
+
     virtual void visitFunctionDefinition(ast::IFunctionDefinition *i) override;
 
     virtual void visitFunctionImportProto(ast::IFunctionImportProto *i) override;

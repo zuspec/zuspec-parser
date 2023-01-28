@@ -169,7 +169,7 @@ void TaskBuildSymbolTree::visitExecStmt(ast::IExecStmt *i) {
 void TaskBuildSymbolTree::visitExecScope(ast::IExecScope *i) {
     DEBUG_ENTER("visitExecScope");
     int32_t id = m_scope_s.back()->getChildren().size();
-    ast::ISymbolScope *scope = m_factory->mkSymbolScope(id, "");
+    ast::ISymbolScope *scope = m_factory->mkSymbolExecScope(id, "");
     m_scope_s.back()->getChildren().push_back(scope);
     m_scope_s.back()->getOwned().push_back(ast::IScopeChildUP(scope));
     m_scope_s.push_back(scope);
@@ -220,6 +220,25 @@ void TaskBuildSymbolTree::visitField(ast::IField *i) {
     }
 
     DEBUG_LEAVE("visitField %s", i->getName()->getId().c_str());
+}
+
+void TaskBuildSymbolTree::visitFieldCompRef(ast::IFieldCompRef *i) {
+    DEBUG_ENTER("visitFieldCompRef %s", i->getName()->getId().c_str());
+    ast::IScopeChild *ex_field = findSymbol(i->getName()->getId());
+
+    if (ex_field) {
+        reportDuplicateSymbol(
+            m_scope_s.back(),
+            ex_field,
+            i
+        );
+    } else {
+        int32_t id = m_scope_s.back()->getChildren().size();
+        m_scope_s.back()->getSymtab().insert({i->getName()->getId(), id});
+        m_scope_s.back()->getChildren().push_back(i);
+    }
+
+    DEBUG_LEAVE("visitFieldCompRef %s", i->getName()->getId().c_str());
 }
 
 void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) { 

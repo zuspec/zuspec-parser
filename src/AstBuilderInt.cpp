@@ -253,6 +253,13 @@ antlrcpp::Any AstBuilderInt::visitAction_declaration(PSSParser::Action_declarati
 		super_t,
 		false);
 
+    // Add in a ref field
+    ast::IFieldCompRef *comp = m_factory->mkFieldCompRef(
+        m_factory->mkExprId("comp", false),
+        0 // Type: must back-patch later
+    );
+    action->getChildren().push_back(ast::IScopeChildUP(comp));
+
 	if (ctx->template_param_decl_list()) {
 		// TODO: add in declarations
 	}

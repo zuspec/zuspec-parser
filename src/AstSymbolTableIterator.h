@@ -46,7 +46,9 @@ public:
 
     virtual ast::ISymbolRefPath *findLocalSymbolPath(const std::string &name) override;
 
-    virtual ast::ISymbolScope *getScope() const override;
+    virtual ast::ISymbolRefPath *getScopeSymbolPath(int off=0) const override;
+
+    virtual ast::ISymbolScope *getScope(int32_t off=0) const override;
 
     virtual ast::IScopeChild *getScopeChild(int32_t idx) const override;
 

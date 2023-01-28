@@ -275,41 +275,41 @@ component pss_top {
 
 TEST_F(TestParseSpecExamples, test_028_constraining_a_comp_attribute) {
     const char *text = R"(
-
 component vid_pipe_c { 
 //<example>
- action program { /* ... */ }
+     action program { /* ... */ }
 //</example>
-/* ... */ 
+    /* ... */ 
 };
 
 component codec_c {
- vid_pipe_c pipeA, pipeB;
- bit mode1_enable;
+    vid_pipe_c pipeA, pipeB;
+    bit mode1_enable;
 
  
- action decode {
- 	rand bit mode;
+    action decode {
+        rand bit mode;
  
-	constraint set_mode {
-		comp.mode1_enable==0 -> mode == 0;
-	}
+        constraint set_mode {
+            comp.mode1_enable==0 -> mode == 0;
+        }
 	
-	activity {
- 		do vid_pipe_c::program with { comp == this.comp.pipeA; };
-	}
- 
-  };
+        activity {
+            do vid_pipe_c::program with { comp == this.comp.pipeA; };
+        }
+    };
 };
 
 component multimedia_ss_c {
- codec_c codecs[2];
- exec init {
-	codecs[0].mode1_enable = 0;
-	codecs[1].mode1_enable = 1;
- };
+    codec_c codecs[2];
+
+    exec init {
+        codecs[0].mode1_enable = 0;
+        codecs[1].mode1_enable = 1;
+    };
 };
     )";
+    enableDebug(true);
     runTest(text, "028_constraining_a_comp_attribute.pss");
 }
 
@@ -444,20 +444,21 @@ TEST_F(TestParseSpecExamples, test_037_action_traversal) {
 component top {
 //</example>
 
-action A {
- rand bit[4] f1;
- // ...
-}
-action B {
- A a1, a2;
+    action A {
+        rand bit[4] f1;
+        // ...
+    }
 
- activity {
- a1;
- a2 with {
- f1 < 10;
- };
- }
-}
+    action B {
+        A a1, a2;
+
+        activity {
+            a1;
+            a2 with {
+                f1 < 10;
+            };
+        }
+    }
 
 //<example>
 }
@@ -2076,39 +2077,48 @@ action dyn {
 
 TEST_F(TestParseSpecExamples, test_154_pre_solve_post_solve) {
     const char *text = R"(
-
 function bit[6] get_init_val();
+
 function bit[6] get_exp_val(bit[6] stim_val);
+
 struct S1 {
-bit[6] init_val;
-rand bit[6] rand_val;
-bit[6] exp_val;
-exec pre_solve {
-init_val = get_init_val();
+    bit[6] init_val;
+    rand bit[6] rand_val;
+    bit[6] exp_val;
+
+    exec pre_solve {
+        init_val = get_init_val();
+    }
+
+    constraint rand_val_c {
+        rand_val <= init_val+10;
+    }
+
+    exec post_solve {
+        exp_val = get_exp_val(rand_val);
+    }
 }
-constraint rand_val_c {
-rand_val <= init_val+10;
-}
-exec post_solve {
-exp_val = get_exp_val(rand_val);
-}
-}
+
 struct S2 {
-bit[6] init_val;
-rand bit[6] rand_val;
-bit[6] exp_val;
-rand S1 s1_1, s1_2;
-exec pre_solve {
-init_val = get_init_val();
-}
-constraint rand_val_c {
-rand_val > init_val;
-}
-exec post_solve {
-exp_val = get_exp_val(rand_val);
-}
+    bit[6] init_val;
+    rand bit[6] rand_val;
+    bit[6] exp_val;
+    rand S1 s1_1, s1_2;
+
+    exec pre_solve {
+        init_val = get_init_val();
+    }
+
+    constraint rand_val_c {
+        rand_val > init_val;
+    }
+
+    exec post_solve {
+        exp_val = get_exp_val(rand_val);
+    }
 }
     )";
+    enableDebug(true);
     runTest(text, "154_pre_solve_post_solve.pss");
 }
 

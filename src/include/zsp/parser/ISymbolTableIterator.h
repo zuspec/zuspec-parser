@@ -37,7 +37,9 @@ public:
 
     virtual ast::ISymbolRefPath *findLocalSymbolPath(const std::string &name) = 0;
 
-    virtual ast::ISymbolScope *getScope() const = 0;
+    virtual ast::ISymbolRefPath *getScopeSymbolPath(int off=0) const = 0;
+
+    virtual ast::ISymbolScope *getScope(int32_t off=0) const = 0;
 
     virtual ast::IScopeChild *getScopeChild(int32_t idx) const = 0;
 

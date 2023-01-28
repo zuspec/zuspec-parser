@@ -50,6 +50,7 @@ TEST_F(TestImportLink, ambiguous_wildcard_imp) {
     }
     )";
 
+    enableDebug(true);
     MarkerCollector marker_c; 
     std::vector<ast::IGlobalScopeUP> files;
 
@@ -59,11 +60,10 @@ TEST_F(TestImportLink, ambiguous_wildcard_imp) {
         "ambiguous_wildcard_imp.pss"
     )));
 
-
     for (std::vector<IMarkerUP>::const_iterator
         it=marker_c.markers().begin();
         it!=marker_c.markers().end(); it++) {
-        fprintf(stdout, "Marker: %s\n", (*it)->msg().c_str());
+        fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
     }
     ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
 
@@ -77,6 +77,8 @@ TEST_F(TestImportLink, ambiguous_wildcard_imp) {
         it!=marker_c.markers().end(); it++) {
         fprintf(stdout, "Marker: %s\n", (*it)->msg().c_str());
     }
+    ASSERT_EQ(marker_c.markers().size(), 1);
+    ASSERT_TRUE(marker_c.markers().at(0)->msg().find("Ambiguous symbol resolution") != -1);
     ASSERT_TRUE(marker_c.hasSeverity(MarkerSeverityE::Error));
 }
 

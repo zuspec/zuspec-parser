@@ -74,6 +74,8 @@ protected:
         ast::ISymbolScope                   *root,
         const std::vector<std::string>      &path);
 
+    void enableDebug(bool en);
+
 
 protected:
 	ast::IFactory				        *m_ast_factory;

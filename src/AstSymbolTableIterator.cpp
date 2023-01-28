@@ -80,8 +80,18 @@ ast::ISymbolRefPath *AstSymbolTableIterator::findLocalSymbolPath(const std::stri
     }
 }
 
-ast::ISymbolScope *AstSymbolTableIterator::getScope() const {
-    return m_scope_s.back();
+ast::ISymbolRefPath *AstSymbolTableIterator::getScopeSymbolPath(int32_t off) const {
+    ast::ISymbolRefPath *ret = m_factory->mkSymbolRefPath();
+
+    for (int32_t i=0; i<(m_path.size()-off); i++) {
+        ret->getPath().push_back(m_path.at(i));
+    }
+
+    return ret;
+}
+
+ast::ISymbolScope *AstSymbolTableIterator::getScope(int32_t off) const {
+    return m_scope_s.at(m_scope_s.size()-off-1);
 }
 
 ast::IScopeChild *AstSymbolTableIterator::getScopeChild(int32_t idx) const {
@@ -93,7 +103,7 @@ ast::IScopeChild *AstSymbolTableIterator::resolveAbsPath(const ast::ISymbolRefPa
 
     ast::ISymbolScope *scope = m_scope_s.at(0);
     for (uint32_t i=0; i<path->getPath().size(); i++) {
-        fprintf(stdout, "Scope: %s @ %d\n", scope->getName().c_str(), path->getPath().at(i));
+        DEBUG("Scope: %s @ %d", scope->getName().c_str(), path->getPath().at(i));
         const ast::SymbolRefPathElem &elem = path->getPath().at(i);
         ast::IScopeChild *next = scope->getChildren().at(elem.idx);
 
@@ -145,11 +155,13 @@ void AstSymbolTableIterator::popScope() {
     if (m_scope_s.size() > 0) {
         m_scope_s.pop_back();
         m_path.pop_back();
+        /*
         if (m_scope_s.size() == 0) {
-            fprintf(stdout, "Error: emptied scope stack\n");
+            FATAL("emptied scope stack");
         }
+         */
     } else {
-        fprintf(stdout, "Error: attempt to pop an empty stack\n");
+        FATAL("attempt to pop an empty stack");
     }
     DEBUG_LEAVE("popScope - sz=%d", m_scope_s.size());
 }

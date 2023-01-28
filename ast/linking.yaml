@@ -55,6 +55,10 @@ classes:
     super: SymbolScope
     data: {}
 
+- SymbolExecScope:
+    super: SymbolScope
+    data: {}
+
 - SymbolExtendScope:
     super: SymbolScope
     data: {}

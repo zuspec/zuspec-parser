@@ -19,6 +19,8 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "TaskLinkActionCompRefFields.h"
+#include "TaskResolveImports.h"
 #include "TaskResolveRef.h"
 #include "TaskResolveRefs.h"
 
@@ -42,6 +44,10 @@ TaskResolveRefs::~TaskResolveRefs() {
 void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
     DEBUG_ENTER("resolve");
     m_symtab_it = ISymbolTableIteratorUP(m_factory->mkAstSymbolTableIterator(root));
+
+    // First, ensure all actions have their 'comp' refs updated
+    TaskLinkActionCompRefFields(m_factory).link(root);
+
     for (std::vector<ast::IScopeChild *>::const_iterator
         it=root->getChildren().begin();
         it!=root->getChildren().end(); it++) {
@@ -86,12 +92,22 @@ void TaskResolveRefs::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted
 }
 
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
-    DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
-    if (m_symtab_it->pushNamedScope(i->getName()) == -1) {
-        // TODO: internal error
-        fprintf(stdout, "Internal Error: no scope named %s in %s\n", 
-            i->getName().c_str(),
-            m_symtab_it->getScope()->getName().c_str());
+    DEBUG_ENTER("visitSymbolScope \"%s\"", i->getName().c_str());
+    if (i->getName() != "") {
+        if (m_symtab_it->pushNamedScope(i->getName()) == -1) {
+            // TODO: internal error
+            fprintf(stdout, "Internal Error: no scope named %s in %s\n", 
+                i->getName().c_str(),
+                m_symtab_it->getScope()->getName().c_str());
+        }
+    } else {
+        m_symtab_it->pushScope(i);
+    }
+
+    if (i->getImports()) {
+        TaskResolveImports(m_factory, m_marker_l).resolve(
+            m_symtab_it.get(),
+            i);
     }
 
     for (std::vector<ast::IScopeChild *>::const_iterator
@@ -101,7 +117,7 @@ void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
     }
 
     m_symtab_it->popScope();
-    DEBUG_LEAVE("visitSymbolScope %s", i->getName().c_str());
+    DEBUG_LEAVE("visitSymbolScope \"%s\"", i->getName().c_str());
 }
 
 void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
@@ -118,6 +134,20 @@ void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
     m_symtab_it->popScope();
 
     DEBUG_LEAVE("visitSymbolExtendScope");
+}
+
+void TaskResolveRefs::visitSymbolExecScope(ast::ISymbolExecScope *i) {
+    DEBUG_ENTER("visitSymbolExecScope \"%s\"", i->getName().c_str());
+    m_symtab_it->pushScope(i);
+
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(this);
+    }
+
+    m_symtab_it->popScope();
+    DEBUG_LEAVE("visitSymbolExecScope \"%s\"", i->getName().c_str());
 }
 
 void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {

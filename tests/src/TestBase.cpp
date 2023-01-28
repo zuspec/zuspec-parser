@@ -52,6 +52,7 @@ void TestBase::SetUp() {
     m_ast_factory = ast_getFactory();
 	m_factory = zsp_parser_getFactory();
     m_factory->init(dmgr, m_ast_factory);
+    m_factory->getDebugMgr()->enable(false);
 }
 
 void TestBase::TearDown() {
@@ -178,6 +179,10 @@ ast::IScopeChild *TestBase::findItem(
     }
 
     return ret;
+}
+
+void TestBase::enableDebug(bool en) {
+    m_factory->getDebugMgr()->enable(en);
 }
 
 }

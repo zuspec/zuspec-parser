@@ -18,23 +18,9 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "TaskResolveImports.h"
 #include "TaskResolveRef.h"
-
-#define DEBUG_ENTER(fmt, ...) \
-	fprintf(stdout, "--> TaskResolveImports::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG(fmt, ...) \
-	fprintf(stdout, "TaskResolveImports: "); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
-
-#define DEBUG_LEAVE(fmt, ...) \
-	fprintf(stdout, "<-- TaskResolveImports::"); \
-	fprintf(stdout, fmt, ##__VA_ARGS__); \
-	fprintf(stdout, "\n");
 
 namespace zsp {
 namespace parser {
@@ -45,7 +31,7 @@ TaskResolveImports::TaskResolveImports(
     IFactory                *factory,
     IMarkerListener         *marker_l) : 
         m_factory(factory), m_marker_l(marker_l) {
-
+    DEBUG_INIT("TaskResolveImports", factory->getDebugMgr());
 }
 
 TaskResolveImports::~TaskResolveImports() {
@@ -77,6 +63,8 @@ void TaskResolveImports::visitPackageImportStmt(ast::IPackageImportStmt *i) {
     }
     DEBUG_LEAVE("visitPackageImportStmt");
 }
+
+dmgr::IDebug *TaskResolveImports::m_dbg = 0;
 
 }
 }

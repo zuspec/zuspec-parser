@@ -17,7 +17,10 @@ classes:
       - attr : FieldAttr
       - array_dim : UP<Expr>
       - init : UP<Expr>
-
+  - FieldCompRef:
+      super: NamedScopeChild
+      data:
+      - type: UP<DataTypeUserDefined>
   - FieldRef:
       super: NamedScopeChild
       data:

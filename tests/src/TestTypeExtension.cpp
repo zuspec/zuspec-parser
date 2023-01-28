@@ -56,6 +56,12 @@ TEST_F(TestTypeExtension, comp_ext_action) {
         root
     );
 
+	for (std::vector<IMarkerUP>::const_iterator
+			it=marker_c->markers().begin();
+			it!=marker_c->markers().end(); it++) {
+		fprintf(stdout, "Link Error: %s\n", (*it)->msg().c_str());
+	}
+
     ASSERT_FALSE(marker_c->hasSeverity(MarkerSeverityE::Error));
     ast::IScopeChild *A = findItem(root.get(), {"pss_top", "A"});
     ASSERT_TRUE(A);
