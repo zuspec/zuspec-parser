@@ -927,8 +927,14 @@ enum_item:
 	identifier (TOK_SINGLE_EQ constant_expression)?
 	;
 
+// Note: from a parse perspective, there is ambiguity between
+// any user-defined type (enum_type_identifier) and a user-defined
+// enum type
+// This parser changes the BNF to only consider an enum_type to
+// require the range restriction
 enum_type:
-	enum_type_identifier (TOK_IN TOK_LSBRACE open_range_list TOK_RSBRACE)?
+//	enum_type_identifier (TOK_IN TOK_LSBRACE open_range_list TOK_RSBRACE)?
+	enum_type_identifier TOK_IN TOK_LSBRACE open_range_list TOK_RSBRACE
 	;
 
 // Note: this parser treats collection types as parameterized classes

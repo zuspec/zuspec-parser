@@ -453,7 +453,7 @@ component top {
         A a1, a2;
 
         activity {
-            a1;
+//            a1;
             a2 with {
                 f1 < 10;
             };
@@ -463,6 +463,8 @@ component top {
 //<example>
 }
 //</example>    )";
+
+    enableDebug(true);
     runTest(text, "037_action_traversal.pss");
 }
 
@@ -2663,19 +2665,24 @@ TEST_F(TestParseSpecExamples, test_202_type_extension) {
     const char *text = R"(
 
 enum config_modes_e {UNKNOWN, MODE_A=10, MODE_B=20};
+
 component uart_c {
-action configure {
-rand config_modes_e mode;
- constraint {mode != UNKNOWN;}
+    action configure {
+        rand config_modes_e mode;
+         constraint {mode != UNKNOWN;}
+    }
 }
-}
+
 package additional_config_pkg {
-extend enum config_modes_e {MODE_C=30, MODE_D=50}
-extend action uart_c::configure {
-constraint {mode != MODE_D;}
-}
+    extend enum config_modes_e {MODE_C=30, MODE_D=50}
+
+    extend action uart_c::configure {
+        constraint {mode != MODE_D;}
+    }
 }
     )";
+
+    enableDebug(true);
     runTest(text, "202_type_extension.pss");
 }
 

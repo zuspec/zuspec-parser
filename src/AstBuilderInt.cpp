@@ -134,9 +134,11 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
         kind = ast::ExtendTargetE::Component;
     } else if (ctx->is_enum) {
         kind = ast::ExtendTargetE::Enum;
+    } else if (ctx->struct_kind()->img) {
+        kind = ast::ExtendTargetE::Struct;
     } else {
         std::map<std::string,ast::ExtendTargetE>::const_iterator it =
-            ExtendKind_m.find(ctx->struct_kind()->toString());
+            ExtendKind_m.find(ctx->struct_kind()->object_kind()->toString());
         if (it != ExtendKind_m.end()) {
             kind = it->second;
         } else {
@@ -937,6 +939,7 @@ antlrcpp::Any AstBuilderInt::visitData_declaration(PSSParser::Data_declarationCo
 	for (std::vector<PSSParser::Data_instantiationContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
+        DEBUG("Name: %s", (*it)->identifier()->toString().c_str());
 		ast::IDataType *type = mkDataType(ctx->data_type());
 		ast::IExpr *array_dim = 0;
 		ast::IExpr *init = 0;
@@ -1496,6 +1499,13 @@ antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) 
 
 	DEBUG_LEAVE("visitIdentifier");
 	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitType_identifier(PSSParser::Type_identifierContext *ctx) {
+    DEBUG_ENTER("visitType_identifier");
+    m_type = mkDataTypeUserDefined(ctx);
+    DEBUG_LEAVE("visitType_identifier");
+    return 0;
 }
 
 // B.19 Numbers

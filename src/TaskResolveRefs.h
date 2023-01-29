@@ -41,11 +41,19 @@ public:
 
     void resolve(ast::ISymbolScope *root);
 
+    virtual void visitActivityActionHandleTraversal(ast::IActivityActionHandleTraversal *i) override;
+    
+    virtual void visitActivityActionTypeTraversal(ast::IActivityActionTypeTraversal *i) override;
+
     virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) override;
 
     virtual void visitExprRefPathId(ast::IExprRefPathId *i) override;
 
     virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) override;
+
+    virtual void visitExtendEnum(ast::IExtendEnum *i) override;
+
+    virtual void visitExtendType(ast::IExtendType *i) override;
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
@@ -63,8 +71,13 @@ public:
 
     virtual void visitStruct(ast::IStruct *i) override;
 
+protected:
+    ast::IScopeChild *resolvePath(ast::ISymbolRefPath *path);
+
+
 private:
     static dmgr::IDebug     *m_dbg;
+    ast::ISymbolScope       *m_root;
     dmgr::IDebugMgr         *m_dmgr;
     IFactory                *m_factory;
     IMarkerListener         *m_marker_l;

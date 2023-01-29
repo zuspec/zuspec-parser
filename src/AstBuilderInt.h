@@ -184,6 +184,8 @@ public:
 	// B.18 Identifiers
 	virtual antlrcpp::Any visitIdentifier(PSSParser::IdentifierContext *ctx) override;
 
+    virtual antlrcpp::Any visitType_identifier(PSSParser::Type_identifierContext *context) override;
+
 
 	// B.19 Numbers
 	virtual antlrcpp::Any visitNumber(PSSParser::NumberContext *ctx) override;

@@ -34,6 +34,7 @@ TaskResolveRefs::TaskResolveRefs(
     IFactory            *factory,
     IMarkerListener     *marker_l) : m_factory(factory), m_marker_l(marker_l) {
     m_dmgr = dmgr;
+    m_root = 0;
     DEBUG_INIT("TaskResolveRefs", dmgr);
 }
 
@@ -43,10 +44,14 @@ TaskResolveRefs::~TaskResolveRefs() {
 
 void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
     DEBUG_ENTER("resolve");
+    m_root = root;
     m_symtab_it = ISymbolTableIteratorUP(m_factory->mkAstSymbolTableIterator(root));
 
     // First, ensure all actions have their 'comp' refs updated
     TaskLinkActionCompRefFields(m_factory).link(root);
+
+    // Phases:
+    // - 
 
     for (std::vector<ast::IScopeChild *>::const_iterator
         it=root->getChildren().begin();
@@ -54,6 +59,35 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
         (*it)->accept(this);
     }
     DEBUG_LEAVE("resolve");
+}
+
+void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHandleTraversal *i) {
+    DEBUG_ENTER("visitActivityActionHandleTraversal");
+    i->getTarget()->accept(m_this);
+    ast::IScopeChild *target = resolvePath(i->getTarget()->getTarget());
+    ast::IField *field = dynamic_cast<ast::IField *>(target);
+    DEBUG("target=%p field=%p", target, field);
+    DEBUG("field: %s", field->getName()->getId().c_str());
+    ast::IDataType *field_t = field->getType();
+    ast::IDataTypeUserDefined *field_udt = dynamic_cast<ast::IDataTypeUserDefined *>(field_t);
+
+    DEBUG("field_t=%p action_t=%p", field_t, field_udt);
+    ast::IScopeChild *field_c = resolvePath(field_udt->getType_id()->getTarget());
+    ast::ISymbolScope *field_scope = dynamic_cast<ast::ISymbolScope *>(field_c);
+    DEBUG("field_c=%p field_scope=%s", field_c, field_scope->getName().c_str());
+    m_symtab_it->pushScope(field_scope);
+    if (i->getWith_c()) {
+        DEBUG_ENTER(" ::getWith()");
+        i->getWith_c()->accept(m_this);
+        DEBUG_LEAVE(" ::getWith()");
+    }
+    m_symtab_it->popScope();
+    DEBUG_LEAVE("visitActivityActionHandleTraversal");
+}
+    
+void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeTraversal *i) {
+    DEBUG_ENTER("visitActivityActionTypeTraversal");
+    DEBUG_LEAVE("visitActivityActionTypeTraversal");
 }
 
 void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
@@ -91,6 +125,18 @@ void TaskResolveRefs::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted
     DEBUG_LEAVE("visitExprRefPathStaticRooted");
 }
 
+void TaskResolveRefs::visitExtendEnum(ast::IExtendEnum *i) {
+    DEBUG_ENTER("visitExtendEnum");
+    DEBUG("Note: Skip during core symbol resolution");
+    DEBUG_LEAVE("visitExtendEnum");
+}
+
+void TaskResolveRefs::visitExtendType(ast::IExtendType *i) {
+    DEBUG_ENTER("visitExtendType");
+    DEBUG("Note: Skip during core symbol resolution");
+    DEBUG_LEAVE("visitExtendType");
+}
+
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope \"%s\"", i->getName().c_str());
     if (i->getName() != "") {
@@ -122,7 +168,9 @@ void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
 
 void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
     DEBUG_ENTER("visitSymbolExtendScope");
+    DEBUG("Note: Skipping during core symbol resolution");
 
+/*
     m_symtab_it->pushScope(i);
 
     for (std::vector<ast::IScopeChild *>::const_iterator
@@ -132,6 +180,7 @@ void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
     }
 
     m_symtab_it->popScope();
+ */
 
     DEBUG_LEAVE("visitSymbolExtendScope");
 }
@@ -177,12 +226,6 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
         dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()->accept(this);
     }
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
-        it=i->getChildren().begin();
-        it!=i->getChildren().end(); it++) {
-        (*it)->accept(this);
-    }
-
     m_symtab_it->popScope();
     DEBUG_LEAVE("visitSymbolTypeScope %s", i->getName().c_str());
 }
@@ -217,6 +260,23 @@ void TaskResolveRefs::visitStruct(ast::IStruct *i) {
     DEBUG_ENTER("visitStruct");
     VisitorBase::visitStruct(i);
     DEBUG_LEAVE("visitStruct");
+}
+
+ast::IScopeChild *TaskResolveRefs::resolvePath(ast::ISymbolRefPath *path) {
+    ast::ISymbolScope *scope = m_root;
+    ast::IScopeChild *ret = m_root;
+
+    for (std::vector<ast::SymbolRefPathElem>::const_iterator
+        it=path->getPath().begin();
+        it!=path->getPath().end(); it++) {
+        ret = scope->getChildren().at(it->idx);
+
+        if (it+1 != path->getPath().end()) {
+            scope = dynamic_cast<ast::ISymbolScope *>(ret);
+        }
+    }
+    
+    return ret;
 }
 
 dmgr::IDebug *TaskResolveRefs::m_dbg = 0;

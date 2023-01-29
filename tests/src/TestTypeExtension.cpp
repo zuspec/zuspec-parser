@@ -179,6 +179,15 @@ TEST_F(TestTypeExtension, ext_struct_unknown) {
         root
     );
 
+    for (std::vector<IMarkerUP>::const_iterator
+        it=marker_c->markers().begin();
+        it!=marker_c->markers().end(); it++) {
+        fprintf(stdout, "Link Error: %s\n", (*it)->msg().c_str());
+    }
+
+    ASSERT_EQ(marker_c->markers().size(), 1);
+    ASSERT_TRUE(marker_c->markers().at(0)->msg().find("elem S2") != -1);
+
     // Expecting an error about not being able to resolve S2
     ASSERT_TRUE(marker_c->hasSeverity(MarkerSeverityE::Error));
 }
