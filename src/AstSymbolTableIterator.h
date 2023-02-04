@@ -56,7 +56,9 @@ public:
 
     virtual int32_t pushNamedScope(const std::string &name) override;
 
-    virtual void pushScope(ast::ISymbolScope *s) override;
+    virtual void pushScope(
+        ast::ISymbolScope           *s,
+        ast::SymbolRefPathElemKind  kind=ast::SymbolRefPathElemKind::ElemKind_ChildIdx) override;
 
     virtual void popScope() override;
 

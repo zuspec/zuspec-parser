@@ -28,9 +28,10 @@ namespace parser {
 
 
 TaskResolveImports::TaskResolveImports(
+    ast::ISymbolScope       *root,
     IFactory                *factory,
     IMarkerListener         *marker_l) : 
-        m_factory(factory), m_marker_l(marker_l) {
+        m_root(root), m_factory(factory), m_marker_l(marker_l) {
     DEBUG_INIT("TaskResolveImports", factory->getDebugMgr());
 }
 
@@ -54,12 +55,16 @@ void TaskResolveImports::resolve(
 }
 
 void TaskResolveImports::visitPackageImportStmt(ast::IPackageImportStmt *i) {
-    DEBUG_ENTER("visitPackageImportStmt");
+    DEBUG_ENTER("visitPackageImportStmt %s", i->getPath()->getElems().at(0)->getId()->getId().c_str());
     if (!i->getPath()->getTarget()) {
-        i->getPath()->setTarget(TaskResolveRef(m_factory, m_marker_l).resolve(
+        DEBUG_ENTER("  Resolve path");
+        ast::ISymbolRefPath *path = TaskResolveRef(m_root, m_factory, m_marker_l, false).resolve(
             m_scope_it.get(),
-            i->getPath()
-        ));
+            i->getPath());
+        i->getPath()->setTarget(path);
+        DEBUG_LEAVE("  Resolve path");
+    } else {
+        DEBUG("Skip resolution, since the target is already set");
     }
     DEBUG_LEAVE("visitPackageImportStmt");
 }

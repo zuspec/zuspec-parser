@@ -1,5 +1,5 @@
 /**
- * TaskResolveImports.h
+ * TaskCompareParamLists.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -20,36 +20,23 @@
  */
 #pragma once
 #include "dmgr/IDebugMgr.h"
-#include "zsp/parser/IMarkerListener.h"
-#include "zsp/parser/IFactory.h"
 #include "zsp/ast/impl/VisitorBase.h"
 
 namespace zsp {
 namespace parser {
 
-
-
-class TaskResolveImports : public ast::VisitorBase {
+class TaskCompareParamLists : public ast::VisitorBase {
 public:
-    TaskResolveImports(
-        ast::ISymbolScope   *root,
-        IFactory            *factory,
-        IMarkerListener     *marker_l);
+    TaskCompareParamLists(dmgr::IDebugMgr *dmgr);
 
-    virtual ~TaskResolveImports();
+    virtual ~TaskCompareParamLists();
 
-    void resolve(
-        const ISymbolTableIterator      *scope,
-        ast::ISymbolScope               *sym_scope);
-
-    virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
+    bool equal(
+        ast::ITemplateParamDeclList     *plist1,
+        ast::ITemplateParamDeclList     *plist2);
 
 private:
-    static dmgr::IDebug         *m_dbg;
-    ast::ISymbolScope           *m_root;
-    IFactory                    *m_factory;
-    IMarkerListener             *m_marker_l;
-    ISymbolTableIteratorUP      m_scope_it;
+    static dmgr::IDebug                 *m_dbg;
 
 };
 

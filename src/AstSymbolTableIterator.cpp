@@ -145,9 +145,11 @@ int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
     }
 }
 
-void AstSymbolTableIterator::pushScope(ast::ISymbolScope *s) {
+void AstSymbolTableIterator::pushScope(
+        ast::ISymbolScope           *s,
+        ast::SymbolRefPathElemKind  kind) {
     m_scope_s.push_back(s);
-    m_path.push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, s->getId()});
+    m_path.push_back({kind, s->getId()});
 }
 
 void AstSymbolTableIterator::popScope() {

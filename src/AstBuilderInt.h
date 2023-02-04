@@ -278,6 +278,11 @@ private:
     ast::IExprStaticRefPath *mkExprStaticRefPath(
         PSSParser::Static_ref_pathContext       *ctx);
 
+    ast::ITemplateParamDeclList *mkTypeParamDecl(
+        PSSParser::Template_param_decl_listContext *ctx);
+
+    ast::ITemplateParamValueList *mkTemplateParamValueList(
+        PSSParser::Template_param_value_listContext *ctx);
 
 private:
     static dmgr::IDebug                         *m_dbg;

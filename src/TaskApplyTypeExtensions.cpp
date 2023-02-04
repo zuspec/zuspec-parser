@@ -45,6 +45,7 @@ void TaskApplyTypeExtensions::apply(ast::ISymbolScope *root) {
     DEBUG_ENTER("apply");
     m_symtab_it = ISymbolTableIteratorUP(m_factory->mkAstSymbolTableIterator(root));
 
+    m_root = root;
     root->accept(this);
 
     DEBUG_LEAVE("apply");
@@ -53,7 +54,7 @@ void TaskApplyTypeExtensions::apply(ast::ISymbolScope *root) {
 void TaskApplyTypeExtensions::visitExtendEnum(ast::IExtendEnum *i) {
     DEBUG_ENTER("visitExtendEnum");
     ast::ISymbolRefPath *target_p = 
-        TaskResolveRef(m_factory, m_marker_l).resolve(
+        TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
             m_symtab_it.get(),
             i->getTarget());
 
@@ -89,7 +90,7 @@ void TaskApplyTypeExtensions::visitExtendEnum(ast::IExtendEnum *i) {
 void TaskApplyTypeExtensions::visitExtendType(ast::IExtendType *i) {
     DEBUG_ENTER("visitExtendType");
     ast::ISymbolRefPath *target_p = 
-        TaskResolveRef(m_factory, m_marker_l).resolve(
+        TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
             m_symtab_it.get(),
             i->getTarget());
 
@@ -125,7 +126,7 @@ void TaskApplyTypeExtensions::visitSymbolExtendScope(ast::ISymbolExtendScope *i)
     DEBUG_ENTER("visitSymbolExtendScope");
     ast::IExtendType *ast_target = dynamic_cast<ast::IExtendType *>(i->getTarget());
     ast::ISymbolRefPath *target_p = 
-        TaskResolveRef(m_factory, m_marker_l).resolve(
+        TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
             m_symtab_it.get(),
             ast_target->getTarget());
 

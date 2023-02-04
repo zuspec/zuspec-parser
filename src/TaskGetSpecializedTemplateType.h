@@ -1,5 +1,5 @@
 /**
- * TaskResolveImports.h
+ * TaskGetSpecializedTemplateType.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -20,37 +20,34 @@
  */
 #pragma once
 #include "dmgr/IDebugMgr.h"
-#include "zsp/parser/IMarkerListener.h"
 #include "zsp/parser/IFactory.h"
-#include "zsp/ast/impl/VisitorBase.h"
+#include "zsp/ast/ISymbolScope.h"
 
 namespace zsp {
 namespace parser {
 
 
 
-class TaskResolveImports : public ast::VisitorBase {
+class TaskGetSpecializedTemplateType {
 public:
-    TaskResolveImports(
-        ast::ISymbolScope   *root,
-        IFactory            *factory,
-        IMarkerListener     *marker_l);
+    TaskGetSpecializedTemplateType(
+        IFactory           *factory,
+        ast::ISymbolScope  *root);
 
-    virtual ~TaskResolveImports();
+    virtual ~TaskGetSpecializedTemplateType();
 
-    void resolve(
-        const ISymbolTableIterator      *scope,
-        ast::ISymbolScope               *sym_scope);
+    ast::ISymbolRefPath *find(
+        const ast::ISymbolRefPath           *type,
+        const ast::ITemplateParamDeclList   *params);
 
-    virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
+    ast::ISymbolRefPath *mk(
+        const ast::ISymbolRefPath           *type,
+        ast::ITemplateParamDeclList         *params);
 
 private:
-    static dmgr::IDebug         *m_dbg;
-    ast::ISymbolScope           *m_root;
-    IFactory                    *m_factory;
-    IMarkerListener             *m_marker_l;
-    ISymbolTableIteratorUP      m_scope_it;
-
+    static dmgr::IDebug                 *m_dbg;
+    IFactory                            *m_factory;
+    ast::ISymbolScope                   *m_root;
 };
 
 }

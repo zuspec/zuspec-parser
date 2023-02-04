@@ -73,6 +73,7 @@ private:
     static dmgr::IDebug                     *m_dbg;
     IFactory                                *m_factory;
     IMarkerListener                         *m_marker_l;
+    ast::ISymbolScope                       *m_root;
     ISymbolTableIteratorUP                  m_symtab_it;
     ast::ISymbolScope                       *m_target_s;
 

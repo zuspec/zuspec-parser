@@ -32,8 +32,10 @@ namespace parser {
 class TaskResolveRef : public ast::VisitorBase {
 public:
     TaskResolveRef(
+        ast::ISymbolScope   *root,
         IFactory            *factory,
-        IMarkerListener     *marker_l);
+        IMarkerListener     *marker_l,
+        bool                search_imp=true);
 
     virtual ~TaskResolveRef();
 
@@ -57,17 +59,37 @@ public:
 
     virtual void visitExprRefPathStatic(ast::IExprRefPathStatic *i) override;
 
+    virtual void visitSymbolScope(ast::ISymbolScope *i) override;
+
+    virtual void visitSymbolExecScope(ast::ISymbolExecScope *i) override;
+
+    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
+
+    virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override;
+
+    virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) override;
+
 private:
+    ast::ISymbolRefPath *findRoot(
+        ISymbolTableIterator            *scope,
+        const ast::IExprId              *sym);
+
     ast::ISymbolRefPath *searchImport(
         ISymbolTableIterator            *scope,
         ast::IPackageImportStmt         *imp,
         const std::string               &sym);
 
+    ast::ISymbolRefPath *specializeParameterizedRef(
+        ast::ISymbolRefPath             *target,
+        ast::ITemplateParamValueList    *plist);
+
 private:
     static dmgr::IDebug                 *m_dbg;
-    const ISymbolTableIterator          *m_scope;
+    ast::ISymbolScope                   *m_root;
     IFactory                            *m_factory;
     IMarkerListener                     *m_marker_l;    
+    bool                                m_search_imp;
+    std::vector<ISymbolTableIteratorUP> m_symtab_it_s;
     ast::ISymbolRefPath                 *m_ref;
 
 };

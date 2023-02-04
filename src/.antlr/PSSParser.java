@@ -8410,6 +8410,7 @@ public class PSSParser extends Parser {
 	}
 
 	public static class Type_categoryContext extends ParserRuleContext {
+		public Token img;
 		public TerminalNode TOK_ACTION() { return getToken(PSSParser.TOK_ACTION, 0); }
 		public TerminalNode TOK_COMPONENT() { return getToken(PSSParser.TOK_COMPONENT, 0); }
 		public Struct_kindContext struct_kind() {
@@ -8432,14 +8433,14 @@ public class PSSParser extends Parser {
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(1697);
-				match(TOK_ACTION);
+				((Type_categoryContext)_localctx).img = match(TOK_ACTION);
 				}
 				break;
 			case TOK_COMPONENT:
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(1698);
-				match(TOK_COMPONENT);
+				((Type_categoryContext)_localctx).img = match(TOK_COMPONENT);
 				}
 				break;
 			case TOK_STRUCT:

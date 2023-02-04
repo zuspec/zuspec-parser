@@ -222,7 +222,7 @@ classes:
     - TypeIdentifierElem:
         - super: Expr
         - data:
-            - id: "UP<ExprId>"
-            - params: "list<UP<TemplateParamValue>>"
+            - id: UP<ExprId>
+            - params: UP<TemplateParamValueList>
 
  

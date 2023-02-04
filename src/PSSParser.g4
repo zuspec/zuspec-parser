@@ -837,8 +837,8 @@ type_restriction:
 	;
 
 type_category:
-    TOK_ACTION
-	| TOK_COMPONENT
+    img=TOK_ACTION
+	| img=TOK_COMPONENT
 	| struct_kind
 	;
 

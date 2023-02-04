@@ -263,7 +263,7 @@ antlrcpp::Any AstBuilderInt::visitAction_declaration(PSSParser::Action_declarati
     action->getChildren().push_back(ast::IScopeChildUP(comp));
 
 	if (ctx->template_param_decl_list()) {
-		// TODO: add in declarations
+        action->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
 	}
 
 	addChild(action, ctx->start);
@@ -417,6 +417,10 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 		id,
 		super_t,
 		StructKind_m.find(ctx->struct_kind()->toString())->second);
+
+    if (ctx->template_param_decl_list()) {
+        s->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
+    }
 
 	addChild(s, ctx->start);
 	push_scope(s);
@@ -747,6 +751,10 @@ antlrcpp::Any AstBuilderInt::visitComponent_declaration(PSSParser::Component_dec
 	ast::IComponent *comp = m_factory->mkComponent(
 		mkId(ctx->component_identifier()->identifier()),
 		super_t);
+
+    if (ctx->template_param_decl_list()) {
+        comp->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
+    }
 
 	addChild(comp, ctx->start);
 	push_scope(comp);
@@ -2032,9 +2040,16 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
 		it=elems.begin();
 		it!=elems.end(); it++) {
+        ast::ITemplateParamValueList *params = 0;
+
+        if ((*it)->template_param_value_list()) {
+            params = mkTemplateParamValueList((*it)->template_param_value_list());
+        }
+
 		ast::ITypeIdentifierElem *elem = m_factory->mkTypeIdentifierElem(
-			mkId((*it)->identifier()));
-		
+			mkId((*it)->identifier()),
+            params);
+
 		// TODO: handle parameterized types
 		
 		ret->getElems().push_back(ast::ITypeIdentifierElemUP(elem));
@@ -2046,7 +2061,10 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 ast::ITypeIdentifierElem *AstBuilderInt::mkTypeIdElem(
 		PSSParser::Type_identifier_elemContext		*ctx) {
 	ast::ITypeIdentifierElem *elem = m_factory->mkTypeIdentifierElem(
-			mkId(ctx->identifier()));
+			mkId(ctx->identifier()),
+            (ctx->template_param_value_list())?mkTemplateParamValueList(
+                ctx->template_param_value_list()):0
+            );
     return elem;
 }
 
@@ -2155,6 +2173,84 @@ ast::IExprStaticRefPath *AstBuilderInt::mkExprStaticRefPath(
     }
 
     return ret;
+}
+
+static std::map<std::string, ast::TypeCategory> type_category_m = {
+    {"action", ast::TypeCategory::Action },
+    {"component", ast::TypeCategory::Component },
+    {"resource", ast::TypeCategory::Resource },
+    {"state", ast::TypeCategory::State },
+    {"stream", ast::TypeCategory::Stream },
+    {"struct", ast::TypeCategory::Struct }
+};
+
+ast::ITemplateParamDeclList *AstBuilderInt::mkTypeParamDecl(
+        PSSParser::Template_param_decl_listContext *ctx) {
+    DEBUG_ENTER("mkTypeParamDecl");
+    ast::ITemplateParamDeclList *plist = m_factory->mkTemplateParamDeclList();
+    std::vector<PSSParser::Template_param_declContext *> items = ctx->template_param_decl();
+    for (std::vector<PSSParser::Template_param_declContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        if ((*it)->type_param_decl()) {
+            // Type parameter
+            if ((*it)->type_param_decl()->generic_type_param_decl()) {
+                ast::ITemplateGenericTypeParamDecl *gen_p = m_factory->mkTemplateGenericTypeParamDecl(
+                    mkId((*it)->type_param_decl()->generic_type_param_decl()->identifier()),
+                    ((*it)->type_param_decl()->generic_type_param_decl()->type_identifier())?
+                        mkTypeId((*it)->type_param_decl()->generic_type_param_decl()->type_identifier()):0
+                );
+                plist->getParams().push_back(ast::ITemplateParamDeclUP(gen_p));
+            } else {
+                // Type-category parameter
+                ast::TypeCategory category = type_category_m.find(
+                    (*it)->type_param_decl()->category_type_param_decl()->type_category()->img->toString())->second;
+                ast::ITemplateCategoryTypeParamDecl *cat_p = m_factory->mkTemplateCategoryTypeParamDecl(
+                    mkId((*it)->type_param_decl()->category_type_param_decl()->identifier()),
+                    category,
+                    ((*it)->type_param_decl()->category_type_param_decl()->type_restriction())?
+                        mkTypeId((*it)->type_param_decl()->category_type_param_decl()->type_restriction()->type_identifier()):0,
+                    ((*it)->type_param_decl()->category_type_param_decl()->type_identifier())?
+                        mkTypeId((*it)->type_param_decl()->category_type_param_decl()->type_identifier()):0
+                );
+                plist->getParams().push_back(ast::ITemplateParamDeclUP(cat_p));
+            }
+        } else {
+            // Value parameter
+            ast::ITemplateValueParamDecl *val_p = m_factory->mkTemplateValueParamDecl(
+                mkId((*it)->value_param_decl()->identifier()),
+                mkDataType((*it)->value_param_decl()->data_type()),
+                ((*it)->value_param_decl()->constant_expression())?
+                    mkExpr((*it)->value_param_decl()->constant_expression()->expression()):0
+            );
+            plist->getParams().push_back(ast::ITemplateParamDeclUP(val_p));
+        }
+    }
+
+    DEBUG_LEAVE("mkTypeParamDecl");
+    return plist;
+}
+
+ast::ITemplateParamValueList *AstBuilderInt::mkTemplateParamValueList(
+        PSSParser::Template_param_value_listContext *ctx) {
+    ast::ITemplateParamValueList *plist = m_factory->mkTemplateParamValueList();
+
+    std::vector<PSSParser::Template_param_valueContext *> items;
+    items = ctx->template_param_value();
+    for (std::vector<PSSParser::Template_param_valueContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        if ((*it)->constant_expression()) {
+            plist->getValues().push_back(ast::ITemplateParamValueUP(
+                m_factory->mkTemplateParamExprValue(
+                    mkExpr((*it)->constant_expression()->expression())
+                )));
+        }
+
+    }
+
+    return plist;
+
 }
 
 dmgr::IDebug *AstBuilderInt::m_dbg = 0;

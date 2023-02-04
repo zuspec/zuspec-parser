@@ -387,11 +387,30 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
 
     int32_t id = scope->getChildren().size();
     ast::ISymbolScope *plist = 0;
+    if (i->getParams()) {
+        plist = m_factory->mkSymbolScope(-1, "");
+        for (std::vector<ast::ITemplateParamDeclUP>::const_iterator
+            it=i->getParams()->getParams().begin();
+            it!=i->getParams()->getParams().end(); it++) {
+            int32_t id = plist->getChildren().size();
+            std::map<std::string, int32_t>::const_iterator s_it;
+            
+            s_it = plist->getSymtab().find((*it)->getName()->getId());
+            if (s_it == plist->getSymtab().end()) {
+                plist->getChildren().push_back(it->get());
+                plist->getSymtab().insert({(*it)->getName()->getId(), id});
+            } else {
+                // TODO: Find a proper way to report
+                fprintf(stdout, "Error: duplicate parameter name\n");
+            }
+        }
+    }
     ast::ISymbolTypeScope *ts = m_factory->mkSymbolTypeScope(
         id,
         i->getName()->getId(),
         plist);
     ts->setTarget(i);
+
 
     std::map<std::string, int32_t>::const_iterator it =
         scope->getSymtab().find(i->getName()->getId());

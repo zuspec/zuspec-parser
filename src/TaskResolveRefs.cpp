@@ -93,7 +93,7 @@ void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeT
 void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     DEBUG_ENTER("visitExprRefPathContext");
     // Find the first path element
-    ast::ISymbolRefPath *target = TaskResolveRef(m_factory, m_marker_l).resolve(
+    ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
         m_symtab_it.get(),
         i->getHier_id()->getElems().at(0)->getId());
     
@@ -108,7 +108,7 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
 
 void TaskResolveRefs::visitExprRefPathId(ast::IExprRefPathId *i) {
     DEBUG_ENTER("visitExprRefPathId %s", i->getId()->getId().c_str());
-    ast::ISymbolRefPath *target = TaskResolveRef(m_factory, m_marker_l).resolve(
+    ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
         m_symtab_it.get(),
         i
     );
@@ -151,10 +151,14 @@ void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
     }
 
     if (i->getImports()) {
-        TaskResolveImports(m_factory, m_marker_l).resolve(
+        DEBUG_ENTER("  Resolve Imports");
+        TaskResolveImports(m_root, m_factory, m_marker_l).resolve(
             m_symtab_it.get(),
             i);
+        DEBUG_LEAVE("  Resolve Imports");
     }
+
+    fflush(stdout);
 
     for (std::vector<ast::IScopeChild *>::const_iterator
         it=i->getChildren().begin();
@@ -215,24 +219,28 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
 
 void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
     DEBUG_ENTER("visitSymbolTypeScope %s", i->getName().c_str());
-    if (m_symtab_it->pushNamedScope(i->getName()) == -1) {
-        // TODO: internal error
-        fprintf(stdout, "Internal Error: no scope named %s in %s\n", 
-            i->getName().c_str(),
-            m_symtab_it->getScope()->getName().c_str());
-    }
+    if (i->getPlist()) {
+        DEBUG("Note: Skipping symbol resolution in a templated type");
+    } else {
+        if (m_symtab_it->pushNamedScope(i->getName()) == -1) {
+            // TODO: internal error
+            fprintf(stdout, "Internal Error: no scope named %s in %s\n", 
+                i->getName().c_str(),
+                m_symtab_it->getScope()->getName().c_str());
+        }
 
-    if (dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()) {
-        dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()->accept(this);
-    }
+        if (dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()) {
+            dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()->accept(this);
+        }
 
-    m_symtab_it->popScope();
+        m_symtab_it->popScope();
+    }
     DEBUG_LEAVE("visitSymbolTypeScope %s", i->getName().c_str());
 }
 
 void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
     DEBUG_ENTER("visitDataTypeUserDefined");
-    ast::ISymbolRefPath *target = TaskResolveRef(m_factory, m_marker_l).resolve(
+    ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
         m_symtab_it.get(),
         i->getType_id()
     );
@@ -249,7 +257,7 @@ void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
 
 void TaskResolveRefs::visitTypeIdentifier(ast::ITypeIdentifier *i) {
     DEBUG_ENTER("visitTypeIdentifier");
-    ast::ISymbolRefPath *target = TaskResolveRef(m_factory, m_marker_l).resolve(
+    ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
         m_symtab_it.get(),
         i
     );

@@ -50,7 +50,7 @@ void TaskLinkActionCompRefFields::visitAction(ast::IAction *i) {
         ast::ITypeIdentifier *comp_tid = m_factory->getAstFactory()->mkTypeIdentifier();
         comp_tid->getElems().push_back(ast::ITypeIdentifierElemUP(
             m_factory->getAstFactory()->mkTypeIdentifierElem(
-                m_factory->getAstFactory()->mkExprId(comp_s->getName(), false)
+                m_factory->getAstFactory()->mkExprId(comp_s->getName(), false), 0
             )
         ));
         ast::IDataTypeUserDefined *type = m_factory->getAstFactory()->mkDataTypeUserDefined(

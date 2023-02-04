@@ -309,7 +309,7 @@ component multimedia_ss_c {
     };
 };
     )";
-    enableDebug(true);
+    enableDebug(false);
     runTest(text, "028_constraining_a_comp_attribute.pss");
 }
 
@@ -464,7 +464,7 @@ component top {
 }
 //</example>    )";
 
-    enableDebug(true);
+    enableDebug(false);
     runTest(text, "037_action_traversal.pss");
 }
 
@@ -2120,7 +2120,7 @@ struct S2 {
     }
 }
     )";
-    enableDebug(true);
+    enableDebug(false);
     runTest(text, "154_pre_solve_post_solve.pss");
 }
 
@@ -2682,7 +2682,7 @@ package additional_config_pkg {
 }
     )";
 
-    enableDebug(true);
+    enableDebug(false);
     runTest(text, "202_type_extension.pss");
 }
 

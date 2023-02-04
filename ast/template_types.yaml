@@ -7,6 +7,7 @@ enums:
     - Resource
     - State
     - Stream
+    - Struct
 
 classes:
 
@@ -15,6 +16,7 @@ classes:
       - params: list<UP<TemplateParamDecl>>
   
   - TemplateParamDecl:
+      super: ScopeChild
       data:
       - name: UP<ExprId>
 
@@ -33,6 +35,7 @@ classes:
   - TemplateValueParamDecl:
       super: TemplateParamDecl
       data:
+      - type: UP<DataType>
       - dflt: UP<Expr>
 
   - TemplateParamValueList:
@@ -42,12 +45,14 @@ classes:
   - TemplateParamValue:
 
   - TemplateParamTypeValue:
+      super: TemplateParamValue
       data:
-      - value: UP<TypeIdentifier>
+        - value: UP<TypeIdentifier>
 
   - TemplateParamExprValue:
+      super: TemplateParamValue
       data:
-      - value: UP<Expr>
+        - value: UP<Expr>
 
 
         

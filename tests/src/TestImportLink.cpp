@@ -35,6 +35,78 @@ TestImportLink::~TestImportLink() {
 
 }
 
+TEST_F(TestImportLink, struct_typeref) {
+    const char *text = R"(
+    struct A { }
+    struct B : A { }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+    std::vector<ast::IGlobalScopeUP> files;
+
+    files.push_back(ast::IGlobalScopeUP(parse(
+        &marker_c,
+        text,
+        "struct_typeref.pss"
+    )));
+
+    for (std::vector<IMarkerUP>::const_iterator
+        it=marker_c.markers().begin();
+        it!=marker_c.markers().end(); it++) {
+        fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
+    }
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+
+    ast::ISymbolScopeUP root(link(
+        &marker_c,
+        files
+    ));
+
+    for (std::vector<IMarkerUP>::const_iterator
+        it=marker_c.markers().begin();
+        it!=marker_c.markers().end(); it++) {
+        fprintf(stdout, "Marker: %s\n", (*it)->msg().c_str());
+    }
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+}
+
+TEST_F(TestImportLink, struct_valp_typeref) {
+    const char *text = R"(
+    struct A<int T> { }
+    struct B : A<2> { }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+    std::vector<ast::IGlobalScopeUP> files;
+
+    files.push_back(ast::IGlobalScopeUP(parse(
+        &marker_c,
+        text,
+        "struct_typeref.pss"
+    )));
+
+    for (std::vector<IMarkerUP>::const_iterator
+        it=marker_c.markers().begin();
+        it!=marker_c.markers().end(); it++) {
+        fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
+    }
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+
+    ast::ISymbolScopeUP root(link(
+        &marker_c,
+        files
+    ));
+
+    for (std::vector<IMarkerUP>::const_iterator
+        it=marker_c.markers().begin();
+        it!=marker_c.markers().end(); it++) {
+        fprintf(stdout, "Marker: %s\n", (*it)->msg().c_str());
+    }
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+}
+
 TEST_F(TestImportLink, ambiguous_wildcard_imp) {
     const char *text = R"(
     package p1 {

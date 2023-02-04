@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include "zsp/ast/IScopeChild.h"
+#include "zsp/ast/ISymbolRefPath.h"
 
 namespace zsp {
 namespace parser {
@@ -53,7 +54,9 @@ public:
      */
     virtual int32_t pushNamedScope(const std::string &name) = 0;
 
-    virtual void pushScope(ast::ISymbolScope *s) = 0;
+    virtual void pushScope(
+        ast::ISymbolScope           *s,
+        ast::SymbolRefPathElemKind  kind=ast::SymbolRefPathElemKind::ElemKind_ChildIdx) = 0;
 
     virtual void popScope() = 0;
 

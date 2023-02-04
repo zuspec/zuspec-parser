@@ -80,7 +80,8 @@ classes:
     data:
       - plist:
         - type: UP<SymbolScope>
-        
+      - spec_types: list<UP<SymbolTypeScope>>
+
 - SymbolFunctionScope:
     super: SymbolScope
     data:
