@@ -32,8 +32,8 @@ public:
     virtual ~TaskCompareParamLists();
 
     bool equal(
-        ast::ITemplateParamDeclList     *plist1,
-        ast::ITemplateParamDeclList     *plist2);
+        const ast::ITemplateParamDeclList     *plist1,
+        const ast::ITemplateParamDeclList     *plist2);
 
 private:
     static dmgr::IDebug                 *m_dbg;

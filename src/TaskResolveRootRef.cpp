@@ -85,8 +85,22 @@ void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {
 }
 
 void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
-    DEBUG_ENTER("visitSymbolTypeScope");
+    DEBUG_ENTER("visitSymbolTypeScope %s", i->getName().c_str());
     visitSymbolScope(i); // Look in primary declaration scope
+
+    if (!m_ref && i->getPlist()) {
+        std::map<std::string,int32_t>::const_iterator it;
+
+        if ((it=i->getPlist()->getSymtab().find(m_id->getId())) != i->getPlist()->getSymtab().end()) {
+            // Target is a parameter value
+            m_ref = m_scope->getScopeSymbolPath();
+
+            m_ref->getPath().push_back({
+                ast::SymbolRefPathElemKind::ElemKind_ParamIdx, 
+                it->second
+            });
+        }
+    }
 
     if (!m_ref) {
         // Didn't find, so let's look elsewhere...

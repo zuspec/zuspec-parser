@@ -229,8 +229,16 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
                 m_symtab_it->getScope()->getName().c_str());
         }
 
+        // Resolve the super class (if any)
         if (dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()) {
             dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()->accept(this);
+        }
+
+        // Check on children
+        for (std::vector<ast::IScopeChild *>::const_iterator
+            it=i->getChildren().begin();
+            it!=i->getChildren().end(); it++) {
+            (*it)->accept(m_this);
         }
 
         m_symtab_it->popScope();

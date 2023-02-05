@@ -63,6 +63,25 @@ ast::ISymbolScope *TaskBuildSymbolTree::build(
     return root;
 }
 
+ast::ISymbolTypeScope *TaskBuildSymbolTree::build(ast::ITypeScope *ts) {
+    DEBUG_ENTER("build");
+    ast::ISymbolTypeScope *ret = 0;
+    ast::ISymbolScope *root = m_factory->mkSymbolScope(
+        -100,
+        "");
+    m_scope_s.push_back(root);
+
+    ts->accept(m_this);
+
+    m_scope_s.pop_back();
+
+    ret = dynamic_cast<ast::ISymbolTypeScope *>(root->getChildren().at(0));
+    root->getOwned().at(0).release();
+
+    DEBUG_LEAVE("build");
+    return ret;
+}
+
 void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
     DEBUG_ENTER("visitPackageScope");
     for (std::vector<ast::IExprIdUP>::const_iterator
@@ -388,6 +407,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
     int32_t id = scope->getChildren().size();
     ast::ISymbolScope *plist = 0;
     if (i->getParams()) {
+        DEBUG("Build out plist");
         plist = m_factory->mkSymbolScope(-1, "");
         for (std::vector<ast::ITemplateParamDeclUP>::const_iterator
             it=i->getParams()->getParams().begin();
@@ -404,6 +424,8 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
                 fprintf(stdout, "Error: duplicate parameter name\n");
             }
         }
+    } else {
+        DEBUG("No plist");
     }
     ast::ISymbolTypeScope *ts = m_factory->mkSymbolTypeScope(
         id,
@@ -430,7 +452,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
         for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
-            (*it)->accept(this);
+            (*it)->accept(m_this);
         }
         m_scope_s.pop_back();
     }

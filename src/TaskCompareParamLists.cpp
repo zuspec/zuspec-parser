@@ -36,8 +36,8 @@ TaskCompareParamLists::~TaskCompareParamLists() {
 }
 
 bool TaskCompareParamLists::equal(
-        ast::ITemplateParamDeclList     *plist1,
-        ast::ITemplateParamDeclList     *plist2) {
+        const ast::ITemplateParamDeclList     *plist1,
+        const ast::ITemplateParamDeclList     *plist2) {
     DEBUG_ENTER("equal");
 
     DEBUG_LEAVE("equal");

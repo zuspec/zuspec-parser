@@ -27,9 +27,6 @@
 namespace zsp {
 namespace parser {
 
-
-
-
 class TaskBuildSymbolTree : public virtual ast::VisitorBase {
 public:
     TaskBuildSymbolTree(
@@ -42,6 +39,8 @@ public:
 
     ast::ISymbolScope *build(
         const std::vector<ast::IGlobalScope *>  &roots);
+
+    ast::ISymbolTypeScope *build(ast::ITypeScope *ts);
 
     virtual void visitPackageScope(ast::IPackageScope *i) override;
 

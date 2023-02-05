@@ -23,6 +23,7 @@
 #include "TaskBuildParamValList.h"
 #include "TaskGetSpecializedTemplateType.h"
 #include "TaskResolveRef.h"
+#include "TaskResolveRefs.h"
 #include "TaskResolveRootRef.h"
 #include "TaskResolveFieldRef.h"
 #include "Marker.h"
@@ -142,13 +143,44 @@ void TaskResolveRef::visitTypeIdentifier(ast::ITypeIdentifier *i) {
 
     if (!root) {
         // resolution failure
+
+        if (m_marker_l) {
+            std::string msg = "resolution failed for ";
+            msg += i->getElems().at(0)->getId()->getId();
+
+            if (!m_marker.get()) {
+                m_marker = IMarkerUP(m_factory->mkMarker(
+                    "", 
+                    MarkerSeverityE::Error,
+                    {-1, -1, -1}));
+            }
+            m_marker->setMsg(msg);
+            m_marker->setSeverity(MarkerSeverityE::Error);
+            m_marker->setLocation(i->getElems().at(0)->getId()->getLocation());
+            fprintf(stdout, "Send marker");
+            m_marker_l->marker(m_marker.get());
+        }
+        fprintf(stdout, "Error: resolution failed for %s (%p)\n",
+            i->getElems().at(0)->getId()->getId().c_str(),
+            m_marker_l);
+        fflush(stdout);
+        return;
     }
 
     if (i->getElems().at(0)->getParams()) {
+        // Resolve parameter refs
+
+        for (std::vector<ast::ITemplateParamValueUP>::const_iterator
+            it=i->getElems().at(0)->getParams()->getValues().begin();
+            it!=i->getElems().at(0)->getParams()->getValues().end(); it++) {
+            (*it)->accept(m_this);
+        }
+
         ast::ISymbolRefPath *root_s = specializeParameterizedRef(
             root, i->getElems().at(0)->getParams());
         delete root;
         root = root_s;
+        fflush(stdout);
     }
 
     ast::IScopeChild *root_t = TaskResolveSymbolPathRef(m_root).resolve(root);
@@ -234,6 +266,7 @@ ast::ISymbolRefPath *TaskResolveRef::specializeParameterizedRef(
     DEBUG_ENTER("specializeParameterizedRef");
 
     // Find the base type
+    ast::IScopeChild *target_sc = TaskResolveSymbolPathRef(m_root).resolve(target);
     ast::ISymbolTypeScope *target_c = 
         TaskResolveSymbolPathRef(m_root).resolveT<ast::ISymbolTypeScope>(target);
 
@@ -248,25 +281,24 @@ ast::ISymbolRefPath *TaskResolveRef::specializeParameterizedRef(
     }
 
     // Form parameter list 
-    ast::ISymbolScope *plist_sym = TaskBuildParamValList(
+    ast::ITemplateParamDeclList *pdecl_list = TaskBuildParamValList(
         m_root, m_factory, m_marker_l).build(
             target_c->getPlist(),
             pvals);
-    ast::ITemplateParamDeclList *pdecl_list = 
-        dynamic_cast<ast::ITemplateParamDeclList *>(plist_sym->getTarget());
-    TaskGetSpecializedTemplateType typespec_getter(m_factory, m_root);
+    TaskGetSpecializedTemplateType typespec_getter(m_root, m_factory, m_marker_l);
 
     ast::ISymbolRefPath *target_t = typespec_getter.find(target, pdecl_list);
 
     if (target_t) {
         // The new parameter list that we created is no longer needed
-        delete plist_sym;
+        delete pdecl_list;
     } else {
-        target_t= typespec_getter.mk(target, pdecl_list);
+        target_t = typespec_getter.mk(target, pdecl_list);
     }
+    
 
+    DEBUG_LEAVE("specializeParameterizedRef %p", target_t);
     return target_t;
-    DEBUG_LEAVE("specializeParameterizedRef");
 }
 
 dmgr::IDebug *TaskResolveRef::m_dbg = 0;

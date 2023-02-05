@@ -31,8 +31,9 @@ namespace parser {
 class TaskGetSpecializedTemplateType {
 public:
     TaskGetSpecializedTemplateType(
+        ast::ISymbolScope  *root,
         IFactory           *factory,
-        ast::ISymbolScope  *root);
+        IMarkerListener    *marker_l);
 
     virtual ~TaskGetSpecializedTemplateType();
 
@@ -47,6 +48,7 @@ public:
 private:
     static dmgr::IDebug                 *m_dbg;
     IFactory                            *m_factory;
+    IMarkerListener                     *m_marker_l;
     ast::ISymbolScope                   *m_root;
 };
 

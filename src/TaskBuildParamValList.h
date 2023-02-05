@@ -38,7 +38,7 @@ public:
 
     virtual ~TaskBuildParamValList();
 
-    ast::ISymbolScope *build(
+    ast::ITemplateParamDeclList *build(
         ast::ISymbolScope               *plist,
         ast::ITemplateParamValueList    *pvals);
 
@@ -57,7 +57,7 @@ private:
     ast::ISymbolScope                   *m_root;
     IFactory                            *m_factory;
     IMarkerListener                     *m_marker_l;
-    ast::ISymbolScope                   *m_ret;
+    ast::ITemplateParamDeclList         *m_ret;
     ast::ITemplateParamTypeValue        *m_pval_type;
     ast::ITemplateParamExprValue        *m_pval_expr;
     ast::ITemplateGenericTypeParamDecl  *m_ptype_generic_type;

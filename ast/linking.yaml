@@ -6,8 +6,9 @@
 enums:
 - SymbolRefPathElemKind:
   - ElemKind_ChildIdx
-  - ElemKind_TmplIdx
+  - ElemKind_ParamIdx
   - ElemKind_Super
+  - ElemKind_TypeSpec
 structs:
 - SymbolRefPathElem:
     data:

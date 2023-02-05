@@ -22,6 +22,7 @@
 #include <vector>
 #include "zsp/ast/ISymbolScope.h"
 #include "zsp/ast/ISymbolRefPath.h"
+#include "zsp/ast/ISymbolTypeScope.h"
 
 namespace zsp {
 namespace parser {
@@ -35,13 +36,36 @@ public:
     virtual ~TaskResolveSymbolPathRef() { }
 
 
-    ast::IScopeChild *resolve(ast::ISymbolRefPath *ref) {
+    ast::IScopeChild *resolve(const ast::ISymbolRefPath *ref) {
         ast::IScopeChild *ret = 0;
         ast::ISymbolScope *scope = m_root;
 
         for (std::vector<ast::SymbolRefPathElem>::const_iterator
             it=ref->getPath().begin();
             it!=ref->getPath().end(); it++) {
+            
+            switch (it->kind) {
+                case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
+                    ret = scope->getChildren().at(it->idx);
+                } break;
+                case ast::SymbolRefPathElemKind::ElemKind_ParamIdx: {
+                    ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+                    ret = scope_ts->getPlist()->getChildren().at(it->idx);
+                } break;
+                case ast::SymbolRefPathElemKind::ElemKind_Super: {
+                    ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+                    fprintf(stdout, "TODO: handle super ref\n");
+                    fflush(stdout);
+                } break;
+                case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
+                    ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+                    ret = scope_ts->getSpec_types().at(it->idx).get();
+                } break;
+                default:
+                    fprintf(stdout, "TODO: handle ElemKind %d\n", it->kind);
+                    fflush(stdout);
+                    break;
+            }
             
             if (it+1 != ref->getPath().end()) {
                 scope = dynamic_cast<ast::ISymbolScope *>(ret);
@@ -51,7 +75,7 @@ public:
         return ret;
     }
 
-    template <class T> T *resolveT(ast::ISymbolRefPath *ref) {
+    template <class T> T *resolveT(const ast::ISymbolRefPath *ref) {
         return dynamic_cast<T *>(resolve(ref));
     }
 

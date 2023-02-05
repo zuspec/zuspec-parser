@@ -18,7 +18,9 @@
  * Created on:
  *     Author:
  */
+#include "dmgr/impl/DebugMacros.h"
 #include "TaskBuildParamValList.h"
+#include "TaskExpr2TypeIdentifier.h"
 #include "zsp/parser/impl/TaskCopyAst.h"
 
 
@@ -31,6 +33,7 @@ TaskBuildParamValList::TaskBuildParamValList(
     IFactory                    *factory,
     IMarkerListener             *marker_l) : 
         m_root(root), m_factory(factory), m_marker_l(marker_l) {
+    DEBUG_INIT("TaskBuildParamValList", factory->getDebugMgr());
 
 }
 
@@ -38,9 +41,10 @@ TaskBuildParamValList::~TaskBuildParamValList() {
 
 }
 
-ast::ISymbolScope *TaskBuildParamValList::build(
+ast::ITemplateParamDeclList *TaskBuildParamValList::build(
         ast::ISymbolScope               *plist,
         ast::ITemplateParamValueList    *pvals) {
+    DEBUG_ENTER("build");
     TaskCopyAst copier(m_factory->getAstFactory());
     m_ret = 0;
 
@@ -51,28 +55,54 @@ ast::ISymbolScope *TaskBuildParamValList::build(
         return 0;
     }
 
-    m_ret = m_factory->getAstFactory()->mkSymbolScope(
-        plist->getId(),
-        plist->getName());
+    m_ret = m_factory->getAstFactory()->mkTemplateParamDeclList();
     
     // First, pick up explicitly-supplied parameter values
 //    m_ptype_mk_pval = false;
     for (uint32_t i=0; i<pvals->getValues().size(); i++) {
+        m_pval_expr = 0;
+        m_pval_type = 0;
+        m_ptype_value = 0;
+        m_ptype_generic_type = 0;
+        m_ptype_category_type = 0;
+
         pvals->getValues().at(i)->accept(m_this);
         plist->getChildren().at(i)->accept(m_this);
 
         if (m_pval_expr) {
-            if (!m_ptype_value) {
-                fprintf(stdout, "TODO: expression supplied for value %d, but ptype is not value\n", i);
+            if (m_ptype_value) {
+                DEBUG("Value parameter");
+                ast::ITemplateValueParamDecl *p = m_factory->getAstFactory()->mkTemplateValueParamDecl(
+                    copier.copyT<ast::IExprId>(m_ptype_value->getName()),
+                    copier.copyT<ast::IDataType>(m_ptype_value->getType()),
+                    copier.copyT<ast::IExpr>(m_pval_expr->getValue()));
+
+                m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
+            } else if (m_ptype_generic_type) {
+                DEBUG("Generic type parameter");
+                ast::ITypeIdentifier *val = 0;
+
+                if (dynamic_cast<ast::ITypeIdentifier *>(m_pval_expr->getValue())) {
+                    val = copier.copyT<ast::ITypeIdentifier>(m_pval_expr->getValue());
+                } else {
+                    // We have a simple identifier that must be converted 
+                    // to a type identifier
+                    val = TaskExpr2TypeIdentifier(m_factory, m_marker_l).expr2typeid(
+                        m_pval_expr->getValue());
+                }
+
+                ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
+                    copier.copyT<ast::IExprId>(m_ptype_generic_type->getName()),
+                    val
+                );
+                m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
+            } else if (m_ptype_category_type) {
+                DEBUG("Category type parameter");
+            } else {
+                fprintf(stdout, "TODO: expression supplied for value %d, and ptype not set\n", i);
+                fflush(stdout);
                 return 0;
             }
-            ast::ITemplateValueParamDecl *p = m_factory->getAstFactory()->mkTemplateValueParamDecl(
-                copier.copyT<ast::IExprId>(m_ptype_value->getName()),
-                copier.copyT<ast::IDataType>(m_ptype_value->getType()),
-                copier.copyT<ast::IExpr>(m_pval_expr->getValue()));
-
-            m_ret->getSymtab().insert({p->getName()->getId(), m_ret->getChildren().size()});            
-            m_ret->getChildren().push_back(p);
         } else {
             // Type value. We always specialize as a generic type parameter
             ast::IExprId *name = 0;
@@ -92,6 +122,7 @@ ast::ISymbolScope *TaskBuildParamValList::build(
         }
     }
 
+    DEBUG_LEAVE("build %p", m_ret);
     return m_ret;
 }
 
@@ -114,6 +145,8 @@ void TaskBuildParamValList::visitTemplateCategoryTypeParamDecl(ast::ITemplateCat
 void TaskBuildParamValList::visitTemplateValueParamDecl(ast::ITemplateValueParamDecl *i) { 
     m_ptype_value = i;
 }
+
+dmgr::IDebug *TaskBuildParamValList::m_dbg = 0;
 
 }
 }

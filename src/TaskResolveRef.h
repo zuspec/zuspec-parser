@@ -88,6 +88,7 @@ private:
     ast::ISymbolScope                   *m_root;
     IFactory                            *m_factory;
     IMarkerListener                     *m_marker_l;    
+    IMarkerUP                           m_marker;
     bool                                m_search_imp;
     std::vector<ISymbolTableIteratorUP> m_symtab_it_s;
     ast::ISymbolRefPath                 *m_ref;

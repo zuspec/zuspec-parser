@@ -35,41 +35,78 @@ public:
     ast::IConstraintStmt *copy(ast::IConstraintStmt *i) {
         m_constraint = 0;
         i->accept(m_this);
+
+        if (!m_constraint) {
+            fprintf(stdout, "Error: copy(constraint) failed\n");
+            fflush(stdout);
+        }
         return m_constraint;
     }
 
     template <class T> T *copyT(ast::IConstraintStmt *i) {
-        return dynamic_cast<T *>(copy(i));
+        T *ret = dynamic_cast<T *>(copy(i));
+        if (!ret) {
+            fprintf(stdout, "Error: copyT(constraint) failed\n");
+            fflush(stdout);
+        }
+        return ret;
     }
 
     ast::IScopeChild *copy(ast::IScopeChild *i) {
         m_sc = 0;
         i->accept(m_this);
+        if (!m_sc) {
+            fprintf(stdout, "Error: copy(ScopeChild) failed\n");
+            fflush(stdout);
+        }
         return m_sc;
     };
 
     template <class T> T *copyT(ast::IScopeChild *i) {
-        return dynamic_cast<T *>(copy(i));
+        T *ret = dynamic_cast<T *>(copy(i));
+        if (!ret) {
+            fprintf(stdout, "Error: copyT(ScopeChild) failed\n");
+            fflush(stdout);
+        }
+        return ret;
     }
 
     ast::IExpr *copy(ast::IExpr *i) {
         m_expr = 0;
         i->accept(m_this);
+        if (!m_expr) {
+            fprintf(stdout, "Error: copy(Expr) failed\n");
+            fflush(stdout);
+        }
         return m_expr;
     };
 
     template <class T> T *copyT(ast::IExpr *i) {
-        return dynamic_cast<T *>(copy(i));
+        T *ret = dynamic_cast<T *>(copy(i));
+        if (!ret) {
+            fprintf(stdout, "Error: copyT(Expr) failed\n");
+            fflush(stdout);
+        }
+        return ret;
     }
 
     ast::IDataType *copy(ast::IDataType *i) {
         m_dt = 0;
         i->accept(m_this);
+        if (!m_dt) {
+            fprintf(stdout, "Error: copy(DataType) failed\n");
+            fflush(stdout);
+        }
         return m_dt;
     }
 
     template <class T> T *copyT(ast::IDataType *i) {
-        return dynamic_cast<T *>(copy(i));
+        T *ret = dynamic_cast<T *>(copy(i));
+        if (!ret) {
+            fprintf(stdout, "Error: copyT(Expr) failed\n");
+            fflush(stdout);
+        }
+        return ret;
     }
 
     virtual void visitActivityJoinSpec(ast::IActivityJoinSpec *i) { }
@@ -98,9 +135,17 @@ public:
     
     virtual void visitExprRefPathElem(ast::IExprRefPathElem *i) { }
     
-    virtual void visitExprStaticRefPath(ast::IExprStaticRefPath *i) { }
+    virtual void visitExprStaticRefPath(ast::IExprStaticRefPath *i) {
+        ast::IExprStaticRefPath *ic = m_factory->mkExprStaticRefPath(
+            i->getIs_global(),
+            copyT<ast::IExprMemberPathElem>(i->getLeaf())
+        );
+        m_expr = ic;
+    }
     
-    virtual void visitExprString(ast::IExprString *i) { }
+    virtual void visitExprString(ast::IExprString *i) { 
+        m_expr = m_factory->mkExprString(i->getValue(), i->getIs_raw());
+    }
     
     virtual void visitExprSubscript(ast::IExprSubscript *i) { }
     
@@ -112,9 +157,29 @@ public:
     
     virtual void visitScopeChildRef(ast::IScopeChildRef *i) { }
     
-    virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) { }
+    virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) { 
+        ast::ITypeIdentifier *ic = m_factory->mkTypeIdentifier();
+        for (std::vector<ast::ITypeIdentifierElemUP>::const_iterator
+            it=i->getElems().begin();
+            it!=i->getElems().end(); it++) {
+            ic->getElems().push_back(ast::ITypeIdentifierElemUP(
+                copyT<ast::ITypeIdentifierElem>(it->get())
+            ));
+        }
+
+        m_expr = ic;
+    }
     
-    virtual void visitTypeIdentifierElem(ast::ITypeIdentifierElem *i) { }
+    virtual void visitTypeIdentifierElem(ast::ITypeIdentifierElem *i) { 
+        ast::ITemplateParamValueList *plist = 0;
+
+        ast::ITypeIdentifierElem *ic = m_factory->mkTypeIdentifierElem(
+            copyT<ast::IExprId>(i->getId()),
+            plist
+        );
+
+        m_expr = ic;
+    }
     
     virtual void visitNamedScopeChild(ast::INamedScopeChild *i) { }
     
@@ -212,6 +277,7 @@ public:
             ic->getElems().push_back(ast::IExprMemberPathElemUP(
                 copyT<ast::IExprMemberPathElem>(it->get())));
         }
+        m_expr = ic;
     }
     
     virtual void visitExprId(ast::IExprId *i) { 
@@ -253,7 +319,14 @@ public:
     
     virtual void visitExprRefPath(ast::IExprRefPath *i) { }
     
-    virtual void visitExprRefPathId(ast::IExprRefPathId *i) { }
+    virtual void visitExprRefPathId(ast::IExprRefPathId *i) { 
+        ast::IExprRefPathId *ic = m_factory->mkExprRefPathId(
+            copyT<ast::IExprId>(i->getId()));
+        if (i->getSlice()) {
+            ic->setSlice(copyT<ast::IExprBitSlice>(i->getSlice()));
+        }
+        m_expr = ic;
+    }
     
     virtual void visitConstraintScope(ast::IConstraintScope *i) { }
     
@@ -287,7 +360,13 @@ public:
     
     virtual void visitConstraintStmtField(ast::IConstraintStmtField *i) { }
     
-    virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) { }
+    virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) { 
+        ast::IExprRefPathStaticRooted *ic = m_factory->mkExprRefPathStaticRooted(
+            copyT<ast::IExprStaticRefPath>(i->getRoot()),
+            (i->getLeaf())?copyT<ast::IExprHierarchicalId>(i->getLeaf()):0
+        );
+        m_expr = ic;
+    }
     
     virtual void visitConstraintStmtIf(ast::IConstraintStmtIf *i) { 
         m_constraint = m_factory->mkConstraintStmtIf(
@@ -363,7 +442,15 @@ public:
     
     virtual void visitExtendType(ast::IExtendType *i) { }
     
-    virtual void visitField(ast::IField *i) { }
+    virtual void visitField(ast::IField *i) { 
+        m_sc = m_factory->mkField(
+            copyT<ast::IExprId>(i->getName()),
+            copy(i->getType()),
+            i->getAttr(),
+            (i->getArray_dim())?copy(i->getArray_dim()):0,
+            (i->getInit())?copy(i->getInit()):0
+        );
+    }
     
     virtual void visitFieldCompRef(ast::IFieldCompRef *i) { }
     
@@ -427,7 +514,19 @@ public:
     
     virtual void visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) { }
     
-    virtual void visitConstraintBlock(ast::IConstraintBlock *i) { }
+    virtual void visitConstraintBlock(ast::IConstraintBlock *i) { 
+        ast::IConstraintBlock *ic = m_factory->mkConstraintBlock(
+            i->getName(),
+            i->getIs_dynamic());
+
+        for (std::vector<ast::IConstraintStmtUP>::const_iterator
+            it=i->getConstraints().begin();
+            it!=i->getConstraints().end(); it++) {
+            ic->getConstraints().push_back(ast::IConstraintStmtUP(copy(it->get())));
+        }
+
+        m_sc = ic;
+    }
     
     virtual void visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) { }
     
@@ -477,6 +576,10 @@ public:
             (i->getSuper_t())?copyT<ast::ITypeIdentifier>(i->getSuper_t()):0,
             i->getKind()
         );
+
+        if (i->getParams()) {
+
+        }
 
         for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();
