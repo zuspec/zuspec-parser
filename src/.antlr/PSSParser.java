@@ -8264,8 +8264,8 @@ public class PSSParser extends Parser {
 			return getRuleContext(IdentifierContext.class,0);
 		}
 		public TerminalNode TOK_SINGLE_EQ() { return getToken(PSSParser.TOK_SINGLE_EQ, 0); }
-		public Type_identifierContext type_identifier() {
-			return getRuleContext(Type_identifierContext.class,0);
+		public Data_typeContext data_type() {
+			return getRuleContext(Data_typeContext.class,0);
 		}
 		public Generic_type_param_declContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -8292,7 +8292,7 @@ public class PSSParser extends Parser {
 				setState(1681);
 				match(TOK_SINGLE_EQ);
 				setState(1682);
-				type_identifier();
+				data_type();
 				}
 			}
 
@@ -17133,7 +17133,7 @@ public class PSSParser extends Parser {
 		"~\2\u068b\u0689\3\2\2\2\u068b\u068a\3\2\2\2\u068c\u00ef\3\2\2\2\u068d"+
 		"\u0690\5\u00f2z\2\u068e\u0690\5\u00f4{\2\u068f\u068d\3\2\2\2\u068f\u068e"+
 		"\3\2\2\2\u0690\u00f1\3\2\2\2\u0691\u0692\7_\2\2\u0692\u0695\5\u01b8\u00dd"+
-		"\2\u0693\u0694\7\b\2\2\u0694\u0696\5\u01de\u00f0\2\u0695\u0693\3\2\2\2"+
+		"\2\u0693\u0694\7\b\2\2\u0694\u0696\5\u0100\u0081\2\u0695\u0693\3\2\2\2"+
 		"\u0695\u0696\3\2\2\2\u0696\u00f3\3\2\2\2\u0697\u0698\5\u00f8}\2\u0698"+
 		"\u069a\5\u01b8\u00dd\2\u0699\u069b\5\u00f6|\2\u069a\u0699\3\2\2\2\u069a"+
 		"\u069b\3\2\2\2\u069b\u069e\3\2\2\2\u069c\u069d\7\b\2\2\u069d\u069f\5\u01de"+

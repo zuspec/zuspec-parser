@@ -23,14 +23,14 @@ classes:
   - TemplateGenericTypeParamDecl:
       super: TemplateParamDecl
       data:
-      - dflt: UP<TypeIdentifier>
+      - dflt: UP<DataType>
 
   - TemplateCategoryTypeParamDecl:
       super: TemplateParamDecl
       data:
       - category: TypeCategory
       - restriction: UP<TypeIdentifier>
-      - dflt: UP<TypeIdentifier>
+      - dflt: UP<DataType>
 
   - TemplateValueParamDecl:
       super: TemplateParamDecl
@@ -47,7 +47,7 @@ classes:
   - TemplateParamTypeValue:
       super: TemplateParamValue
       data:
-        - value: UP<TypeIdentifier>
+        - value: UP<DataType>
 
   - TemplateParamExprValue:
       super: TemplateParamValue

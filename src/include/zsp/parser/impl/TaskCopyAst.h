@@ -413,7 +413,7 @@ public:
     virtual void visitDataTypeInt(ast::IDataTypeInt *i) { 
         m_dt = m_factory->mkDataTypeInt(
             i->getIs_signed(),
-            copy(i->getWidth()),
+            (i->getWidth())?copy(i->getWidth()):0,
             (i->getIn_range())?copyT<ast::IExprDomainOpenRangeList>(i->getIn_range()):0
         );
     }

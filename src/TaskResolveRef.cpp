@@ -64,26 +64,13 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
 
 ast::ISymbolRefPath *TaskResolveRef::resolve(
         const ISymbolTableIterator      *scope,
-        ast::IExprRefPath               *ref) {
+        ast::IExpr                      *ref) {
     DEBUG_ENTER("resolve (RefPath)");
     m_symtab_it_s.push_back(ISymbolTableIteratorUP(scope->clone()));
     ref->accept(m_this);
     m_symtab_it_s.pop_back();
     DEBUG_LEAVE("resolve (RefPath) %p", m_ref);
     return m_ref;
-}
-
-ast::ISymbolRefPath *TaskResolveRef::resolve(
-        const ISymbolTableIterator      *scope,
-        ast::IExprId                    *ref) {
-    DEBUG_ENTER("resolve");
-	ISymbolTableIteratorUP it(scope->clone());
-
-    ast::ISymbolRefPath *ret = findRoot(it.get(), ref);
-
-    DEBUG_LEAVE("resolve (%p)", ret);
-
-    return ret;
 }
 
 void TaskResolveRef::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) {
@@ -217,47 +204,6 @@ ast::ISymbolRefPath *TaskResolveRef::findRoot(
         ISymbolTableIterator            *scope,
         const ast::IExprId              *sym) {
     return TaskResolveRootRef(m_factory, m_marker_l).resolve(scope, sym);
-}
-
-ast::ISymbolRefPath *TaskResolveRef::searchImport(
-        ISymbolTableIterator            *scope,
-        ast::IPackageImportStmt         *imp,
-        const std::string               &sym) {
-	DEBUG_ENTER("searchImport %s", sym.c_str());
-#ifdef UNDEFINED
-	// ast::ISymbolRefPath *ret = 0;
-	if (!imp->getPath()->getTarget()) {
-		DEBUG("Skipping, due to unset import target");
-		return 0;
-	}
-	for (uint32_t i=0; i<imp->getPath()->getTarget()->getPath().size(); i++) {
-		DEBUG("Imp Path[%d] %d", i, imp->getPath()->getTarget()->getPath().at(i));
-	}
-	ast::IScopeChild *target_c = scope->resolveAbsPath(imp->getPath()->getTarget());
-	ast::ISymbolScope *target_s = dynamic_cast<ast::ISymbolScope *>(target_c);
-	DEBUG("target_c: %p ; target_s: %p", target_c, target_s);
-
-	if (target_s) {
-		DEBUG("Have a symbol scope (%s)", target_s->getName().c_str());
-		std::map<std::string, int32_t>::const_iterator it;
-		it = target_s->getSymtab().find(sym);
-
-		if (it != target_s->getSymtab().end()) {
-			DEBUG("Found the symbol (%s)", sym.c_str());
-			ret = m_factory->getAstFactory()->mkSymbolRefPath();
-			ret->getPath().insert(
-				ret->getPath().begin(),
-				imp->getPath()->getTarget()->getPath().begin(),
-				imp->getPath()->getTarget()->getPath().end());
-			ret->getPath().push_back({
-                ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second
-            });
-		}
-	}
-#endif /* UNDEFINED */
-
-	DEBUG_LEAVE("searchImport %s", sym.c_str());
-	return 0;
 }
 
 ast::ISymbolRefPath *TaskResolveRef::specializeParameterizedRef(

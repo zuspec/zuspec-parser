@@ -63,6 +63,12 @@ ast::ISymbolScope *TaskBuildSymbolTree::build(
     return root;
 }
 
+void TaskBuildSymbolTree::visitActivityDecl(ast::IActivityDecl *i) {
+    DEBUG_ENTER("visitActivityDecl");
+    m_scope_s.back()->getChildren().push_back(i);
+    DEBUG_LEAVE("visitActivityDecl");
+}
+
 ast::ISymbolTypeScope *TaskBuildSymbolTree::build(ast::ITypeScope *ts) {
     DEBUG_ENTER("build");
     ast::ISymbolTypeScope *ret = 0;
@@ -234,6 +240,7 @@ void TaskBuildSymbolTree::visitField(ast::IField *i) {
         );
     } else {
         int32_t id = m_scope_s.back()->getChildren().size();
+        DEBUG("Add field to scope %s", m_scope_s.back()->getName().c_str());
         m_scope_s.back()->getSymtab().insert({i->getName()->getId(), id});
         m_scope_s.back()->getChildren().push_back(i);
     }
@@ -392,6 +399,12 @@ void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStm
     }
 
     DEBUG_LEAVE("visitProceduralStmtDataDeclaration");
+}
+
+void TaskBuildSymbolTree::visitScope(ast::IScope *i) {
+    DEBUG_ENTER("visitScope");
+    m_scope_s.back()->getChildren().push_back(i);
+    DEBUG_LEAVE("visitScope");
 }
 
 void TaskBuildSymbolTree::visitScopeChild(ast::IScopeChild *i) {

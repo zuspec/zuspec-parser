@@ -1,5 +1,5 @@
 /*
- * TaskExpr2TypeIdentifier.cpp
+ * TaskExpr2DataType.cpp
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -19,7 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
-#include "TaskExpr2TypeIdentifier.h"
+#include "TaskExpr2DataType.h"
 #include "zsp/parser/impl/TaskCopyAst.h"
 
 
@@ -27,41 +27,41 @@ namespace zsp {
 namespace parser {
 
 
-TaskExpr2TypeIdentifier::TaskExpr2TypeIdentifier(
+TaskExpr2DataType::TaskExpr2DataType(
     IFactory        *factory,
     IMarkerListener *marker_l) : m_factory(factory), m_marker_l(marker_l) {
-    DEBUG_INIT("TaskExpr2TypeIdentifier", factory->getDebugMgr());
+    DEBUG_INIT("TaskExpr2DataType", factory->getDebugMgr());
 }
 
-TaskExpr2TypeIdentifier::~TaskExpr2TypeIdentifier() {
+TaskExpr2DataType::~TaskExpr2DataType() {
 
 }
 
-ast::ITypeIdentifier *TaskExpr2TypeIdentifier::expr2typeid(ast::IExpr *e) {
+ast::IDataType *TaskExpr2DataType::expr2dt(ast::IExpr *e) {
     m_ret = 0;
     e->accept(m_this);
     return m_ret;
 }
 
-void TaskExpr2TypeIdentifier::visitExpr(ast::IExpr *i) { 
+void TaskExpr2DataType::visitExpr(ast::IExpr *i) { 
     DEBUG_ENTER("visitExpr");
     DEBUG("TODO: flag error");
     DEBUG_LEAVE("visitExpr");
 }
 
-void TaskExpr2TypeIdentifier::visitExprId(ast::IExprId *i) { 
+void TaskExpr2DataType::visitExprId(ast::IExprId *i) { 
     DEBUG_ENTER("visitExprId");
     DEBUG("TODO: flag error");
     DEBUG_LEAVE("visitExprId");
 }
 
-void TaskExpr2TypeIdentifier::visitExprHierarchicalId(ast::IExprHierarchicalId *i) { 
+void TaskExpr2DataType::visitExprHierarchicalId(ast::IExprHierarchicalId *i) { 
     DEBUG_ENTER("visitExprHierarchicalId");
     DEBUG("TODO: flag error");
     DEBUG_LEAVE("visitExprHierarchicalId");
 }
 
-void TaskExpr2TypeIdentifier::visitExprRefPathContext(ast::IExprRefPathContext *i) { 
+void TaskExpr2DataType::visitExprRefPathContext(ast::IExprRefPathContext *i) { 
     DEBUG_ENTER("visitExprRefPathContext");
     DEBUG("super=%p slice=%p elems=%d",
         i->getIs_super(),
@@ -70,52 +70,55 @@ void TaskExpr2TypeIdentifier::visitExprRefPathContext(ast::IExprRefPathContext *
     if (i->getIs_super() || i->getSlice() || i->getHier_id()->getElems().size() > 1) {
         DEBUG("TODO: flag error");
     } else {
-        m_ret = m_factory->getAstFactory()->mkTypeIdentifier();
-        m_ret->getElems().push_back(ast::ITypeIdentifierElemUP(
+        ast::ITypeIdentifier *tid = m_factory->getAstFactory()->mkTypeIdentifier();
+        tid->getElems().push_back(ast::ITypeIdentifierElemUP(
             m_factory->getAstFactory()->mkTypeIdentifierElem(
                 TaskCopyAst(m_factory->getAstFactory()).copyT<ast::IExprId>(
                     i->getHier_id()->getElems().at(0)->getId()
                 ),
                 0
         )));
+        m_ret = m_factory->getAstFactory()->mkDataTypeUserDefined(false, tid);
     }
     DEBUG_LEAVE("visitExprRefPathContext");
 }
 
-void TaskExpr2TypeIdentifier::visitExprRefPathId(ast::IExprRefPathId *i) { 
+void TaskExpr2DataType::visitExprRefPathId(ast::IExprRefPathId *i) { 
     DEBUG_ENTER("visitExprRefPathId");
     if (i->getSlice()) {
         DEBUG("TODO: flag error -- slice not permitted on a type identifier");
     } else {
-        m_ret = m_factory->getAstFactory()->mkTypeIdentifier();
-        m_ret->getElems().push_back(ast::ITypeIdentifierElemUP(
+        ast::ITypeIdentifier *tid = m_factory->getAstFactory()->mkTypeIdentifier();
+        tid->getElems().push_back(ast::ITypeIdentifierElemUP(
             m_factory->getAstFactory()->mkTypeIdentifierElem(
-                TaskCopyAst(m_factory->getAstFactory()).copyT<ast::IExprId>(
-                    i->getId()
-                ),
+                TaskCopyAst(m_factory->getAstFactory()).copyT<ast::IExprId>(i->getId()),
                 0
-        )));
+            )));
+        m_ret = m_factory->getAstFactory()->mkDataTypeUserDefined(
+            false,
+            tid
+        );
     }
     DEBUG_LEAVE("visitExprRefPathId");
 }
 
-void TaskExpr2TypeIdentifier::visitExprRefPathStatic(ast::IExprRefPathStatic *i) { 
+void TaskExpr2DataType::visitExprRefPathStatic(ast::IExprRefPathStatic *i) { 
     DEBUG_ENTER("visitExprRefPathStatic");
     DEBUG("TODO: flag error");
     DEBUG_LEAVE("visitExprRefPathStatic");
 }
 
-void TaskExpr2TypeIdentifier::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) { 
+void TaskExpr2DataType::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) { 
 
 }
 
-void TaskExpr2TypeIdentifier::visitExprStaticRefPath(ast::IExprStaticRefPath *i) { 
+void TaskExpr2DataType::visitExprStaticRefPath(ast::IExprStaticRefPath *i) { 
     DEBUG_ENTER("visitExprStaticRefPath");
     DEBUG("TODO: flag error");
     DEBUG_LEAVE("visitExprStaticRefPath");
 }
 
-dmgr::IDebug *TaskExpr2TypeIdentifier::m_dbg = 0;
+dmgr::IDebug *TaskExpr2DataType::m_dbg = 0;
 
 }
 }

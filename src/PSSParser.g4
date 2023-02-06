@@ -825,7 +825,9 @@ type_param_decl:
 	;
 
 generic_type_param_decl: 
-	TOK_TYPE identifier ( TOK_SINGLE_EQ type_identifier )?
+// Note: type_identifier doesn't cover primitive types (eg bit, int, bool)
+//	TOK_TYPE identifier ( TOK_SINGLE_EQ type_identifier )?
+	TOK_TYPE identifier ( TOK_SINGLE_EQ data_type )?
 	;
 
 category_type_param_decl: 

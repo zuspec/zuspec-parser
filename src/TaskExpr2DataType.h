@@ -1,5 +1,5 @@
 /**
- * TaskExpr2TypeIdentifier.h
+ * TaskExpr2DataType.h
  *
  * Copyright 2022 Matthew Ballance and Contributors
  *
@@ -29,16 +29,16 @@ namespace parser {
 
 
 
-class TaskExpr2TypeIdentifier : public ast::VisitorBase {
+class TaskExpr2DataType : public ast::VisitorBase {
 public:
-    TaskExpr2TypeIdentifier(
+    TaskExpr2DataType(
         IFactory            *factory,
         IMarkerListener     *marker_l
     );
 
-    virtual ~TaskExpr2TypeIdentifier();
+    virtual ~TaskExpr2DataType();
 
-    ast::ITypeIdentifier *expr2typeid(ast::IExpr *e);
+    ast::IDataType *expr2dt(ast::IExpr *e);
 
     virtual void visitExpr(ast::IExpr *i) override;
 
@@ -61,7 +61,7 @@ private:
     IFactory                        *m_factory;
     IMarkerListener                 *m_marker_l;
     IMarkerUP                       m_marker;
-    ast::ITypeIdentifier            *m_ret;
+    ast::IDataType                  *m_ret;
 
 };
 

@@ -138,7 +138,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
         kind = ast::ExtendTargetE::Struct;
     } else {
         std::map<std::string,ast::ExtendTargetE>::const_iterator it =
-            ExtendKind_m.find(ctx->struct_kind()->object_kind()->toString());
+            ExtendKind_m.find(ctx->struct_kind()->object_kind()->getText());
         if (it != ExtendKind_m.end()) {
             kind = it->second;
         } else {
@@ -416,7 +416,7 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 	ast::IStruct *s = m_factory->mkStruct(
 		id,
 		super_t,
-		StructKind_m.find(ctx->struct_kind()->toString())->second);
+		StructKind_m.find(ctx->struct_kind()->getText())->second);
 
     if (ctx->template_param_decl_list()) {
         s->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
@@ -454,7 +454,7 @@ static std::map<std::string, ast::ExecKind> exec_kind_m = {
 antlrcpp::Any AstBuilderInt::visitExec_block(PSSParser::Exec_blockContext *ctx) {
     DEBUG_ENTER("visitExec_block");
     ast::IExecBlock *exec = m_factory->mkExecBlock(
-        exec_kind_m.find(ctx->exec_kind()->toString())->second
+        exec_kind_m.find(ctx->exec_kind()->getText())->second
     );
 
     m_exec_scope_s.push_back(exec);
@@ -563,7 +563,7 @@ static std::map<std::string, ast::AssignOp> assign_op_m = {
 antlrcpp::Any AstBuilderInt::visitProcedural_assignment_stmt(PSSParser::Procedural_assignment_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_assignment_stmt");
     ast::IExpr *lhs = mkExprRefPath(ctx->ref_path());
-    ast::AssignOp op = assign_op_m.find(ctx->assign_op()->toString())->second;
+    ast::AssignOp op = assign_op_m.find(ctx->assign_op()->getText())->second;
     ast::IExpr *rhs = mkExpr(ctx->expression());
 
     ast::IProceduralStmtAssignment *stmt = m_factory->mkProceduralStmtAssignment(
@@ -947,7 +947,7 @@ antlrcpp::Any AstBuilderInt::visitData_declaration(PSSParser::Data_declarationCo
 	for (std::vector<PSSParser::Data_instantiationContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-        DEBUG("Name: %s", (*it)->identifier()->toString().c_str());
+        DEBUG("Name: %s", (*it)->identifier()->getText().c_str());
 		ast::IDataType *type = mkDataType(ctx->data_type());
 		ast::IExpr *array_dim = 0;
 		ast::IExpr *init = 0;
@@ -1119,7 +1119,7 @@ antlrcpp::Any AstBuilderInt::visitConstraint_declaration(PSSParser::Constraint_d
 	std::string name;
 
 	if (ctx->identifier()) {
-		name = ctx->identifier()->toString();
+		name = ctx->identifier()->getText();
 	}
 
 	ast::IConstraintBlock *constraint = m_factory->mkConstraintBlock(
@@ -1176,6 +1176,7 @@ antlrcpp::Any AstBuilderInt::visitConstraint_block(PSSParser::Constraint_blockCo
 
 	m_constraint = scope;
 	if (m_constraint_s.size() > 0) {
+        DEBUG("Add constraint to exiting parent");
 		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(scope));
 	}
 
@@ -1381,15 +1382,15 @@ antlrcpp::Any AstBuilderInt::visitExpression(PSSParser::ExpressionContext *ctx) 
 		if (ctx->exp_op()) {
 			op = ast::ExprBinOp::BinOp_Exp;
 		} else if (ctx->mul_div_mod_op()) {
-			op = prv_str2binop.find(ctx->mul_div_mod_op()->toString())->second;
+			op = prv_str2binop.find(ctx->mul_div_mod_op()->getText())->second;
 		} else if (ctx->add_sub_op()) {
-			op = prv_str2binop.find(ctx->add_sub_op()->toString())->second;
+			op = prv_str2binop.find(ctx->add_sub_op()->getText())->second;
 		} else if (ctx->shift_op()) {
-			op = prv_str2binop.find(ctx->shift_op()->toString())->second;
+			op = prv_str2binop.find(ctx->shift_op()->getText())->second;
 		} else if (ctx->logical_inequality_op()) {
-			op = prv_str2binop.find(ctx->logical_inequality_op()->toString())->second;
+			op = prv_str2binop.find(ctx->logical_inequality_op()->getText())->second;
 		} else if (ctx->eq_neq_op()) {
-			op = prv_str2binop.find(ctx->eq_neq_op()->toString())->second;
+			op = prv_str2binop.find(ctx->eq_neq_op()->getText())->second;
 		} else if (ctx->binary_and_op()) {
 			op = ExprBinOp::BinOp_BitAnd;
 		} else if (ctx->binary_xor_op()) {
@@ -1442,11 +1443,11 @@ antlrcpp::Any AstBuilderInt::visitBool_literal(PSSParser::Bool_literalContext *c
 antlrcpp::Any AstBuilderInt::visitString_literal(PSSParser::String_literalContext *ctx) {
 	DEBUG_ENTER("visitString_literal");
 	if (ctx->DOUBLE_QUOTED_STRING()) {
-		std::string value = ctx->DOUBLE_QUOTED_STRING()->toString();
+		std::string value = ctx->DOUBLE_QUOTED_STRING()->getText();
 		value = value.substr(1, value.size()-1);
 		m_expr = m_factory->mkExprString(value, false);
 	} else { 
-		std::string value = ctx->TRIPLE_DOUBLE_QUOTED_STRING()->toString();
+		std::string value = ctx->TRIPLE_DOUBLE_QUOTED_STRING()->getText();
 		value = value.substr(3, value.size()-3);
 		m_expr = m_factory->mkExprString(value, true);
 	}
@@ -1490,9 +1491,9 @@ antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) 
 	IExprId *id;
 	
 	if (ctx->ESCAPED_ID()) {
-		id = m_factory->mkExprId(ctx->ESCAPED_ID()->toString(), true);
+		id = m_factory->mkExprId(ctx->ESCAPED_ID()->getText(), true);
 	} else {
-		id = m_factory->mkExprId(ctx->ID()->toString(), false);
+		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
 	Location loc = id->getLocation();
@@ -1891,7 +1892,7 @@ ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
             if (va_p->is_type) {
                 kind = FunctionParamDeclKind::ParamKind_Type;
             } else if (va_p->is_ref) {
-                kind = ref_param_kind_m.find(va_p->type_category()->toString())->second;
+                kind = ref_param_kind_m.find(va_p->type_category()->getText())->second;
             } else if (va_p->is_struct) {
                 kind = FunctionParamDeclKind::ParamKind_Struct;
             } else {
@@ -1926,7 +1927,7 @@ ast::IFunctionParamDecl *AstBuilderInt::mkFunctionParamDecl(PSSParser::Function_
     if (ctx->data_type()) {
         // Regular parameter with direction, type, etc
         if (ctx->function_parameter_dir()) {
-            dir = param_dir_m.find(ctx->function_parameter_dir()->toString())->second;
+            dir = param_dir_m.find(ctx->function_parameter_dir()->getText())->second;
         }
         type = mkDataType(ctx->data_type());
 
@@ -1938,7 +1939,7 @@ ast::IFunctionParamDecl *AstBuilderInt::mkFunctionParamDecl(PSSParser::Function_
         if (ctx->is_type) {
             kind = FunctionParamDeclKind::ParamKind_Type;
         } else if (ctx->is_ref) {
-            kind = ref_param_kind_m.find(ctx->type_category()->toString())->second;
+            kind = ref_param_kind_m.find(ctx->type_category()->getText())->second;
         } else if (ctx->is_struct) {
             kind = FunctionParamDeclKind::ParamKind_Struct;
         } else {
@@ -1961,9 +1962,9 @@ IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 	IExprId *id;
 	
 	if (ctx->ESCAPED_ID()) {
-		id = m_factory->mkExprId(ctx->ESCAPED_ID()->toString(), true);
+		id = m_factory->mkExprId(ctx->ESCAPED_ID()->getText(), true);
 	} else {
-		id = m_factory->mkExprId(ctx->ID()->toString(), false);
+		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
 	Location loc = id->getLocation();
@@ -2197,21 +2198,30 @@ ast::ITemplateParamDeclList *AstBuilderInt::mkTypeParamDecl(
             if ((*it)->type_param_decl()->generic_type_param_decl()) {
                 ast::ITemplateGenericTypeParamDecl *gen_p = m_factory->mkTemplateGenericTypeParamDecl(
                     mkId((*it)->type_param_decl()->generic_type_param_decl()->identifier()),
-                    ((*it)->type_param_decl()->generic_type_param_decl()->type_identifier())?
-                        mkTypeId((*it)->type_param_decl()->generic_type_param_decl()->type_identifier()):0
+                    ((*it)->type_param_decl()->generic_type_param_decl()->data_type())?
+                        mkDataType((*it)->type_param_decl()->generic_type_param_decl()->data_type()):0
                 );
                 plist->getParams().push_back(ast::ITemplateParamDeclUP(gen_p));
-            } else {
-                // Type-category parameter
-                ast::TypeCategory category = type_category_m.find(
-                    (*it)->type_param_decl()->category_type_param_decl()->type_category()->img->toString())->second;
+            } else { // Type-category parameter
+                PSSParser::Category_type_param_declContext *cat_ctx = (*it)->type_param_decl()->category_type_param_decl();
+                fprintf(stdout, "text: %s\n", cat_ctx->type_category()->getText().c_str());
+                fflush(stdout);
+                ast::TypeCategory category = type_category_m.find(cat_ctx->type_category()->getText())->second;
+                ast::IDataType *dflt = 0;
+
+                if ((*it)->type_param_decl()->category_type_param_decl()->type_identifier()) {
+                    dflt = m_factory->mkDataTypeUserDefined(
+                        false, 
+                        mkTypeId((*it)->type_param_decl()->category_type_param_decl()->type_identifier())
+                    );
+                }
+
                 ast::ITemplateCategoryTypeParamDecl *cat_p = m_factory->mkTemplateCategoryTypeParamDecl(
                     mkId((*it)->type_param_decl()->category_type_param_decl()->identifier()),
                     category,
                     ((*it)->type_param_decl()->category_type_param_decl()->type_restriction())?
                         mkTypeId((*it)->type_param_decl()->category_type_param_decl()->type_restriction()->type_identifier()):0,
-                    ((*it)->type_param_decl()->category_type_param_decl()->type_identifier())?
-                        mkTypeId((*it)->type_param_decl()->category_type_param_decl()->type_identifier()):0
+                    dflt
                 );
                 plist->getParams().push_back(ast::ITemplateParamDeclUP(cat_p));
             }
@@ -2245,8 +2255,13 @@ ast::ITemplateParamValueList *AstBuilderInt::mkTemplateParamValueList(
                 m_factory->mkTemplateParamExprValue(
                     mkExpr((*it)->constant_expression()->expression())
                 )));
+        } else {
+            // Data type
+            plist->getValues().push_back(ast::ITemplateParamValueUP(
+                m_factory->mkTemplateParamTypeValue(
+                    mkDataType((*it)->data_type())
+                )));
         }
-
     }
 
     return plist;

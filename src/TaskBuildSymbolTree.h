@@ -42,6 +42,8 @@ public:
 
     ast::ISymbolTypeScope *build(ast::ITypeScope *ts);
 
+    virtual void visitActivityDecl(ast::IActivityDecl *i) override;
+
     virtual void visitPackageScope(ast::IPackageScope *i) override;
 
     virtual void visitEnumDecl(ast::IEnumDecl *i) override;
@@ -69,6 +71,8 @@ public:
     virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
 
     virtual void visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) override;
+
+    virtual void visitScope(ast::IScope *i) override;
 
     virtual void visitScopeChild(ast::IScopeChild *i) override;
 

@@ -45,11 +45,7 @@ public:
 
     ast::ISymbolRefPath *resolve(
         const ISymbolTableIterator      *scope,
-        ast::IExprRefPath               *ref);
-
-    ast::ISymbolRefPath *resolve(
-        const ISymbolTableIterator      *scope,
-        ast::IExprId                    *ref);
+        ast::IExpr                      *ref);
 
     virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) override;
 
@@ -73,11 +69,6 @@ private:
     ast::ISymbolRefPath *findRoot(
         ISymbolTableIterator            *scope,
         const ast::IExprId              *sym);
-
-    ast::ISymbolRefPath *searchImport(
-        ISymbolTableIterator            *scope,
-        ast::IPackageImportStmt         *imp,
-        const std::string               &sym);
 
     ast::ISymbolRefPath *specializeParameterizedRef(
         ast::ISymbolRefPath             *target,

@@ -20,7 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "TaskBuildParamValList.h"
-#include "TaskExpr2TypeIdentifier.h"
+#include "TaskExpr2DataType.h"
 #include "zsp/parser/impl/TaskCopyAst.h"
 
 
@@ -44,7 +44,7 @@ TaskBuildParamValList::~TaskBuildParamValList() {
 ast::ITemplateParamDeclList *TaskBuildParamValList::build(
         ast::ISymbolScope               *plist,
         ast::ITemplateParamValueList    *pvals) {
-    DEBUG_ENTER("build");
+    DEBUG_ENTER("build n_pvals=%d", pvals->getValues().size());
     TaskCopyAst copier(m_factory->getAstFactory());
     m_ret = 0;
 
@@ -80,20 +80,14 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
                 m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
             } else if (m_ptype_generic_type) {
                 DEBUG("Generic type parameter");
-                ast::ITypeIdentifier *val = 0;
+                ast::IDataType *dt = 0;
 
-                if (dynamic_cast<ast::ITypeIdentifier *>(m_pval_expr->getValue())) {
-                    val = copier.copyT<ast::ITypeIdentifier>(m_pval_expr->getValue());
-                } else {
-                    // We have a simple identifier that must be converted 
-                    // to a type identifier
-                    val = TaskExpr2TypeIdentifier(m_factory, m_marker_l).expr2typeid(
-                        m_pval_expr->getValue());
-                }
+                dt = TaskExpr2DataType(m_factory, m_marker_l).expr2dt(
+                    m_pval_expr->getValue());
 
                 ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
                     copier.copyT<ast::IExprId>(m_ptype_generic_type->getName()),
-                    val
+                    dt
                 );
                 m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
             } else if (m_ptype_category_type) {
@@ -103,22 +97,37 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
                 fflush(stdout);
                 return 0;
             }
-        } else {
+        } else { // Type value
+            DEBUG("Type parameter");
+
             // Type value. We always specialize as a generic type parameter
             ast::IExprId *name = 0;
-            if (m_ptype_category_type) {
+            ast::IDataType *type = 0;
+            if (m_ptype_value) {
+                DEBUG("TODO: attempting to specify type for value parameter");
+            } else if (m_ptype_category_type) {
                 name = m_ptype_category_type->getName();
-
+                type = m_pval_type->getValue();
             } else if (m_ptype_generic_type) {
                 name = m_ptype_generic_type->getName();
+                type = m_pval_type->getValue();
             } else {
                 fprintf(stdout, "TODO: no ptype_decl captured\n");
             }
 
+            DEBUG("Add parameter %s", name->getId().c_str());
+            ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
+                copier.copyT<ast::IExprId>(name),
+                copier.copy(m_pval_type->getValue())
+            );
+            m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
+
+/*
             ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
                 copier.copyT<ast::IExprId>(name),
                 copier.copyT<ast::ITypeIdentifier>(m_pval_type->getValue())
             );
+ */
         }
     }
 

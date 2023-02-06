@@ -63,7 +63,14 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
 
 void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHandleTraversal *i) {
     DEBUG_ENTER("visitActivityActionHandleTraversal");
-    i->getTarget()->accept(m_this);
+    ast::ISymbolRefPath *target_ref = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
+        m_symtab_it.get(),
+        i->getTarget());
+    if (!target_ref) {
+        return;
+    }
+
+    i->getTarget()->setTarget(target_ref);
     ast::IScopeChild *target = resolvePath(i->getTarget()->getTarget());
     ast::IField *field = dynamic_cast<ast::IField *>(target);
     DEBUG("target=%p field=%p", target, field);
@@ -87,6 +94,7 @@ void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHan
     
 void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeTraversal *i) {
     DEBUG_ENTER("visitActivityActionTypeTraversal");
+    DEBUG("TODO: visitActivityActionTypeTraversal");
     DEBUG_LEAVE("visitActivityActionTypeTraversal");
 }
 

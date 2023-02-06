@@ -495,42 +495,43 @@ action B {
 
 TEST_F(TestParseSpecExamples, test_041_compound_action_traversal) {
     const char *text = R"(
+    // <example>
+    component top {
+    // </example>
 
-// example
-component top {
-// example
+        action A {
+            rand bit[4] f1;
+            // ...
+        }
 
-action A {
- rand bit[4] f1;
- // ...
-}
-action B {
- A a1, a2;
+        action B {
+            A a1, a2;
 
- activity {
- a1;
- a2 with {
- f1 < 10;
- };
- }
-}
-action C {
- action bit[4] max;
- B b1;
+            activity {
+                a1;
+                a2 with {
+                    f1 < 10;
+                };
+            }
+        }
 
- activity {
- 	max;
-	b1 with {
-	 a1.f1 <= max;
- 	};
- }
-}
+        action C {
+            action bit[4] max;
+            B b1;
 
-// example
-}
-// example
+            activity {
+                max;
+                b1 with {
+                    a1.f1 <= max;
+                };
+            }
+        }
 
+    // <example>
+    }
+    // </example>
     )";
+    enableDebug(true);
     runTest(text, "041_compound_action_traversal.pss");
 }
 
