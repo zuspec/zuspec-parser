@@ -27,7 +27,7 @@ compilation_unit :
 
 portable_stimulus_description : 
 	package_body_item 
-	| package_declaration
+//	| package_declaration // Note: package_declaration is a package_body_item
 //	| component_declaration // Note: ambiguous, since 'component' is also a package body item
 	;
 
@@ -852,9 +852,18 @@ template_param_value_list:
 	TOK_LT ( template_param_value ( TOK_COMMA template_param_value )* )? TOK_GT
 	;
 
-template_param_value: 
-	constant_expression
-	| data_type
+// Note: Added to provide a non-terminal matching a templated non-global type identifier
+type_identifier_templ_elem:
+	identifier template_param_value_list
+	;
+
+template_param_value:
+    data_type
+    | constant_expression // Note: both expression and data_type cover 'identifier'
+//	scalar_data_type
+//	| (is_global=TOK_DOUBLE_COLON type_identifier_elem)
+//	| type_identifier_templ_elem (TOK_DOUBLE_COLON type_identifier_elem)*
+//	| constant_expression
 	;
 
 /********************************************************************
@@ -911,7 +920,7 @@ domain_open_range_value:
 	;
 
 string_type: 
-	TOK_STRING ( TOK_IN TOK_LSBRACE DOUBLE_QUOTED_STRING (TOK_COMMA DOUBLE_QUOTED_STRING)* TOK_RSBRACE)? 
+	TOK_STRING ( has_range=TOK_IN TOK_LSBRACE DOUBLE_QUOTED_STRING (TOK_COMMA DOUBLE_QUOTED_STRING)* TOK_RSBRACE)? 
 	;
 
 bool_type:
@@ -1203,7 +1212,9 @@ struct_body_compile_if_item:
 	;
 
 compile_has_expr:
-	TOK_COMPILE TOK_HAS TOK_LPAREN static_ref_path TOK_RPAREN
+    // Note: replace static_ref_path with ref_path
+//	TOK_COMPILE TOK_HAS TOK_LPAREN static_ref_path TOK_RPAREN
+	TOK_COMPILE TOK_HAS TOK_LPAREN ref_path TOK_RPAREN
 	;
 	
 compile_assert_stmt :
@@ -1220,6 +1231,7 @@ constant_expression: expression;
 // capture operator precedence within the grammar
 
 expression:
+	primary                                             |
 	unary_op lhs=expression								|
 	lhs=expression exp_op rhs=expression 				|
 	lhs=expression mul_div_mod_op rhs=expression 		|
@@ -1233,8 +1245,7 @@ expression:
     lhs=expression binary_or_op rhs=expression			|
     lhs=expression logical_and_op rhs=expression		|
     lhs=expression logical_or_op rhs=expression			|
-    lhs=expression conditional_expr						|
-	primary
+    lhs=expression conditional_expr
 	;
 
 // Replaced: unary_operator
@@ -1323,13 +1334,13 @@ collection_expression:
 
 primary: 
 	number 					
+	| ref_path
 	| aggregate_literal
 	| bool_literal
 	| string_literal
 	| null_ref
 	| paren_expr
 	| cast_expression
-	| ref_path
 	| compile_has_expr
 	;
 
@@ -1347,16 +1358,43 @@ cast_expression:
 	TOK_LPAREN casting_type TOK_RPAREN expression
 	;
 
+//ref_path:
+////	(static_ref_path (TOK_DOT hierarchical_id)? bit_slice?)
+////	| ( (TOK_SUPER TOK_DOT)? hierarchical_id bit_slice?)
+//    (static_ref_path bit_slice?)
+//    | (TOK_SUPER TOK_DOT hierarchical_id bit_slice?)
+//	;
 
-ref_path:
-	(static_ref_path (TOK_DOT hierarchical_id)? bit_slice?)
-	| ( (TOK_SUPER TOK_DOT)? hierarchical_id bit_slice?)
-	;
+//hierarchical_id:
+//	member_path_elem (TOK_DOT member_path_elem)*
+//	;
+//type_identifier_elem:
+//	identifier template_param_value_list?
+//	;
+//member_path_elem:
+//	identifier function_parameter_list? ( TOK_LSBRACE expression TOK_RSBRACE )?
+//	;
 
 // At minimum, this is an identifier
+
+static_ref_path_prefix:
+        (type_identifier_elem TOK_DOUBLE_COLON)
+        | is_global=TOK_DOUBLE_COLON
+        ;
+
 static_ref_path:
-	is_global=TOK_DOUBLE_COLON? (type_identifier_elem TOK_DOUBLE_COLON)* member_path_elem
-	;
+        static_ref_path_prefix (type_identifier_elem TOK_DOUBLE_COLON )* member_path_elem
+        ;
+
+ref_path:
+        static_ref_path ( TOK_DOT hierarchical_id )? bit_slice?
+        | (is_super=TOK_SUPER TOK_DOT)? hierarchical_id bit_slice?
+        ;
+
+//static_ref_path:
+////	is_global=TOK_DOUBLE_COLON? (type_identifier_elem TOK_DOUBLE_COLON)* member_path_elem
+//	is_global=TOK_DOUBLE_COLON? (type_identifier_elem TOK_DOUBLE_COLON)* hierarchical_id
+//	;
 
 bit_slice:
 	TOK_LSBRACE constant_expression TOK_COLON constant_expression TOK_RSBRACE

@@ -9125,14 +9125,15 @@ public class PSSParser extends Parser {
 	}
 
 	public static class String_typeContext extends ParserRuleContext {
+		public Token has_range;
 		public TerminalNode TOK_STRING() { return getToken(PSSParser.TOK_STRING, 0); }
-		public TerminalNode TOK_IN() { return getToken(PSSParser.TOK_IN, 0); }
 		public TerminalNode TOK_LSBRACE() { return getToken(PSSParser.TOK_LSBRACE, 0); }
 		public List<TerminalNode> DOUBLE_QUOTED_STRING() { return getTokens(PSSParser.DOUBLE_QUOTED_STRING); }
 		public TerminalNode DOUBLE_QUOTED_STRING(int i) {
 			return getToken(PSSParser.DOUBLE_QUOTED_STRING, i);
 		}
 		public TerminalNode TOK_RSBRACE() { return getToken(PSSParser.TOK_RSBRACE, 0); }
+		public TerminalNode TOK_IN() { return getToken(PSSParser.TOK_IN, 0); }
 		public List<TerminalNode> TOK_COMMA() { return getTokens(PSSParser.TOK_COMMA); }
 		public TerminalNode TOK_COMMA(int i) {
 			return getToken(PSSParser.TOK_COMMA, i);
@@ -9158,7 +9159,7 @@ public class PSSParser extends Parser {
 			if (_la==TOK_IN) {
 				{
 				setState(1782);
-				match(TOK_IN);
+				((String_typeContext)_localctx).has_range = match(TOK_IN);
 				setState(1783);
 				match(TOK_LSBRACE);
 				setState(1784);

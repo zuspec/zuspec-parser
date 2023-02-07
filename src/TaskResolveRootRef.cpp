@@ -41,19 +41,19 @@ TaskResolveRootRef::~TaskResolveRootRef() {
 }
 
 ast::ISymbolRefPath *TaskResolveRootRef::resolve(
-        ISymbolTableIterator            *scope,
+        const ISymbolTableIterator      *scope,
         const ast::IExprId              *id) {
     DEBUG_ENTER("resolve");
     m_ref = 0;
 
-    m_scope = scope;
+    m_scope = ISymbolTableIteratorUP(scope->clone());
     m_id    = id;
 
-    while (!m_ref && scope->hasScopes()) {
-        scope->getScope()->accept(m_this);
+    while (!m_ref && m_scope->hasScopes()) {
+        m_scope->getScope()->accept(m_this);
 
         if (!m_ref) {
-            scope->popScope();
+            m_scope->popScope();
         }
     }
 
@@ -63,9 +63,11 @@ ast::ISymbolRefPath *TaskResolveRootRef::resolve(
 }
 
 void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
-    DEBUG_ENTER("visitSymbolScope id=%s", m_id->getId().c_str());
+    DEBUG_ENTER("visitSymbolScope id=%s (%s)", 
+        m_id->getId().c_str(), i->getName().c_str());
     std::map<std::string,int32_t>::const_iterator it = i->getSymtab().find(m_id->getId());
 
+    DEBUG("imports: %p", i->getImports());
     if (it != i->getSymtab().end()) {
         m_ref = m_scope->getScopeSymbolPath(); // Path to 'i'
 
@@ -121,6 +123,7 @@ void TaskResolveRootRef::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) 
 ast::ISymbolRefPath *TaskResolveRootRef::searchImports(
     const ast::IExprId          *id,
     ast::ISymbolImportSpec      *imp) {
+    DEBUG_ENTER("searchImports");
     ast::ISymbolRefPath *ret = 0;
 	for (std::vector<ast::IPackageImportStmt *>::const_iterator
 		imp_it=imp->getImports().begin();
@@ -147,6 +150,8 @@ ast::ISymbolRefPath *TaskResolveRootRef::searchImports(
 			}
 		}
     }
+
+    DEBUG_LEAVE("searchImports %p", ret);
     return ret;
 }
 

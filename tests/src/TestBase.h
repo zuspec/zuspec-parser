@@ -41,8 +41,9 @@ public:
 protected:
 
 	void runTest(
-		const std::string &content,
-		const std::string &name);
+		const std::string   &content,
+		const std::string   &name,
+        bool                load_stdlib=true);
 
 	ast::IGlobalScope *parse(
 		parser::IMarkerListener		        *marker_l,

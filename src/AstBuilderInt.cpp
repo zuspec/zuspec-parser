@@ -1046,6 +1046,16 @@ antlrcpp::Any AstBuilderInt::visitInteger_type(PSSParser::Integer_typeContext *c
 	return 0;
 }
 
+antlrcpp::Any AstBuilderInt::visitString_type(PSSParser::String_typeContext *ctx) {
+    DEBUG_ENTER("visitString_type");
+    m_type = m_factory->mkDataTypeString(ctx->has_range);
+    if (ctx->has_range) {
+        DEBUG("TODO: capture string-type range");
+    }
+    DEBUG_LEAVE("visitString_type");
+    return 0;
+}
+
 antlrcpp::Any AstBuilderInt::visitBool_type(PSSParser::Bool_typeContext *ctx) {
 	DEBUG_ENTER("visitBool_type");
 	m_type = m_factory->mkDataTypeBool();
@@ -1983,7 +1993,7 @@ ast::IExprHierarchicalId *AstBuilderInt::mkHierarchicalId(PSSParser::Hierarchica
 	for (std::vector<PSSParser::Member_path_elemContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-		// TODO:
+        ret->getElems().push_back(ast::IExprMemberPathElemUP(mkMemberPathElem(*it)));
 	}
 
 	DEBUG_LEAVE("mkHierarchicalId");
@@ -2031,6 +2041,7 @@ void AstBuilderInt::mkTypeId(
 
 ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 		PSSParser::Type_identifierContext		*ctx) {
+    DEBUG_ENTER("mkTypeId");
 	ast::ITypeIdentifier *ret = m_factory->mkTypeIdentifier();
 	std::vector<PSSParser::Type_identifier_elemContext *> elems = ctx->type_identifier_elem();
 
@@ -2051,11 +2062,14 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 			mkId((*it)->identifier()),
             params);
 
+        DEBUG("elem \"%s\"", elem->getId()->getId().c_str());
+
 		// TODO: handle parameterized types
 		
 		ret->getElems().push_back(ast::ITypeIdentifierElemUP(elem));
 	}
 
+    DEBUG_LEAVE("mkTypeId");
 	return ret;
 }
 
@@ -2088,10 +2102,13 @@ ast::IExprBitSlice *AstBuilderInt::mkExprBitSlice(
 
 ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
         PSSParser::Ref_pathContext              *ctx) {
+    DEBUG_ENTER("mkExprRefPath");
     ast::IExprRefPath *ret = 0;
     if (ctx->static_ref_path()) {
+        DEBUG("static_ref_path: ");
 
         if (ctx->hierarchical_id()) {
+            DEBUG("hierarchical_id: ");
             // Has a context portion
             ast::IExprStaticRefPath *static_ref = mkExprStaticRefPath(ctx->static_ref_path());
             ast::IExprHierarchicalId *context_ref = mkHierarchicalId(ctx->hierarchical_id());
@@ -2107,9 +2124,10 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
 
             ret = ref;
         } else {
+            DEBUG("!hierarchical_id: ");
             std::vector<PSSParser::Type_identifier_elemContext *> items =
                 ctx->static_ref_path()->type_identifier_elem();
-            if (!ctx->static_ref_path()->is_global && items.size() == 0 && 
+            if (!ctx->static_ref_path()->static_ref_path_prefix()->is_global && items.size() == 0 && 
                 !ctx->static_ref_path()->member_path_elem()->function_parameter_list()) {
                 // This is just a simple identifier reference
                 ast::IExprRefPathId *ref = m_factory->mkExprRefPathId(
@@ -2124,7 +2142,7 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
             } else {
                 // This is a multi-element path
                 ast::IExprRefPathStatic *ref = m_factory->mkExprRefPathStatic(
-                    ctx->static_ref_path()->is_global
+                    ctx->static_ref_path()->static_ref_path_prefix()->is_global
                 );
 
                 for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
@@ -2143,6 +2161,7 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
 
     } else {
         // Context ref
+        DEBUG("!static_ref_path: ExprRefPathContext");
         ast::IExprRefPathContext *cref = m_factory->mkExprRefPathContext(
             mkHierarchicalId(ctx->hierarchical_id())
         );
@@ -2154,6 +2173,7 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
         ret = cref;
     }
 
+    DEBUG_LEAVE("mkExprRefPath");
     return ret;
 }
 
@@ -2162,7 +2182,7 @@ ast::IExprStaticRefPath *AstBuilderInt::mkExprStaticRefPath(
     IExprStaticRefPath *ret = 0;
 
     ret = m_factory->mkExprStaticRefPath(
-            ctx->is_global,
+            ctx->static_ref_path_prefix()->is_global,
             mkMemberPathElem(ctx->member_path_elem()));
 
     std::vector<PSSParser::Type_identifier_elemContext *> items =
@@ -2204,8 +2224,6 @@ ast::ITemplateParamDeclList *AstBuilderInt::mkTypeParamDecl(
                 plist->getParams().push_back(ast::ITemplateParamDeclUP(gen_p));
             } else { // Type-category parameter
                 PSSParser::Category_type_param_declContext *cat_ctx = (*it)->type_param_decl()->category_type_param_decl();
-                fprintf(stdout, "text: %s\n", cat_ctx->type_category()->getText().c_str());
-                fflush(stdout);
                 ast::TypeCategory category = type_category_m.find(cat_ctx->type_category()->getText())->second;
                 ast::IDataType *dflt = 0;
 

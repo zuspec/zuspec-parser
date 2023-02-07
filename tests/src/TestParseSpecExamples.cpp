@@ -42,19 +42,21 @@ TEST_F(TestParseSpecExamples, test_003_enum_data_type) {
 
 TEST_F(TestParseSpecExamples, test_005_string_data_type) {
     const char *text = R"(
+        struct string_s {
+            rand bit a;
+            rand string s;
 
-struct string_s {
- rand bit a;
- rand string s;
- constraint {
- if (a == 1) {
- s == "FOO";
- } else {
- s == "BAR";
- }
- }
-}
+            constraint {
+                if (a == 1) {
+                    s == "FOO";
+                } else {
+                    s == "BAR";
+                }
+            }
+        }
     )";
+
+    enableDebug(false);
     runTest(text, "005_string_data_type.pss");
 }
 
@@ -531,7 +533,7 @@ TEST_F(TestParseSpecExamples, test_041_compound_action_traversal) {
     }
     // </example>
     )";
-    enableDebug(true);
+    enableDebug(false);
     runTest(text, "041_compound_action_traversal.pss");
 }
 
@@ -3007,39 +3009,41 @@ TEST_F(TestParseSpecExamples, test_224_calling_pi_functions) {
 
 package external_functions_pkg {
 
- function bit[32] alloc_addr(bit[32] size);
+    function bit[32] alloc_addr(bit[32] size);
 
- function void transfer_mem(
- bit[32] src, bit[32] dst, bit[32] size
- );
+    function void transfer_mem(
+        bit[32] src, bit[32] dst, bit[32] size
+    );
 
-buffer mem_segment_s {
- rand bit[32] size;
- bit[32] addr;
+    buffer mem_segment_s {
+        rand bit[32] size;
+        bit[32] addr;
 
- constraint size in [8..4096];
+        constraint size in [8..4096];
 
- exec post_solve {
- addr = alloc_addr(size);
- }
- }
+        exec post_solve {
+            addr = alloc_addr(size);
+        }
+    }
 }
 
 component mem_xfer {
- import external_functions_pkg::*;
+    import external_functions_pkg::*;
 
- action xfer_a {
- input mem_segment_s in_buff;
- output mem_segment_s out_buff;
+    action xfer_a {
+        input mem_segment_s in_buff;
+        output mem_segment_s out_buff;
 
- constraint in_buff.size == out_buff.size;
+        constraint in_buff.size == out_buff.size;
 
- exec body {
- transfer_mem(in_buff.addr, out_buff.addr, in_buff.size);
- }
- }
+        exec body {
+            transfer_mem(in_buff.addr, out_buff.addr, in_buff.size);
+        }
+    }
 }
     )";
+
+    enableDebug(false);
     runTest(text, "224_calling_pi_functions.pss");
 }
 
@@ -3254,6 +3258,12 @@ package executor_pkg {
 }
 TEST_F(TestParseSpecExamples, test_parse_addr_reg_pkg) {
     const char *text = R"(
+package executor_pkg {
+    component executor_base_c {
+
+    }
+}
+
 package addr_reg_pkg {
     import executor_pkg::* ;
 
@@ -3263,7 +3273,8 @@ package addr_reg_pkg {
 
     struct empty_addr_trait_s : addr_trait_s {};
 
-    typedef chandle addr_handle_t;
+    struct addr_handle_t { }
+//    typedef chandle addr_handle_t;
 
     component contiguous_addr_space_c<
             struct TRAIT : addr_trait_s = empty_addr_trait_s> : addr_space_base_c {
@@ -3327,14 +3338,16 @@ package addr_reg_pkg {
 
     const addr_handle_t nullhandle = /* implementation-specific */ null;
 
-    struct sized_addr_handle_s < int SZ, // in bits
- int lsb = 0,
- endianness_e e = LITTLE_ENDIAN >
- : packed_s<e> {
- addr_handle_t hndl;
-};
-function addr_handle_t make_handle_from_claim (addr_claim_base_s claim,
- bit[64] offset = 0);
+    struct sized_addr_handle_s < 
+        int SZ, // in bits
+        int lsb = 0,
+        endianness_e e = LITTLE_ENDIAN > : packed_s<e> {
+        addr_handle_t hndl;
+    };
+
+    function addr_handle_t make_handle_from_claim (
+        addr_claim_base_s claim,
+        bit[64] offset = 0);
 function addr_handle_t make_handle_from_handle (addr_handle_t handle,
  bit[64] offset);
 function bit[64] addr_value(addr_handle_t hndl);
@@ -3367,8 +3380,9 @@ extend component executor_base_c {
  };
 enum reg_access {READWRITE, READONLY, WRITEONLY};
 pure component reg_c < type R,
- reg_access ACC = READWRITE,
-int SZ = (8*sizeof_s<R>::nbytes)> {
+        reg_access ACC = READWRITE,
+        int SZ = (8*sizeof_s<R>::nbytes)> {
+//        int SZ = (8*R)> {
 function R read();
  import target function read;
  function void write(R r);
@@ -3392,8 +3406,8 @@ pure component reg_group_c {
 };
 }
     )";
-    
-    runTest(text, "test_parse_addr_reg_pkg");
+    enableDebug(false);    
+    runTest(text, "test_parse_addr_reg_pkg", false);
 }
 
 }

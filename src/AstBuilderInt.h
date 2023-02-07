@@ -134,6 +134,8 @@ public:
 
 	virtual antlrcpp::Any visitInteger_type(PSSParser::Integer_typeContext *ctx) override;
 
+    virtual antlrcpp::Any visitString_type(PSSParser::String_typeContext *context) override;
+
 	virtual antlrcpp::Any visitBool_type(PSSParser::Bool_typeContext *ctx) override;
 
 	virtual antlrcpp::Any visitEnum_type(PSSParser::Enum_typeContext *ctx) override;

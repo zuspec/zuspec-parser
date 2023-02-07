@@ -145,6 +145,12 @@ void TaskResolveRefs::visitExtendType(ast::IExtendType *i) {
     DEBUG_LEAVE("visitExtendType");
 }
 
+void TaskResolveRefs::visitFieldCompRef(ast::IFieldCompRef *i) {
+    DEBUG_ENTER("visitFieldCompRef");
+    DEBUG("Note: Skip during core symbol resolution");
+    DEBUG_LEAVE("visitFieldCompRef");
+}
+
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope \"%s\"", i->getName().c_str());
     if (i->getName() != "") {
@@ -165,8 +171,6 @@ void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
             i);
         DEBUG_LEAVE("  Resolve Imports");
     }
-
-    fflush(stdout);
 
     for (std::vector<ast::IScopeChild *>::const_iterator
         it=i->getChildren().begin();
@@ -240,6 +244,14 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
         // Resolve the super class (if any)
         if (dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()) {
             dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()->accept(this);
+        }
+
+        if (i->getImports()) {
+            DEBUG_ENTER("  Resolve Imports");
+            TaskResolveImports(m_root, m_factory, m_marker_l).resolve(
+                m_symtab_it.get(),
+                i);
+            DEBUG_LEAVE("  Resolve Imports");
         }
 
         // Check on children

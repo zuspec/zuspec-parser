@@ -60,8 +60,9 @@ void TestBase::TearDown() {
 }
 
 void TestBase::runTest(
-		const std::string &content,
-		const std::string &name) {
+		const std::string   &content,
+		const std::string   &name,
+        bool                load_stdlib) {
 	std::stringstream s(content);
 
 	ast::IGlobalScopeUP global(m_ast_factory->mkGlobalScope(0));
@@ -69,7 +70,9 @@ void TestBase::runTest(
 	MarkerCollector marker_c;
 	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(&marker_c));
 
-//    m_factory->loadStandardLibrary(ast_builder.get(), global.get());
+    if (load_stdlib) {
+        m_factory->loadStandardLibrary(ast_builder.get(), global.get());
+    }
 
 	ast_builder->build(global.get(), &s);
 

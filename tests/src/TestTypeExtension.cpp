@@ -48,6 +48,8 @@ TEST_F(TestTypeExtension, comp_ext_action) {
     ast::ISymbolScopeUP root;
     IMarkerCollectorUP marker_c(m_factory->mkMarkerCollector());
 
+    enableDebug(true);
+
     parseLink(
         marker_c.get(),
         content,
@@ -182,11 +184,11 @@ TEST_F(TestTypeExtension, ext_struct_unknown) {
     for (std::vector<IMarkerUP>::const_iterator
         it=marker_c->markers().begin();
         it!=marker_c->markers().end(); it++) {
-        fprintf(stdout, "Link Error: %s\n", (*it)->msg().c_str());
+        fprintf(stdout, "Expected: Link Error: %s\n", (*it)->msg().c_str());
     }
 
     ASSERT_EQ(marker_c->markers().size(), 1);
-    ASSERT_TRUE(marker_c->markers().at(0)->msg().find("elem S2") != -1);
+    ASSERT_TRUE(marker_c->markers().at(0)->msg().find("for S2") != -1);
 
     // Expecting an error about not being able to resolve S2
     ASSERT_TRUE(marker_c->hasSeverity(MarkerSeverityE::Error));

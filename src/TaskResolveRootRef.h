@@ -38,7 +38,7 @@ public:
     virtual ~TaskResolveRootRef();
 
     ast::ISymbolRefPath *resolve(
-        ISymbolTableIterator            *scope,
+        const ISymbolTableIterator      *scope,
         const ast::IExprId              *id);
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
@@ -65,7 +65,7 @@ private:
     IMarkerListener                 *m_marker_l;
     IFactory                        *m_factory;
     bool                            m_search_imp;
-    ISymbolTableIterator            *m_scope;
+    ISymbolTableIteratorUP          m_scope;
     const ast::IExprId              *m_id;
     ast::ISymbolRefPath             *m_ref;
 };

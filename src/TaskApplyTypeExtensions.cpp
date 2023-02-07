@@ -169,15 +169,31 @@ void TaskApplyTypeExtensions::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 }
 
 void TaskApplyTypeExtensions::visitSymbolScope(ast::ISymbolScope *i) {
-    DEBUG_ENTER("visitSymbolScope");
+    DEBUG_ENTER("visitSymbolScope (%s)", i->getName().c_str());
 
     if (m_target_s) {
         addChild(m_target_s, i, i->getName());
     } else {
+        if (i->getId() >= 0) {
+            m_symtab_it->pushScope(i);
+        }
+
+        if (i->getImports()) {
+            DEBUG_ENTER("  Resolve Imports");
+            TaskResolveImports(m_root, m_factory, m_marker_l).resolve(
+                m_symtab_it.get(),
+                i);
+            DEBUG_LEAVE("  Resolve Imports");
+        }
+
         for (std::vector<ast::IScopeChild *>::const_iterator
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
-        (*it)->accept(this);
+            (*it)->accept(this);
+        }
+
+        if (i->getId() >= 0) {
+            m_symtab_it->popScope();
         }
     }
 

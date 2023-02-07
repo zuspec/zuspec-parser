@@ -55,6 +55,8 @@ public:
 
     virtual void visitExtendType(ast::IExtendType *i) override;
 
+    virtual void visitFieldCompRef(ast::IFieldCompRef *i) override;
+
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
     virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override;

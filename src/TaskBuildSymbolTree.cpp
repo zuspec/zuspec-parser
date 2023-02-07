@@ -371,8 +371,11 @@ void TaskBuildSymbolTree::visitPackageImportStmt(ast::IPackageImportStmt *i) {
     ast::ISymbolScope *scope = m_scope_s.back();
 
     if (!scope->getImports()) {
+        DEBUG("Create new ImportSpec");
         scope->setImports(m_factory->mkSymbolImportSpec());
     }
+
+    DEBUG("Add import to scope %s", scope->getName().c_str());
 
     scope->getImports()->getImports().push_back(i);
 

@@ -8,7 +8,8 @@ package addr_reg_pkg {
 
     struct empty_addr_trait_s : addr_trait_s {};
 
-    typedef chandle addr_handle_t;
+//    typedef chandle addr_handle_t;
+    struct addr_handle_t { }
 
     component contiguous_addr_space_c<
             struct TRAIT : addr_trait_s = empty_addr_trait_s> : addr_space_base_c {
