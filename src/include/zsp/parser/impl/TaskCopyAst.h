@@ -109,6 +109,16 @@ public:
         return ret;
     }
 
+    ast::ISymbolRefPath *copy(const ast::ISymbolRefPath *i) {
+        ast::ISymbolRefPath *ret = m_factory->mkSymbolRefPath();
+        ret->getPath().insert(
+            ret->getPath().begin(),
+            i->getPath().begin(),
+            i->getPath().end()
+        );
+        return ret;
+    }
+
     virtual void visitActivityJoinSpec(ast::IActivityJoinSpec *i) { }
     
     virtual void visitSymbolImportSpec(ast::ISymbolImportSpec *i) { }

@@ -99,6 +99,11 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     // Note: UP takes care of freeing previous
     type_s->setParams(params);
 
+    // Have the specialized type point to the unspecialized
+    // parameterized type as its super type
+    ast::ITypeIdentifier *super_t = m_factory->getAstFactory()->mkTypeIdentifier();
+    super_t->setTarget(copier.copy(type));
+
     // We must now build a symbolscope node for the type scope
     ast::ISymbolTypeScope *type_ss = TaskBuildSymbolTree(
         m_factory->getDebugMgr(),
