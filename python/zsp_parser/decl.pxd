@@ -1,5 +1,6 @@
 
 
+cimport debug_mgr.decl as dm
 from libcpp.pair cimport pair as cpp_pair
 from libcpp.set cimport set as cpp_set
 from libcpp.string cimport string as cpp_string
@@ -15,9 +16,14 @@ cimport cpython.ref as cpy_ref
 from zsp_parser cimport ast_decl as ast
 cimport ciostream
 
+ctypedef IFactory *IFactoryP
+
 
 cdef extern from "zsp/parser/IFactory.h" namespace "zsp::parser":
     cdef cppclass IFactory:
+
+        void init(dm.IDebugMgr *dmgr, ast.IFactory *ast_factory)
+
         ast.IFactory *getAstFactory()
 
         IAstBuilder *mkAstBuilder(IMarkerListener *)
