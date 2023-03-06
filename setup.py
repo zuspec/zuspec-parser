@@ -77,6 +77,11 @@ result = subprocess.run(
 if result.returncode != 0:
     raise Exception("build failed")
 
+# Add in paths for required projects
+for d in {"debug-mgr"}:
+    if os.path.isdir(os.path.join(packages_dir, d, "python")):
+        sys.path.insert(0, os.path.join(packages_dir, d, "python"))
+
 #********************************************************************
 #* Copy over required files
 #********************************************************************
