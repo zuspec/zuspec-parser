@@ -11,7 +11,7 @@ cdef class Factory(object):
 
     cpdef AstBuilder mkAstBuilder(self, MarkerListener marker_l)
 
-    cdef init(self, dm_core.Factory f)
+    cdef init(self, dm_core.Factory f, ast.Factory ast_f)
 
 cdef Factory _factoryInst = None
 
