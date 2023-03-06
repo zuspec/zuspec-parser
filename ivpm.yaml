@@ -25,7 +25,7 @@ package:
     - name: toposort
       src: pypi
     - name: ciostream
-      src: pypi
+      url: https://github.com/mballance-utils/ciostream
     - name: ninja
       src: pypi
     - name: cython

@@ -93,6 +93,8 @@ if result.returncode != 0:
 for d in {"debug-mgr"}:
     if os.path.isdir(os.path.join(packages_dir, d, "python")):
         sys.path.insert(0, os.path.join(packages_dir, d, "python"))
+    elif os.path.isdir(os.path.join(packages_dir, d, "src", d)):
+        sys.path.insert(0, os.path.join(packages_dir, d, "src"))
 
 #********************************************************************
 #* Copy over required files
