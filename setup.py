@@ -60,6 +60,7 @@ result = subprocess.run(
      "-GNinja",
      "-DCMAKE_BUILD_TYPE=%s" % CMAKE_BUILD_TYPE,
      "-DPACKAGES_DIR=%s" % packages_dir,
+     "-DCMAKE_INSTALL_PREFIX=%s" % os.path.join(cwd, "build")
      ],
     cwd=os.path.join(cwd, "build"),
     env=env)
@@ -71,6 +72,17 @@ result = subprocess.run(
     ["ninja",
      "-j",
      "%d" % os.cpu_count()
+     ],
+    cwd=os.path.join(cwd, "build"),
+    env=env)
+if result.returncode != 0:
+    raise Exception("build failed")
+
+result = subprocess.run(
+    ["ninja",
+     "-j",
+     "%d" % os.cpu_count(),
+     "install"
      ],
     cwd=os.path.join(cwd, "build"),
     env=env)
@@ -90,7 +102,8 @@ file_m = {
     os.path.join(builddir, "zsp_ast/ext/ast_decl.pxd") : os.path.join(pythondir, "zsp_parser/ast_decl.pxd"),
     os.path.join(builddir, "zsp_ast/ext/ast.pxd") : os.path.join(pythondir, "zsp_parser/ast.pxd"),
     os.path.join(builddir, "zsp_ast/ext/ast.pyx") : os.path.join(pythondir, "ast.pyx"),
-    os.path.join(builddir, "zsp_ast/ext/PyBaseVisitor.h") : os.path.join(pythondir, "PyBaseVisitor.h")
+    os.path.join(builddir, "zsp_ast/ext/PyBaseVisitor.h") : os.path.join(pythondir, "PyBaseVisitor.h"),
+    os.path.join(builddir, "zsp_ast/ext/PyBaseVisitor.cpp") : os.path.join(pythondir, "PyBaseVisitor.cpp")
 }
 
 for src,dst in file_m.items():
@@ -128,17 +141,28 @@ class build_ext(_build_ext):
         package_dir = build_py.get_package_dir(package)
 
         copy_file(
-            os.path.join(cwd, "build", "src", "libzuspec-parser.so"),
-            os.path.join(package_dir, "libzuspec-parser.so"))
+            os.path.join(cwd, "build", "lib", "libzsp-parser.so"),
+            os.path.join(package_dir, "libzsp-parser.so"))
+        copy_file(
+            os.path.join(cwd, "build", "zsp_ast", "lib", "libast.so"),
+            os.path.join(package_dir, "libast.so"))
         if os.path.isfile(os.path.join(cwd, "build", "antlr4", "lib64", "libantlr4-runtimetime.so")):
-            copy_file(
-                os.path.join(cwd, "build", "antlr4", "lib64", "libantlr4-runtime.so"),
-                os.path.join(package_dir, "libantlr4-runtime.so"))
+            antlr_libdir = os.path.join(cwd, "build", "antlr4", "lib64")
         else:
-            copy_file(
-                os.path.join(cwd, "build", "antlr4", "lib", "libantlr4-runtime.so"),
-                os.path.join(package_dir, "libantlr4-runtime.so"))
-                
+            antlr_libdir = os.path.join(cwd, "build", "antlr4", "lib")
+
+        antlr4_lib = None        
+        for f in os.listdir(antlr_libdir):
+            if f.startswith("libantlr4-runtime.so."):
+                antlr4_lib = f
+                break
+        if antlr4_lib is None:
+            raise Exception("Failed to find antlr4 lib")
+
+        copy_file(
+            os.path.join(antlr_libdir, antlr4_lib),
+                os.path.join(package_dir, antlr4_lib))
+
         dest_filename = os.path.join(package_dir, filename)
         
         print("package_dir: %s dest_filename: %s" % (package_dir, dest_filename))
@@ -180,7 +204,7 @@ ast_ext = Extension(
     "zsp_parser.ast", 
     [
         os.path.join(pythondir, "ast.pyx"),
-#        os.path.join(pythondir, "PyBaseVisitor.cpp")
+        os.path.join(pythondir, "PyBaseVisitor.cpp")
     ],
     include_dirs=include_dirs,
     library_dirs=library_dirs,

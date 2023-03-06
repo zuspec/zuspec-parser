@@ -2,6 +2,7 @@
 #* zsp_parser core.pxd
 #****************************************************************************
 cimport decl
+cimport debug_mgr.core as dm_core
 cimport zsp_parser.ast as ast
 cimport ciostream
 
@@ -10,8 +11,7 @@ cdef class Factory(object):
 
     cpdef AstBuilder mkAstBuilder(self, MarkerListener marker_l)
 
-    @staticmethod
-    cdef Factory inst()
+    cdef init(self, dm_core.Factory f)
 
 cdef Factory _factoryInst = None
 
