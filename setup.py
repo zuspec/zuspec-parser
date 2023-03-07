@@ -17,6 +17,9 @@ from Cython.Build import cythonize
 
 version="0.0.1"
 
+if "BUILD_NUM" in os.environ.keys():
+    version += ".%s" % os.environ["BUILD_NUM"]
+
 if "-DDEBUG" in sys.argv:
     sys.argv.remove("-DDEBUG")
     CMAKE_BUILD_TYPE="Debug"
