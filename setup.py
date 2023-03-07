@@ -146,12 +146,12 @@ class build_ext(_build_ext):
             os.path.join(cwd, "build", "lib", "libzsp-parser.so"),
             os.path.join(package_dir, "libzsp-parser.so"))
         copy_file(
-            os.path.join(cwd, "build", "zsp_ast", "lib", "libast.so"),
+            os.path.join(cwd, "build", "lib", "libast.so"),
             os.path.join(package_dir, "libast.so"))
-        if os.path.isfile(os.path.join(cwd, "build", "antlr4", "lib64", "libantlr4-runtimetime.so")):
-            antlr_libdir = os.path.join(cwd, "build", "antlr4", "lib64")
+        if os.path.isfile(os.path.join(cwd, "build", "lib64", "libantlr4-runtimetime.so")):
+            antlr_libdir = os.path.join(cwd, "build",  "lib64")
         else:
-            antlr_libdir = os.path.join(cwd, "build", "antlr4", "lib")
+            antlr_libdir = os.path.join(cwd, "build", "lib")
 
         antlr4_lib = None        
         for f in os.listdir(antlr_libdir):
