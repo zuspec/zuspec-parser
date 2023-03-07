@@ -23,7 +23,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${DEBUG_MGR_DIR}/src/include
+    "${debug_mgr_INCDIR}"
     )
 
 link_directories(
@@ -52,7 +52,13 @@ add_library(zsp-parser SHARED
 install(TARGETS zsp-parser
     DESTINATION lib
     EXPORT zsp-targets)
-    
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/zsp" # source directory
+    DESTINATION "include" # target directory
+    FILES_MATCHING # install only matched files
+    PATTERN "*.h" # select header files
+)
+
 add_dependencies(zsp-parser AST libantlr4)
 
 if (WIN32)
