@@ -27,8 +27,8 @@ include_directories(
     )
 
 link_directories(
-	${CMAKE_BINARY_DIR}/antlr4/lib
-	${CMAKE_BINARY_DIR}/antlr4/lib64
+	${CMAKE_BINARY_DIR}/lib
+	${CMAKE_BINARY_DIR}/lib64
 	)
 
 antlr_target(PSSLexer PSSLexer.g4 LEXER)
