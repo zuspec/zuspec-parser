@@ -234,6 +234,8 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
     if (i->getPlist()) {
         DEBUG("Note: Skipping symbol resolution in a templated type");
     } else {
+        // TODO: might need to defer this until after we've resolved
+        // super-class
         if (m_symtab_it->pushNamedScope(i->getName()) == -1) {
             // TODO: internal error
             fprintf(stdout, "Internal Error: no scope named %s in %s\n", 
@@ -243,7 +245,10 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
         // Resolve the super class (if any)
         if (dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()) {
+            DEBUG("Has a super type ... resolving");
             dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()->accept(this);
+        } else {
+            DEBUG("No super type");
         }
 
         if (i->getImports()) {
@@ -289,6 +294,7 @@ void TaskResolveRefs::visitTypeIdentifier(ast::ITypeIdentifier *i) {
         m_symtab_it.get(),
         i
     );
+    i->setTarget(target);
     DEBUG_LEAVE("visitTypeIdentifier");
 }
 
