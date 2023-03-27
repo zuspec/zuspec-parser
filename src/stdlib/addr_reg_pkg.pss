@@ -55,7 +55,7 @@ package addr_reg_pkg {
             64'd2**47, 64'd2**48, 64'd2**49, 64'd2**50, 64'd2**51, 64'd2**52,
             64'd2**53, 64'd2**54, 64'd2**55, 64'd2**56, 64'd2**57, 64'd2**58,
             64'd2**59, 64'd2**60, 64'd2**61, 64'd2**62, 64'd2**63] alignment;
-        };
+    };
 
     struct transparent_addr_claim_s<
             struct TRAIT : addr_trait_s = empty_addr_trait_s> : addr_claim_s<TRAIT> {

@@ -20,6 +20,8 @@
  */
 #pragma once
 #include <vector>
+#include "dmgr/impl/DebugMacros.h"
+#include "dmgr/IDebugMgr.h"
 #include "zsp/ast/ISymbolScope.h"
 #include "zsp/ast/ISymbolRefPath.h"
 #include "zsp/ast/ISymbolTypeScope.h"
@@ -27,16 +29,20 @@
 namespace zsp {
 namespace parser {
 
-
-
 class TaskResolveSymbolPathRef {
 public:
-    TaskResolveSymbolPathRef(ast::ISymbolScope *root) : m_root(root) { }
+    TaskResolveSymbolPathRef(
+        dmgr::IDebugMgr     *dmgr,
+        ast::ISymbolScope   *root) : m_root(root) { 
+        m_dbg = 0;
+        DEBUG_INIT("TaskResolveSymbolPathRef", dmgr);
+    }
 
     virtual ~TaskResolveSymbolPathRef() { }
 
 
     ast::IScopeChild *resolve(const ast::ISymbolRefPath *ref) {
+        DEBUG_ENTER("resolve root=%p", m_root);
         ast::IScopeChild *ret = 0;
         ast::ISymbolScope *scope = m_root;
 
@@ -46,11 +52,15 @@ public:
             
             switch (it->kind) {
                 case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
+                    DEBUG("Elem: ChildIdx %d", it->idx);
                     ret = scope->getChildren().at(it->idx);
+                    DEBUG("  scope %p => %p", scope, ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ParamIdx: {
+                    DEBUG("Elem: ParamIdx %d", it->idx);
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
                     ret = scope_ts->getPlist()->getChildren().at(it->idx);
+                    DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
@@ -59,7 +69,9 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+                    DEBUG("Elem: TypeSpec %d", it->idx);
                     ret = scope_ts->getSpec_types().at(it->idx).get();
+                    DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 default:
                     fprintf(stdout, "TODO: handle ElemKind %d\n", it->kind);
@@ -72,6 +84,8 @@ public:
             }
         }
 
+        DEBUG_LEAVE("resolve");
+
         return ret;
     }
 
@@ -80,7 +94,8 @@ public:
     }
 
 private:
-    ast::ISymbolScope                           *m_root;
+    dmgr::IDebug                         *m_dbg;
+    ast::ISymbolScope                    *m_root;
 
 
 };

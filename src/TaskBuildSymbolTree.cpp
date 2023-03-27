@@ -423,13 +423,14 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
     int32_t id = scope->getChildren().size();
     ast::ISymbolScope *plist = 0;
     if (i->getParams()) {
-        DEBUG("Build out plist");
+        DEBUG("Build out plist %d", i->getParams()->getParams().size());
         plist = m_factory->mkSymbolScope(-1, "");
         for (std::vector<ast::ITemplateParamDeclUP>::const_iterator
             it=i->getParams()->getParams().begin();
             it!=i->getParams()->getParams().end(); it++) {
             int32_t id = plist->getChildren().size();
             std::map<std::string, int32_t>::const_iterator s_it;
+            DEBUG("  Param: %", (*it)->getName()->getId().c_str());
             
             s_it = plist->getSymtab().find((*it)->getName()->getId());
             if (s_it == plist->getSymtab().end()) {

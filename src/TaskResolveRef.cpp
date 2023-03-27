@@ -170,7 +170,7 @@ void TaskResolveRef::visitTypeIdentifier(ast::ITypeIdentifier *i) {
         fflush(stdout);
     }
 
-    ast::IScopeChild *root_t = TaskResolveSymbolPathRef(m_root).resolve(root);
+    ast::IScopeChild *root_t = TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolve(root);
 
     for (std::vector<ast::ITypeIdentifierElemUP>::const_iterator
         it=i->getElems().begin()+1;
@@ -183,7 +183,7 @@ void TaskResolveRef::visitTypeIdentifier(ast::ITypeIdentifier *i) {
         if (next) {
             if ((*it)->getParams()) {
                root = specializeParameterizedRef(root, (*it)->getParams());
-               root_t = TaskResolveSymbolPathRef(m_root).resolve(root);
+               root_t = TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolve(root);
             } else {
                 root_t = next;
             }
@@ -212,9 +212,9 @@ ast::ISymbolRefPath *TaskResolveRef::specializeParameterizedRef(
     DEBUG_ENTER("specializeParameterizedRef");
 
     // Find the base type
-    ast::IScopeChild *target_sc = TaskResolveSymbolPathRef(m_root).resolve(target);
+    ast::IScopeChild *target_sc = TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolve(target);
     ast::ISymbolTypeScope *target_c = 
-        TaskResolveSymbolPathRef(m_root).resolveT<ast::ISymbolTypeScope>(target);
+        TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolveT<ast::ISymbolTypeScope>(target);
 
     if (!target_c) {
         DEBUG("TODO: Flag error about templated type");
@@ -237,8 +237,10 @@ ast::ISymbolRefPath *TaskResolveRef::specializeParameterizedRef(
 
     if (target_t) {
         // The new parameter list that we created is no longer needed
+        DEBUG("Specialization already exists");
         delete pdecl_list;
     } else {
+        DEBUG("TODO: handle new specialization");
         target_t = typespec_getter.mk(target, pdecl_list);
     }
     

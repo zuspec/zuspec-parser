@@ -87,11 +87,19 @@ void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {
 }
 
 void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
-    DEBUG_ENTER("visitSymbolTypeScope %s", i->getName().c_str());
+    DEBUG_ENTER("visitSymbolTypeScope id=%s (%s)", 
+        m_id->getId().c_str(), i->getName().c_str());
     visitSymbolScope(i); // Look in primary declaration scope
 
+    DEBUG("TypeScope: m_ref=%p plist=%p", m_ref, i->getPlist());
     if (!m_ref && i->getPlist()) {
         std::map<std::string,int32_t>::const_iterator it;
+
+        for (std::map<std::string,int32_t>::const_iterator
+            it=i->getPlist()->getSymtab().begin();
+            it!=i->getPlist()->getSymtab().end(); it++) {
+            DEBUG("Sym: %s", it->first.c_str());
+        }
 
         if ((it=i->getPlist()->getSymtab().find(m_id->getId())) != i->getPlist()->getSymtab().end()) {
             // Target is a parameter value
@@ -111,7 +119,7 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
     }
 
-    DEBUG_LEAVE("visitSymbolTypeScope");
+    DEBUG_LEAVE("visitSymbolTypeScope %p", m_ref);
 }
 
 void TaskResolveRootRef::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {

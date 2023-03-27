@@ -49,7 +49,9 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
     const ast::ITemplateParamDeclList   *params) {
     DEBUG_ENTER("find");
     ast::ISymbolTypeScope *type_up = 
-        TaskResolveSymbolPathRef(m_root).resolveT<ast::ISymbolTypeScope>(type);
+        TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolveT<ast::ISymbolTypeScope>(type);
+    
+    DEBUG(" (find) type_up=%s", type_up->getName().c_str());
 
     ast::ISymbolRefPath *ret = 0;
 
@@ -86,14 +88,21 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
 ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     const ast::ISymbolRefPath           *type,
     ast::ITemplateParamDeclList         *params) {
-    DEBUG_ENTER("mk params=%p", params);
+    DEBUG_ENTER("mk params=%p (%d)", params, (params)?params->getParams().size():-1);
     ast::ISymbolTypeScope *type_up = 
-        TaskResolveSymbolPathRef(m_root).resolveT<ast::ISymbolTypeScope>(type);
+        TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolveT<ast::ISymbolTypeScope>(type);
+    DEBUG("type_up=%s", type_up->getName().c_str());
 
     TaskCopyAst copier(m_factory->getAstFactory());
 
     ast::ITypeScope *type_s = 
         copier.copyT<ast::ITypeScope>(type_up->getTarget());
+
+    for (std::vector<ast::ITemplateParamDeclUP>::const_iterator
+        it=params->getParams().begin();
+        it!=params->getParams().end(); it++) {
+        DEBUG("Param: %s", (*it)->getName()->getId().c_str());
+    }
 
     // Replace the declaration parameter list with the properly-parameterized one
     // Note: UP takes care of freeing previous
@@ -114,6 +123,9 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     type_ss->getOwned().push_back(ast::IScopeChildUP(type_s));
 
     int32_t id = type_up->getSpec_types().size();
+    DEBUG("Adding to specialization %s (%p)",
+        type_up->getName().c_str(),
+        type_up);
     type_up->getSpec_types().push_back(ast::ISymbolTypeScopeUP(type_ss));
 
     TaskResolveRefs(

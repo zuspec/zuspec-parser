@@ -44,7 +44,9 @@ TaskBuildParamValList::~TaskBuildParamValList() {
 ast::ITemplateParamDeclList *TaskBuildParamValList::build(
         ast::ISymbolScope               *plist,
         ast::ITemplateParamValueList    *pvals) {
-    DEBUG_ENTER("build n_pvals=%d", pvals->getValues().size());
+    DEBUG_ENTER("build plist=%d n_pvals=%d", 
+        plist->getChildren().size(),
+        pvals->getValues().size());
     TaskCopyAst copier(m_factory->getAstFactory());
     m_ret = 0;
 
@@ -59,15 +61,16 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
     
     // First, pick up explicitly-supplied parameter values
 //    m_ptype_mk_pval = false;
-    for (uint32_t i=0; i<pvals->getValues().size(); i++) {
+    uint32_t plist_idx;
+    for (plist_idx=0; plist_idx<pvals->getValues().size(); plist_idx++) {
         m_pval_expr = 0;
         m_pval_type = 0;
         m_ptype_value = 0;
         m_ptype_generic_type = 0;
         m_ptype_category_type = 0;
 
-        pvals->getValues().at(i)->accept(m_this);
-        plist->getChildren().at(i)->accept(m_this);
+        pvals->getValues().at(plist_idx)->accept(m_this);
+        plist->getChildren().at(plist_idx)->accept(m_this);
 
         if (m_pval_expr) {
             if (m_ptype_value) {
@@ -93,7 +96,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
             } else if (m_ptype_category_type) {
                 DEBUG("Category type parameter");
             } else {
-                fprintf(stdout, "TODO: expression supplied for value %d, and ptype not set\n", i);
+                fprintf(stdout, "TODO: expression supplied for value %d, and ptype not set\n", plist_idx);
                 fflush(stdout);
                 return 0;
             }
@@ -131,28 +134,71 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
         }
     }
 
-    DEBUG_LEAVE("build %p", m_ret);
+    // Now, we deal with parameters without explicitly-specified values
+    for (; plist_idx<plist->getChildren().size(); plist_idx++) {
+        DEBUG("TODO: apply default to %p", 
+            plist->getChildren().at(plist_idx));
+        m_ptype_value = 0;
+        m_ptype_generic_type = 0;
+        m_ptype_category_type = 0;
+
+        plist->getChildren().at(plist_idx)->accept(m_this);
+
+        ast::IExprId *name = 0;
+        ast::IDataType *type = 0;
+
+        if (m_ptype_value) {
+            DEBUG("TODO: value");
+        } else if (m_ptype_category_type) {
+            DEBUG("TODO: category type");
+            name = m_ptype_category_type->getName();
+            type = m_ptype_category_type->getDflt();
+        } else if (m_ptype_generic_type) {
+            DEBUG("TODO: generic type");
+        } else {
+            DEBUG("Unknown kind");
+        }
+
+        DEBUG("Add parameter %s", name->getId().c_str());
+        ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
+            copier.copyT<ast::IExprId>(name),
+            copier.copy(type)
+        );
+        m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
+    }
+
+    DEBUG_LEAVE("build %p sz=%d", m_ret, (m_ret)?m_ret->getParams().size():-1);
     return m_ret;
 }
 
 void TaskBuildParamValList::visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) {
+    DEBUG_ENTER("visitTemplateParamTypeValue");
     m_pval_type = i;
+    DEBUG_LEAVE("visitTemplateParamTypeValue");
 }
     
 void TaskBuildParamValList::visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) { 
+    DEBUG_ENTER("visitTemplateParamExprValue");
     m_pval_expr = i;
+    DEBUG_LEAVE("visitTemplateParamExprValue");
 }
 
 void TaskBuildParamValList::visitTemplateGenericTypeParamDecl(ast::ITemplateGenericTypeParamDecl *i) { 
+    DEBUG_ENTER("visitTemplateGenericTypeParamDecl");
     m_ptype_generic_type = i;
+    DEBUG_LEAVE("visitTemplateGenericTypeParamDecl");
 }
     
 void TaskBuildParamValList::visitTemplateCategoryTypeParamDecl(ast::ITemplateCategoryTypeParamDecl *i) { 
+    DEBUG_ENTER("visitTemplateCategoryTypeParamDecl");
     m_ptype_category_type = i;
+    DEBUG_LEAVE("visitTemplateCategoryTypeParamDecl");
 }
     
 void TaskBuildParamValList::visitTemplateValueParamDecl(ast::ITemplateValueParamDecl *i) { 
+    DEBUG_ENTER("visitTemplateValueParamDecl");
     m_ptype_value = i;
+    DEBUG_LEAVE("visitTemplateValueParamDecl");
 }
 
 dmgr::IDebug *TaskBuildParamValList::m_dbg = 0;
