@@ -43,7 +43,7 @@ TaskResolveRootRef::~TaskResolveRootRef() {
 ast::ISymbolRefPath *TaskResolveRootRef::resolve(
         const ISymbolTableIterator      *scope,
         const ast::IExprId              *id) {
-    DEBUG_ENTER("resolve");
+    DEBUG_ENTER("resolve %s", id->getId().c_str());
     m_ref = 0;
 
     m_scope = ISymbolTableIteratorUP(scope->clone());
@@ -57,7 +57,7 @@ ast::ISymbolRefPath *TaskResolveRootRef::resolve(
         }
     }
 
-    DEBUG_LEAVE("resolve %p", m_ref);
+    DEBUG_LEAVE("resolve %p (%d)", m_ref, (m_ref)?m_ref->getPath().size():-1);
 
     return m_ref;
 }
