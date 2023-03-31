@@ -240,7 +240,7 @@ ast::ISymbolRefPath *TaskResolveRef::specializeParameterizedRef(
         DEBUG("Specialization already exists");
         delete pdecl_list;
     } else {
-        DEBUG("TODO: handle new specialization");
+        DEBUG("Must create new specialization");
         target_t = typespec_getter.mk(target, pdecl_list);
     }
     

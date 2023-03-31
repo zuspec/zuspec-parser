@@ -90,6 +90,10 @@ ast::ISymbolRefPath *AstSymbolTableIterator::getScopeSymbolPath(int32_t off) con
     return ret;
 }
 
+ast::ISymbolScope *AstSymbolTableIterator::getRootScope() const {
+    return m_scope_s.front();
+}
+
 ast::ISymbolScope *AstSymbolTableIterator::getScope(int32_t off) const {
     return m_scope_s.at(m_scope_s.size()-off-1);
 }

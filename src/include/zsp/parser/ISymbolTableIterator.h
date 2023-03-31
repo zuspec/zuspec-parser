@@ -40,6 +40,8 @@ public:
 
     virtual ast::ISymbolRefPath *getScopeSymbolPath(int off=0) const = 0;
 
+    virtual ast::ISymbolScope *getRootScope() const = 0;
+
     virtual ast::ISymbolScope *getScope(int32_t off=0) const = 0;
 
     virtual ast::IScopeChild *getScopeChild(int32_t idx) const = 0;

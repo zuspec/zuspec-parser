@@ -43,7 +43,7 @@ TaskResolveRefs::~TaskResolveRefs() {
 }
 
 void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
-    DEBUG_ENTER("resolve");
+    DEBUG_ENTER("resolve (SymbolScope root)");
     m_root = root;
     m_symtab_it = ISymbolTableIteratorUP(m_factory->mkAstSymbolTableIterator(root));
 
@@ -59,6 +59,31 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
         (*it)->accept(this);
     }
     DEBUG_LEAVE("resolve");
+}
+
+void TaskResolveRefs::resolve(
+    parser::ISymbolTableIterator            *root_it,
+    ast::ISymbolTypeScope                   *scope) {
+    DEBUG_ENTER("resolve (iterator, scope)");
+    // TODO: obtain root
+    m_root = root_it->getRootScope();
+    m_symtab_it = ISymbolTableIteratorUP(root_it->clone());
+
+    TaskLinkActionCompRefFields(m_factory).link(scope);
+
+    m_symtab_it->pushScope(scope);
+    scope->accept(m_this);
+    m_symtab_it->popScope();
+
+    /*
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=root->getChildren().begin();
+        it!=root->getChildren().end(); it++) {
+        (*it)->accept(this);
+    }
+     */
+    
+    DEBUG_LEAVE("resolve (iterator, scope)");
 }
 
 void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHandleTraversal *i) {

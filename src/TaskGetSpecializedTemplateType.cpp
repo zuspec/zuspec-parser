@@ -104,6 +104,8 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
         DEBUG("Param: %s", (*it)->getName()->getId().c_str());
     }
 
+    params->setSpecialized(true);
+
     // Replace the declaration parameter list with the properly-parameterized one
     // Note: UP takes care of freeing previous
     type_s->setParams(params);
@@ -113,7 +115,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     ast::ITypeIdentifier *super_t = m_factory->getAstFactory()->mkTypeIdentifier();
     super_t->setTarget(copier.copy(type));
 
-    // We must now build a symbolscope node for the type scope
+    // We must now build a symbol-scope node for the type scope
     ast::ISymbolTypeScope *type_ss = TaskBuildSymbolTree(
         m_factory->getDebugMgr(),
         m_factory->getAstFactory(),
@@ -128,10 +130,15 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
         type_up);
     type_up->getSpec_types().push_back(ast::ISymbolTypeScopeUP(type_ss));
 
+    parser::ISymbolTableIteratorUP root_it(mkIterator(type));
+
+    // Resolution must be relative to the declaration 
+    // scope of the specialized type
     TaskResolveRefs(
         m_factory->getDebugMgr(),
         m_factory,
-        m_marker_l).resolve(type_ss);
+        m_marker_l).resolve(
+            type_ss);
 
     ast::ISymbolRefPath *ret = m_factory->getAstFactory()->mkSymbolRefPath();
 
@@ -151,6 +158,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
 
     return ret;
 }
+
 
 dmgr::IDebug *TaskGetSpecializedTemplateType::m_dbg = 0;
 

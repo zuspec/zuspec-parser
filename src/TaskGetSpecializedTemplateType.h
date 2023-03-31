@@ -46,6 +46,10 @@ public:
         ast::ITemplateParamDeclList         *params);
 
 private:
+    parser::ISymbolTableIterator *mkIterator(
+        const ast::ISymbolRefPath   *path);
+
+private:
     static dmgr::IDebug                 *m_dbg;
     IFactory                            *m_factory;
     IMarkerListener                     *m_marker_l;

@@ -48,6 +48,8 @@ public:
 
     virtual ast::ISymbolRefPath *getScopeSymbolPath(int off=0) const override;
 
+    virtual ast::ISymbolScope *getRootScope() const override;
+
     virtual ast::ISymbolScope *getScope(int32_t off=0) const override;
 
     virtual ast::IScopeChild *getScopeChild(int32_t idx) const override;

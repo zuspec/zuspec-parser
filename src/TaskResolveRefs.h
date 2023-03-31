@@ -22,6 +22,7 @@
 #include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/parser/IMarkerListener.h"
+#include "zsp/parser/ISymbolTableIterator.h"
 #include "zsp/ast/ISymbolScope.h"
 #include "zsp/ast/impl/VisitorBase.h"
 
@@ -40,6 +41,10 @@ public:
     virtual ~TaskResolveRefs();
 
     void resolve(ast::ISymbolScope *root);
+
+    void resolve(
+        parser::ISymbolTableIterator   *root_it,
+        ast::ISymbolTypeScope          *scope);
 
     virtual void visitActivityActionHandleTraversal(ast::IActivityActionHandleTraversal *i) override;
     
