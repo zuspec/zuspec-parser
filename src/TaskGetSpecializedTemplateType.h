@@ -45,9 +45,9 @@ public:
         const ast::ISymbolRefPath           *type,
         ast::ITemplateParamDeclList         *params);
 
-private:
-    parser::ISymbolTableIterator *mkIterator(
-        const ast::ISymbolRefPath   *path);
+    std::string mkTypename(
+        const ast::ISymbolRefPath           *type,
+        ast::ITemplateParamDeclList         *params);
 
 private:
     static dmgr::IDebug                 *m_dbg;

@@ -255,18 +255,23 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
 }
 
 void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
-    DEBUG_ENTER("visitSymbolTypeScope %s", i->getName().c_str());
-    if (i->getPlist()) {
+    ast::ITypeScope *i_ts = dynamic_cast<ast::ITypeScope *>(i->getTarget());
+    DEBUG_ENTER("visitSymbolTypeScope %s (param=%s specialized=%s)", 
+        i->getName().c_str(),
+        (i_ts->getParams())?"true":"false",
+        (i_ts->getParams() && i_ts->getParams()->getSpecialized())?"true":"false");
+    if (i_ts->getParams() && !i_ts->getParams()->getSpecialized()) {
         DEBUG("Note: Skipping symbol resolution in a templated type");
     } else {
+        ast::SymbolRefPathElemKind kind = ast::SymbolRefPathElemKind::ElemKind_ChildIdx;
+
+        if (i_ts->getParams() && i_ts->getParams()->getSpecialized()) {
+            kind = ast::SymbolRefPathElemKind::ElemKind_TypeSpec;
+        }
+
         // TODO: might need to defer this until after we've resolved
         // super-class
-        if (m_symtab_it->pushNamedScope(i->getName()) == -1) {
-            // TODO: internal error
-            fprintf(stdout, "Internal Error: no scope named %s in %s\n", 
-                i->getName().c_str(),
-                m_symtab_it->getScope()->getName().c_str());
-        }
+        m_symtab_it->pushScope(i, kind);
 
         // Resolve the super class (if any)
         if (dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()) {

@@ -24,6 +24,9 @@ if "-DDEBUG" in sys.argv:
     sys.argv.remove("-DDEBUG")
     CMAKE_BUILD_TYPE="Debug"
     _DEBUG = True
+elif "DEBUG" in os.environ.keys() and os.environ["DEBUG"] != "":
+    CMAKE_BUILD_TYPE="Debug"
+    _DEBUG = True
 else:
     CMAKE_BUILD_TYPE="Release"
     _DEBUG = False

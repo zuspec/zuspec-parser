@@ -58,7 +58,16 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
     type_id->accept(m_this);
     m_symtab_it_s.pop_back();
 
-    DEBUG_LEAVE("resolve %p", m_ref);
+    if (m_ref) {
+        DEBUG("Result:");
+        for (std::vector<ast::SymbolRefPathElem>::const_iterator
+            it=m_ref->getPath().begin();
+            it!=m_ref->getPath().end(); it++) {
+            DEBUG("  %d %d", it->kind, it->idx);
+        }
+    }
+
+    DEBUG_LEAVE("resolve %p (%d)", m_ref, (m_ref)?m_ref->getPath().size():-1);
     return m_ref;
 }
 
@@ -69,7 +78,7 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
     m_symtab_it_s.push_back(ISymbolTableIteratorUP(scope->clone()));
     ref->accept(m_this);
     m_symtab_it_s.pop_back();
-    DEBUG_LEAVE("resolve (RefPath) %p", m_ref);
+    DEBUG_LEAVE("resolve (RefPath) %p (%d)", m_ref, (m_ref)?m_ref->getPath().size():-1);
     return m_ref;
 }
 

@@ -92,6 +92,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     ast::ISymbolTypeScope *type_up = 
         TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolveT<ast::ISymbolTypeScope>(type);
     DEBUG("type_up=%s", type_up->getName().c_str());
+    fflush(stdout);
 
     TaskCopyAst copier(m_factory->getAstFactory());
 
@@ -121,24 +122,38 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
         m_factory->getAstFactory(),
         0).build(type_s);
 
+    // Give the new type an appropriate name
+
     // Store the specialized AST under the symbol table
     type_ss->getOwned().push_back(ast::IScopeChildUP(type_s));
+    type_ss->setName(mkTypename(type, params));
 
     int32_t id = type_up->getSpec_types().size();
-    DEBUG("Adding to specialization %s (%p)",
+    DEBUG("Adding \"%s\" to specialization %s (%p)",
+        type_ss->getName().c_str(),
         type_up->getName().c_str(),
         type_up);
     type_up->getSpec_types().push_back(ast::ISymbolTypeScopeUP(type_ss));
 
-    parser::ISymbolTableIteratorUP root_it(mkIterator(type));
+    parser::ISymbolTableIteratorUP root_it(
+        TaskResolveSymbolPathRef(m_factory->getDebugMgr(),m_root).mkIterator(
+            m_factory->mkAstSymbolTableIterator(m_root),
+            type));
+
+    // Need to remove the leaf node in this case, since
+    // the symbol resolver will attempt to push it on again
+    root_it->popScope();
 
     // Resolution must be relative to the declaration 
     // scope of the specialized type
+    DEBUG_ENTER("Resolve Specialized Type %s", type_ss->getName().c_str());
     TaskResolveRefs(
         m_factory->getDebugMgr(),
         m_factory,
         m_marker_l).resolve(
+            root_it.get(),
             type_ss);
+    DEBUG_LEAVE("Resolve Specialized Type %s", type_ss->getName().c_str());
 
     ast::ISymbolRefPath *ret = m_factory->getAstFactory()->mkSymbolRefPath();
 
@@ -157,6 +172,18 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     DEBUG_LEAVE("mk %p", ret);
 
     return ret;
+}
+
+std::string TaskGetSpecializedTemplateType::mkTypename(
+        const ast::ISymbolRefPath           *type,
+        ast::ITemplateParamDeclList         *params) {
+    std::string name = TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).mkQName(type);
+
+    name += "<";
+
+    name += ">";
+
+    return name;
 }
 
 
