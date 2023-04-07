@@ -28,9 +28,11 @@
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/parser/ISymbolTableIterator.h"
 #include "zsp/parser/impl/TaskGetName.h"
+#include "zsp/parser/impl/TaskResolveSymbolPathRefResult.h"
 
 namespace zsp {
 namespace parser {
+
 
 class TaskResolveSymbolPathRef : public ast::VisitorBase {
 public:
@@ -102,11 +104,24 @@ public:
         return dynamic_cast<T *>(resolve(ref));
     }
 
-    ast::ISymbolTypeScope *resolveSymbolTypeScope(const ast::ISymbolRefPath *ref) {
+    TaskResolveSymbolPathRefResult resolveFull(const ast::ISymbolRefPath *ref) {
+        TaskResolveSymbolPathRefResult ret;
+
         ast::IScopeChild *ref_t = resolve(ref);
-        m_type = 0;
+        m_st = 0;
+        m_dt = 0;
         ref_t->accept(m_this);
-        return m_type;
+
+        if (m_st) {
+            ret.kind = TaskResolveSymbolPathRefResult::SymbolTypeScope;
+            ret.val.ts = m_st;
+        } else if (m_dt) {
+            ret.kind = TaskResolveSymbolPathRefResult::DataType;
+            ret.val.dt = m_dt;
+        } else {
+            fprintf(stdout, "ERROR: unhandled resolveFull case\n");
+        }
+        return ret;
     }
 
     parser::ISymbolTableIterator *mkIterator(
@@ -221,9 +236,34 @@ public:
         return ret;
     }
 
+    virtual void visitDataTypeBool(ast::IDataTypeBool *i) override {
+        m_dt = i;
+    }
+
+    virtual void visitDataTypeChandle(ast::IDataTypeChandle *i) override {
+        m_dt = i;
+    }
+
+    virtual void visitDataTypeEnum(ast::IDataTypeEnum *i) override {
+        m_dt = i;
+    }
+
+    virtual void visitDataTypeInt(ast::IDataTypeInt *i) override {
+        m_dt = i;
+    }
+
+    virtual void visitDataTypeString(ast::IDataTypeString *i) override {
+        m_dt = i;
+    }
+
+    virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override {
+        // See where this redirects
+        i->getType_id()->accept(m_this);
+    }
+
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
         DEBUG_ENTER("visitSymbolTypeScope");
-        m_type = i;
+        m_st = i;
         DEBUG_LEAVE("visitSymbolTypeScope");
     }
 
@@ -242,7 +282,8 @@ public:
 private:
     dmgr::IDebug                         *m_dbg;
     ast::ISymbolScope                    *m_root;
-    ast::ISymbolTypeScope                *m_type;
+    ast::ISymbolTypeScope                *m_st;
+    ast::IDataType                       *m_dt;
 
 
 };
