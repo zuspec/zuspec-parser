@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: Fetch python build dependencies
         run: |
-          yum update
+          yum update -y
           yum install -y glibc-static 
           yum install -y java-11-openjdk-devel uuid-devel libuuid-devel
           for py in cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310; do
