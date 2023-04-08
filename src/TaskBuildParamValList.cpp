@@ -155,6 +155,8 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
             type = m_ptype_category_type->getDflt();
         } else if (m_ptype_generic_type) {
             DEBUG("TODO: generic type");
+            name = m_ptype_generic_type->getName();
+            type = m_ptype_generic_type->getDflt();
         } else {
             DEBUG("Unknown kind");
         }

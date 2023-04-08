@@ -66,14 +66,21 @@ void TaskResolveRefs::resolve(
     ast::ISymbolTypeScope                   *scope) {
     DEBUG_ENTER("resolve (iterator, scope)");
     // TODO: obtain root
+    parser::ISymbolTableIteratorUP root_it_c(root_it->clone());
+    DEBUG("Scope Stack");
+    while (root_it_c->hasScopes()) {
+        DEBUG("  Scope: %d", 
+            root_it_c->getScope()->getId());
+        root_it_c->popScope();
+    }
     m_root = root_it->getRootScope();
     m_symtab_it = ISymbolTableIteratorUP(root_it->clone());
 
     TaskLinkActionCompRefFields(m_factory).link(scope);
 
-    m_symtab_it->pushScope(scope);
+//    m_symtab_it->pushScope(scope);
     scope->accept(m_this);
-    m_symtab_it->popScope();
+//    m_symtab_it->popScope();
 
     /*
     for (std::vector<ast::IScopeChild *>::const_iterator
@@ -267,6 +274,8 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
         if (i_ts->getParams() && i_ts->getParams()->getSpecialized()) {
             kind = ast::SymbolRefPathElemKind::ElemKind_TypeSpec;
+            // Ensure parameter references are resolved
+            i_ts->getParams()->accept(m_this);
         }
 
         // TODO: might need to defer this until after we've resolved

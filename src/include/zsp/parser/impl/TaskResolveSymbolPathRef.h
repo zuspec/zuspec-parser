@@ -120,6 +120,7 @@ public:
             ret.val.dt = m_dt;
         } else {
             fprintf(stdout, "ERROR: unhandled resolveFull case\n");
+            *((uint32_t *)0) = 1;
         }
         return ret;
     }
@@ -138,8 +139,8 @@ public:
                 case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
                     DEBUG("Elem: ChildIdx %d", it->idx);
                     ast::IScopeChild *c = scope->getChildren().at(it->idx);
-                    if (dynamic_cast<ast::ISymbolScope *>(c)) {
-                        ret->pushScope(dynamic_cast<ast::ISymbolScope *>(c));
+                    if ((scope=dynamic_cast<ast::ISymbolScope *>(c))) {
+                        ret->pushScope(scope);
                     } else {
                         break;
                     }
@@ -161,6 +162,7 @@ public:
                     DEBUG("Elem: TypeSpec %d", it->idx);
                     ast::ISymbolTypeScope *c = scope_ts->getSpec_types().at(it->idx).get();
                     ret->pushScope(c);
+                    scope = c;
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 default:
@@ -183,6 +185,7 @@ public:
             const ast::ISymbolRefPath       *ref) {
         DEBUG_ENTER("mkQName root=%p", m_root);
         std::string ret;
+        ast::IScopeChild *item;
         ast::ISymbolScope *scope = m_root;
 
         for (std::vector<ast::SymbolRefPathElem>::const_iterator
@@ -192,15 +195,14 @@ public:
             switch (it->kind) {
                 case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
                     DEBUG("Elem: ChildIdx %d", it->idx);
-                    ast::IScopeChild *c = scope->getChildren().at(it->idx);
+                    item = scope->getChildren().at(it->idx);
                     if (ret.size()) {
                         ret += "::";
                     }
-                    ret += TaskGetName().get(c);
-                    if (!dynamic_cast<ast::ISymbolScope *>(c)) {
+                    ret += TaskGetName().get(item);
+                    if (!(scope=dynamic_cast<ast::ISymbolScope *>(item))) {
                         break;
                     }
-                    DEBUG("  scope %p => %p", scope, ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ParamIdx: {
                     DEBUG("Elem: ParamIdx %d", it->idx);
@@ -227,7 +229,7 @@ public:
             }
             
 //            if (it+1 != ref->getPath().end()) {
-//                scope = dynamic_cast<ast::ISymbolScope *>(ret);
+//                scope = dynamic_cast<ast::ISymbolScope *>(i);
 //            }
         }
 
@@ -257,8 +259,11 @@ public:
     }
 
     virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override {
+        DEBUG_ENTER("visitDataTypeUserDefined");
         // See where this redirects
-        i->getType_id()->accept(m_this);
+        ast::IScopeChild *ref_t = resolve(i->getType_id()->getTarget());
+        ref_t->accept(m_this);
+        DEBUG_LEAVE("visitDataTypeUserDefined");
     }
 
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {

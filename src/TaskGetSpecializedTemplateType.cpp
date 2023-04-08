@@ -142,7 +142,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
 
     // Need to remove the leaf node in this case, since
     // the symbol resolver will attempt to push it on again
-    root_it->popScope();
+//    root_it->popScope();
 
     // Resolution must be relative to the declaration 
     // scope of the specialized type
