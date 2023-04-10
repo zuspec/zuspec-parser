@@ -26,9 +26,21 @@ cdef extern from "zsp/parser/IFactory.h" namespace "zsp::parser":
 
         ast.IFactory *getAstFactory()
 
+        dm.IDebugMgr *getDebugMgr()
+
+        void loadStandardLibrary(
+            IAstBuilder             *ast_builder,
+            ast.IGlobalScope        *glbl_scope)
+
         IAstBuilder *mkAstBuilder(IMarkerListener *)
 
         ILinker *mkAstLinker()
+
+        ISymbolTableIterator *mkAstSymbolTableIterator(
+            ast.ISymbolScope        *root)
+
+        IMarkerCollector *mkMarkerCollector()
+
 
 cdef extern from "zsp/parser/IAstBuilder.h" namespace "zsp::parser":
     cdef cppclass IAstBuilder:
@@ -39,15 +51,20 @@ cdef extern from "zsp/parser/IAstBuilder.h" namespace "zsp::parser":
 
 cdef extern from "zsp/parser/ILinker.h" namespace "zsp::parser":
     cdef cppclass ILinker:
+
+        ast.ISymbolScope *link(
+            IMarkerListener         *marker_l,
+            const cpp_vector[ast.IGlobalScopeP] &scopes)
+
         pass
 
 cdef extern from "zsp/parser/IMarker.h" namespace "zsp::parser":
     cdef enum MarkerSeverityE:
-        Error "zsp::MarkerSeverityE::Error"
-        Warn "zsp::MarkerSeverityE::Warn"
-        Info "zsp::MarkerSeverityE::Info"
-        Hint "zsp::MarkerSeverityE::Hint"
-        NumLevels "zsp::MarkerSeverityE::NumLevels"
+        Severity_Error "zsp::parser::MarkerSeverityE::Error"
+        Severity_Warn "zsp::parser::MarkerSeverityE::Warn"
+        Severity_Info "zsp::parser::MarkerSeverityE::Info"
+        Severity_Hint "zsp::parser::MarkerSeverityE::Hint"
+        Severity_NumLevels "zsp::parser::MarkerSeverityE::NumLevels"
 
     cdef cppclass Location:
         int32_t            file;
@@ -64,4 +81,13 @@ cdef extern from "zsp/parser/IMarkerListener.h" namespace "zsp::parser":
     cdef cppclass IMarkerListener:
         void marker(const IMarker *m)
         bool hasSeverity(MarkerSeverityE s)
+
+cdef extern from "zsp/parser/IMarkerCollector.h" namespace "zsp::parser":
+    cdef cppclass IMarkerCollector(IMarkerListener):
+        pass
+
+cdef extern from "zsp/parser/ISymbolTableIterator.h" namespace "zsp::parser":
+    cdef cppclass ISymbolTableIterator:
+        int32_t findLocalSymbol(const cpp_string &name)
+
 

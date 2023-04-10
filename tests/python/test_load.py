@@ -9,14 +9,17 @@ from _io import StringIO
 class TestLoad(TestCase):
     
     def test_smoke(self):
-        import pssparser
+        from zsp_parser import core as zspp_core
+
+        factory = zspp_core.Factory.inst()
         
-        marker_l = pssparser.core.BaseMarkerListener()
+        marker_l = factory.mkMarkerCollector()
         
-        parser = pssparser.core.AstBuilder(marker_l)
-        glbl = pssparser.core.mkGlobalScope(0)
+        parser = factory.mkAstBuilder(marker_l)
+        ast_f = factory.getAstFactory()
+
+        glbl = ast_f.mkGlobalScope(0)
         
-        print("glbl=" + str(glbl))
 
         input = StringIO(
             """
@@ -46,20 +49,9 @@ class TestLoad(TestCase):
               }
             """)
         print("--> parse")
-        parser.parse(glbl, input)
+        parser.build(glbl, input)
         print("<-- parse")
-        
-        class MyVisitor(pssparser.core.BaseVisitor):
-            
-            def __init__(self):
-                super().__init__()
-                
-            def visitComponent(self, c):
-                print("visitComponent")
-                print("Comment: " + str(c.get_docstring().decode()))
-                
-        v = MyVisitor()
-        print("glbl=" + str(glbl))
-        glbl.accept(v)
+
+        self.assertFalse(marker_l.hasSeverity(zspp_core.MarkerSeverityE.Error))        
 
 #        pssparser.core.doit(2)

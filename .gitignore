@@ -49,3 +49,5 @@ python/zsp_parser/zsp_ast.pxd
 python/zsp_parser/zsp_ast_decl.pxd
 python/zsp_parser/*.so*
 python/*.cpp
+
+__pycache__/
