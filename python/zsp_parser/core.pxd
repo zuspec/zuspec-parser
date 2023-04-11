@@ -1,7 +1,7 @@
 #****************************************************************************
 #* zsp_parser core.pxd
 #****************************************************************************
-cimport decl
+cimport zsp_parser.decl as decl
 cimport debug_mgr.core as dm_core
 cimport zsp_parser.ast as ast
 cimport ciostream
