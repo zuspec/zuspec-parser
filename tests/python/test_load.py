@@ -10,47 +10,62 @@ class TestLoad(TestCase):
     
     def test_smoke(self):
         from zsp_parser import core as zspp_core
+        from zsp_parser import ast as zspp_ast
 
         factory = zspp_core.Factory.inst()
         
         marker_l = factory.mkMarkerCollector()
         
         parser = factory.mkAstBuilder(marker_l)
+        linker = factory.mkAstLinker()
         ast_f = factory.getAstFactory()
 
         glbl = ast_f.mkGlobalScope(0)
-        
+#        factory.loadStandardLibrary(parser, glbl)
 
         input = StringIO(
             """
-            /**
-             * Just a comment
-             */
              component pss_top {
              }
-            
-            // Before
-            // Before
-             
-             /**
-              * Free-standing comment
-              */
-              
-              
-              
-              component pss_top2 {
-              }
-             
-              // SLC1
-              // SLC2
-              // SLC3
-              //
-              component pss_top3 {
-              }
+
             """)
         print("--> parse")
         parser.build(glbl, input)
         print("<-- parse")
+        self.assertFalse(marker_l.hasSeverity(zspp_core.MarkerSeverityE.Error))        
+
+        print("--> link")
+        linked = linker.link(marker_l, [glbl])
+        print("<-- link")
+
+        class ComponentCollector(zspp_ast.VisitorBase):
+
+            def __init__(self):
+                super().__init__()
+
+            def visitSymbolScope(self, s):
+                print("visitSymbolScope")
+                super().visitSymbolScope(s)
+
+            def visitSymbolTypeScope(self, s):
+                print("visitSymbolTypeScope")
+                super().visitSymbolTypeScope(s)
+#                s.getTarget().accept(self)
+
+            def visitComponent(self, c):
+                print("Component")
+
+            def visitSymbolImportSpec(self, i):
+                super().visitSymbolImportSpec(i)
+                print("visitSymbolImportSpec")
+
+#        print("linked=%s children=%d" % (str(linked), linked.getChildren().size()))
+
+        v = ComponentCollector()
+        for m in dir(v):
+            print("Element: %s" % str(m))
+
+        linked.accept(v)
 
         self.assertFalse(marker_l.hasSeverity(zspp_core.MarkerSeverityE.Error))        
 

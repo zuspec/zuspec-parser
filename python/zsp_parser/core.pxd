@@ -44,6 +44,7 @@ cdef class AstBuilder(object):
 
 cdef class Linker(object):
     cdef decl.ILinker           *_hndl
+    cdef bool                   _owned
 
     cpdef ast.SymbolScope link(self,
         MarkerListener         marker_l,

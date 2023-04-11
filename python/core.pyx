@@ -93,7 +93,8 @@ cdef class AstBuilder(object):
 
 cdef class Linker(object):
     def __dealloc__(self):
-        del self._hndl
+        if self._owned:
+            del self._hndl
 
     cpdef ast.SymbolScope link(self,
         MarkerListener          marker_l,
