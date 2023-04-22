@@ -40,7 +40,7 @@ classes:
       - type: P<Scope>
       - is_ctor: false
       - init: 0
-      - visit: false
+      - visit: true
     - owned: 
       - type: list<UP<ScopeChild>>
       - is_ctor: false

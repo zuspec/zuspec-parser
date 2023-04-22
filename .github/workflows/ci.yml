@@ -36,13 +36,27 @@ jobs:
               rm $whl
           done
           cp wheelhouse/*.whl dist
-
       - name: Publish to PyPi
         if: startsWith(github.ref, 'refs/heads/main')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Build Docs
+        run: |
+          /opt/python/cp37-cp37m/bin/sphinx-build -M html \
+            ./doc/source build
+          touch build/html/.nojekyll
+      - name: Deploy Docs
+        if: startsWith(github.ref, 'refs/heads/main')
+        uses: JamesIves/github-pages-deploy-action@4.1.7
+        with:
+          branch: gh-pages
+          folder: build/html
+
+      
+      
 #  ci-macos-arm64:
 #    runs-on: [self-hosted, macOS, ARM64]
 #    steps:

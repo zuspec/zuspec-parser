@@ -42,6 +42,7 @@ class TestLoad(TestCase):
 
             def __init__(self):
                 super().__init__()
+                self.components = []
 
             def visitSymbolScope(self, s):
                 print("visitSymbolScope")
@@ -54,6 +55,8 @@ class TestLoad(TestCase):
 
             def visitComponent(self, c):
                 print("Component")
+                super().visitComponent(c)
+                self.components.append(c)
 
             def visitSymbolImportSpec(self, i):
                 super().visitSymbolImportSpec(i)
@@ -62,10 +65,12 @@ class TestLoad(TestCase):
 #        print("linked=%s children=%d" % (str(linked), linked.getChildren().size()))
 
         v = ComponentCollector()
-        for m in dir(v):
-            print("Element: %s" % str(m))
+#        for m in dir(v):
+#            print("Element: %s" % str(m))
 
         linked.accept(v)
+
+        print("Components: %s" % str(v.components))
 
         self.assertFalse(marker_l.hasSeverity(zspp_core.MarkerSeverityE.Error))        
 

@@ -62,8 +62,6 @@ package_body_item:
 	| package_body_compile_if
 	| TOK_SEMICOLON // stmt_terminator
 //	| static_const_field_declaration	
-//	| pss_function_defn
-//	| function_qualifiers
 	;
 
 import_stmt:
@@ -1558,15 +1556,14 @@ string_literal:
 filename_string: DOUBLE_QUOTED_STRING;
 
 	
-// == PSS-1.1
-
-
 /**
  * Annotations allow meta-data to be associated with model elements
- * TODO: post-3.1 feature
+ * TODO: post-2.1 feature
+ *
+ * annotate <path> <type_identifier>();
  */	
 annotation:
-	TOK_AT identifier (TOK_LPAREN
+	TOK_AT type_identifier (TOK_LPAREN
 		annotation_values?
 	TOK_RPAREN)?
 	;
@@ -1578,3 +1575,4 @@ annotation_values:
 annotation_value:
 	identifier TOK_SINGLE_EQ expression
 	;
+
