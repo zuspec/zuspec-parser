@@ -45,7 +45,7 @@ jobs:
 
       - name: Build Docs
         run: |
-          /opt/python/cp37-cp37m/bin/python -m sphinx.cmd.build -M html \
+          ./packages/python/bin/python -m sphinx.cmd.build -M html \
             ./doc/source build
           touch build/html/.nojekyll
       - name: Deploy Docs
