@@ -46,14 +46,14 @@ jobs:
       - name: Build Docs
         run: |
           ./packages/python/bin/python -m sphinx.cmd.build -M html \
-            ./doc/source build
+            ./doc/source doc/build
           touch build/html/.nojekyll
       - name: Deploy Docs
         if: startsWith(github.ref, 'refs/heads/main')
         uses: JamesIves/github-pages-deploy-action@4.1.7
         with:
           branch: gh-pages
-          folder: build/html
+          folder: doc/build/html
 
       
       
