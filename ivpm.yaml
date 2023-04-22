@@ -77,5 +77,3 @@ package:
     - name: debug-mgr
       url: https://github.com/mballance/debug-mgr.git
 
-
-
