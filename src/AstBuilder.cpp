@@ -33,5 +33,13 @@ void AstBuilder::build(
 	m_builder_int->build(global, in);
 }
 
+zsp::ast::IFactory *AstBuilder::getFactory() {
+    return m_builder_int->getFactory();
+}
+
+void AstBuilder::setMarkerListener(IMarkerListener *l) {
+    m_builder_int->setMarkerListener(l);
+}
+
 }
 } /* namespace zsp */

@@ -10,6 +10,7 @@
 #include <memory>
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/ast/IGlobalScope.h"
+#include "zsp/ast/IFactory.h"
 
 
 namespace zsp {
@@ -25,6 +26,10 @@ public:
 	virtual void build(
 		ast::IGlobalScope		*global,
 		std::istream			*in) = 0;
+
+    virtual zsp::ast::IFactory *getFactory() = 0;
+
+    virtual void setMarkerListener(IMarkerListener *l) = 0;
 
 };
 

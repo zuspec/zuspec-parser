@@ -34,6 +34,10 @@ public:
 			ast::IGlobalScope	*global,
 			std::istream		*in) override;
 
+    virtual zsp::ast::IFactory *getFactory() override;
+
+    virtual void setMarkerListener(IMarkerListener *l) override;
+
 private:
 	AstBuilderIntUP				m_builder_int;
 };

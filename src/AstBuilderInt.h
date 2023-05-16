@@ -39,6 +39,14 @@ public:
 			ast::IGlobalScope	*global,
 			std::istream 		*in);
 
+    zsp::ast::IFactory *getFactory() {
+        return m_factory;
+    }
+
+    void setMarkerListener(IMarkerListener *l) {
+        m_marker_l = l;
+    }
+
 	// B.1 package declaration
 	virtual antlrcpp::Any visitPackage_declaration(PSSParser::Package_declarationContext *ctx) override;
 
