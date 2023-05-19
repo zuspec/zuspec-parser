@@ -71,6 +71,11 @@ protected:
         ast::IGlobalScopeUP            &global,
         ast::ISymbolScopeUP            &root);
 
+    std::pair<ast::IGlobalScope *, ast::ISymbolScope *> parseLink(
+        parser::IMarkerListener        *marker_l,
+        const std::string              &content,
+        const std::string              &name);
+
     ast::IScopeChild *findItem(
         ast::ISymbolScope                   *root,
         const std::vector<std::string>      &path);

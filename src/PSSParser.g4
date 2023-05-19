@@ -612,10 +612,16 @@ labeled_activity_stmt:
 	| symbol_call
 	;
 
+// PSS Extension: inline value initialization
 activity_action_traversal_stmt:
-	(identifier ( TOK_LSBRACE expression TOK_RSBRACE )? inline_constraints_or_empty)
-	| (is_do=TOK_DO type_identifier inline_constraints_or_empty)
+	(identifier action_traversal_value_init? ( TOK_LSBRACE expression TOK_RSBRACE )? inline_constraints_or_empty)
+	| (is_do=TOK_DO type_identifier action_traversal_value_init? inline_constraints_or_empty)
 	;
+
+// PSS Extension: inline value initialization
+action_traversal_value_init: 
+    TOK_LPAREN (identifier TOK_SINGLE_EQ expression (TOK_COMMA identifier TOK_SINGLE_EQ expression)*)? TOK_RPAREN
+    ;
 
 inline_constraints_or_empty:
 	(TOK_WITH constraint_set)

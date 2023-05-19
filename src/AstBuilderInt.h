@@ -286,9 +286,14 @@ private:
     ast::ITemplateParamValueList *mkTemplateParamValueList(
         PSSParser::Template_param_value_listContext *ctx);
 
+    void setLoc(ast::IScopeChild *c, Token *start);
+
+    void setLoc(ast::IExprId *c, Token *start);
+
 private:
     static dmgr::IDebug                         *m_dbg;
 	bool										m_collectDocStrings;
+    int32_t                                     m_fileid;
     IMarkerListener								*m_marker_l;
 	ast::IFactory								*m_factory;
 	ast::IExpr									*m_expr;

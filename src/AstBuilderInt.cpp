@@ -44,6 +44,9 @@ AstBuilderInt::~AstBuilderInt() {
 void AstBuilderInt::build(
 			ast::IGlobalScope		*global,
 			std::istream 			*in) {
+
+    m_fileid = global->getFileid();
+
 	ANTLRInputStream input(*in);
 	PSSLexer lexer(&input);
 	m_tokens = std::unique_ptr<CommonTokenStream>(new CommonTokenStream(&lexer));
@@ -66,9 +69,9 @@ antlrcpp::Any AstBuilderInt::visitPackage_declaration(
 	PSSParser::Package_declarationContext *ctx) {
 	IPackageScope *pkg = m_factory->mkPackageScope();
 
+    setLoc(pkg, ctx->start);
+
 	// TODO: populate Id list
-	fprintf(stdout, "%d elements in package_identifier\n",
-		ctx->package_id_path()->package_identifier().size());
 	std::vector<PSSParser::Package_identifierContext *> id =
 		ctx->package_id_path()->package_identifier();
 	for (std::vector<PSSParser::Package_identifierContext *>::const_iterator
@@ -106,6 +109,7 @@ antlrcpp::Any AstBuilderInt::visitImport_stmt(PSSParser::Import_stmtContext *ctx
 	}
 
 	IPackageImportStmt *imp = m_factory->mkPackageImportStmt(is_wildcard, alias);
+    setLoc(imp, ctx->start);
 
 	imp->setPath(mkTypeId(ctx->package_import_pattern()->type_identifier()));
 	addChild(imp, ctx->start);
@@ -149,6 +153,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 	if (kind == ast::ExtendTargetE::Enum) {
 		IExtendEnum *ext = m_factory->mkExtendEnum(mkTypeId(ctx->type_identifier()));
 		std::vector<PSSParser::Enum_itemContext *> items = ctx->enum_item();
+        setLoc(ext, ctx->start);
 
 		for (std::vector<PSSParser::Enum_itemContext *>::const_iterator
 			it=items.begin();
@@ -168,6 +173,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 		IExtendType *ext = m_factory->mkExtendType(
 			kind,
 			mkTypeId(ctx->type_identifier()));
+        setLoc(ext, ctx->start);
 
 		addChild(ext, ctx->start);
 		push_scope(ext);
@@ -254,6 +260,7 @@ antlrcpp::Any AstBuilderInt::visitAction_declaration(PSSParser::Action_declarati
 		mkId(ctx->action_identifier()->identifier()),
 		super_t,
 		false);
+    setLoc(action, ctx->start);
 
     // Add in a ref field
     ast::IFieldCompRef *comp = m_factory->mkFieldCompRef(
@@ -288,6 +295,7 @@ antlrcpp::Any AstBuilderInt::visitAbstract_action_declaration(PSSParser::Abstrac
 	ctx->action_declaration()->accept(this);
 	ast::IAction *action = dynamic_cast<ast::IAction *>(scope()->getChildren().back().get());
 	action->setIs_abstract(true);
+    setLoc(action, ctx->start);
 	DEBUG_LEAVE("visitAbstract_action_declaration");
 	return 0;
 }
@@ -295,6 +303,7 @@ antlrcpp::Any AstBuilderInt::visitAbstract_action_declaration(PSSParser::Abstrac
 antlrcpp::Any AstBuilderInt::visitActivity_declaration(PSSParser::Activity_declarationContext *ctx) {
     DEBUG_ENTER("visitActivity_declaration");
     ast::IActivityDecl *activity = m_factory->mkActivityDecl();
+    setLoc(activity, ctx->start);
 
 	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
 	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
@@ -340,6 +349,7 @@ antlrcpp::Any AstBuilderInt::visitFlow_ref_field_declaration(PSSParser::Flow_ref
 			type,
 			array_dim,
 			ctx->is_input);
+        setLoc(field, (*it)->identifier()->start);
 		addChild(field, ctx->start);
 	}
 
@@ -367,6 +377,7 @@ antlrcpp::Any AstBuilderInt::visitResource_ref_field_declaration(PSSParser::Reso
 			type,
 			array_dim,
 			ctx->lock);
+        setLoc(field, (*it)->identifier()->start);
 		addChild(field, ctx->start);
 	}
 
@@ -417,6 +428,7 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 		id,
 		super_t,
 		StructKind_m.find(ctx->struct_kind()->getText())->second);
+    setLoc(s, ctx->identifier()->start);
 
     if (ctx->template_param_decl_list()) {
         s->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
@@ -435,6 +447,8 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 	DEBUG_LEAVE("visitStruct_declaration");
 	return 0;
 }
+
+/* TODO: setLoc checkpoint */
 
 // B.4 Exec blocks
 
@@ -1506,13 +1520,7 @@ antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) 
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
-	Location loc = id->getLocation();
-	loc.lineno = ctx->start->getLine();
-	loc.linepos = ctx->start->getCharPositionInLine();
-	id->setLocation(loc);
-
-
-	// TODO: Fill in location info
+    setLoc(id, ctx->start);
 
 	m_expr = id;
 
@@ -1977,10 +1985,7 @@ IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
-	Location loc = id->getLocation();
-	loc.lineno = ctx->start->getLine();
-	loc.linepos = ctx->start->getCharPositionInLine();
-	id->setLocation(loc);
+    setLoc(id, ctx->start);
 
 	return id;
 }
@@ -2284,6 +2289,24 @@ ast::ITemplateParamValueList *AstBuilderInt::mkTemplateParamValueList(
 
     return plist;
 
+}
+
+void AstBuilderInt::setLoc(ast::IScopeChild *c, Token *start) {
+    Location loc = {
+        .fileid = m_fileid,
+        .lineno = (int32_t)start->getLine(),
+        .linepos = (int32_t)start->getCharPositionInLine()+1
+    };
+	c->setLocation(loc);
+}
+
+void AstBuilderInt::setLoc(ast::IExprId *c, Token *start) {
+    Location loc = {
+        .fileid = m_fileid,
+        .lineno = (int32_t)start->getLine(),
+        .linepos = (int32_t)start->getCharPositionInLine()+1
+    };
+	c->setLocation(loc);
 }
 
 dmgr::IDebug *AstBuilderInt::m_dbg = 0;

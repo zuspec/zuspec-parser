@@ -157,6 +157,19 @@ void TestBase::parseLink(
     root = ast::ISymbolScopeUP(link(marker_l, {global.get()}));
 }
 
+std::pair<ast::IGlobalScope *, ast::ISymbolScope *> TestBase::parseLink(
+        parser::IMarkerListener        *marker_l,
+        const std::string              &content,
+        const std::string              &name) {
+    ast::IGlobalScope *global = parse(marker_l, content, name);
+    ast::ISymbolScope *root = 0;
+    if (!marker_l->hasSeverity(MarkerSeverityE::Error)) {
+        root = link(marker_l, {global});
+    }
+
+    return {global, root};
+}
+
 ast::IScopeChild *TestBase::findItem(
         ast::ISymbolScope                   *root,
         const std::vector<std::string>      &path) {

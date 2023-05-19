@@ -75,6 +75,7 @@ ast::ISymbolTypeScope *TaskBuildSymbolTree::build(ast::ITypeScope *ts) {
     ast::ISymbolScope *root = m_factory->mkSymbolScope(
         -100,
         "");
+    root->setLocation(ts->getLocation());
     m_scope_s.push_back(root);
 
     ts->accept(m_this);
@@ -103,6 +104,7 @@ void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
             int32_t id = scope->getChildren().size();
             ast::ISymbolScope *pkg = 
                 m_factory->mkSymbolScope(id, (*id_it)->getId());
+            pkg->setLocation(i->getLocation());
 
             fprintf(stdout, "Add package %s with id %d\n", (*id_it)->getId().c_str(), id);
             scope->getSymtab().insert({(*id_it)->getId(), id});
@@ -140,6 +142,7 @@ void TaskBuildSymbolTree::visitEnumDecl(ast::IEnumDecl *i) {
     ast::ISymbolEnumScope *ts = m_factory->mkSymbolEnumScope(
         id,
         i->getName()->getId());
+    ts->setLocation(i->getLocation());
 
     std::map<std::string, int32_t>::const_iterator it =
         scope->getSymtab().find(i->getName()->getId());
@@ -195,6 +198,7 @@ void TaskBuildSymbolTree::visitExecScope(ast::IExecScope *i) {
     DEBUG_ENTER("visitExecScope");
     int32_t id = m_scope_s.back()->getChildren().size();
     ast::ISymbolScope *scope = m_factory->mkSymbolExecScope(id, "");
+    scope->setLocation(i->getLocation());
     m_scope_s.back()->getChildren().push_back(scope);
     m_scope_s.back()->getOwned().push_back(ast::IScopeChildUP(scope));
     m_scope_s.push_back(scope);
@@ -212,6 +216,7 @@ void TaskBuildSymbolTree::visitExtendType(ast::IExtendType *i) {
     DEBUG_ENTER("visitExtendType");
     int32_t id = m_scope_s.back()->getChildren().size();
     ast::ISymbolExtendScope *ext = m_factory->mkSymbolExtendScope(id, "");
+    ext->setLocation(i->getLocation());
     ext->setTarget(i);
 
     m_scope_s.back()->getOwned().push_back(ast::IScopeChildUP(ext));
@@ -286,6 +291,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
         func_sym = m_factory->mkSymbolFunctionScope(
             id, 
             i->getProto()->getName()->getId());
+        func_sym->setLocation(i->getLocation());
         m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
         m_scope_s.back()->getChildren().push_back(func_sym);
 
@@ -317,6 +323,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
     // Build the body (and subscopes) symbol scopes
     int32_t id = func_sym->getChildren().size();
     ast::ISymbolScope *body = m_factory->mkSymbolScope(id, "");
+    body->setLocation(i->getLocation());
     m_scope_s.push_back(body);
     func_sym->setBody(body);
     func_sym->getChildren().push_back(body);
@@ -358,6 +365,7 @@ void TaskBuildSymbolTree::visitFunctionPrototype(ast::IFunctionPrototype *i) {
         func_sym = m_factory->mkSymbolFunctionScope(
             id, 
             i->getName()->getId());
+        func_sym->setLocation(i->getLocation());
         m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
         m_scope_s.back()->getChildren().push_back(func_sym);
     }
@@ -448,6 +456,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
         id,
         i->getName()->getId(),
         plist);
+    ts->setLocation(i->getLocation());
     ts->setTarget(i);
 
 
