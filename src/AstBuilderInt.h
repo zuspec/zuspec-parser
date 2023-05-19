@@ -214,7 +214,15 @@ private:
 
     void addChild(ast::INamedScopeChild *c, Token *t);
 
-    void addChild(ast::INamedScope *c, Token *t);
+    void addChild(ast::IConstraintScope *c, Token *start, Token *end);
+
+    void addChild(ast::IExecScope *c, Token *start, Token *end);
+
+    void addChild(ast::IFunctionDefinition *c, Token *start, Token *end);
+
+    void addChild(ast::INamedScope *c, Token *start, Token *end);
+
+    void addChild(ast::IScope *c, Token *start, Token *end);
 
     void addDocstring(ast::IScopeChild *c, Token *t);
 
@@ -296,6 +304,7 @@ private:
 
 private:
     static dmgr::IDebug                         *m_dbg;
+    int32_t                                     m_file_id;
 	bool										m_collectDocStrings;
     IMarkerListener								*m_marker_l;
 	ast::IFactory								*m_factory;

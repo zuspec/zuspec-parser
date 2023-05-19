@@ -25,6 +25,9 @@ classes:
   - FunctionDefinition:
     - super: ScopeChild
     - data:
+        - endLocation: 
+            type: Location
+            is_ctor: False
         - proto: UP<FunctionPrototype>
         - body: UP<ProceduralStmtSequenceBlock>
   - FunctionParamDecl:
