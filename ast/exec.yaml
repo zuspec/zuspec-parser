@@ -31,6 +31,9 @@ classes:
   - ExecScope:
     - super: ExecStmt
     - data:
+      - endLocation:
+          type: Location
+          is_ctor: False
       - children: list<UP<ExecStmt>>
   - ExecBlock:
     - super: ExecScope

@@ -81,7 +81,7 @@ antlrcpp::Any AstBuilderInt::visitPackage_declaration(
 		pkg->getId().push_back(IExprIdUP(mkId((*it)->identifier())));
 	}
 
-	addChild(pkg, ctx->start);
+	addChild(pkg, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 	push_scope(pkg);
 	std::vector<PSSParser::Package_body_itemContext *> items = ctx->package_body_item();
 	for (std::vector<PSSParser::Package_body_itemContext *>::const_iterator
@@ -175,7 +175,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 			mkTypeId(ctx->type_identifier()));
         setLoc(ext, ctx->start);
 
-		addChild(ext, ctx->start);
+		addChild(ext, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 		push_scope(ext);
 		switch (kind) {
 			case ast::ExtendTargetE::Action: {
@@ -273,7 +273,7 @@ antlrcpp::Any AstBuilderInt::visitAction_declaration(PSSParser::Action_declarati
         action->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
 	}
 
-	addChild(action, ctx->start);
+	addChild(action, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 	push_scope(action);
 
 	std::vector<PSSParser::Action_body_itemContext *> items = ctx->action_body_item();
@@ -314,7 +314,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_declaration(PSSParser::Activity_decla
     
 	m_activity_stmt = activity;
 
-    addChild(activity, ctx->start);
+    addChild(activity, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
     
     DEBUG_LEAVE("visitActivity_declaration");
     return 0;
@@ -434,7 +434,7 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
         s->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
     }
 
-	addChild(s, ctx->start);
+	addChild(s, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 	push_scope(s);
 	std::vector<PSSParser::Struct_body_itemContext *> body = ctx->struct_body_item();
 	for (std::vector<PSSParser::Struct_body_itemContext *>::const_iterator
@@ -480,7 +480,7 @@ antlrcpp::Any AstBuilderInt::visitExec_block(PSSParser::Exec_blockContext *ctx) 
     }
     m_exec_scope_s.pop_back();
 
-    addChild(exec, ctx->start);
+    addChild(exec, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 
     DEBUG_LEAVE("visitExec_block");
     return 0;
@@ -526,7 +526,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
         body
     );
 
-    m_scopes.back()->getChildren().push_back(ast::IScopeChildUP(func));
+    addChild(func, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
     DEBUG_LEAVE("visitProcedural_function");
     return 0;
 }
@@ -770,7 +770,7 @@ antlrcpp::Any AstBuilderInt::visitComponent_declaration(PSSParser::Component_dec
         comp->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
     }
 
-	addChild(comp, ctx->start);
+	addChild(comp, ctx->start, ctx->TOK_LCBRACE()->getSymbol());
 	push_scope(comp);
 	std::vector<PSSParser::Component_body_itemContext *> body = ctx->component_body_item();
 	for (std::vector<PSSParser::Component_body_itemContext *>::const_iterator
@@ -1520,7 +1520,10 @@ antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) 
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
-    setLoc(id, ctx->start);
+	Location loc = id->getLocation();
+	loc.lineno = ctx->start->getLine();
+	loc.linepos = ctx->start->getCharPositionInLine()+1;
+	id->setLocation(loc);
 
 	m_expr = id;
 
@@ -1573,6 +1576,11 @@ void AstBuilderInt::syntaxError(
 void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t) {
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 	c->setParent(scope());
+    c->setLocation({
+        m_file_id,
+        (int32_t)t->getLine(),
+        (int32_t)t->getCharPositionInLine()+1
+    });
 
 	if (m_collectDocStrings && t) {
 		addDocstring(c, t);
@@ -1582,17 +1590,104 @@ void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t) {
 void AstBuilderInt::addChild(ast::INamedScopeChild *c, Token *t) {
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 	c->setParent(scope());
+    c->setLocation({
+        m_file_id,
+        (int32_t)t->getLine(),
+        (int32_t)t->getCharPositionInLine()+1
+    });
 
 	if (m_collectDocStrings && t) {
 		addDocstring(c, t);
 	}
 }
 
-void AstBuilderInt::addChild(ast::INamedScope *c, Token *t) {
+void AstBuilderInt::addChild(ast::IConstraintScope *c, Token *start, Token *end) {
+    c->setLocation({
+        m_file_id,
+        (int32_t)start->getLine(),
+        (int32_t)start->getCharPositionInLine()+1
+    });
+    c->setEndLocation({
+        m_file_id,
+        (int32_t)end->getLine(),
+        (int32_t)end->getCharPositionInLine()+1
+    });
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
-	if (m_collectDocStrings && t) {
-		addDocstring(c, t);
+	if (m_collectDocStrings && start) {
+		addDocstring(c, start);
+	}
+}
+
+void AstBuilderInt::addChild(ast::IExecScope *c, Token *start, Token *end) {
+    c->setLocation({
+        m_file_id,
+        (int32_t)start->getLine(),
+        (int32_t)start->getCharPositionInLine()+1
+    });
+    c->setEndLocation({
+        m_file_id,
+        (int32_t)end->getLine(),
+        (int32_t)end->getCharPositionInLine()+1
+    });
+	scope()->getChildren().push_back(ast::IScopeChildUP(c));
+
+	if (m_collectDocStrings && start) {
+		addDocstring(c, start);
+	}
+}
+
+void AstBuilderInt::addChild(ast::IFunctionDefinition *c, Token *start, Token *end) {
+    c->setLocation({
+        m_file_id,
+        (int32_t)start->getLine(),
+        (int32_t)start->getCharPositionInLine()+1
+    });
+    c->setEndLocation({
+        m_file_id,
+        (int32_t)end->getLine(),
+        (int32_t)end->getCharPositionInLine()+1
+    });
+	scope()->getChildren().push_back(ast::IScopeChildUP(c));
+
+	if (m_collectDocStrings && start) {
+		addDocstring(c, start);
+	}
+}
+
+void AstBuilderInt::addChild(ast::INamedScope *c, Token *start, Token *end) {
+    c->setLocation({
+        m_file_id,
+        (int32_t)start->getLine(),
+        (int32_t)start->getCharPositionInLine()+1
+    });
+    c->setEndLocation({
+        m_file_id,
+        (int32_t)end->getLine(),
+        (int32_t)end->getCharPositionInLine()+1
+    });
+	scope()->getChildren().push_back(ast::IScopeChildUP(c));
+
+	if (m_collectDocStrings && start) {
+		addDocstring(c, start);
+	}
+}
+
+void AstBuilderInt::addChild(ast::IScope *c, Token *start, Token *end) {
+    c->setLocation({
+        m_file_id,
+        (int32_t)start->getLine(),
+        (int32_t)start->getCharPositionInLine()
+    });
+    c->setEndLocation({
+        m_file_id,
+        (int32_t)end->getLine(),
+        (int32_t)end->getCharPositionInLine()
+    });
+	scope()->getChildren().push_back(ast::IScopeChildUP(c));
+
+	if (m_collectDocStrings && start) {
+		addDocstring(c, start);
 	}
 }
 
