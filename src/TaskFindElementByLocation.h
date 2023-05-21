@@ -27,34 +27,67 @@
 namespace zsp {
 namespace parser {
 
-
+/**
+ * @brief Locates information about the element at the specified location
+ * 
+ * 
+ */
 class TaskFindElementByLocation : 
     public virtual ITaskFindElementByLocation,
     public virtual ast::VisitorBase {
 public:
+    /**
+     * @brief Construct a new Task Find Element By Location object
+     * 
+     * @param dmgr 
+     */
     TaskFindElementByLocation(dmgr::IDebugMgr *dmgr);
 
     virtual ~TaskFindElementByLocation();
 
-    bool find(
-        std::vector<ast::IScopeChild *>     &path,
+    /**
+     * @brief asdf
+     * 
+     * @param path 
+     * @param root 
+     * @param lineno 
+     * @param linepos 
+     * @return true 
+     * @return false 
+     */
+    virtual ITaskFindElementByLocation::Result find(
         ast::ISymbolScope                   *root,
+        ast::IGlobalScope                   *file,
         int32_t                             lineno,
-        int32_t                             linepos);
+        int32_t                             linepos) override;
 
     virtual void visitExprId(ast::IExprId *i) override;
+
+    virtual void visitField(ast::IField *i) override;
+
+//    virtual void visitExprRefPathContext *i) 
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
     virtual void visitTypeScope(ast::ITypeScope *i) override;
 
+    virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) override;
+
+private:
+    struct CtxtElem {
+        ast::IExpr          *expr;
+        ast::IScopeChild    *child;
+    };
+
 private:
     static dmgr::IDebug                     *m_dbg;
-    std::vector<ast::IScopeChild *>         *m_path;
+    dmgr::IDebugMgr                         *m_dmgr;
+    ast::ISymbolScope                       *m_root;
+    ast::IGlobalScope                       *m_file;
     int32_t                                 m_lineno;
     int32_t                                 m_linepos;
-    bool                                    m_found;
-
+    std::vector<CtxtElem>                   m_ctxt_s;
+    Result                                  m_result;
 
 };
 

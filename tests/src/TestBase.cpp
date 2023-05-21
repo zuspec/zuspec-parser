@@ -103,12 +103,14 @@ void TestBase::runTest(
 ast::IGlobalScope *TestBase::parse(
 		IMarkerListener		        *marker_l,
 		const std::string 			&content,
-		const std::string 			&name) {
+		const std::string 			&name,
+        bool                        process_doc_comments) {
 	std::stringstream s(content);
 
 	ast::IGlobalScopeUP global(m_ast_factory->mkGlobalScope(0));
 
 	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(marker_l));
+    ast_builder->setCollectDocStrings(process_doc_comments);
 
 	ast_builder->build(global.get(), &s);
 
@@ -160,8 +162,9 @@ void TestBase::parseLink(
 std::pair<ast::IGlobalScope *, ast::ISymbolScope *> TestBase::parseLink(
         parser::IMarkerListener        *marker_l,
         const std::string              &content,
-        const std::string              &name) {
-    ast::IGlobalScope *global = parse(marker_l, content, name);
+        const std::string              &name,
+        bool                           process_doc_comments) {
+    ast::IGlobalScope *global = parse(marker_l, content, name, process_doc_comments); 
     ast::ISymbolScope *root = 0;
     if (!marker_l->hasSeverity(MarkerSeverityE::Error)) {
         root = link(marker_l, {global});

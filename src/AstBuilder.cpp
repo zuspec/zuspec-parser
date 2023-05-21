@@ -41,5 +41,13 @@ void AstBuilder::setMarkerListener(IMarkerListener *l) {
     m_builder_int->setMarkerListener(l);
 }
 
+void AstBuilder::setCollectDocStrings(bool c) {
+    m_builder_int->setCollectDocStrings(c);
+}
+
+bool AstBuilder::getCollectDocStrings() {
+    return m_builder_int->getCollectDocStrings();
+}
+
 }
 } /* namespace zsp */

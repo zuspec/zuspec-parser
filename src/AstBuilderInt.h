@@ -47,6 +47,14 @@ public:
         m_marker_l = l;
     }
 
+    virtual void setCollectDocStrings(bool c) {
+        m_collectDocStrings = c;
+    }
+
+    virtual bool getCollectDocStrings() {
+        return m_collectDocStrings;
+    }
+
 	// B.1 package declaration
 	virtual antlrcpp::Any visitPackage_declaration(PSSParser::Package_declarationContext *ctx) override;
 

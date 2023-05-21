@@ -196,9 +196,14 @@ resource_ref_field_declaration:
 	;
 
 flow_object_type:
+/* Note: refactored. All flow-object type identifiers
+   are syntactically type_identifiers. Removing
+   ambiguity increases performance.
 	buffer_type_identifier
 	| state_type_identifier
 	| stream_type_identifier
+ */
+    type_identifier
 	;
 
 resource_object_type:

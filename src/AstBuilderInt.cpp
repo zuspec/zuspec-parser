@@ -330,15 +330,7 @@ antlrcpp::Any AstBuilderInt::visitFlow_ref_field_declaration(PSSParser::Flow_ref
 		ast::IExpr *array_dim = 0;
 		ast::IDataTypeUserDefined *type = 0;
 
-		if (ctx->flow_object_type()->buffer_type_identifier()) {
-			type = mkDataTypeUserDefined(ctx->flow_object_type()->buffer_type_identifier()->type_identifier());
-		} else if (ctx->flow_object_type()->state_type_identifier()) {
-			type = mkDataTypeUserDefined(ctx->flow_object_type()->state_type_identifier()->type_identifier());
-		} else if (ctx->flow_object_type()->stream_type_identifier()) {
-			type = mkDataTypeUserDefined(ctx->flow_object_type()->stream_type_identifier()->type_identifier());
-		} else {
-			DEBUG("Unknown flow-object type");
-		}
+		type = mkDataTypeUserDefined(ctx->flow_object_type()->type_identifier());
 
 		if ((*it)->array_dim()) {
 			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
@@ -1707,7 +1699,6 @@ void AstBuilderInt::addDocstring(ast::IScopeChild *c, Token *t) {
 		return;
 	}
 
-
 	int32_t last_ws_line = -1;
 	if (ws_tokens.size() > 0) {
 		last_ws_line = ws_tokens.back()->getLine();
@@ -1833,7 +1824,15 @@ std::string AstBuilderInt::processDocStringMultiLineComment(
 std::string AstBuilderInt::processDocStringSingleLineComment(
     		const std::vector<Token *>		&slc_tokens,
 			const std::vector<Token *>		&ws_tokens) {
-	return "";
+    std::string comment;
+
+    for (std::vector<Token *>::const_iterator
+        it=slc_tokens.begin();
+        it!=slc_tokens.end(); it++) {
+        comment += (*it)->getText().substr(2);
+    }
+
+	return comment;
 }
 
 void AstBuilderInt::push_scope(ast::IScope *s) { 

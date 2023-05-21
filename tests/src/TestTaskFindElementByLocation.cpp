@@ -46,7 +46,8 @@ TEST_F(TestTaskFindElementByLocation, smoke) {
     std::pair<ast::IGlobalScope *, ast::ISymbolScope *> ret = parseLink(
         marker_c.get(),
         content,
-        "test.pss");
+        "test.pss",
+        true);
     ASSERT_TRUE(ret.first);
     ASSERT_TRUE(ret.second);
     ast::IGlobalScopeUP global(ret.first);
@@ -57,12 +58,174 @@ TEST_F(TestTaskFindElementByLocation, smoke) {
 
     enableDebug(true);
 
-    ASSERT_TRUE(finder->find(
-        path,
+    ITaskFindElementByLocation::Result result = finder->find(
         root.get(),
+        global.get(),
         2,
-        15));
+        15);
+    ASSERT_TRUE(result.isValid);
+    ASSERT_TRUE(result.isType);
+    ASSERT_TRUE(result.target);
+    ASSERT_EQ(result.docComment, "");
+}
 
+TEST_F(TestTaskFindElementByLocation, docCommentType) {
+    const char *content = R"(
+    // This is a doc comment
+    component pss_top { // line 3, position 15-21
+        action A {
+
+        }
+    }
+    )";
+
+    IMarkerCollectorUP marker_c(m_factory->mkMarkerCollector());
+    std::pair<ast::IGlobalScope *, ast::ISymbolScope *> ret = parseLink(
+        marker_c.get(),
+        content,
+        "test.pss",
+        true);
+    ASSERT_TRUE(ret.first);
+    ASSERT_TRUE(ret.second);
+    ast::IGlobalScopeUP global(ret.first);
+    ast::ISymbolScopeUP root(ret.second);
+
+    ITaskFindElementByLocationUP finder(m_factory->mkTaskFindElementByLocation());
+    std::vector<ast::IScopeChild *> path;
+
+    enableDebug(true);
+
+    ITaskFindElementByLocation::Result result = finder->find(
+        root.get(),
+        global.get(),
+        3,
+        15);
+    ASSERT_TRUE(result.isValid);
+    ASSERT_TRUE(result.isType);
+    ASSERT_TRUE(result.target);
+    ASSERT_NE(result.docComment, "");
+//    ASSERT_TRUE(strstr(result.docComment.c_str(), ""This is ");
+}
+
+TEST_F(TestTaskFindElementByLocation, field) {
+    const char *content = R"(
+    component C { }
+    component pss_top { 
+        C      c1; // line 4, position 16-17
+        action A {
+
+        }
+    }
+    )";
+
+    IMarkerCollectorUP marker_c(m_factory->mkMarkerCollector());
+    std::pair<ast::IGlobalScope *, ast::ISymbolScope *> ret = parseLink(
+        marker_c.get(),
+        content,
+        "test.pss",
+        true);
+    ASSERT_TRUE(ret.first);
+    ASSERT_TRUE(ret.second);
+    ast::IGlobalScopeUP global(ret.first);
+    ast::ISymbolScopeUP root(ret.second);
+
+    ITaskFindElementByLocationUP finder(m_factory->mkTaskFindElementByLocation());
+    std::vector<ast::IScopeChild *> path;
+
+    enableDebug(true);
+
+    ITaskFindElementByLocation::Result result = finder->find(
+        root.get(),
+        global.get(),
+        4,
+        16);
+    ASSERT_TRUE(result.isValid);
+    ASSERT_FALSE(result.isType);
+    ASSERT_TRUE(result.target);
+    ASSERT_EQ(result.docComment, "");
+}
+
+TEST_F(TestTaskFindElementByLocation, fieldType) {
+    const char *content = R"(
+    component C { }
+    component pss_top { 
+        C      c1; // line 4, position 9
+        action A {
+
+        }
+    }
+    )";
+
+    IMarkerCollectorUP marker_c(m_factory->mkMarkerCollector());
+    std::pair<ast::IGlobalScope *, ast::ISymbolScope *> ret = parseLink(
+        marker_c.get(),
+        content,
+        "test.pss",
+        true);
+    ASSERT_TRUE(ret.first);
+    ASSERT_TRUE(ret.second);
+    ast::IGlobalScopeUP global(ret.first);
+    ast::ISymbolScopeUP root(ret.second);
+
+    ITaskFindElementByLocationUP finder(m_factory->mkTaskFindElementByLocation());
+    std::vector<ast::IScopeChild *> path;
+
+    enableDebug(true);
+
+    ITaskFindElementByLocation::Result result = finder->find(
+        root.get(),
+        global.get(),
+        4,
+        9);
+    ASSERT_TRUE(result.isValid);
+    ASSERT_TRUE(result.isType);
+    ASSERT_TRUE(result.target);
+    ASSERT_TRUE(dynamic_cast<ast::ITypeScope *>(result.target));
+    ASSERT_EQ(dynamic_cast<ast::ITypeScope *>(result.target)->getName()->getId(), "C");
+    ASSERT_EQ(result.docComment, "");
+}
+
+TEST_F(TestTaskFindElementByLocation, fieldTypeDocComment) {
+    const char *content = R"(
+    /**
+     * Component-type C
+     */
+    component C { }
+    component pss_top { 
+        C      c1; // line 7, position 9
+        action A {
+
+        }
+    }
+    )";
+
+    IMarkerCollectorUP marker_c(m_factory->mkMarkerCollector());
+    std::pair<ast::IGlobalScope *, ast::ISymbolScope *> ret = parseLink(
+        marker_c.get(),
+        content,
+        "test.pss",
+        true);
+    ASSERT_TRUE(ret.first);
+    ASSERT_TRUE(ret.second);
+    ast::IGlobalScopeUP global(ret.first);
+    ast::ISymbolScopeUP root(ret.second);
+
+    ITaskFindElementByLocationUP finder(m_factory->mkTaskFindElementByLocation());
+    std::vector<ast::IScopeChild *> path;
+
+    enableDebug(true);
+
+    ITaskFindElementByLocation::Result result = finder->find(
+        root.get(),
+        global.get(),
+        7,
+        9);
+    ASSERT_TRUE(result.isValid);
+    ASSERT_TRUE(result.isType);
+    ASSERT_TRUE(result.target);
+    ASSERT_TRUE(dynamic_cast<ast::ITypeScope *>(result.target));
+    ASSERT_EQ(dynamic_cast<ast::ITypeScope *>(result.target)->getName()->getId(), "C");
+    ASSERT_NE(result.docComment, "");
 }
 
 }

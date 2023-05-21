@@ -48,7 +48,8 @@ protected:
 	ast::IGlobalScope *parse(
 		parser::IMarkerListener		        *marker_l,
 		const std::string 			        &content,
-		const std::string 			        &name);
+		const std::string 			        &name,
+        bool                                process_doc_comments=false);
 
 	ast::ISymbolScope *link(
 		parser::IMarkerListener				        *marker_l,
@@ -74,7 +75,8 @@ protected:
     std::pair<ast::IGlobalScope *, ast::ISymbolScope *> parseLink(
         parser::IMarkerListener        *marker_l,
         const std::string              &content,
-        const std::string              &name);
+        const std::string              &name,
+        bool                           process_doc_comments=false);
 
     ast::IScopeChild *findItem(
         ast::ISymbolScope                   *root,

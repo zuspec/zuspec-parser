@@ -32,12 +32,19 @@ class ITaskFindElementByLocation;
 using ITaskFindElementByLocationUP=std::unique_ptr<ITaskFindElementByLocation>;
 class ITaskFindElementByLocation {
 public:
+    struct Result {
+        bool                isValid;
+        bool                isType;
+        ast::IScopeChild    *target;
+        std::string         docComment;
+    };
+public:
 
     virtual ~ITaskFindElementByLocation() { }
 
-    virtual bool find(
-        std::vector<ast::IScopeChild *>     &path,
+    virtual ITaskFindElementByLocation::Result find(
         ast::ISymbolScope                   *root,
+        ast::IGlobalScope                   *file,
         int32_t                             lineno,
         int32_t                             linepos) = 0;
 
