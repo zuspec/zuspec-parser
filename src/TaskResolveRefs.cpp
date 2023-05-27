@@ -126,7 +126,7 @@ void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHan
     
 void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeTraversal *i) {
     DEBUG_ENTER("visitActivityActionTypeTraversal");
-    DEBUG("TODO: visitActivityActionTypeTraversal");
+    i->getTarget()->accept(m_this);
     DEBUG_LEAVE("visitActivityActionTypeTraversal");
 }
 
