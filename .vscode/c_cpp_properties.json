@@ -4,10 +4,8 @@
             "name": "Default",
             "includePath": [
                 "${default}",
-                "packages/libvsc/src",
-                "packages/libvsc/src/include",
-                "packages/libarl/src",
-                "packages/libarl/src/include"
+                "src/include",
+                "build/zsp_ast/src/include"
             ],
             "defines": [
                 "${default}"
@@ -24,11 +22,7 @@
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "${default}",
                 "path": [
-                    "${default}",
-                    "packages/libvsc/src",
-                    "packages/libvsc/src/include",
-                    "packages/libarl/src",
-                    "packages/libarl/src/include"
+                    "${default}"
                 ]
             },
             "intelliSenseMode": "${default}",

@@ -62,8 +62,6 @@ package_body_item:
 	| package_body_compile_if
 	| TOK_SEMICOLON // stmt_terminator
 //	| static_const_field_declaration	
-//	| pss_function_defn
-//	| function_qualifiers
 	;
 
 import_stmt:
@@ -198,9 +196,14 @@ resource_ref_field_declaration:
 	;
 
 flow_object_type:
+/* Note: refactored. All flow-object type identifiers
+   are syntactically type_identifiers. Removing
+   ambiguity increases performance.
 	buffer_type_identifier
 	| state_type_identifier
 	| stream_type_identifier
+ */
+    type_identifier
 	;
 
 resource_object_type:
@@ -614,10 +617,16 @@ labeled_activity_stmt:
 	| symbol_call
 	;
 
+// PSS Extension: inline value initialization
 activity_action_traversal_stmt:
-	(identifier ( TOK_LSBRACE expression TOK_RSBRACE )? inline_constraints_or_empty)
-	| (is_do=TOK_DO type_identifier inline_constraints_or_empty)
+	(identifier action_traversal_value_init? ( TOK_LSBRACE expression TOK_RSBRACE )? inline_constraints_or_empty)
+	| (is_do=TOK_DO type_identifier action_traversal_value_init? inline_constraints_or_empty)
 	;
+
+// PSS Extension: inline value initialization
+action_traversal_value_init: 
+    TOK_LPAREN (identifier TOK_SINGLE_EQ expression (TOK_COMMA identifier TOK_SINGLE_EQ expression)*)? TOK_RPAREN
+    ;
 
 inline_constraints_or_empty:
 	(TOK_WITH constraint_set)
@@ -1558,15 +1567,14 @@ string_literal:
 filename_string: DOUBLE_QUOTED_STRING;
 
 	
-// == PSS-1.1
-
-
 /**
  * Annotations allow meta-data to be associated with model elements
- * TODO: post-3.1 feature
+ * TODO: post-2.1 feature
+ *
+ * annotate <path> <type_identifier>();
  */	
 annotation:
-	TOK_AT identifier (TOK_LPAREN
+	TOK_AT type_identifier (TOK_LPAREN
 		annotation_values?
 	TOK_RPAREN)?
 	;
@@ -1578,3 +1586,4 @@ annotation_values:
 annotation_value:
 	identifier TOK_SINGLE_EQ expression
 	;
+

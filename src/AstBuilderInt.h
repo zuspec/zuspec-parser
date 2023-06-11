@@ -39,6 +39,22 @@ public:
 			ast::IGlobalScope	*global,
 			std::istream 		*in);
 
+    zsp::ast::IFactory *getFactory() {
+        return m_factory;
+    }
+
+    void setMarkerListener(IMarkerListener *l) {
+        m_marker_l = l;
+    }
+
+    virtual void setCollectDocStrings(bool c) {
+        m_collectDocStrings = c;
+    }
+
+    virtual bool getCollectDocStrings() {
+        return m_collectDocStrings;
+    }
+
 	// B.1 package declaration
 	virtual antlrcpp::Any visitPackage_declaration(PSSParser::Package_declarationContext *ctx) override;
 
@@ -206,7 +222,15 @@ private:
 
     void addChild(ast::INamedScopeChild *c, Token *t);
 
-    void addChild(ast::INamedScope *c, Token *t);
+    void addChild(ast::IConstraintScope *c, Token *start, Token *end);
+
+    void addChild(ast::IExecScope *c, Token *start, Token *end);
+
+    void addChild(ast::IFunctionDefinition *c, Token *start, Token *end);
+
+    void addChild(ast::INamedScope *c, Token *start, Token *end);
+
+    void addChild(ast::IScope *c, Token *start, Token *end);
 
     void addDocstring(ast::IScopeChild *c, Token *t);
 
@@ -286,9 +310,15 @@ private:
     ast::ITemplateParamValueList *mkTemplateParamValueList(
         PSSParser::Template_param_value_listContext *ctx);
 
+    void setLoc(ast::IScopeChild *c, Token *start);
+
+    void setLoc(ast::IExprId *c, Token *start);
+
 private:
     static dmgr::IDebug                         *m_dbg;
+    int32_t                                     m_file_id;
 	bool										m_collectDocStrings;
+    int32_t                                     m_fileid;
     IMarkerListener								*m_marker_l;
 	ast::IFactory								*m_factory;
 	ast::IExpr									*m_expr;

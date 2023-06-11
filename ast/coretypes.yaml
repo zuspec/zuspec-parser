@@ -20,6 +20,9 @@ classes:
     - Scope:
         super: ScopeChild
         data:
+        - endLocation:
+            type: Location
+            is_ctor: false
         - children: list<UP<ScopeChild>>
         - symtab:
             type: map<string,P<NamedScopeChild>>

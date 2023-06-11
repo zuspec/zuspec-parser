@@ -33,5 +33,21 @@ void AstBuilder::build(
 	m_builder_int->build(global, in);
 }
 
+zsp::ast::IFactory *AstBuilder::getFactory() {
+    return m_builder_int->getFactory();
+}
+
+void AstBuilder::setMarkerListener(IMarkerListener *l) {
+    m_builder_int->setMarkerListener(l);
+}
+
+void AstBuilder::setCollectDocStrings(bool c) {
+    m_builder_int->setCollectDocStrings(c);
+}
+
+bool AstBuilder::getCollectDocStrings() {
+    return m_builder_int->getCollectDocStrings();
+}
+
 }
 } /* namespace zsp */

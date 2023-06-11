@@ -30,6 +30,37 @@ package:
       src: pypi
     - name: cython
       src: pypi
+    - name: Sphinx
+      src: pypi
+    - name: sphinx-rtd-theme
+      src: pypi
+    - name: cairosvg
+      src: pypi
+    - name: breathe
+      src: pypi
+    - name: funcparserlib
+      src: pypi
+      version: 1.0.0a0
+    - name: mistune
+      src: pypi
+      version: <2.0.0
+    - name: sphinxcontrib-makedomain
+      src: pypi
+    - name: sphinxcontrib-openapi
+      src: pypi
+    - name: sphinxcontrib-spelling
+      src: pypi
+    - name: sphinxcontrib-seqdiag
+      src: pypi
+      version: <3.0.0
+    - name: sphinx-issues
+      src: pypi
+    - name: sphinx-argparse
+      src: pypi
+    - name: pyenchant
+      src: pypi
+    - name: jinja2
+      src: pypi
 
   - name: default
     deps:
@@ -45,6 +76,4 @@ package:
       # url: https://www.antlr.org/download/antlr4-cpp-runtime-4.11.1-source.zip
     - name: debug-mgr
       url: https://github.com/mballance/debug-mgr.git
-
-
 

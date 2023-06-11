@@ -27,6 +27,7 @@
 #include "Marker.h"
 #include "MarkerCollector.h"
 #include "NameResolver.h"
+#include "TaskFindElementByLocation.h"
 #include "pss_stdlib.h"
 
 
@@ -101,6 +102,10 @@ INameResolver *Factory::mkNameResolver(
 ISymbolTable *Factory::mkSymbolTable() {
     return new AstSymbolTable(m_dmgr);
 //    return 0;
+}
+
+ITaskFindElementByLocation *Factory::mkTaskFindElementByLocation() {
+    return new TaskFindElementByLocation(m_dmgr);
 }
 
 IFactory *Factory::inst() {

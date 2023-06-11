@@ -7,6 +7,7 @@
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/parser/INameResolver.h"
 #include "zsp/parser/ISymbolTable.h"
+#include "zsp/parser/ITaskFindElementByLocation.h"
 #include "zsp/ast/IFactory.h"
 
 namespace zsp {
@@ -54,6 +55,8 @@ public:
 
 
     virtual ISymbolTable *mkSymbolTable() = 0;
+
+    virtual ITaskFindElementByLocation *mkTaskFindElementByLocation() = 0;
 
 };
 
