@@ -9,6 +9,7 @@ cimport zsp_parser.decl as decl
 cimport ciostream
 from libc.stdint cimport intptr_t
 from libcpp.vector cimport vector as std_vector
+from libcpp.cast cimport dynamic_cast
 
 cdef Factory _inst = None
 cdef class Factory(object):
@@ -127,6 +128,37 @@ class MarkerSeverityE(IntEnum):
     Hint = decl.MarkerSeverityE.Severity_Hint
     NumLevels = decl.MarkerSeverityE.Severity_NumLevels
 
+cdef class Location(object):
+
+    def __init__(self, file, line, pos):
+        self._file = file
+        self._line = line
+        self._pos = pos
+
+    @property
+    def file(self):
+        return self._file
+
+cdef class Marker(object):
+
+    def __dealloc__(self):
+        if self._owned:
+            del self._hndl
+    
+    cpdef str msg(self):
+        return self._hndl.msg().decode()
+
+    cpdef Location loc(self):
+        cdef const ast_decl.Location *lp = &self._hndl.loc()
+        return Location(lp.fileid, lp.lineno, lp.linepos)
+
+    @staticmethod
+    cdef Marker mk(decl.IMarker *hndl, bool owned=True):
+        ret = Marker()
+        ret._hndl = hndl
+        ret._owned = owned
+        return ret
+
 cdef class MarkerListener(object):
     def __dealloc__(self):
         if self._owned:
@@ -138,6 +170,18 @@ cdef class MarkerListener(object):
     pass
 
 cdef class MarkerCollector(MarkerListener):
+
+    cpdef markers(self):
+        ret = []
+        for i in range(self.asCollector().markers().size()):
+            ret.append(Marker.mk(
+                self.asCollector().markers().at(i).get(),
+                False
+            ))
+        return ret
+
+    cdef decl.IMarkerCollector *asCollector(self):
+        return dynamic_cast[decl.IMarkerCollectorP](self._hndl)
 
     @staticmethod
     cdef MarkerCollector mk(decl.IMarkerCollector *hndl, bool owned=True):

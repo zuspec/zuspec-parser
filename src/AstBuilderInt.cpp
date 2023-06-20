@@ -518,7 +518,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
         body
     );
 
-    addChild(func, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
+    addChild(func, ctx->start);
     DEBUG_LEAVE("visitProcedural_function");
     return 0;
 }
@@ -526,7 +526,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
 antlrcpp::Any AstBuilderInt::visitFunction_decl(PSSParser::Function_declContext *ctx) {
     DEBUG_ENTER("visitFunction_decl");
     ast::IFunctionPrototype *proto = mkFunctionPrototype(ctx->function_prototype());
-    DEBUG("TODO: visitFunction_decl");
+    addChild(proto, ctx->start);
     DEBUG_LEAVE("visitFunction_decl");
     return 0;
 }

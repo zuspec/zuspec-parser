@@ -183,6 +183,21 @@ void TaskResolveRefs::visitFieldCompRef(ast::IFieldCompRef *i) {
     DEBUG_LEAVE("visitFieldCompRef");
 }
 
+void TaskResolveRefs::visitFunctionPrototype(ast::IFunctionPrototype *i) {
+    DEBUG_ENTER("visitFunctionPrototype");
+
+    if (i->getRtype()) {
+        i->getRtype()->accept(m_this);
+    }
+
+    for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
+        it=i->getParameters().begin();
+        it!=i->getParameters().end(); it++) {
+        (*it)->getType()->accept(m_this);
+    }
+    DEBUG_LEAVE("visitFunctionPrototype");
+} 
+
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope \"%s\"", i->getName().c_str());
     if (i->getName() != "") {
@@ -248,16 +263,30 @@ void TaskResolveRefs::visitSymbolExecScope(ast::ISymbolExecScope *i) {
 }
 
 void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
-    DEBUG_ENTER("visitSymbolFunctionScope %s", i->getName().c_str());
-    m_symtab_it->pushScope(i);
-    m_symtab_it->pushScope(i->getBody());
-    for (std::vector<ast::IScopeChild *>::const_iterator
-        it=i->getBody()->getChildren().begin();
-        it!=i->getBody()->getChildren().end(); it++) {
+    DEBUG_ENTER("visitSymbolFunctionScope %s (%d)", 
+    i->getName().c_str(),
+    i->getPrototypes().size());
+
+
+    for (std::vector<ast::IFunctionPrototype *>::const_iterator
+        it=i->getPrototypes().begin();
+        it!=i->getPrototypes().end(); it++) {
         (*it)->accept(m_this);
     }
-    m_symtab_it->popScope();
-    m_symtab_it->popScope();
+
+    if (i->getBody()) {
+        m_symtab_it->pushScope(i);
+        m_symtab_it->pushScope(i->getBody());
+        for (std::vector<ast::IScopeChild *>::const_iterator
+            it=i->getBody()->getChildren().begin();
+            it!=i->getBody()->getChildren().end(); it++) {
+            (*it)->accept(m_this);
+        }
+        m_symtab_it->popScope();
+        m_symtab_it->popScope();
+    }
+
+
     DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
 }
 

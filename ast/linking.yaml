@@ -95,6 +95,7 @@ classes:
       - definition:
         - type: P<FunctionDefinition>
         - is_ctor: false
+        - init: 0
       - plist:
         - type: UP<SymbolScope>
         - is_ctor: false

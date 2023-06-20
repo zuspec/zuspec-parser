@@ -93,11 +93,13 @@ function void write8 (addr_handle_t hndl, bit[8] data);
 function void write16(addr_handle_t hndl, bit[16] data);
 function void write32(addr_handle_t hndl, bit[32] data);
 function void write64(addr_handle_t hndl, bit[64] data);
+/* TODO: generic type
 function void read_bytes (addr_handle_t hndl, list<bit[8]> data,
  int size);
 function void write_bytes(addr_handle_t hndl, list<bit[8]> data);
 function void read_struct (addr_handle_t hndl, struct packed_struct);
 function void write_struct(addr_handle_t hndl, struct packed_struct);
+ */
 extend component executor_base_c {
  function bit[8] read8(addr_handle_t hndl);
  function bit[16] read16(addr_handle_t hndl);
@@ -107,9 +109,11 @@ extend component executor_base_c {
  function void write16(addr_handle_t hndl, bit[16] data);
  function void write32(addr_handle_t hndl, bit[32] data);
  function void write64(addr_handle_t hndl, bit[64] data);
+ /** TODO: list
  function void read_bytes (addr_handle_t hndl, list<bit[8]> data,
  int size);
  function void write_bytes(addr_handle_t hndl, list<bit[8]> data);
+  */
  };
 enum reg_access {READWRITE, READONLY, WRITEONLY};
 pure component reg_c < type R,
@@ -132,7 +136,9 @@ pure component reg_group_c {
  pure function bit[64] get_offset_of_instance(string name);
  pure function bit[64] get_offset_of_instance_array(string name,
  int index);
+ /** TODO: list
  pure function bit[64] get_offset_of_path(list<node_s> path);
+  */
  function void set_handle(addr_handle_t addr);
  import solve function set_handle;
 };

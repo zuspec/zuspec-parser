@@ -22,6 +22,7 @@ MarkerCollector::~MarkerCollector() {
 }
 
 void MarkerCollector::marker(const IMarker *m) {
+    fprintf(stderr, "NOTE: Add marker \"%s\" with level %d\n", m->msg().c_str(), m->severity());
 	m_markers.push_back(IMarkerUP(m->clone()));
 	m_count[static_cast<uint32_t>(m->severity())]++;
 }
