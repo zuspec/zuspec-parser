@@ -37,7 +37,7 @@ classes:
       - type: map<string,int32_t>
       - is_ctor: false
     - target: 
-      - type: P<Scope>
+      - type: P<ScopeChild>
       - is_ctor: false
       - init: 0
       - visit: true

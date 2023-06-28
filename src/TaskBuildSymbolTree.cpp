@@ -194,11 +194,18 @@ void TaskBuildSymbolTree::visitExecStmt(ast::IExecStmt *i) {
     DEBUG_LEAVE("visitExecStmt");
 }
 
+void TaskBuildSymbolTree::visitExecBlock(ast::IExecBlock *i) {
+    DEBUG_ENTER("visitExecBlock");
+    visitExecScope(i);
+    DEBUG_LEAVE("visitExecBlock");
+}
+
 void TaskBuildSymbolTree::visitExecScope(ast::IExecScope *i) {
     DEBUG_ENTER("visitExecScope");
     int32_t id = m_scope_s.back()->getChildren().size();
     ast::ISymbolScope *scope = m_factory->mkSymbolExecScope(id, "");
     scope->setLocation(i->getLocation());
+    scope->setTarget(i);
     m_scope_s.back()->getChildren().push_back(scope);
     m_scope_s.back()->getOwned().push_back(ast::IScopeChildUP(scope));
     m_scope_s.push_back(scope);

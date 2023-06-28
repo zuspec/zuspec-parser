@@ -52,12 +52,21 @@ classes:
         - is_pure:
             type: bool
             is_ctor: false
+            init: false
+        - is_target:
+            type: bool
+        - is_solve:
+            type: bool
 
   - FunctionImport:
     - super: ScopeChild
     - data:
         - plat: PlatQual
         - lang: string
+        - is_target:
+            type: bool
+        - is_solve:
+            type: bool
 
   - FunctionImportType:
     - super: FunctionImport

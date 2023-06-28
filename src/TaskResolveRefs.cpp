@@ -131,11 +131,26 @@ void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeT
 }
 
 void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
-    DEBUG_ENTER("visitExprRefPathContext");
+    DEBUG_ENTER("visitExprRefPathContext %s", i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
     // Find the first path element
     ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
         m_symtab_it.get(),
         i->getHier_id()->getElems().at(0)->getId());
+
+    if (!target) {
+        char tmp[1024];
+        sprintf(tmp, "failed to find root ref-path element %s",
+            i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
+        IMarkerUP marker(m_factory->mkMarker(
+            tmp,
+            MarkerSeverityE::Error,
+            i->getHier_id()->getElems().at(0)->getId()->getLocation()
+        ));
+        m_marker_l->marker(marker.get());
+
+        DEBUG_LEAVE("visitExprRefPathContext -- fail");
+        return;
+    }
     
     i->setTarget(target);
 

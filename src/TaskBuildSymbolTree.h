@@ -50,6 +50,8 @@ public:
 
     virtual void visitEnumItem(ast::IEnumItem *i) override;
 
+    virtual void visitExecBlock(ast::IExecBlock *i) override;
+
     virtual void visitExecStmt(ast::IExecStmt *i) override;
 
     virtual void visitExecScope(ast::IExecScope *i) override;

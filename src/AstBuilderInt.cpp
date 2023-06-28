@@ -518,6 +518,14 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
         body
     );
 
+    if (ctx->platform_qualifier()) {
+        if (ctx->platform_qualifier()->TOK_TARGET()) {
+            func->getProto()->setIs_target(true);
+        } else {
+            func->getProto()->setIs_solve(true);
+        }
+    }
+
     addChild(func, ctx->start);
     DEBUG_LEAVE("visitProcedural_function");
     return 0;
@@ -1975,9 +1983,14 @@ ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
         rtype = mkDataType(ctx->function_return_type()->data_type());
     }
 
+    bool is_target = false;
+    bool is_solve = false;
+
     ast::IFunctionPrototype *proto = m_factory->mkFunctionPrototype(
         mkId(ctx->function_identifier()->identifier()),
-        rtype);
+        rtype,
+        is_target,
+        is_solve);
 
     std::vector<PSSParser::Function_parameterContext *> items =
         ctx->function_parameter_list_prototype()->function_parameter();

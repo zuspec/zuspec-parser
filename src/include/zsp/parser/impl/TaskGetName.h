@@ -31,9 +31,28 @@ public:
 
     virtual ~TaskGetName() { }
 
-    const std::string &get(ast::IScopeChild *c) {
+    const std::string &get(ast::IScopeChild *c, bool bottom_up=false) {
         m_ret = "";
-        c->accept(m_this);
+        if (bottom_up) {
+            ast::IScopeChild *ci = c;
+
+            c->accept(m_this);
+            std::string full_path;
+
+            do {
+                m_ret = "";
+                c->accept(m_this);
+                
+                if (full_path.size() && m_ret.size()) {
+                    full_path = "::" + full_path;
+                }
+                full_path = m_ret + full_path;
+            } while ((ci=ci->getParent()));
+
+            m_ret = full_path;
+        } else {
+            c->accept(m_this);
+        }
         return m_ret;
     }
 
