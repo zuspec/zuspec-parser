@@ -513,9 +513,20 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
     }
     m_exec_scope_s.pop_back();
 
+    ast::PlatQual platqual = ast::PlatQual::PlatQual_None;
+
+    if (ctx->platform_qualifier()) {
+        if (ctx->platform_qualifier()->TOK_TARGET()) {
+            platqual = ast::PlatQual::PlatQual_Target;
+        } else {
+            platqual = ast::PlatQual::PlatQual_Solve;
+        }
+    }
+
     ast::IFunctionDefinition *func = m_factory->mkFunctionDefinition(
         mkFunctionPrototype(ctx->function_prototype()),
-        body
+        body,
+        platqual
     );
 
     if (ctx->platform_qualifier()) {
@@ -543,6 +554,35 @@ antlrcpp::Any AstBuilderInt::visitFunction_prototype(PSSParser::Function_prototy
     DEBUG_ENTER("visitFunction_prototype");
     DEBUG("TODO: visitFunction_prototype");
     DEBUG_LEAVE("visitFunction_prototype");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitImport_function(PSSParser::Import_functionContext *ctx) {
+    DEBUG_ENTER("visitImport_function");
+    if (ctx->type_identifier()) {
+        // Two-step import specification
+    } else {
+        // One-step import specification
+        ast::PlatQual platqual = ast::PlatQual::PlatQual_None;
+
+        if (ctx->platform_qualifier()) {
+            if (ctx->platform_qualifier()->TOK_TARGET()) {
+                platqual = ast::PlatQual::PlatQual_Target;
+            } else {
+                platqual = ast::PlatQual::PlatQual_Solve;
+            }
+        }
+
+        ast::IFunctionImportProto *func = m_factory->mkFunctionImportProto(
+            platqual,
+            "",
+            mkFunctionPrototype(ctx->function_prototype())
+            );
+
+
+        addChild(func, ctx->start);
+    }
+    DEBUG_LEAVE("visitImport_function");
     return 0;
 }
 

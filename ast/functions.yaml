@@ -30,6 +30,7 @@ classes:
             is_ctor: False
         - proto: UP<FunctionPrototype>
         - body: UP<ProceduralStmtSequenceBlock>
+        - plat: PlatQual
   - FunctionParamDecl:
     - super: ScopeChild
     - data:
@@ -63,10 +64,6 @@ classes:
     - data:
         - plat: PlatQual
         - lang: string
-        - is_target:
-            type: bool
-        - is_solve:
-            type: bool
 
   - FunctionImportType:
     - super: FunctionImport

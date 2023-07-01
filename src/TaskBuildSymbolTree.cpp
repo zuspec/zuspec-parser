@@ -347,11 +347,69 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
 }
 
 void TaskBuildSymbolTree::visitFunctionImportProto(ast::IFunctionImportProto *i) { 
+    DEBUG_ENTER("visitFunctionImportProto %s", i->getProto()->getName()->getId().c_str());
 
+    ast::IScopeChild *ex_func_b = findSymbol(i->getProto()->getName()->getId());
+    ast::ISymbolFunctionScope *func_sym = dynamic_cast<ast::ISymbolFunctionScope *>(ex_func_b);
+
+    // If the existing symbol isn't a FunctionScope, then we have
+    // a duplicate symbol
+    if (ex_func_b && !func_sym) {
+        reportDuplicateSymbol(m_scope_s.back(), ex_func_b, i);
+        return;
+    }
+
+    // Otherwise, we need to create
+    if (!func_sym) {
+        int32_t id = m_scope_s.back()->getChildren().size();
+        func_sym = m_factory->mkSymbolFunctionScope(
+            id, 
+            i->getProto()->getName()->getId());
+        func_sym->setLocation(i->getLocation());
+        m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
+        m_scope_s.back()->getChildren().push_back(func_sym);
+
+        // Add parameters to the function symbol scope
+        for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
+            it=i->getProto()->getParameters().begin();
+            it!=i->getProto()->getParameters().end(); it++) {
+            id = func_sym->getChildren().size();
+            std::map<std::string, int32_t>::const_iterator sym_it =
+                func_sym->getSymtab().find((*it)->getName()->getId());
+            
+            if (sym_it != func_sym->getSymtab().end()) {
+                // Duplicate
+                reportDuplicateSymbol(
+                    func_sym,
+                    func_sym->getChildren().at(sym_it->second),
+                    it->get());
+            } else {
+                func_sym->getSymtab().insert({(*it)->getName()->getId(), id});
+                func_sym->getChildren().push_back(it->get());
+            }
+        }
+    }
+
+    if (func_sym->getDefinition()) {
+        // TODO: Cannot both define and import an implementation
+    }
+
+    i->getProto()->accept(m_this);
+
+    if (i->getPlat() == ast::PlatQual::PlatQual_Solve) {
+        i->getProto()->setIs_solve(true);
+    }
+    if (i->getPlat() == ast::PlatQual::PlatQual_Target) {
+        i->getProto()->setIs_target(true);
+    }
+
+    DEBUG_LEAVE("visitFunctionImportProto %s", i->getProto()->getName()->getId().c_str());
 }
 
 void TaskBuildSymbolTree::visitFunctionImportType(ast::IFunctionImportType *i) { 
-
+    DEBUG_ENTER("visitFunctionImportType");
+    DEBUG("TODO: visitFunctionImportType");
+    DEBUG_LEAVE("visitFunctionImportType");
 }
 
 void TaskBuildSymbolTree::visitFunctionPrototype(ast::IFunctionPrototype *i) { 
