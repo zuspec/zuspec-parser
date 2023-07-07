@@ -1303,7 +1303,7 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
 
 	m_constraint = c;
 	if (m_constraint_s.size() > 0) {
-		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintScopeUP(c));
+		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
 	}
 	DEBUG_LEAVE("visitForeach_constraint_item");
 	return 0;
