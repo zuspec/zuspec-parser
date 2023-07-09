@@ -23,6 +23,8 @@
 #include "TaskResolveImports.h"
 #include "TaskResolveRef.h"
 #include "TaskResolveRefs.h"
+#include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
+#include "zsp/parser/impl/TaskGetElemSymbolScope.h"
 
 namespace zsp {
 namespace parser {
@@ -151,12 +153,40 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
         DEBUG_LEAVE("visitExprRefPathContext -- fail");
         return;
     }
-    
+
+    // Set root reference
     i->setTarget(target);
 
-    if (i->getHier_id()->getElems().at(0)->getParams()) {
-        i->getHier_id()->getElems().at(0)->getParams()->accept(m_this);
+    ast::IScopeChild *target_c = TaskResolveSymbolPathRef(m_dmgr, m_root).resolve(target);
+    ast::ISymbolScope *target_s = TaskGetElemSymbolScope(m_dmgr, m_root).resolve(target_c);
+
+    // Target already points to the first elem
+    i->getHier_id()->getElems().at(0)->setTarget(-1);
+
+    for (uint32_t ii=1; ii<i->getHier_id()->getElems().size(); ii++) {
+        ast::IExprMemberPathElem *elem = i->getHier_id()->getElems().at(ii).get();
+        std::map<std::string, int32_t>::const_iterator it = 
+            target_s->getSymtab().find(elem->getId()->getId());
+        
+        if (it == target_s->getSymtab().end()) {
+            DEBUG("ERROR: Failed to find elem %s", elem->getId()->getId().c_str());
+            break;
+        } else {
+            DEBUG("NOTE: Found sub-element %s", elem->getId()->getId().c_str());
+            elem->setTarget(it->second);
+
+            // Resolve name references for parameter values
+            if (elem->getParams()) {
+                elem->getParams()->accept(m_this);
+            }
+
+            if (ii+1 < i->getHier_id()->getElems().size()) {
+                target_c = target_s->getChildren().at(it->second);
+                target_s = TaskGetElemSymbolScope(m_dmgr, m_root).resolve(target_c);
+            }
+        }
     }
+
     DEBUG_LEAVE("visitExprRefPathContext");
 }
 

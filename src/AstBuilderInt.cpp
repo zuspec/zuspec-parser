@@ -1582,8 +1582,122 @@ antlrcpp::Any AstBuilderInt::visitType_identifier(PSSParser::Type_identifierCont
 
 antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
 	DEBUG_ENTER("visitNumber");
+    uint64_t value;
+    bool is_signed = false;
+    int32_t width = 32;
+    std::string img;
+    if (ctx->based_hex_number()) {
+        if (ctx->based_hex_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_hex_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_hex_number()->BASED_HEX_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 16);
+    } else if (ctx->based_oct_number()) {
+        if (ctx->based_oct_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_oct_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_oct_number()->BASED_OCT_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 8);
+    } else if (ctx->based_dec_number()) {
+        if (ctx->based_dec_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_dec_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_dec_number()->BASED_DEC_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 10);
+    } else if (ctx->based_bin_number()) {
+        if (ctx->based_bin_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_bin_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_bin_number()->BASED_BIN_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 2);
+    } else if (ctx->hex_number()) {
+        img = ctx->hex_number()->HEX_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+
+        for (uint32_t i=2; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 16);
+    } else if (ctx->dec_number()) {
+        img = ctx->dec_number()->DEC_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+
+        for (uint32_t i=0; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 16);
+    } else if (ctx->oct_number()) {
+        img = ctx->oct_number()->OCT_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+
+        if (img.size() > 1) {
+            for (uint32_t i=1; i<img.size(); i++) {
+                if (img.at(i) != '_') {
+                    val_t.push_back(img.at(i));
+                }
+            }
+
+            value = strtoull(val_t.c_str(), 0, 8);
+        } else {
+            value = 0;
+        }
+    }
 	DEBUG("TODO: Number");
-	m_expr = m_factory->mkExprSignedNumber("0", 0, 0);
+    if (is_signed) {
+    	m_expr = m_factory->mkExprSignedNumber(img, width, value);
+    } else {
+    	m_expr = m_factory->mkExprUnsignedNumber(img, width, value);
+    }
 
 	DEBUG_LEAVE("visitNumber");
 

@@ -84,7 +84,11 @@ ast::ISymbolRefPath *AstSymbolTableIterator::getScopeSymbolPath(int32_t off) con
     ast::ISymbolRefPath *ret = m_factory->mkSymbolRefPath();
 
     for (int32_t i=0; i<(m_path.size()-off); i++) {
-        ret->getPath().push_back(m_path.at(i));
+        if (m_path.at(i).idx >= 0) {
+            ret->getPath().push_back(m_path.at(i));
+        } else {
+            DEBUG("NOTE: skip index %d with idx %d", i, m_path.at(i).idx);
+        }
     }
 
     return ret;
