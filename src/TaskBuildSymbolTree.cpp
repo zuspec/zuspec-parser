@@ -89,6 +89,18 @@ ast::ISymbolTypeScope *TaskBuildSymbolTree::build(ast::ITypeScope *ts) {
     return ret;
 }
 
+void TaskBuildSymbolTree::visitConstraintBlock(ast::IConstraintBlock *i) {
+    DEBUG_ENTER("visitConstraintBlock");
+    m_scope_s.back()->getChildren().push_back(i);
+    DEBUG_LEAVE("visitConstraintBlock");
+}
+    
+void TaskBuildSymbolTree::visitConstraintStmt(ast::IConstraintStmt *i) {
+    DEBUG_ENTER("visitConstraintStmt");
+    m_scope_s.back()->getChildren().push_back(i);
+    DEBUG_LEAVE("visitConstraintStmt");
+}
+
 void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
     DEBUG_ENTER("visitPackageScope");
     for (std::vector<ast::IExprIdUP>::const_iterator
