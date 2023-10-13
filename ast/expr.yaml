@@ -124,11 +124,11 @@ classes:
         - super: Expr
         - data:
           - target:
-              doc: |
-                `target` points to the root, or first element, of this
-                path. The balance of the reference expression may 
-                contain further relative references relative to this
-                initial base
+#              doc: |
+#                `target` points to the root, or first element, of this
+#                path. The balance of the reference expression may 
+#                contain further relative references relative to this
+#                initial base
               is_ctor: false
               type: UP<SymbolRefPath>
               init: 0
