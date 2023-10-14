@@ -128,10 +128,12 @@ function R read();
  function void write_val(bit[SZ] r);
 import target function write_val;
 };
+/*
 struct node_s {
  string name;
  int index;
 };
+ */
 pure component reg_group_c {
  pure function bit[64] get_offset_of_instance(string name);
  pure function bit[64] get_offset_of_instance_array(string name,
