@@ -1766,6 +1766,7 @@ void AstBuilderInt::addChild(ast::IConstraintScope *c, Token *start, Token *end)
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+	c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1784,6 +1785,7 @@ void AstBuilderInt::addChild(ast::IExecScope *c, Token *start, Token *end) {
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+    c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1802,6 +1804,7 @@ void AstBuilderInt::addChild(ast::IFunctionDefinition *c, Token *start, Token *e
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+    c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1820,6 +1823,7 @@ void AstBuilderInt::addChild(ast::INamedScope *c, Token *start, Token *end) {
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+    c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1838,6 +1842,7 @@ void AstBuilderInt::addChild(ast::IScope *c, Token *start, Token *end) {
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()
     });
+    c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {

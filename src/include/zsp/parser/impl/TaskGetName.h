@@ -34,22 +34,42 @@ public:
     const std::string &get(ast::IScopeChild *c, bool bottom_up=false) {
         m_ret = "";
         if (bottom_up) {
-            ast::IScopeChild *ci = c;
 
+            m_sym_s = 0;
             c->accept(m_this);
             std::string full_path;
 
-            do {
-                m_ret = "";
-                c->accept(m_this);
-                
-                if (full_path.size() && m_ret.size()) {
-                    full_path = "::" + full_path;
-                }
-                full_path = m_ret + full_path;
-            } while ((ci=ci->getParent()));
+            if (m_sym_s) {
+                // This is a symbol scope
+                ast::ISymbolScope *ss = m_sym_s;
 
-            m_ret = full_path;
+                full_path = m_ret;
+
+                while ((ss=ss->getUpper())) {
+                    m_ret = "";
+                    ss->accept(m_this);
+                
+                    if (full_path.size() && m_ret.size()) {
+                        full_path = "::" + full_path;
+                    }
+                    full_path = m_ret + full_path;
+                }
+
+                m_ret = full_path;
+            } else {
+                ast::IScopeChild *ci = c;
+                do {
+                    m_ret = "";
+                    ci->accept(m_this);
+                
+                    if (full_path.size() && m_ret.size()) {
+                        full_path = "::" + full_path;
+                    }
+                    full_path = m_ret + full_path;
+                } while ((ci=ci->getParent()));
+
+                m_ret = full_path;
+            }
         } else {
             c->accept(m_this);
         }
@@ -66,14 +86,17 @@ public:
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override {
         m_ret = i->getName();
+        m_sym_s = i;
     }
 
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
         m_ret = i->getName();
+        m_sym_s = i;
     }
 
 private:
     std::string                 m_ret;
+    ast::ISymbolScope           *m_sym_s;
 };
 
 }
