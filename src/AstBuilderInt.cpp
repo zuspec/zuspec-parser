@@ -29,7 +29,7 @@ AstBuilderInt::AstBuilderInt(
     dmgr::IDebugMgr     *dmgr,
 	ast::IFactory		*factory,
 	IMarkerListener 	*marker_l) : m_factory(factory), m_marker_l(marker_l) {
-    DEBUG_INIT("AstBuilderInt", dmgr);
+    DEBUG_INIT("zsp::parser::AstBuilderInt", dmgr);
 	m_collectDocStrings = false;
 	m_field_depth = 0;
 	m_labeled_activity_id = 0;
@@ -1581,12 +1581,13 @@ antlrcpp::Any AstBuilderInt::visitType_identifier(PSSParser::Type_identifierCont
 // B.19 Numbers
 
 antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
-	DEBUG_ENTER("visitNumber");
+	DEBUG_ENTER("visitNumber %s", ctx->getText().c_str());
     uint64_t value;
     bool is_signed = false;
     int32_t width = 32;
     std::string img;
     if (ctx->based_hex_number()) {
+        DEBUG("Based hex number");
         if (ctx->based_hex_number()->DEC_LITERAL()) {
             // Explicit width
             width = strtoul(
@@ -1604,6 +1605,7 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
 
         value = strtoull(val_t.c_str(), 0, 16);
     } else if (ctx->based_oct_number()) {
+        DEBUG("Based oct number");
         if (ctx->based_oct_number()->DEC_LITERAL()) {
             // Explicit width
             width = strtoul(
@@ -1621,6 +1623,7 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
 
         value = strtoull(val_t.c_str(), 0, 8);
     } else if (ctx->based_dec_number()) {
+        DEBUG("Based dec number");
         if (ctx->based_dec_number()->DEC_LITERAL()) {
             // Explicit width
             width = strtoul(
@@ -1638,6 +1641,7 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
 
         value = strtoull(val_t.c_str(), 0, 10);
     } else if (ctx->based_bin_number()) {
+        DEBUG("Based bin number");
         if (ctx->based_bin_number()->DEC_LITERAL()) {
             // Explicit width
             width = strtoul(
@@ -1655,6 +1659,7 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
 
         value = strtoull(val_t.c_str(), 0, 2);
     } else if (ctx->hex_number()) {
+        DEBUG("Unbased hex number");
         img = ctx->hex_number()->HEX_LITERAL()->getSymbol()->getText();
         std::string val_t;
 
@@ -1666,6 +1671,7 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
 
         value = strtoull(val_t.c_str(), 0, 16);
     } else if (ctx->dec_number()) {
+        DEBUG("Unbased dec number");
         img = ctx->dec_number()->DEC_LITERAL()->getSymbol()->getText();
         std::string val_t;
 
@@ -1675,8 +1681,9 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
             }
         }
 
-        value = strtoull(val_t.c_str(), 0, 16);
+        value = strtoull(val_t.c_str(), 0, 10);
     } else if (ctx->oct_number()) {
+        DEBUG("Unbased oct number");
         img = ctx->oct_number()->OCT_LITERAL()->getSymbol()->getText();
         std::string val_t;
 
@@ -1691,8 +1698,10 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
         } else {
             value = 0;
         }
+    } else {
+        FATAL("Unknown format");
     }
-	DEBUG("TODO: Number");
+
     if (is_signed) {
     	m_expr = m_factory->mkExprSignedNumber(img, width, value);
     } else {
