@@ -19,20 +19,28 @@
  *     Author: 
  */
 #pragma once
+#include "dmgr/IDebugMgr.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/ast/IExprRefPathStatic.h"
 #include "zsp/ast/IFactory.h"
+#include "zsp/ast/IFunctionPrototype.h"
+#include "zsp/parser/IFactory.h"
 
 namespace zsp {
 namespace parser {
 
 class TaskCopyAst : public ast::VisitorBase {
 public:
-    TaskCopyAst(ast::IFactory *factory) : m_factory(factory) { }
+    TaskCopyAst(IFactory    *factory) : 
+        m_factory(factory->getAstFactory()), m_dbg(0) {
+        DEBUG_INIT("zsp::parser::TaskCopyAst", factory->getDebugMgr());
+    }
 
     virtual ~TaskCopyAst() { }
 
     ast::IConstraintStmt *copy(ast::IConstraintStmt *i) {
+        DEBUG_ENTER("copy(IConstraintStmt)");
         m_constraint = 0;
         i->accept(m_this);
 
@@ -40,6 +48,7 @@ public:
             fprintf(stdout, "Error: copy(constraint) failed\n");
             fflush(stdout);
         }
+        DEBUG_LEAVE("copy(IConstraintStmt)");
         return m_constraint;
     }
 
@@ -53,12 +62,14 @@ public:
     }
 
     ast::IScopeChild *copy(ast::IScopeChild *i) {
+        DEBUG_ENTER("copy(IScopeChild)");
         m_sc = 0;
         i->accept(m_this);
         if (!m_sc) {
             fprintf(stdout, "Error: copy(ScopeChild) failed\n");
             fflush(stdout);
         }
+        DEBUG_LEAVE("copy(IScopeChild)");
         return m_sc;
     };
 
@@ -72,12 +83,14 @@ public:
     }
 
     ast::IExpr *copy(ast::IExpr *i) {
+        DEBUG_ENTER("copy(IExpr)");
         m_expr = 0;
         i->accept(m_this);
         if (!m_expr) {
             fprintf(stdout, "Error: copy(Expr) failed\n");
             fflush(stdout);
         }
+        DEBUG_LEAVE("copy(IExpr)");
         return m_expr;
     };
 
@@ -91,12 +104,14 @@ public:
     }
 
     ast::IDataType *copy(ast::IDataType *i) {
+        DEBUG_ENTER("copy(IDataType)");
         m_dt = 0;
         i->accept(m_this);
         if (!m_dt) {
             fprintf(stdout, "Error: copy(DataType) failed\n");
             fflush(stdout);
         }
+        DEBUG_LEAVE("copy(IDataType)");
         return m_dt;
     }
 
@@ -197,7 +212,17 @@ public:
     
     virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) { }
     
-    virtual void visitFunctionParamDecl(ast::IFunctionParamDecl *i) { }
+    virtual void visitFunctionParamDecl(ast::IFunctionParamDecl *i) override {
+        ast::IFunctionParamDecl *ic = m_factory->mkFunctionParamDecl(
+            i->getKind(),
+            copyT<ast::IExprId>(i->getName()),
+            copy(i->getType()),
+            i->getDir(),
+            (i->getDflt())?copy(i->getDflt()):0
+        );
+        ic->setIs_varargs(i->getIs_varargs());
+        m_sc = ic;
+    }
     
     virtual void visitFunctionImport(ast::IFunctionImport *i) { }
     
@@ -394,7 +419,22 @@ public:
     
     virtual void visitPackageScope(ast::IPackageScope *i) { }
     
-    virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) { }
+    virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override {
+        ast::IFunctionPrototype *ic = m_factory->mkFunctionPrototype(
+            copyT<ast::IExprId>(i->getName()),
+            (i->getRtype())?copy(i->getRtype()):0,
+            i->getIs_target(),
+            i->getIs_solve());
+        ic->setIs_pure(i->getIs_pure());
+        for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
+            it=i->getParameters().begin();
+            it!=i->getParameters().end(); it++) {
+            ic->getParameters().push_back(
+                ast::IFunctionParamDeclUP(copyT<ast::IFunctionParamDecl>(it->get())));
+        }
+
+        m_sc = ic;
+    }
     
     virtual void visitFunctionImportType(ast::IFunctionImportType *i) { }
     
@@ -631,8 +671,12 @@ public:
         m_sc = ic;
     }
 
+
+
+
 private:
     ast::IFactory                   *m_factory;
+    dmgr::IDebug                    *m_dbg;
 
     ast::IConstraintStmt            *m_constraint;
     ast::IDataType                  *m_dt;

@@ -89,6 +89,18 @@ ast::ISymbolTypeScope *TaskBuildSymbolTree::build(ast::ITypeScope *ts) {
     return ret;
 }
 
+void TaskBuildSymbolTree::visitConstraintBlock(ast::IConstraintBlock *i) {
+    DEBUG_ENTER("visitConstraintBlock");
+    m_scope_s.back()->getChildren().push_back(i);
+    DEBUG_LEAVE("visitConstraintBlock");
+}
+    
+void TaskBuildSymbolTree::visitConstraintStmt(ast::IConstraintStmt *i) {
+    DEBUG_ENTER("visitConstraintStmt");
+    m_scope_s.back()->getChildren().push_back(i);
+    DEBUG_LEAVE("visitConstraintStmt");
+}
+
 void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
     DEBUG_ENTER("visitPackageScope");
     for (std::vector<ast::IExprIdUP>::const_iterator
@@ -110,11 +122,13 @@ void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
             scope->getSymtab().insert({(*id_it)->getId(), id});
             scope->getChildren().push_back(pkg);
             scope->getOwned().push_back(ast::IScopeChildUP(pkg));
+            pkg->setUpper(m_scope_s.back());
             m_scope_s.push_back(pkg);
             scope = pkg;
         } else {
             ast::ISymbolScope *new_scope = 
                 dynamic_cast<ast::ISymbolScope *>(scope->getChildren().at(p_it->second));
+            new_scope->setUpper(m_scope_s.back());
             m_scope_s.push_back(new_scope);
             scope = new_scope;
         }
@@ -157,6 +171,7 @@ void TaskBuildSymbolTree::visitEnumDecl(ast::IEnumDecl *i) {
         scope->getChildren().push_back(ts);
         scope->getOwned().push_back(ast::IScopeChildUP(ts));
 
+        ts->setUpper(m_scope_s.back());
         m_scope_s.push_back(ts);
         for (std::vector<ast::IEnumItemUP>::const_iterator
             it=i->getItems().begin();
@@ -194,13 +209,21 @@ void TaskBuildSymbolTree::visitExecStmt(ast::IExecStmt *i) {
     DEBUG_LEAVE("visitExecStmt");
 }
 
+void TaskBuildSymbolTree::visitExecBlock(ast::IExecBlock *i) {
+    DEBUG_ENTER("visitExecBlock");
+    visitExecScope(i);
+    DEBUG_LEAVE("visitExecBlock");
+}
+
 void TaskBuildSymbolTree::visitExecScope(ast::IExecScope *i) {
     DEBUG_ENTER("visitExecScope");
     int32_t id = m_scope_s.back()->getChildren().size();
     ast::ISymbolScope *scope = m_factory->mkSymbolExecScope(id, "");
     scope->setLocation(i->getLocation());
+    scope->setTarget(i);
     m_scope_s.back()->getChildren().push_back(scope);
     m_scope_s.back()->getOwned().push_back(ast::IScopeChildUP(scope));
+    scope->setUpper(m_scope_s.back());
     m_scope_s.push_back(scope);
     for (std::vector<ast::IExecStmtUP>::const_iterator
         it=i->getChildren().begin();
@@ -222,6 +245,7 @@ void TaskBuildSymbolTree::visitExtendType(ast::IExtendType *i) {
     m_scope_s.back()->getOwned().push_back(ast::IScopeChildUP(ext));
     m_scope_s.back()->getChildren().push_back(ext);
 
+    ext->setUpper(m_scope_s.back());
     m_scope_s.push_back(ext);
     for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
@@ -292,6 +316,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
             id, 
             i->getProto()->getName()->getId());
         func_sym->setLocation(i->getLocation());
+        func_sym->setUpper(m_scope_s.back());
         m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
         m_scope_s.back()->getChildren().push_back(func_sym);
 
@@ -324,6 +349,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
     int32_t id = func_sym->getChildren().size();
     ast::ISymbolScope *body = m_factory->mkSymbolScope(id, "");
     body->setLocation(i->getLocation());
+    body->setUpper(m_scope_s.back());
     m_scope_s.push_back(body);
     func_sym->setBody(body);
     func_sym->getChildren().push_back(body);
@@ -340,11 +366,69 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
 }
 
 void TaskBuildSymbolTree::visitFunctionImportProto(ast::IFunctionImportProto *i) { 
+    DEBUG_ENTER("visitFunctionImportProto %s", i->getProto()->getName()->getId().c_str());
 
+    ast::IScopeChild *ex_func_b = findSymbol(i->getProto()->getName()->getId());
+    ast::ISymbolFunctionScope *func_sym = dynamic_cast<ast::ISymbolFunctionScope *>(ex_func_b);
+
+    // If the existing symbol isn't a FunctionScope, then we have
+    // a duplicate symbol
+    if (ex_func_b && !func_sym) {
+        reportDuplicateSymbol(m_scope_s.back(), ex_func_b, i);
+        return;
+    }
+
+    // Otherwise, we need to create
+    if (!func_sym) {
+        int32_t id = m_scope_s.back()->getChildren().size();
+        func_sym = m_factory->mkSymbolFunctionScope(
+            id, 
+            i->getProto()->getName()->getId());
+        func_sym->setLocation(i->getLocation());
+        m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
+        m_scope_s.back()->getChildren().push_back(func_sym);
+
+        // Add parameters to the function symbol scope
+        for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
+            it=i->getProto()->getParameters().begin();
+            it!=i->getProto()->getParameters().end(); it++) {
+            id = func_sym->getChildren().size();
+            std::map<std::string, int32_t>::const_iterator sym_it =
+                func_sym->getSymtab().find((*it)->getName()->getId());
+            
+            if (sym_it != func_sym->getSymtab().end()) {
+                // Duplicate
+                reportDuplicateSymbol(
+                    func_sym,
+                    func_sym->getChildren().at(sym_it->second),
+                    it->get());
+            } else {
+                func_sym->getSymtab().insert({(*it)->getName()->getId(), id});
+                func_sym->getChildren().push_back(it->get());
+            }
+        }
+    }
+
+    if (func_sym->getDefinition()) {
+        // TODO: Cannot both define and import an implementation
+    }
+
+    i->getProto()->accept(m_this);
+
+    if (i->getPlat() == ast::PlatQual::PlatQual_Solve) {
+        i->getProto()->setIs_solve(true);
+    }
+    if (i->getPlat() == ast::PlatQual::PlatQual_Target) {
+        i->getProto()->setIs_target(true);
+    }
+
+    DEBUG_LEAVE("visitFunctionImportProto %s", i->getProto()->getName()->getId().c_str());
 }
 
 void TaskBuildSymbolTree::visitFunctionImportType(ast::IFunctionImportType *i) { 
-
+    DEBUG_ENTER("visitFunctionImportType");
+    DEBUG("TODO: visitFunctionImportType");
+    DEBUG_LEAVE("visitFunctionImportType");
 }
 
 void TaskBuildSymbolTree::visitFunctionPrototype(ast::IFunctionPrototype *i) { 
@@ -366,6 +450,7 @@ void TaskBuildSymbolTree::visitFunctionPrototype(ast::IFunctionPrototype *i) {
             id, 
             i->getName()->getId());
         func_sym->setLocation(i->getLocation());
+        func_sym->setUpper(m_scope_s.back());
         m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
         m_scope_s.back()->getChildren().push_back(func_sym);
     }
@@ -474,6 +559,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
         scope->getChildren().push_back(ts);
         scope->getOwned().push_back(ast::IScopeChildUP(ts));
 
+        ts->setUpper(m_scope_s.back());
         m_scope_s.push_back(ts);
         for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();

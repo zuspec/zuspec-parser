@@ -30,7 +30,7 @@ AstBuilderInt::AstBuilderInt(
     dmgr::IDebugMgr     *dmgr,
 	ast::IFactory		*factory,
 	IMarkerListener 	*marker_l) : m_factory(factory), m_marker_l(marker_l) {
-    DEBUG_INIT("AstBuilderInt", dmgr);
+    DEBUG_INIT("zsp::parser::AstBuilderInt", dmgr);
 	m_collectDocStrings = false;
     m_enableProfile = false;
 	m_field_depth = 0;
@@ -532,12 +532,31 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
     }
     m_exec_scope_s.pop_back();
 
+    ast::PlatQual platqual = ast::PlatQual::PlatQual_None;
+
+    if (ctx->platform_qualifier()) {
+        if (ctx->platform_qualifier()->TOK_TARGET()) {
+            platqual = ast::PlatQual::PlatQual_Target;
+        } else {
+            platqual = ast::PlatQual::PlatQual_Solve;
+        }
+    }
+
     ast::IFunctionDefinition *func = m_factory->mkFunctionDefinition(
         mkFunctionPrototype(ctx->function_prototype()),
-        body
+        body,
+        platqual
     );
 
-    addChild(func, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
+    if (ctx->platform_qualifier()) {
+        if (ctx->platform_qualifier()->TOK_TARGET()) {
+            func->getProto()->setIs_target(true);
+        } else {
+            func->getProto()->setIs_solve(true);
+        }
+    }
+
+    addChild(func, ctx->start);
     DEBUG_LEAVE("visitProcedural_function");
     return 0;
 }
@@ -545,7 +564,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
 antlrcpp::Any AstBuilderInt::visitFunction_decl(PSSParser::Function_declContext *ctx) {
     DEBUG_ENTER("visitFunction_decl");
     ast::IFunctionPrototype *proto = mkFunctionPrototype(ctx->function_prototype());
-    DEBUG("TODO: visitFunction_decl");
+    addChild(proto, ctx->start);
     DEBUG_LEAVE("visitFunction_decl");
     return 0;
 }
@@ -554,6 +573,35 @@ antlrcpp::Any AstBuilderInt::visitFunction_prototype(PSSParser::Function_prototy
     DEBUG_ENTER("visitFunction_prototype");
     DEBUG("TODO: visitFunction_prototype");
     DEBUG_LEAVE("visitFunction_prototype");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitImport_function(PSSParser::Import_functionContext *ctx) {
+    DEBUG_ENTER("visitImport_function");
+    if (ctx->type_identifier()) {
+        // Two-step import specification
+    } else {
+        // One-step import specification
+        ast::PlatQual platqual = ast::PlatQual::PlatQual_None;
+
+        if (ctx->platform_qualifier()) {
+            if (ctx->platform_qualifier()->TOK_TARGET()) {
+                platqual = ast::PlatQual::PlatQual_Target;
+            } else {
+                platqual = ast::PlatQual::PlatQual_Solve;
+            }
+        }
+
+        ast::IFunctionImportProto *func = m_factory->mkFunctionImportProto(
+            platqual,
+            "",
+            mkFunctionPrototype(ctx->function_prototype())
+            );
+
+
+        addChild(func, ctx->start);
+    }
+    DEBUG_LEAVE("visitImport_function");
     return 0;
 }
 
@@ -1274,7 +1322,7 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
 
 	m_constraint = c;
 	if (m_constraint_s.size() > 0) {
-		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintScopeUP(c));
+		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
 	}
 	DEBUG_LEAVE("visitForeach_constraint_item");
 	return 0;
@@ -1552,9 +1600,132 @@ antlrcpp::Any AstBuilderInt::visitType_identifier(PSSParser::Type_identifierCont
 // B.19 Numbers
 
 antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
-	DEBUG_ENTER("visitNumber");
-	DEBUG("TODO: Number");
-	m_expr = m_factory->mkExprSignedNumber("0", 0, 0);
+	DEBUG_ENTER("visitNumber %s", ctx->getText().c_str());
+    uint64_t value;
+    bool is_signed = false;
+    int32_t width = 32;
+    std::string img;
+    if (ctx->based_hex_number()) {
+        DEBUG("Based hex number");
+        if (ctx->based_hex_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_hex_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_hex_number()->BASED_HEX_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 16);
+    } else if (ctx->based_oct_number()) {
+        DEBUG("Based oct number");
+        if (ctx->based_oct_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_oct_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_oct_number()->BASED_OCT_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 8);
+    } else if (ctx->based_dec_number()) {
+        DEBUG("Based dec number");
+        if (ctx->based_dec_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_dec_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_dec_number()->BASED_DEC_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 10);
+    } else if (ctx->based_bin_number()) {
+        DEBUG("Based bin number");
+        if (ctx->based_bin_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_bin_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_bin_number()->BASED_BIN_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 2);
+    } else if (ctx->hex_number()) {
+        DEBUG("Unbased hex number");
+        img = ctx->hex_number()->HEX_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+
+        for (uint32_t i=2; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 16);
+    } else if (ctx->dec_number()) {
+        DEBUG("Unbased dec number");
+        img = ctx->dec_number()->DEC_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+
+        for (uint32_t i=0; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 10);
+    } else if (ctx->oct_number()) {
+        DEBUG("Unbased oct number");
+        img = ctx->oct_number()->OCT_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+
+        if (img.size() > 1) {
+            for (uint32_t i=1; i<img.size(); i++) {
+                if (img.at(i) != '_') {
+                    val_t.push_back(img.at(i));
+                }
+            }
+
+            value = strtoull(val_t.c_str(), 0, 8);
+        } else {
+            value = 0;
+        }
+    } else {
+        FATAL("Unknown format");
+    }
+
+    if (is_signed) {
+    	m_expr = m_factory->mkExprSignedNumber(img, width, value);
+    } else {
+    	m_expr = m_factory->mkExprUnsignedNumber(img, width, value);
+    }
 
 	DEBUG_LEAVE("visitNumber");
 
@@ -1623,6 +1794,7 @@ void AstBuilderInt::addChild(ast::IConstraintScope *c, Token *start, Token *end)
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+	c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1641,6 +1813,7 @@ void AstBuilderInt::addChild(ast::IExecScope *c, Token *start, Token *end) {
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+    c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1659,6 +1832,7 @@ void AstBuilderInt::addChild(ast::IFunctionDefinition *c, Token *start, Token *e
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+    c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1677,6 +1851,7 @@ void AstBuilderInt::addChild(ast::INamedScope *c, Token *start, Token *end) {
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+    c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1695,6 +1870,7 @@ void AstBuilderInt::addChild(ast::IScope *c, Token *start, Token *end) {
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()
     });
+    c->setParent(scope());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1994,9 +2170,14 @@ ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
         rtype = mkDataType(ctx->function_return_type()->data_type());
     }
 
+    bool is_target = false;
+    bool is_solve = false;
+
     ast::IFunctionPrototype *proto = m_factory->mkFunctionPrototype(
         mkId(ctx->function_identifier()->identifier()),
-        rtype);
+        rtype,
+        is_target,
+        is_solve);
 
     std::vector<PSSParser::Function_parameterContext *> items =
         ctx->function_parameter_list_prototype()->function_parameter();

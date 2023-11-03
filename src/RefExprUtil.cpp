@@ -20,6 +20,7 @@ RefExprUtil::~RefExprUtil() {
 	// TODO Auto-generated destructor stub
 }
 
+#ifdef UNDEFINED
 ast::IRefExprTypeScopeGlobalSP RefExprUtil::mkTypeScopeGlobal(int32_t fileid) {
 	/*
 	return ast::IRefExprTypeScopeGlobalSP(new ast::IRefExprTypeScopeGlobal(fileid));
@@ -31,6 +32,7 @@ ast::IRefExprScopeIndexSP RefExprUtil::mkScopeIndex(ast::IRefExprSP base, int32_
 //	return ast::IRefExprScopeIndexSP(new ast::IRefExprScopeIndex(base, index));
 	return ast::IRefExprScopeIndexSP(0);
 }
+#endif 
 
 }
 } /* namespace zsp */

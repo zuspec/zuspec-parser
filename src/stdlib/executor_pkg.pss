@@ -1,5 +1,7 @@
 
 package executor_pkg {
+    import addr_reg_pkg::*;
+    
     struct executor_trait_s {};
 
     struct empty_executor_trait_s : executor_trait_s {};

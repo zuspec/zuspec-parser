@@ -64,6 +64,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
 
         if (p_comp.equal(params, type_s_t->getParams())) {
             // Have a match!
+            DEBUG("Found plist match");
             ret = m_factory->getAstFactory()->mkSymbolRefPath();
 
             // Copy over initial path
@@ -94,7 +95,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     DEBUG("type_up=%s", type_up->getName().c_str());
     fflush(stdout);
 
-    TaskCopyAst copier(m_factory->getAstFactory());
+    TaskCopyAst copier(m_factory);
 
     ast::ITypeScope *type_s = 
         copier.copyT<ast::ITypeScope>(type_up->getTarget());

@@ -23,6 +23,8 @@
 #include "TaskResolveImports.h"
 #include "TaskResolveRef.h"
 #include "TaskResolveRefs.h"
+#include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
+#include "zsp/parser/impl/TaskGetElemSymbolScope.h"
 
 namespace zsp {
 namespace parser {
@@ -126,22 +128,65 @@ void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHan
     
 void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeTraversal *i) {
     DEBUG_ENTER("visitActivityActionTypeTraversal");
-    DEBUG("TODO: visitActivityActionTypeTraversal");
+    i->getTarget()->accept(m_this);
     DEBUG_LEAVE("visitActivityActionTypeTraversal");
 }
 
 void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
-    DEBUG_ENTER("visitExprRefPathContext");
+    DEBUG_ENTER("visitExprRefPathContext %s", i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
     // Find the first path element
     ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
         m_symtab_it.get(),
         i->getHier_id()->getElems().at(0)->getId());
-    
+
+    if (!target) {
+        char tmp[1024];
+        sprintf(tmp, "failed to find root ref-path element %s",
+            i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
+        IMarkerUP marker(m_factory->mkMarker(
+            tmp,
+            MarkerSeverityE::Error,
+            i->getHier_id()->getElems().at(0)->getId()->getLocation()
+        ));
+        m_marker_l->marker(marker.get());
+
+        DEBUG_LEAVE("visitExprRefPathContext -- fail");
+        return;
+    }
+
+    // Set root reference
     i->setTarget(target);
 
-    if (i->getHier_id()->getElems().at(0)->getParams()) {
-        i->getHier_id()->getElems().at(0)->getParams()->accept(m_this);
+    ast::IScopeChild *target_c = TaskResolveSymbolPathRef(m_dmgr, m_root).resolve(target);
+    ast::ISymbolScope *target_s = TaskGetElemSymbolScope(m_dmgr, m_root).resolve(target_c);
+
+    // Target already points to the first elem
+    i->getHier_id()->getElems().at(0)->setTarget(-1);
+
+    for (uint32_t ii=1; ii<i->getHier_id()->getElems().size(); ii++) {
+        ast::IExprMemberPathElem *elem = i->getHier_id()->getElems().at(ii).get();
+        std::map<std::string, int32_t>::const_iterator it = 
+            target_s->getSymtab().find(elem->getId()->getId());
+        
+        if (it == target_s->getSymtab().end()) {
+            DEBUG("ERROR: Failed to find elem %s", elem->getId()->getId().c_str());
+            break;
+        } else {
+            DEBUG("NOTE: Found sub-element %s", elem->getId()->getId().c_str());
+            elem->setTarget(it->second);
+
+            // Resolve name references for parameter values
+            if (elem->getParams()) {
+                elem->getParams()->accept(m_this);
+            }
+
+            if (ii+1 < i->getHier_id()->getElems().size()) {
+                target_c = target_s->getChildren().at(it->second);
+                target_s = TaskGetElemSymbolScope(m_dmgr, m_root).resolve(target_c);
+            }
+        }
     }
+
     DEBUG_LEAVE("visitExprRefPathContext");
 }
 
@@ -182,6 +227,21 @@ void TaskResolveRefs::visitFieldCompRef(ast::IFieldCompRef *i) {
     DEBUG("Note: Skip during core symbol resolution");
     DEBUG_LEAVE("visitFieldCompRef");
 }
+
+void TaskResolveRefs::visitFunctionPrototype(ast::IFunctionPrototype *i) {
+    DEBUG_ENTER("visitFunctionPrototype");
+
+    if (i->getRtype()) {
+        i->getRtype()->accept(m_this);
+    }
+
+    for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
+        it=i->getParameters().begin();
+        it!=i->getParameters().end(); it++) {
+        (*it)->getType()->accept(m_this);
+    }
+    DEBUG_LEAVE("visitFunctionPrototype");
+} 
 
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope \"%s\"", i->getName().c_str());
@@ -248,16 +308,30 @@ void TaskResolveRefs::visitSymbolExecScope(ast::ISymbolExecScope *i) {
 }
 
 void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
-    DEBUG_ENTER("visitSymbolFunctionScope %s", i->getName().c_str());
-    m_symtab_it->pushScope(i);
-    m_symtab_it->pushScope(i->getBody());
-    for (std::vector<ast::IScopeChild *>::const_iterator
-        it=i->getBody()->getChildren().begin();
-        it!=i->getBody()->getChildren().end(); it++) {
+    DEBUG_ENTER("visitSymbolFunctionScope %s (%d)", 
+    i->getName().c_str(),
+    i->getPrototypes().size());
+
+
+    for (std::vector<ast::IFunctionPrototype *>::const_iterator
+        it=i->getPrototypes().begin();
+        it!=i->getPrototypes().end(); it++) {
         (*it)->accept(m_this);
     }
-    m_symtab_it->popScope();
-    m_symtab_it->popScope();
+
+    if (i->getBody()) {
+        m_symtab_it->pushScope(i);
+        m_symtab_it->pushScope(i->getBody());
+        for (std::vector<ast::IScopeChild *>::const_iterator
+            it=i->getBody()->getChildren().begin();
+            it!=i->getBody()->getChildren().end(); it++) {
+            (*it)->accept(m_this);
+        }
+        m_symtab_it->popScope();
+        m_symtab_it->popScope();
+    }
+
+
     DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
 }
 

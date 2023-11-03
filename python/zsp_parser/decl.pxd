@@ -17,6 +17,9 @@ from zsp_parser cimport ast_decl as ast
 cimport ciostream
 
 ctypedef IFactory *IFactoryP
+ctypedef IMarker *IMarkerP
+ctypedef IMarkerCollector *IMarkerCollectorP
+ctypedef unique_ptr[IMarker] IMarkerUP
 
 
 cdef extern from "zsp/parser/IFactory.h" namespace "zsp::parser":
@@ -66,15 +69,10 @@ cdef extern from "zsp/parser/IMarker.h" namespace "zsp::parser":
         Severity_Hint "zsp::parser::MarkerSeverityE::Hint"
         Severity_NumLevels "zsp::parser::MarkerSeverityE::NumLevels"
 
-    cdef cppclass Location:
-        int32_t            file;
-        int32_t            line;
-        int32_t            pos;
-
     cdef cppclass IMarker:
         const cpp_string &msg() const
         MarkerSeverityE severity() const
-        const Location &loc() const;
+        const ast.Location &loc() const;
         IMarker *clone() const
 
 cdef extern from "zsp/parser/IMarkerListener.h" namespace "zsp::parser":
@@ -84,7 +82,7 @@ cdef extern from "zsp/parser/IMarkerListener.h" namespace "zsp::parser":
 
 cdef extern from "zsp/parser/IMarkerCollector.h" namespace "zsp::parser":
     cdef cppclass IMarkerCollector(IMarkerListener):
-        pass
+        const cpp_vector[IMarkerUP] &markers() const
 
 cdef extern from "zsp/parser/ISymbolTableIterator.h" namespace "zsp::parser":
     cdef cppclass ISymbolTableIterator:

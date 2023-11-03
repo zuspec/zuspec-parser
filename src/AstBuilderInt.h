@@ -105,6 +105,8 @@ public:
 
     virtual antlrcpp::Any visitFunction_prototype(PSSParser::Function_prototypeContext *ctx) override;
 
+    virtual antlrcpp::Any visitImport_function(PSSParser::Import_functionContext *ctx) override;
+
 	// B.7 Procedural Statements
     virtual antlrcpp::Any visitProcedural_sequence_block_stmt(PSSParser::Procedural_sequence_block_stmtContext *ctx) override;
 

@@ -44,11 +44,17 @@ public:
 
     virtual void visitActivityDecl(ast::IActivityDecl *i) override;
 
+    virtual void visitConstraintBlock(ast::IConstraintBlock *i) override;
+    
+    virtual void visitConstraintStmt(ast::IConstraintStmt *i) override;
+
     virtual void visitPackageScope(ast::IPackageScope *i) override;
 
     virtual void visitEnumDecl(ast::IEnumDecl *i) override;
 
     virtual void visitEnumItem(ast::IEnumItem *i) override;
+
+    virtual void visitExecBlock(ast::IExecBlock *i) override;
 
     virtual void visitExecStmt(ast::IExecStmt *i) override;
 

@@ -82,6 +82,22 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(
     return m_ref;
 }
 
+void TaskResolveRef::visitExprId(ast::IExprId *i) {
+    DEBUG_ENTER("visitExprId %s", i->getId().c_str());
+    ISymbolTableIterator *it = m_symtab_it_s.back().get();
+
+    ast::ISymbolRefPath *root = findRoot(it, i);
+
+    m_ref = root;
+    DEBUG_LEAVE("visitExprId %s (%p)", i->getId().c_str(), m_ref);
+}
+
+void TaskResolveRef::visitExprMemberPathElem(ast::IExprMemberPathElem *i) {
+    DEBUG_ENTER("visitExprMemberPathElem");
+    DEBUG("TODO: visitExprMemberPathElem");
+    DEBUG_LEAVE("visitExprMemberPathElem");
+}
+
 void TaskResolveRef::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) {
     DEBUG_ENTER("visitExprRefPathStaticRooted");
     DEBUG("TODO: visitExprRefPathStaticRooted");

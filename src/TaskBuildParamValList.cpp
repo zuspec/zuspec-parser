@@ -47,7 +47,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
     DEBUG_ENTER("build plist=%d n_pvals=%d", 
         plist->getChildren().size(),
         pvals->getValues().size());
-    TaskCopyAst copier(m_factory->getAstFactory());
+    TaskCopyAst copier(m_factory);
     m_ret = 0;
 
     if (pvals->getValues().size() > plist->getChildren().size()) {
@@ -141,6 +141,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
         m_ptype_generic_type = 0;
         m_ptype_category_type = 0;
 
+        // Get the default value
         plist->getChildren().at(plist_idx)->accept(m_this);
 
         ast::IExprId *name = 0;

@@ -73,7 +73,7 @@ void TaskExpr2DataType::visitExprRefPathContext(ast::IExprRefPathContext *i) {
         ast::ITypeIdentifier *tid = m_factory->getAstFactory()->mkTypeIdentifier();
         tid->getElems().push_back(ast::ITypeIdentifierElemUP(
             m_factory->getAstFactory()->mkTypeIdentifierElem(
-                TaskCopyAst(m_factory->getAstFactory()).copyT<ast::IExprId>(
+                TaskCopyAst(m_factory).copyT<ast::IExprId>(
                     i->getHier_id()->getElems().at(0)->getId()
                 ),
                 0
@@ -91,7 +91,7 @@ void TaskExpr2DataType::visitExprRefPathId(ast::IExprRefPathId *i) {
         ast::ITypeIdentifier *tid = m_factory->getAstFactory()->mkTypeIdentifier();
         tid->getElems().push_back(ast::ITypeIdentifierElemUP(
             m_factory->getAstFactory()->mkTypeIdentifierElem(
-                TaskCopyAst(m_factory->getAstFactory()).copyT<ast::IExprId>(i->getId()),
+                TaskCopyAst(m_factory).copyT<ast::IExprId>(i->getId()),
                 0
             )));
         m_ret = m_factory->getAstFactory()->mkDataTypeUserDefined(
