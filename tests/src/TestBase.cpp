@@ -69,6 +69,7 @@ void TestBase::runTest(
 
 	MarkerCollector marker_c;
 	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(&marker_c));
+//    ast_builder->setEnableProfile(true);
 
     if (load_stdlib) {
         m_factory->loadStandardLibrary(ast_builder.get(), global.get());
@@ -171,6 +172,54 @@ std::pair<ast::IGlobalScope *, ast::ISymbolScope *> TestBase::parseLink(
     }
 
     return {global, root};
+}
+
+void TestBase::parseLink(
+        MarkerCollector                     &marker_c,
+        const std::string                   &content,
+        const std::string                   &name,
+        std::vector<ast::IGlobalScopeUP>    &files,
+        ast::ISymbolScopeUP                 &root,
+        bool                                load_stdlib) {
+    std::vector<ast::IGlobalScope *> files_p;
+	std::stringstream s(content);
+	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(&marker_c));
+
+    if (load_stdlib) {
+	    ast::IGlobalScope *stdlib = m_ast_factory->mkGlobalScope(files.size());
+        m_factory->loadStandardLibrary(ast_builder.get(), stdlib);
+        files.push_back(ast::IGlobalScopeUP(stdlib));
+        files_p.push_back(stdlib);
+    }
+
+    ast::IGlobalScope *file = m_ast_factory->mkGlobalScope(files.size());
+	ast_builder->build(file, &s);
+
+    files.push_back(ast::IGlobalScopeUP(file));
+    files_p.push_back(file);
+
+	for (std::vector<IMarkerUP>::const_iterator
+			it=marker_c.markers().begin();
+			it!=marker_c.markers().end(); it++) {
+		fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
+	}
+
+	ASSERT_FALSE(marker_c.hasSeverity(parser::MarkerSeverityE::Error));
+
+	ILinkerUP linker(m_factory->mkAstLinker());
+
+	ast::ISymbolScopeUP root(linker->link(
+		&marker_c,
+        files_p
+	));
+
+	for (std::vector<IMarkerUP>::const_iterator
+			it=marker_c.markers().begin();
+			it!=marker_c.markers().end(); it++) {
+		fprintf(stdout, "Link Error: %s\n", (*it)->msg().c_str());
+	}
+
+	ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
 }
 
 ast::IScopeChild *TestBase::findItem(

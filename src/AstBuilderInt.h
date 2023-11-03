@@ -55,6 +55,14 @@ public:
         return m_collectDocStrings;
     }
 
+    virtual void setEnableProfile(bool e) {
+        m_enableProfile = e;
+    }
+
+    virtual bool getEnableProfile() {
+        return m_enableProfile;
+    }
+
 	// B.1 package declaration
 	virtual antlrcpp::Any visitPackage_declaration(PSSParser::Package_declarationContext *ctx) override;
 
@@ -318,6 +326,7 @@ private:
     static dmgr::IDebug                         *m_dbg;
     int32_t                                     m_file_id;
 	bool										m_collectDocStrings;
+    bool                                        m_enableProfile;
     int32_t                                     m_fileid;
     IMarkerListener								*m_marker_l;
 	ast::IFactory								*m_factory;

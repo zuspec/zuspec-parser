@@ -136,8 +136,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
 
     // Now, we deal with parameters without explicitly-specified values
     for (; plist_idx<plist->getChildren().size(); plist_idx++) {
-        DEBUG("TODO: apply default to %p", 
-            plist->getChildren().at(plist_idx));
+        DEBUG("Apply default to parameter (%p)", plist->getChildren().at(plist_idx));
         m_ptype_value = 0;
         m_ptype_generic_type = 0;
         m_ptype_category_type = 0;
@@ -146,26 +145,39 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
 
         ast::IExprId *name = 0;
         ast::IDataType *type = 0;
+        ast::IExpr *value = 0;
 
         if (m_ptype_value) {
-            DEBUG("TODO: value");
+            DEBUG("Note: value parameter");
+            name = m_ptype_value->getName();
+            type = m_ptype_value->getType();
+            value = m_ptype_value->getDflt();
         } else if (m_ptype_category_type) {
-            DEBUG("TODO: category type");
+            DEBUG("Note: category type parameter");
             name = m_ptype_category_type->getName();
             type = m_ptype_category_type->getDflt();
         } else if (m_ptype_generic_type) {
-            DEBUG("TODO: generic type");
+            DEBUG("Note: generic type parameter");
             name = m_ptype_generic_type->getName();
             type = m_ptype_generic_type->getDflt();
         } else {
-            DEBUG("Unknown kind");
+            DEBUG("Error: Unknown parameter kind");
         }
 
-        DEBUG("Add parameter %s", name->getId().c_str());
-        ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
-            copier.copyT<ast::IExprId>(name),
-            copier.copy(type)
-        );
+        DEBUG("Add parameter %s", (name)?name->getId().c_str():"<unset>");
+        ast::ITemplateParamDecl *p = 0;
+        if (value) {
+            p = m_factory->getAstFactory()->mkTemplateValueParamDecl(
+                copier.copyT<ast::IExprId>(name),
+                copier.copy(type),
+                copier.copy(value)
+            );
+        } else {
+            p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
+                copier.copyT<ast::IExprId>(name),
+                copier.copy(type)
+            );
+        }
         m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
     }
 

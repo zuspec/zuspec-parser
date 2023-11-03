@@ -9,6 +9,7 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "AstBuilderInt.h"
 #include "PSSLexer.h"
+#include "atn/ParseInfo.h"
 #include "zsp/ast/IFactory.h"
 #include "zsp/ast/IAction.h"
 #include "zsp/ast/IComponent.h"
@@ -31,6 +32,7 @@ AstBuilderInt::AstBuilderInt(
 	IMarkerListener 	*marker_l) : m_factory(factory), m_marker_l(marker_l) {
     DEBUG_INIT("AstBuilderInt", dmgr);
 	m_collectDocStrings = false;
+    m_enableProfile = false;
 	m_field_depth = 0;
 	m_labeled_activity_id = 0;
 	m_constraint = 0;
@@ -55,6 +57,8 @@ void AstBuilderInt::build(
 	parser.removeErrorListeners();
 	parser.addErrorListener(this);
 
+    parser.setProfile(m_enableProfile);
+
 	PSSParser::Compilation_unitContext *ctx = parser.compilation_unit();
 
 	// Only proceed to build out the AST if there are no syntax errors
@@ -63,6 +67,21 @@ void AstBuilderInt::build(
 		ctx->accept(this);
 		pop_scope();
 	}
+
+    if (m_enableProfile) {
+        // Collect and save the resulting data
+        atn::ParseInfo info = parser.getParseInfo();
+        const atn::ATN &atn_i = parser.getATN();
+
+        std::vector<atn::DecisionInfo> decision_info = info.getDecisionInfo();
+        for (std::vector<atn::DecisionInfo>::const_iterator
+            it=decision_info.begin();
+            it!=decision_info.end(); it++) {
+            if (it->ambiguities.size()) {
+                fprintf(stdout, "Info: %s\n", it->toString().c_str());
+            }
+        }
+    }
 }
 
 antlrcpp::Any AstBuilderInt::visitPackage_declaration(

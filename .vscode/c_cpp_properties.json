@@ -5,6 +5,7 @@
             "includePath": [
                 "${default}",
                 "src/include",
+                "tests/src",
                 "build/zsp_ast/src/include"
             ],
             "defines": [

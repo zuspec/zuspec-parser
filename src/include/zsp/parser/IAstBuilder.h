@@ -35,6 +35,10 @@ public:
 
     virtual bool getCollectDocStrings() = 0;
 
+    virtual void setEnableProfile(bool e) = 0;
+
+    virtual bool getEnableProfile() = 0;
+
 };
 
 }

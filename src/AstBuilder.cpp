@@ -49,5 +49,13 @@ bool AstBuilder::getCollectDocStrings() {
     return m_builder_int->getCollectDocStrings();
 }
 
+void AstBuilder::setEnableProfile(bool e) {
+    m_builder_int->setEnableProfile(e);
+}
+
+bool AstBuilder::getEnableProfile() {
+    return m_builder_int->getEnableProfile();
+}
+
 }
 } /* namespace zsp */
