@@ -41,7 +41,13 @@ public:
         const ISymbolTableIterator      *scope,
         const ast::IExprId              *id);
 
+    virtual void visitEnumDecl(ast::IEnumDecl *i) override;
+
+    virtual void visitEnumItem(ast::IEnumItem *i) override;
+
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
+
+    virtual void visitSymbolEnumScope(ast::ISymbolEnumScope *i) override;
 
     virtual void visitSymbolExecScope(ast::ISymbolExecScope *i) override;
 
@@ -58,6 +64,10 @@ private:
     ast::ISymbolRefPath *searchImport(
         const ast::IExprId          *id,
         ast::IPackageImportStmt     *imp);
+
+    ast::ISymbolRefPath *searchEnums(
+        ast::ISymbolScope           *i,
+        const ast::IExprId          *id);
 
 private:
     static dmgr::IDebug             *m_dbg;

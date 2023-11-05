@@ -146,7 +146,7 @@ void TaskResolveRef::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
 }
 
 void TaskResolveRef::visitTypeIdentifier(ast::ITypeIdentifier *i) {
-    DEBUG_ENTER("visitTypeIdentifier");
+    DEBUG_ENTER("visitTypeIdentifier %s", i->getElems().at(0)->getId()->getId().c_str());
 	// Find the first element
 
     ISymbolTableIterator *it = m_symtab_it_s.back().get();

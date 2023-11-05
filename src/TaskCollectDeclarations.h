@@ -59,7 +59,7 @@ public:
 private:
     void duplicateSymbolDeclError(
         ast::IScopeChild            *new_sym,
-        ast::IScopeChild            *ex_sym);;;;
+        ast::IScopeChild            *ex_sym);
 
 private:
     IMarkerListener                 *m_listener;

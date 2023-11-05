@@ -157,7 +157,7 @@ public:
     virtual void visitExecTargetTemplateParam(ast::IExecTargetTemplateParam *i) { }
     
     virtual void visitConstraintStmt(ast::IConstraintStmt *i) { }
-    
+
     virtual void visitExprRefPathElem(ast::IExprRefPathElem *i) { }
     
     virtual void visitExprStaticRefPath(ast::IExprStaticRefPath *i) {
@@ -365,7 +365,16 @@ public:
     
     virtual void visitConstraintScope(ast::IConstraintScope *i) { }
     
-    virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) { }
+    virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) { 
+        ast::IExprRefPathContext *ic = m_factory->mkExprRefPathContext(
+            copyT<ast::IExprHierarchicalId>(i->getHier_id())
+        );
+        ic->setIs_super(i->getIs_super());
+        if (i->getSlice()) {
+            ic->setSlice(copyT<ast::IExprBitSlice>(i->getSlice()));
+        }
+        m_expr = ic;
+    }
     
     virtual void visitConstraintStmtExpr(ast::IConstraintStmtExpr *i) { 
         m_constraint = m_factory->mkConstraintStmtExpr(

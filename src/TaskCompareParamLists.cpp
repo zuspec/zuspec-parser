@@ -39,9 +39,92 @@ bool TaskCompareParamLists::equal(
         const ast::ITemplateParamDeclList     *plist1,
         const ast::ITemplateParamDeclList     *plist2) {
     DEBUG_ENTER("equal");
+    if (plist1->getParams().size() != plist2->getParams().size()) {
+        DEBUG("Sizes differ: %d vs %d",
+            plist1->getParams().size(),
+            plist2->getParams().size());
+        return false;
+    }
+    m_plist1 = plist1;
+    m_plist2 = plist2;
 
-    DEBUG_LEAVE("equal");
-    return false;
+
+    bool ret = true;
+    ast::ITemplateGenericTypeParamDecl  *type_value[2];
+    ast::ITemplateValueParamDecl        *expr_value[2];
+    for (m_idx=0; m_idx<plist1->getParams().size(); m_idx++) {
+        for (uint32_t i=0; i<2; i++) {
+            m_type_value = 0;
+            m_expr_value = 0;
+            ((i)?plist2:plist1)->getParams().at(m_idx)->accept(m_this);
+            type_value[i] = m_type_value;
+            expr_value[i] = m_expr_value;
+        }
+
+        DEBUG("type_value={%p,%p} expr_value={%p,%p}",
+            type_value[0], type_value[1],
+            expr_value[0], expr_value[1]);
+        if ((!type_value[0] != !type_value[1]) || (!expr_value[0] != !expr_value[1])) {
+            ret = false;
+            break;
+        }
+
+        // How do we compare?
+        if (type_value[0]) {
+            type_value[0]->getDflt()->accept(m_this);
+        } else if (expr_value[0] && expr_value[0]->getDflt()) {
+            expr_value[0]->getDflt()->accept(m_this);
+        } else {
+            DEBUG("FATAL: didn't hit anything");
+            ret = false;
+            break;
+        }
+    }
+
+    DEBUG_LEAVE("equal %d", ret);
+    return ret;
+}
+
+void TaskCompareParamLists::visitExpr(ast::IExpr *i) {
+    DEBUG_ENTER("visitExpr");
+
+    DEBUG_LEAVE("visitExpr");
+}
+
+void TaskCompareParamLists::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
+    DEBUG_ENTER("visitSymbolTypeScope");
+    DEBUG("this=%p other=%p", i, m_type_value);
+    DEBUG_LEAVE("visitSymbolTypeScope");
+}
+
+void TaskCompareParamLists::visitTemplateGenericTypeParamDecl(ast::ITemplateGenericTypeParamDecl *i) {
+    DEBUG_ENTER("visitTemplateGenericTypeParamDecl");
+    m_type_value = i;
+    DEBUG_LEAVE("visitTemplateGenericTypeParamDecl");
+}
+
+void TaskCompareParamLists::visitTemplateCategoryTypeParamDecl(ast::ITemplateCategoryTypeParamDecl *i) {
+    DEBUG_ENTER("visitTemplateCategoryTypeParamDecl");
+
+    DEBUG_LEAVE("visitTemplateCategoryTypeParamDecl");
+}
+
+void TaskCompareParamLists::visitTemplateValueParamDecl(ast::ITemplateValueParamDecl *i) {
+    DEBUG_ENTER("visitTemplateValueParamDecl dflt=%p", i->getDflt());
+    m_expr_value = i;
+    DEBUG_LEAVE("visitTemplateValueParamDecl");
+}
+
+void TaskCompareParamLists::visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) {
+    DEBUG_ENTER("visitTemplateParamTypeValue");
+
+    DEBUG_LEAVE("visitTemplateParamTypeValue");
+}
+
+void TaskCompareParamLists::visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) {
+    DEBUG_ENTER("visitTemplateParamExprValue");
+
+    DEBUG_LEAVE("visitTemplateParamExprValue");
 }
 
 dmgr::IDebug *TaskCompareParamLists::m_dbg = 0;

@@ -62,6 +62,24 @@ ast::ISymbolRefPath *TaskResolveRootRef::resolve(
     return m_ref;
 }
 
+void TaskResolveRootRef::visitEnumDecl(ast::IEnumDecl *i) {
+    DEBUG_ENTER("visitEnumDecl");
+    for (std::vector<ast::IEnumItemUP>::const_iterator
+        it=i->getItems().begin();
+        it!=i->getItems().end(); it++) {
+        DEBUG("Enum Item: %s", (*it)->getName()->getId().c_str());
+        if ((*it)->getName()->getId() == m_id->getId()) {
+            DEBUG("Found!!");
+            break;
+        }
+    }
+    DEBUG_LEAVE("visitEnumDecl");
+}
+
+void TaskResolveRootRef::visitEnumItem(ast::IEnumItem *i) {
+
+}
+
 void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope id=%s (%s)", 
         m_id->getId().c_str(), i->getName().c_str());
@@ -73,11 +91,48 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
 
         // Now, add in the child element that we just found
         m_ref->getPath().push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second});
+    } else if ((m_ref=searchEnums(i, m_id))) {
+        // Found in this scope
     } else if (m_search_imp && i->getImports() && (m_ref=searchImports(m_id, i->getImports()))) {
         // Found in imports
     }
 
     DEBUG_LEAVE("visitSymbolScope");
+}
+
+void TaskResolveRootRef::visitSymbolEnumScope(ast::ISymbolEnumScope *i) {
+    DEBUG_ENTER("visitSymbolEnumScope %s (looking for %s)", 
+        i->getName().c_str(),
+        m_id->getId().c_str());
+    std::map<std::string, int32_t>::const_iterator it = 
+        i->getSymtab().find(m_id->getId());
+    if (it != i->getSymtab().end()) {
+        DEBUG("Found symbol %s", m_id->getId().c_str());
+        m_ref = m_scope->getScopeSymbolPath();
+
+        m_ref->getPath().push_back({
+            ast::SymbolRefPathElemKind::ElemKind_ParamIdx, 
+            i->getIndex()
+        });
+
+        m_ref->getPath().push_back({
+            ast::SymbolRefPathElemKind::ElemKind_ParamIdx, 
+            it->second
+        });
+        DEBUG("Path");
+        for (std::vector<ast::SymbolRefPathElem>::const_iterator
+            it=m_ref->getPath().begin();
+            it!=m_ref->getPath().end(); it++) {
+            DEBUG("  Elem: %d", it->idx);
+        }
+        fflush(stdout);
+    }
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    DEBUG_LEAVE("visitSymbolEnumScope %s", i->getName().c_str());
 }
 
 void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {
@@ -201,6 +256,19 @@ ast::ISymbolRefPath *TaskResolveRootRef::searchImport(
 
 	DEBUG_LEAVE("searchImport %s", id->getId().c_str());
 	return ret;
+}
+
+ast::ISymbolRefPath *TaskResolveRootRef::searchEnums(
+        ast::ISymbolScope           *i,
+        const ast::IExprId          *id) {
+    DEBUG_ENTER("searchEnums %s", id->getId().c_str());
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    DEBUG_LEAVE("searchEnums %s", id->getId().c_str());
+    return 0 /*m_ref*/;
 }
 
 dmgr::IDebug *TaskResolveRootRef::m_dbg = 0;
