@@ -26,8 +26,9 @@ namespace zsp {
 namespace parser {
 
 
-TaskCompareParamLists::TaskCompareParamLists(dmgr::IDebugMgr *dmgr) {
-    DEBUG_INIT("TaskCompareParamLists", dmgr);
+TaskCompareParamLists::TaskCompareParamLists(IFactory *factory) :
+    m_tref_comp(factory) {
+    DEBUG_INIT("TaskCompareParamLists", factory->getDebugMgr());
 
 }
 
@@ -71,7 +72,9 @@ bool TaskCompareParamLists::equal(
 
         // How do we compare?
         if (type_value[0]) {
-            type_value[0]->getDflt()->accept(m_this);
+            ret = !m_tref_comp.equal(
+                type_value[0]->getDflt(),
+                type_value[1]->getDflt());
         } else if (expr_value[0] && expr_value[0]->getDflt()) {
             expr_value[0]->getDflt()->accept(m_this);
         } else {

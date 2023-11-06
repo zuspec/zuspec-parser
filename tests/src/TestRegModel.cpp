@@ -65,6 +65,7 @@ TEST_F(TestRegModel, reg_group_c_field) {
 
         component my_regs : reg_group_c {
             reg_c<bit[32]>      r1;
+            reg_c<bit[32]>      r2;
         }
 
         component pss_top {

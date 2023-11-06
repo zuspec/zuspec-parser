@@ -28,6 +28,7 @@
 #include "MarkerCollector.h"
 #include "NameResolver.h"
 #include "TaskFindElementByLocation.h"
+#include "ValInt.h"
 #include "pss_stdlib.h"
 
 
@@ -106,6 +107,13 @@ ISymbolTable *Factory::mkSymbolTable() {
 
 ITaskFindElementByLocation *Factory::mkTaskFindElementByLocation() {
     return new TaskFindElementByLocation(m_dmgr);
+}
+
+IValInt *Factory::mkValInt(
+        bool        is_signed,
+        int32_t     width,
+        int64_t     init) {
+    return new ValInt(is_signed, width, init);
 }
 
 IFactory *Factory::inst() {

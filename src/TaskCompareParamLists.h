@@ -21,13 +21,15 @@
 #pragma once
 #include "dmgr/IDebugMgr.h"
 #include "zsp/ast/impl/VisitorBase.h"
+#include "zsp/parser/IFactory.h"
+#include "TaskCompareTypeRefs.h"
 
 namespace zsp {
 namespace parser {
 
 class TaskCompareParamLists : public ast::VisitorBase {
 public:
-    TaskCompareParamLists(dmgr::IDebugMgr *dmgr);
+    TaskCompareParamLists(IFactory *factory);
 
     virtual ~TaskCompareParamLists();
 
@@ -57,6 +59,7 @@ private:
     ast::ITemplateValueParamDecl        *m_expr_value;
     const ast::ITemplateParamDeclList   *m_plist1;
     const ast::ITemplateParamDeclList   *m_plist2;
+    TaskCompareTypeRefs                 m_tref_comp;
 
 };
 
