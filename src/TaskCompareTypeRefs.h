@@ -22,7 +22,7 @@
 #include "dmgr/IDebugMgr.h"
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/parser/IFactory.h"
-#include "TaskEvalExpr.h"
+#include "zsp/parser/impl/TaskEvalExpr.h"
 #include "TaskCompareVal.h"
 
 namespace zsp {
