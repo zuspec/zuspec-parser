@@ -156,8 +156,10 @@ void TestBase::parseLink(
         const std::string           &name,
         ast::IGlobalScopeUP         &global,
         ast::ISymbolScopeUP         &root) {
+    std::vector<ast::IGlobalScope *> files;
     global = ast::IGlobalScopeUP(parse(marker_l, content, name));
-    root = ast::ISymbolScopeUP(link(marker_l, {global.get()}));
+    files.push_back(global.get());
+    root = ast::ISymbolScopeUP(link(marker_l, files));
 }
 
 std::pair<ast::IGlobalScope *, ast::ISymbolScope *> TestBase::parseLink(
@@ -168,7 +170,9 @@ std::pair<ast::IGlobalScope *, ast::ISymbolScope *> TestBase::parseLink(
     ast::IGlobalScope *global = parse(marker_l, content, name, process_doc_comments); 
     ast::ISymbolScope *root = 0;
     if (!marker_l->hasSeverity(MarkerSeverityE::Error)) {
-        root = link(marker_l, {global});
+        std::vector<ast::IGlobalScope *> files;
+        files.push_back(global);
+        root = link(marker_l, files);
     }
 
     return {global, root};

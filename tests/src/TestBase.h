@@ -53,7 +53,7 @@ protected:
         bool                                process_doc_comments=false);
 
 	ast::ISymbolScope *link(
-		parser::IMarkerListener				        *marker_l,
+		parser::IMarkerListener				    *marker_l,
 		const std::vector<ast::IGlobalScopeUP>	&files
 	);
 

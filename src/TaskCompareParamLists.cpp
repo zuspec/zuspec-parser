@@ -72,10 +72,11 @@ bool TaskCompareParamLists::equal(
 
         // How do we compare?
         if (type_value[0]) {
-            ret = !m_tref_comp.equal(
+            ret &= m_tref_comp.equal(
                 type_value[0]->getDflt(),
                 type_value[1]->getDflt());
         } else if (expr_value[0] && expr_value[0]->getDflt()) {
+            DEBUG("TODO: Compare value-type parameters");
             expr_value[0]->getDflt()->accept(m_this);
         } else {
             DEBUG("FATAL: didn't hit anything");
