@@ -104,7 +104,7 @@ public:
     }
 
     virtual void visitExprId(ast::IExprId *i) override {
-        DEBUG_ENTER("visitExprId");
+        DEBUG_ENTER("visitExprId %s", i->getId().c_str());
         DEBUG("TODO: visitExprId");
         DEBUG_LEAVE("visitExprId");
     }
