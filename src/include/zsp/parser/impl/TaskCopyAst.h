@@ -429,6 +429,7 @@ public:
     virtual void visitPackageScope(ast::IPackageScope *i) { }
     
     virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override {
+        DEBUG_ENTER("visitFunctionPrototype %s", i->getName().c_str());
         ast::IFunctionPrototype *ic = m_factory->mkFunctionPrototype(
             copyT<ast::IExprId>(i->getName()),
             (i->getRtype())?copy(i->getRtype()):0,
@@ -443,11 +444,20 @@ public:
         }
 
         m_sc = ic;
+        DEBUG_ENTER("visitFunctionPrototype");
     }
     
-    virtual void visitFunctionImportType(ast::IFunctionImportType *i) { }
+    virtual void visitFunctionImportType(ast::IFunctionImportType *i) { 
+        DEBUG_ENTER("visitFunctionImportType");
+        DEBUG("TODO: visitFunctionImportType");
+        DEBUG_LEAVE("visitFunctionImportType");
+    }
     
-    virtual void visitFunctionImportProto(ast::IFunctionImportProto *i) { }
+    virtual void visitFunctionImportProto(ast::IFunctionImportProto *i) { 
+        DEBUG_ENTER("visitFunctionImportProto");
+        DEBUG("TODO: visitFunctionImportProto");
+        DEBUG_LEAVE("visitFunctionImportProto");
+    }
     
     virtual void visitDataTypeArray(ast::IDataTypeArray *i) { }
     
@@ -523,9 +533,17 @@ public:
     
     virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) { }
     
-    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) { }
+    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) { 
+        DEBUG_ENTER("visitSymbolTypeScope %s", i->getName().c_str());
+        DEBUG("TODO: visitSymbolTypeScope %s", i->getName().c_str());
+        DEBUG_LEAVE("visitSymbolTypeScope %s", i->getName().c_str());
+    }
     
-    virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) { }
+    virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) { 
+        DEBUG_ENTER("visitSymbolFunctionScope %s", i->getName().c_str());
+        DEBUG("TODO: visitSymbolFunctionScope %s", i->getName().c_str());
+        DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
+    }
     
     virtual void visitTemplateGenericTypeParamDecl(ast::ITemplateGenericTypeParamDecl *i) { }
     

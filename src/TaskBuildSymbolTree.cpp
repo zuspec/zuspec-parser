@@ -439,6 +439,7 @@ void TaskBuildSymbolTree::visitFunctionPrototype(ast::IFunctionPrototype *i) {
     // If the existing symbol isn't a FunctionScope, then we have
     // a duplicate symbol
     if (ex_func_b && !func_sym) {
+        DEBUG("Duplicate symbol");
         reportDuplicateSymbol(m_scope_s.back(), ex_func_b, i);
         return;
     }
@@ -453,6 +454,8 @@ void TaskBuildSymbolTree::visitFunctionPrototype(ast::IFunctionPrototype *i) {
         func_sym->setUpper(m_scope_s.back());
         m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
         m_scope_s.back()->getChildren().push_back(func_sym);
+    } else {
+        DEBUG("Note: Function %s is already defined", func_sym->getName().c_str());
     }
 
     func_sym->getPrototypes().push_back(i);
