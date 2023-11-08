@@ -24,6 +24,7 @@
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/parser/IVal.h"
+#include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
 
 namespace zsp {
 namespace parser {
@@ -32,8 +33,10 @@ namespace parser {
 
 class TaskEvalExpr : public virtual ast::VisitorBase {
 public:
-    TaskEvalExpr(IFactory *factory) : 
-        m_dbg(0), m_factory(factory) {
+    TaskEvalExpr(
+        IFactory                *factory,
+        ast::ISymbolScope       *root) : 
+        m_dbg(0), m_factory(factory), m_root(root) {
         DEBUG_INIT("zsp::parser::TaskEvalExpr", factory->getDebugMgr());
     }
 
@@ -56,7 +59,9 @@ public:
     }
 
     virtual void visitExprBin(ast::IExprBin *i) override {
-        DEBUG_ENTER("visitExprBin");
+        DEBUG_ENTER("visitExprBin %d", i->getOp());
+        i->getLhs()->accept(m_this);
+        i->getRhs()->accept(m_this);
         DEBUG("TODO: visitExprBin");
         DEBUG_LEAVE("visitExprBin");
     }
@@ -127,6 +132,55 @@ public:
         DEBUG_LEAVE("visitExprOpenRangeValue");
     }
 
+    virtual void visitExprRefPath(ast::IExprRefPath *i) override {
+        DEBUG_ENTER("visitExprRefPath");
+        if (i->getTarget()) {
+            ast::IScopeChild *target = TaskResolveSymbolPathRef(
+                m_factory->getDebugMgr(),
+                m_root).resolve(i->getTarget());
+            if (target) {
+                target->accept(m_this);
+            } else {
+                DEBUG("Error: failed to resolve RefPath");
+            }
+        } else {
+            DEBUG("Error: ExprRefPath has null target");
+        }
+        DEBUG_LEAVE("visitExprRefPath");
+    }
+
+    virtual void visitExprRefPathId(ast::IExprRefPathId *i) override {
+        DEBUG_ENTER("visitExprRefPathId %s", (i->getId())?i->getId()->getId().c_str():"null");
+        if (i->getTarget()) {
+            DEBUG("Target is set");
+            i->getTarget()->accept(m_this);
+        } else {
+            DEBUG("Error: Target not set");
+        }
+        DEBUG_LEAVE("visitExprRefPathId");
+    }
+
+    virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) override {
+        DEBUG_ENTER("visitExprRefPathContext");
+        ast::IScopeChild *target = TaskResolveSymbolPathRef(
+            m_factory->getDebugMgr(), 
+            m_root).resolve(i->getTarget());
+        target->accept(m_this);
+        DEBUG_LEAVE("visitExprRefPathContext");
+    }
+
+    virtual void visitExprStaticRefPath(ast::IExprStaticRefPath *i) override {
+        DEBUG_ENTER("visitExprStaticRefPath");
+        DEBUG("TODO: visitExprStaticRefPath");
+        /*
+        ast::IScopeChild *target = TaskResolveSymbolPathRef(
+            m_factory->getDebugMgr(), 
+            m_root).resolve(i->getTarget());
+        target->accept(m_this);
+         */
+        DEBUG_LEAVE("visitExprStaticRefPath");
+    }
+
     virtual void visitExprNull(ast::IExprNull *i) override {
         DEBUG_ENTER("visitExprNull");
         DEBUG("TODO: visitExprNull");
@@ -163,9 +217,41 @@ public:
         DEBUG_LEAVE("visitExprUnsignedNumber");
     }
 
+    virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) override {
+        DEBUG_ENTER("visitTemplateParamTypeValue");
+        DEBUG_LEAVE("visitTemplateParamTypeValue");
+    }
+
+    virtual void visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) override {
+        DEBUG_ENTER("visitTemplateParamExprValue");
+        DEBUG_LEAVE("visitTemplateParamExprValue");
+    }
+
+    virtual void visitTemplateGenericTypeParamDecl(ast::ITemplateGenericTypeParamDecl *i) override {
+        DEBUG_ENTER("visitTemplateGenericTypeParamDecl");
+        DEBUG("TODO: visitTemplateGenericTypeParamDecl");
+        DEBUG_LEAVE("visitTemplateGenericTypeParamDecl");
+    }
+
+    virtual void visitTemplateCategoryTypeParamDecl(ast::ITemplateCategoryTypeParamDecl *i) override {
+        DEBUG_ENTER("visitTemplateCategoryTypeParamDecl");
+        DEBUG("TODO: visitTemplateCategoryTypeParamDecl");
+        DEBUG_LEAVE("visitTemplateCategoryTypeParamDecl");
+    }
+
+    virtual void visitTemplateValueParamDecl(ast::ITemplateValueParamDecl *i) override {
+        DEBUG_ENTER("visitTemplateValueParamDecl");
+        if (i->getDflt()) {
+            i->getDflt()->accept(m_this);
+        }
+        DEBUG("TODO: visitTemplateValueParamDecl");
+        DEBUG_LEAVE("visitTemplateValueParamDecl");
+    }
+
 private:
     dmgr::IDebug                       *m_dbg;
     IFactory                           *m_factory;
+    ast::ISymbolScope                  *m_root;
     IValUP                             m_val;
 
 };

@@ -29,8 +29,10 @@ namespace zsp {
 namespace parser {
 
 
-TaskCompareTypeRefs::TaskCompareTypeRefs(IFactory *factory) :
-    m_expr_eval(factory), m_comp_val(factory->getDebugMgr()) {
+TaskCompareTypeRefs::TaskCompareTypeRefs(
+    IFactory                *factory,
+    ast::ISymbolScope       *root) :
+    m_expr_eval(factory, root), m_root(root), m_comp_val(factory->getDebugMgr()) {
     DEBUG_INIT("zsp::parser::TaskCompareTypeRefs", factory->getDebugMgr());
 }
 

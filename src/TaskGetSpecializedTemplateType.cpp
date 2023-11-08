@@ -57,7 +57,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
 
     // Search through the list of available specializations for
     // a matching one
-    TaskCompareParamLists p_comp(m_factory);
+    TaskCompareParamLists p_comp(m_factory, m_root);
     DEBUG("There are %d existing specializations", type_up->getSpec_types().size());
     for (int32_t i=0; i<type_up->getSpec_types().size(); i++) {
         ast::ISymbolTypeScope *sym_type_s_t = type_up->getSpec_types().at(i).get();

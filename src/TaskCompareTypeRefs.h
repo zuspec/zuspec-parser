@@ -32,7 +32,9 @@ namespace parser {
 
 class TaskCompareTypeRefs : public virtual ast::VisitorBase {
 public:
-    TaskCompareTypeRefs(IFactory *factory);
+    TaskCompareTypeRefs(
+        IFactory                *factory,
+        ast::ISymbolScope       *root);
 
     virtual ~TaskCompareTypeRefs();
 
@@ -57,6 +59,7 @@ public:
 
 private:
     static dmgr::IDebug             *m_dbg;
+    ast::ISymbolScope               *m_root;
     TaskEvalExpr                    m_expr_eval;
     TaskCompareVal                  m_comp_val;
     ast::IDataTypeInt               *m_type_int;

@@ -118,14 +118,14 @@ extend component executor_base_c {
 
 enum reg_access {READWRITE, READONLY, WRITEONLY};
 
-pure component reg_c < type R, reg_access ACC = READWRITE, int SZ = (8*sizeof_s<R>::nbytes)> {
+pure component reg_c < type R, reg_access ACC = READWRITE, int SZ2 = (8*sizeof_s<R>::nbytes)> {
     function R read();
     import target function read;
     function void write(R r);
     import target function write;
-    function bit[SZ] read_val();
+    function bit[SZ2] read_val();
     import target function read_val;
-    function void write_val(bit[SZ] r);
+    function void write_val(bit[SZ2] r);
     import target function write_val;
 };
 

@@ -429,7 +429,7 @@ public:
     virtual void visitPackageScope(ast::IPackageScope *i) { }
     
     virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override {
-        DEBUG_ENTER("visitFunctionPrototype %s", i->getName().c_str());
+        DEBUG_ENTER("visitFunctionPrototype %s", i->getName()->getId().c_str());
         ast::IFunctionPrototype *ic = m_factory->mkFunctionPrototype(
             copyT<ast::IExprId>(i->getName()),
             (i->getRtype())?copy(i->getRtype()):0,

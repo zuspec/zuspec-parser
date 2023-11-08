@@ -26,8 +26,10 @@ namespace zsp {
 namespace parser {
 
 
-TaskCompareParamLists::TaskCompareParamLists(IFactory *factory) :
-    m_tref_comp(factory) {
+TaskCompareParamLists::TaskCompareParamLists(
+    IFactory                *factory,
+    ast::ISymbolScope       *root) :
+    m_tref_comp(factory, root) {
     DEBUG_INIT("TaskCompareParamLists", factory->getDebugMgr());
 
 }

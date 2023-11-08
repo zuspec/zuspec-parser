@@ -198,7 +198,14 @@ void TaskResolveRefs::visitExprRefPathId(ast::IExprRefPathId *i) {
         i
     );
     if (!target) {
-        fprintf(stdout, "Failed to resolve ref-path %s\n", i->getId()->getId().c_str());
+        char tmp[1024];
+        sprintf(tmp, "Failed to resolve ref-path %s", i->getId()->getId().c_str());
+        IMarkerUP marker(m_factory->mkMarker(
+            tmp,
+            MarkerSeverityE::Error,
+            i->getId()->getLocation()
+        ));
+        m_marker_l->marker(marker.get());
     }
     i->setTarget(target);
     DEBUG_LEAVE("visitExprRefPathId");

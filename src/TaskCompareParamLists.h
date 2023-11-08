@@ -29,7 +29,9 @@ namespace parser {
 
 class TaskCompareParamLists : public ast::VisitorBase {
 public:
-    TaskCompareParamLists(IFactory *factory);
+    TaskCompareParamLists(
+        IFactory                *factory,
+        ast::ISymbolScope       *root);
 
     virtual ~TaskCompareParamLists();
 
