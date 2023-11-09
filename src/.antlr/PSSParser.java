@@ -1,4 +1,4 @@
-// Generated from /project/fun/zuspec/zuspec-fe-parser/packages/zuspec-parser/src/PSSParser.g4 by ANTLR 4.13.1
+// Generated from /project/fun/zuspec/zuspec-parser/src/PSSParser.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;

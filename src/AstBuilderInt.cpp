@@ -1576,6 +1576,7 @@ antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) 
 	if (ctx->ESCAPED_ID()) {
 		id = m_factory->mkExprId(ctx->ESCAPED_ID()->getText(), true);
 	} else {
+        DEBUG("visitIdentifier: %s", ctx->ID()->getText().c_str());
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
@@ -2272,10 +2273,12 @@ ast::IFunctionParamDecl *AstBuilderInt::mkFunctionParamDecl(PSSParser::Function_
 
 IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 	IExprId *id;
+
 	
 	if (ctx->ESCAPED_ID()) {
 		id = m_factory->mkExprId(ctx->ESCAPED_ID()->getText(), true);
 	} else {
+        DEBUG("mkId: %s", ctx->ID()->getText().c_str());
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
@@ -2382,6 +2385,14 @@ ast::ITypeIdentifierElem *AstBuilderInt::mkTypeIdElem(
     return elem;
 }
 
+ast::ITypeIdentifierElem *AstBuilderInt::mkTypeIdElem(
+		PSSParser::IdentifierContext		*ctx) {
+	ast::ITypeIdentifierElem *elem = m_factory->mkTypeIdentifierElem(
+			mkId(ctx),
+            0);
+    return elem;
+}
+
 ast::IExpr *AstBuilderInt::mkExpr(
 		PSSParser::ExpressionContext 			*ctx) {
 	m_expr = 0;
@@ -2423,15 +2434,37 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
 
             ret = ref;
         } else {
+            /*
+             * ref_path:
+             *   static_ref_path ( TOK_DOT hierarchical_id )? bit_slice?     // <-- We're here
+             *   | (is_super=TOK_SUPER TOK_DOT)? hierarchical_id bit_slice?
+             * 
+             * static_ref_path:
+             *   static_ref_path_prefix (type_identifier_elem TOK_DOUBLE_COLON )* member_path_elem
+             * 
+             * static_ref_path_prefix:
+             *   (type_identifier_elem TOK_DOUBLE_COLON)
+             *   | is_global=TOK_DOUBLE_COLON
+             * 
+             * member_path_elem:
+             * 	identifier function_parameter_list? ( TOK_LSBRACE expression TOK_RSBRACE )?
+             */
+
             DEBUG("!hierarchical_id: ");
             std::vector<PSSParser::Type_identifier_elemContext *> items =
                 ctx->static_ref_path()->type_identifier_elem();
             if (!ctx->static_ref_path()->static_ref_path_prefix()->is_global && items.size() == 0 && 
                 !ctx->static_ref_path()->member_path_elem()->function_parameter_list()) {
-                // This is just a simple identifier reference
-                ast::IExprRefPathId *ref = m_factory->mkExprRefPathId(
-                    mkId(ctx->static_ref_path()->member_path_elem()->identifier())
-                );
+                DEBUG("case1");
+                // static_ref_path_prefix member_path_elem
+                DEBUG("Non-function static reference");
+                ast::IExprRefPathStatic *ref = m_factory->mkExprRefPathStatic(false);
+                ref->getBase().push_back(ast::ITypeIdentifierElemUP(
+                    mkTypeIdElem(ctx->static_ref_path()->static_ref_path_prefix()->type_identifier_elem())
+                ));
+                ref->getBase().push_back(ast::ITypeIdentifierElemUP(
+                    mkTypeIdElem(ctx->static_ref_path()->member_path_elem()->identifier())
+                ));
 
                 if (ctx->bit_slice()) {
                     ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
@@ -2439,7 +2472,9 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
 
                 ret = ref;
             } else {
-                // This is a multi-element path
+                DEBUG("case2 (multi-element path)");
+                // static_ref_path_prefix type_identifier_elem+ member_path_elem
+
                 ast::IExprRefPathStatic *ref = m_factory->mkExprRefPathStatic(
                     ctx->static_ref_path()->static_ref_path_prefix()->is_global
                 );

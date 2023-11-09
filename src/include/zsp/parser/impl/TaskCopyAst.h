@@ -158,14 +158,20 @@ public:
     
     virtual void visitConstraintStmt(ast::IConstraintStmt *i) { }
 
-    virtual void visitExprRefPathElem(ast::IExprRefPathElem *i) { }
+    virtual void visitExprRefPathElem(ast::IExprRefPathElem *i) { 
+        DEBUG_ENTER("visitExprRefPathElem");
+        DEBUG("TODO: visitExprRefPathElem");
+        DEBUG_LEAVE("visitExprRefPathElem");
+    }
     
     virtual void visitExprStaticRefPath(ast::IExprStaticRefPath *i) {
+        DEBUG_ENTER("visitExprStaticRefPath");
         ast::IExprStaticRefPath *ic = m_factory->mkExprStaticRefPath(
             i->getIs_global(),
             copyT<ast::IExprMemberPathElem>(i->getLeaf())
         );
         m_expr = ic;
+        DEBUG_LEAVE("visitExprStaticRefPath");
     }
     
     virtual void visitExprString(ast::IExprString *i) { 
@@ -352,20 +358,27 @@ public:
     
     virtual void visitExprOpenRangeValue(ast::IExprOpenRangeValue *i) { }
     
-    virtual void visitExprRefPath(ast::IExprRefPath *i) { }
+    virtual void visitExprRefPath(ast::IExprRefPath *i) { 
+        DEBUG_ENTER("visitExprRefPath");
+        DEBUG("TODO: visitExprRefPath");
+        DEBUG_LEAVE("visitExprRefPath");
+    }
     
     virtual void visitExprRefPathId(ast::IExprRefPathId *i) { 
+        DEBUG_ENTER("visitExprRefPathId");
         ast::IExprRefPathId *ic = m_factory->mkExprRefPathId(
             copyT<ast::IExprId>(i->getId()));
         if (i->getSlice()) {
             ic->setSlice(copyT<ast::IExprBitSlice>(i->getSlice()));
         }
         m_expr = ic;
+        DEBUG_LEAVE("visitExprRefPathId");
     }
     
     virtual void visitConstraintScope(ast::IConstraintScope *i) { }
     
     virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) { 
+        DEBUG_ENTER("visitExprRefPathContext");
         ast::IExprRefPathContext *ic = m_factory->mkExprRefPathContext(
             copyT<ast::IExprHierarchicalId>(i->getHier_id())
         );
@@ -374,6 +387,7 @@ public:
             ic->setSlice(copyT<ast::IExprBitSlice>(i->getSlice()));
         }
         m_expr = ic;
+        DEBUG_LEAVE("visitExprRefPathContext");
     }
     
     virtual void visitConstraintStmtExpr(ast::IConstraintStmtExpr *i) { 
@@ -382,8 +396,21 @@ public:
         );
     }
     
-    virtual void visitExprRefPathStatic(ast::IExprRefPathStatic *i) { 
-
+    virtual void visitExprRefPathStatic(ast::IExprRefPathStatic *i) {
+        DEBUG_ENTER("visitExprRefPathStatic");
+        ast::IExprRefPathStatic *ic = m_factory->mkExprRefPathStatic(
+            i->getIs_global());
+        for (std::vector<ast::ITypeIdentifierElemUP>::const_iterator
+            it=i->getBase().begin();
+            it!=i->getBase().end(); it++) {
+            ic->getBase().push_back(ast::ITypeIdentifierElemUP(
+                copyT<ast::ITypeIdentifierElem>(it->get())));
+        }
+        if (i->getSlice()) {
+            ic->setSlice(copyT<ast::IExprBitSlice>(i->getSlice()), true);
+        }
+        m_expr = ic;
+        DEBUG_LEAVE("visitExprRefPathStatic");
     }
 
     virtual void visitExprSignedNumber(ast::IExprSignedNumber *i) { 
@@ -405,11 +432,13 @@ public:
     virtual void visitConstraintStmtField(ast::IConstraintStmtField *i) { }
     
     virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) { 
+        DEBUG_ENTER("visitExprRefPathStaticRooted");
         ast::IExprRefPathStaticRooted *ic = m_factory->mkExprRefPathStaticRooted(
             copyT<ast::IExprStaticRefPath>(i->getRoot()),
             (i->getLeaf())?copyT<ast::IExprHierarchicalId>(i->getLeaf()):0
         );
         m_expr = ic;
+        DEBUG_LEAVE("visitExprRefPathStaticRooted");
     }
     
     virtual void visitConstraintStmtIf(ast::IConstraintStmtIf *i) { 
@@ -607,11 +636,19 @@ public:
     
     virtual void visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) { }
     
-    virtual void visitExprRefPathStaticFunc(ast::IExprRefPathStaticFunc *i) { }
+    virtual void visitExprRefPathStaticFunc(ast::IExprRefPathStaticFunc *i) { 
+        DEBUG_ENTER("visitExprRefPathStaticFunc");
+        DEBUG("TODO: visitExprRefPathStaticFunc");
+        DEBUG_LEAVE("visitExprRefPathStaticFunc");
+    }
     
     virtual void visitConstraintStmtForall(ast::IConstraintStmtForall *i) { }
     
-    virtual void visitExprRefPathSuper(ast::IExprRefPathSuper *i) { }
+    virtual void visitExprRefPathSuper(ast::IExprRefPathSuper *i) { 
+        DEBUG_ENTER("visitExprRefPathSuper");
+        DEBUG("TODO: visitExprRefPathSuper");
+        DEBUG_LEAVE("visitExprRefPathSuper");
+    }
     
     virtual void visitConstraintStmtImplication(ast::IConstraintStmtImplication *i) { }
     

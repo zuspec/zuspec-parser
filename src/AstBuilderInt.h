@@ -302,6 +302,9 @@ private:
 	ast::ITypeIdentifierElem *mkTypeIdElem(
 		PSSParser::Type_identifier_elemContext		*ctx);
 
+	ast::ITypeIdentifierElem *mkTypeIdElem(
+		PSSParser::IdentifierContext		    *ctx);
+
 	ast::IExpr *mkExpr(
 		PSSParser::ExpressionContext 			*ctx);
 
