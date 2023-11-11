@@ -209,6 +209,9 @@ void TestBase::parseLink(
 	}
 
 	ASSERT_FALSE(marker_c.hasSeverity(parser::MarkerSeverityE::Error));
+	if (marker_c.hasSeverity(parser::MarkerSeverityE::Error)) {
+        return;
+    }
 
 	ILinkerUP linker(m_factory->mkAstLinker());
 
@@ -224,6 +227,9 @@ void TestBase::parseLink(
 	}
 
 	ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+	if (marker_c.hasSeverity(parser::MarkerSeverityE::Error)) {
+        return;
+    }
 }
 
 ast::IScopeChild *TestBase::findItem(

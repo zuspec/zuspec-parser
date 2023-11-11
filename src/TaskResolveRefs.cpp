@@ -160,15 +160,44 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     ast::IScopeChild *target_c = TaskResolveSymbolPathRef(m_dmgr, m_root).resolve(target);
     ast::ISymbolScope *target_s = TaskGetElemSymbolScope(m_dmgr, m_root).resolve(target_c);
 
+    if (!target_s) {
+        char tmp[1024];
+        sprintf(tmp, "root ref-path element %s is not a composite scope",
+            i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
+        IMarkerUP marker(m_factory->mkMarker(
+            tmp,
+            MarkerSeverityE::Error,
+            i->getHier_id()->getElems().at(0)->getId()->getLocation()
+        ));
+        m_marker_l->marker(marker.get());
+
+        DEBUG_LEAVE("visitExprRefPathContext -- fail");
+        return;
+    }
+
     // Target already points to the first elem
     i->getHier_id()->getElems().at(0)->setTarget(-1);
 
     for (uint32_t ii=1; ii<i->getHier_id()->getElems().size(); ii++) {
+        if (target_s->getOpaque()) {
+            DEBUG("Note: scope is opaque ; ending hierarchical search");
+            break;
+        }
+
         ast::IExprMemberPathElem *elem = i->getHier_id()->getElems().at(ii).get();
         std::map<std::string, int32_t>::const_iterator it = 
             target_s->getSymtab().find(elem->getId()->getId());
         
         if (it == target_s->getSymtab().end()) {
+            char tmp[1024];
+            sprintf(tmp, "Failed to find elem %s", elem->getId()->getId().c_str());
+            IMarkerUP marker(m_factory->mkMarker(
+                tmp,
+                MarkerSeverityE::Error,
+                elem->getId()->getLocation()
+            ));
+            m_marker_l->marker(marker.get());
+
             DEBUG("ERROR: Failed to find elem %s", elem->getId()->getId().c_str());
             break;
         } else {
@@ -403,6 +432,14 @@ void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
         i->getType_id()->setTarget(target);
     } else {
         DEBUG("Failed");
+        // char tmp[1024];
+        // sprintf(tmp, "failed to find user-defined datatype");
+        // IMarkerUP marker(m_factory->mkMarker(
+        //     tmp,
+        //     MarkerSeverityE::Error,
+        //     i->getLocation()
+        // ));
+        // m_marker_l->marker(marker.get());
     }
 
     DEBUG_LEAVE("visitDataTypeUserDefined");

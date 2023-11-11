@@ -51,6 +51,10 @@ classes:
     - imports: 
       - type: UP<SymbolImportSpec>
       - is_ctor: false
+    - opaque:
+      - type: bool
+      - is_ctor: false
+      - init: false
 
 - SymbolEnumScope:
     super: SymbolScope

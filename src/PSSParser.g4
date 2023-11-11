@@ -54,6 +54,7 @@ package_body_item:
 	| export_action
 	| typedef_declaration
 	| import_stmt
+    | pyimport_stmt // zuspec extension
 	| extend_stmt
 	| const_field_declaration
 	| component_declaration
@@ -84,6 +85,27 @@ package_import_wildcard:
 package_import_alias: 
 	TOK_AS package_identifier
 	;
+
+pyimport_stmt:
+    pyimport_single_module
+    | pyimport_from_module
+    ;
+
+pyimport_single_module:
+    TOK_PYIMPORT pyimport_mod_path (TOK_AS identifier)? TOK_SEMICOLON
+    ;
+
+pyimport_from_module:
+    TOK_FROM pyimport_mod_path TOK_PYIMPORT pyimport_elem_list TOK_SEMICOLON
+    ;
+
+pyimport_mod_path:
+    identifier (TOK_DOUBLE_COLON identifier)*
+    ;
+
+pyimport_elem_list:
+    identifier (TOK_COMMA identifier)*
+    ;
 
 extend_stmt:
 		(
@@ -892,6 +914,7 @@ scalar_data_type:
 	| string_type  	
 	| bool_type
 	| enum_type
+    | pyobj_type // zuspec extension
 	;
 
 casting_type:
@@ -956,6 +979,10 @@ enum_type:
 //	enum_type_identifier (TOK_IN TOK_LSBRACE open_range_list TOK_RSBRACE)?
 	enum_type_identifier TOK_IN TOK_LSBRACE open_range_list TOK_RSBRACE
 	;
+
+pyobj_type: // zuspec extension
+    TOK_PYOBJ
+    ;
 
 // Note: this parser treats collection types as parameterized classes
 // collection_type:

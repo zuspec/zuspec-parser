@@ -47,6 +47,7 @@ classes:
     data:
     - has_range: bool
     - in_range: list<string>
+
 - DataTypeUserDefined:
     super: DataType
     data: 

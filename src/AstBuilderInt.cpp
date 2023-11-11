@@ -1154,6 +1154,37 @@ antlrcpp::Any AstBuilderInt::visitEnum_type(PSSParser::Enum_typeContext *ctx) {
 	return 0;
 }
 
+antlrcpp::Any AstBuilderInt::visitPyobj_type(PSSParser::Pyobj_typeContext *ctx) {
+    DEBUG_ENTER("visitPyobj_type");
+    // Create a user-defined data type with a direct
+    // reference to ::std_pkg::pyobj
+
+    ast::ITypeIdentifier *ti = m_factory->mkTypeIdentifier();
+    /*
+    ti->getElems().push_back(ast::ITypeIdentifierElemUP(
+        m_factory->mkTypeIdentifierElem(
+            m_factory->mkExprId("pss", false),
+            0)));
+    ti->getElems().push_back(ast::ITypeIdentifierElemUP(
+        m_factory->mkTypeIdentifierElem(
+            m_factory->mkExprId("core", false),
+            0)));
+     */
+    ti->getElems().push_back(ast::ITypeIdentifierElemUP(
+        m_factory->mkTypeIdentifierElem(
+            m_factory->mkExprId("pyobj", false),
+            0)));
+
+    ast::IDataTypeUserDefined *dt = m_factory->mkDataTypeUserDefined(
+        true, // global ref
+        ti
+    );
+
+    m_type = dt;
+    DEBUG_LEAVE("visitPyobj_type");
+    return 0;
+}
+
 antlrcpp::Any AstBuilderInt::visitEnum_declaration(PSSParser::Enum_declarationContext *ctx) {
 	DEBUG_ENTER("visitEnum_declaration");
 

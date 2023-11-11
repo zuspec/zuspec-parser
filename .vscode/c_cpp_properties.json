@@ -4,6 +4,7 @@
             "name": "Default",
             "includePath": [
                 "${default}",
+                "src",
                 "packages/debug-mgr/src/include",
                 "src/include",
                 "tests/src",

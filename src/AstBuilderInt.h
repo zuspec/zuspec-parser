@@ -168,6 +168,8 @@ public:
 	
     virtual antlrcpp::Any visitEnum_declaration(PSSParser::Enum_declarationContext *ctx) override;
 
+    virtual antlrcpp::Any visitPyobj_type(PSSParser::Pyobj_typeContext *ctx) override;
+
 	virtual antlrcpp::Any visitReference_type(PSSParser::Reference_typeContext *ctx) override;
 
 	// B.14 Constraints

@@ -52,8 +52,11 @@ public:
 
     virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override {
         DEBUG_ENTER("visitDataTypeUserDefined");
-        ast::IScopeChild *c = m_path_resolver.resolve(i->getType_id()->getTarget());
-        m_ret = dynamic_cast<ast::ISymbolScope *>(c);
+        if (i->getType_id()->getTarget()) {
+            // Don't attempt to resolve unless the linkage is present
+            ast::IScopeChild *c = m_path_resolver.resolve(i->getType_id()->getTarget());
+            m_ret = dynamic_cast<ast::ISymbolScope *>(c);
+        }
         DEBUG_LEAVE("visitDataTypeUserDefined");
     }
 

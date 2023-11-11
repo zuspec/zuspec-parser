@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "BuiltinsFactory.h"
 #include "TaskBuildSymbolTree.h"
 
 namespace zsp {
@@ -46,6 +47,15 @@ ast::ISymbolScope *TaskBuildSymbolTree::build(
         -100,
         "");
     m_scope_s.push_back(root);
+
+    DEBUG_ENTER("visitBuiltins");
+    ast::IGlobalScope *builtins = BuiltinsFactory(m_factory).build();
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        c_it=builtins->getChildren().begin();
+        c_it!=builtins->getChildren().end(); c_it++) {
+        (*c_it)->accept(this);
+    }
+    DEBUG_LEAVE("visitBuiltins");
 
     for (std::vector<ast::IGlobalScope *>::const_iterator
         it=roots.begin();
@@ -76,6 +86,7 @@ ast::ISymbolTypeScope *TaskBuildSymbolTree::build(ast::ITypeScope *ts) {
         -100,
         "");
     root->setLocation(ts->getLocation());
+    root->setOpaque(ts->getOpaque());
     m_scope_s.push_back(root);
 
     ts->accept(m_this);
@@ -516,6 +527,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
     DEBUG_ENTER("visitTypeScope %s", i->getName()->getId().c_str());
     ast::ISymbolScope *scope = m_scope_s.back();
 
+
     int32_t id = scope->getChildren().size();
     ast::ISymbolScope *plist = 0;
     if (i->getParams()) {
@@ -547,6 +559,10 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
     ts->setLocation(i->getLocation());
     ts->setTarget(i);
 
+    // pyobj fields are opaque, since Python is a dynamically-typed library
+    if (i->getName()->getId() == "pyobj") {
+        ts->setOpaque(true);
+    }
 
     std::map<std::string, int32_t>::const_iterator it =
         scope->getSymtab().find(i->getName()->getId());
