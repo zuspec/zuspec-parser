@@ -41,10 +41,9 @@ TEST_F(TestPythonInteg, smoke) {
 
         component pss_top {
             pyobj d;
-//            int d;
             exec init_down {
                 sm::abc(1, 2, 3, 4);
-                d.foo();
+                d.foo(); // No error at link time, since d is an opaque scope
             }
         }
     )";
