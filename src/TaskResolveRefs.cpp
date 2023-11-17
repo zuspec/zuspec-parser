@@ -160,7 +160,7 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     ast::IScopeChild *target_c = TaskResolveSymbolPathRef(m_dmgr, m_root).resolve(target);
     ast::ISymbolScope *target_s = TaskGetElemSymbolScope(m_dmgr, m_root).resolve(target_c);
 
-    if (!target_s) {
+    if (!target_s && i->getHier_id()->getElems().size() > 1) {
         char tmp[1024];
         sprintf(tmp, "root ref-path element %s is not a composite scope",
             i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
@@ -178,13 +178,29 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     // Target already points to the first elem
     i->getHier_id()->getElems().at(0)->setTarget(-1);
 
-    for (uint32_t ii=1; ii<i->getHier_id()->getElems().size(); ii++) {
+    for (uint32_t ii=0; ii<i->getHier_id()->getElems().size(); ii++) {
+        ast::IExprMemberPathElem *elem = i->getHier_id()->getElems().at(ii).get();
+
+        // Ensure we resolve expression references in function parameters
+        if (elem->getParams()) {
+            DEBUG_ENTER("Resolve parameter references");
+            for (std::vector<ast::IExprUP>::const_iterator
+                it=elem->getParams()->getParameters().begin();
+                it!=elem->getParams()->getParameters().end(); it++) {
+                (*it)->accept(m_this);
+            }
+            DEBUG_LEAVE("Resolve parameter references");
+        }
+
+        if (!ii) {
+            continue;
+        }
+
         if (target_s->getOpaque()) {
             DEBUG("Note: scope is opaque ; ending hierarchical search");
             break;
         }
 
-        ast::IExprMemberPathElem *elem = i->getHier_id()->getElems().at(ii).get();
         std::map<std::string, int32_t>::const_iterator it = 
             target_s->getSymtab().find(elem->getId()->getId());
         
@@ -203,6 +219,8 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
         } else {
             DEBUG("NOTE: Found sub-element %s", elem->getId()->getId().c_str());
             elem->setTarget(it->second);
+
+
 
             // Resolve name references for parameter values
             if (elem->getParams()) {
