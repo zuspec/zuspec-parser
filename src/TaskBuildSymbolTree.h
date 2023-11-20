@@ -76,6 +76,10 @@ public:
 
     virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
 
+    virtual void visitPyImportStmt(ast::IPyImportStmt *i) override;
+
+    virtual void visitPyImportFromStmt(ast::IPyImportFromStmt *i) override;
+
     virtual void visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) override;
 
     virtual void visitScope(ast::IScope *i) override;

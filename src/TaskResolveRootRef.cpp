@@ -70,14 +70,19 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
 
     DEBUG("imports: %p", i->getImports());
     if (it != i->getSymtab().end()) {
+        DEBUG("Found symbol @ index %d", it->second);
         m_ref = m_scope->getScopeSymbolPath(); // Path to 'i'
 
         // Now, add in the child element that we just found
         m_ref->getPath().push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second});
     } else if ((m_ref=TaskResolveEnumRef(m_factory).resolve(m_scope.get(), m_id))) {
         // Found in this scope
+        DEBUG("Found symbol as an enumerator");
     } else if (m_search_imp && i->getImports() && (m_ref=searchImports(m_id, i->getImports()))) {
         // Found in imports
+        DEBUG("Found symbol via imports");
+    } else {
+        DEBUG("Failed to find symbol");
     }
 
     DEBUG_LEAVE("visitSymbolScope");

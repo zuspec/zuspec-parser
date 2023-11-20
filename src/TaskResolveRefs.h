@@ -54,6 +54,8 @@ public:
 
     virtual void visitExprRefPathId(ast::IExprRefPathId *i) override;
 
+    virtual void visitExprRefPathStatic(ast::IExprRefPathStatic *i) override;
+
     virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) override;
 
     virtual void visitExtendEnum(ast::IExtendEnum *i) override;

@@ -113,6 +113,10 @@ classes:
       - type: list<SymbolRefPathElem>
       - is_ctor: false
       - visit: false
+    - pyref_idx:
+      - type: int32_t
+      - is_ctor: false
+      - init: -1
 
 #- AggregateTypeScope:
 #    super: ScopeChild

@@ -172,7 +172,7 @@ classes:
     - ExprRefPathStaticRooted:
         super: ExprRefPath
         data: 
-          - root: "UP<ExprStaticRefPath>"
+          - root: "UP<ExprRefPathStatic>"
           - leaf: "UP<ExprHierarchicalId>"
           - slice: 
               type: UP<ExprBitSlice>

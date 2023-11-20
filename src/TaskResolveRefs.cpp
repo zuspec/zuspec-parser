@@ -25,6 +25,7 @@
 #include "TaskResolveRefs.h"
 #include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
 #include "zsp/parser/impl/TaskGetElemSymbolScope.h"
+#include "zsp/parser/impl/TaskIsPyRef.h"
 
 namespace zsp {
 namespace parser {
@@ -258,9 +259,81 @@ void TaskResolveRefs::visitExprRefPathId(ast::IExprRefPathId *i) {
     DEBUG_LEAVE("visitExprRefPathId");
 }
 
+void TaskResolveRefs::visitExprRefPathStatic(ast::IExprRefPathStatic *i) {
+    DEBUG_ENTER("visitExprRefPathStatic size=%d", i->getBase().size());
+    ast::ISymbolRefPath *target = 0;
+    if (i->getIs_global()) {
+        DEBUG("TODO: support global-rooted references");
+    } else {
+        // relative root
+        ast::ISymbolRefPath *target = 0;
+        ast::IScopeChild *target_s = 0;
+        bool in_pyref = false;
+        for (std::vector<ast::ITypeIdentifierElemUP>::const_iterator
+            it=i->getBase().begin();
+            it!=i->getBase().end(); it++) {
+            if (it==i->getBase().begin()) {
+                target = TaskResolveRef(
+                    m_root,
+                    m_factory,
+                    m_marker_l).resolve(
+                        m_symtab_it.get(),
+                        (*it)->getId());
+                
+                if (!target) {
+                    ERROR("Failed to resolve symbol");
+                    break;
+                }
+                target_s = TaskResolveSymbolPathRef(
+                    m_factory->getDebugMgr(),
+                    m_root).resolve(target);
+
+                if (!in_pyref) {
+                    in_pyref |= TaskIsPyRef(m_factory->getDebugMgr()).check(target_s);
+                    if (in_pyref) {
+                        target->setPyref_idx(0);
+                    }
+                }
+            } else {
+                // Need to resolve within root element ... unless we're down a Python scope
+                // Visit the element to resolve internal references
+                (*it)->accept(m_this);
+
+                if (!in_pyref) {
+                    // Resolve next element
+
+//                    in_pyref |= TaskIsPyRef().check(t);
+                } else {
+                    DEBUG("element is inside a pyref path");
+                }
+
+            }
+        }
+        i->setTarget(target);
+    }
+    DEBUG_LEAVE("visitExprRefPathStatic");
+}
+
 void TaskResolveRefs::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) {
     DEBUG_ENTER("visitExprRefPathStaticRooted");
-    DEBUG("TODO: visitExprRefPathStaticRooted");
+    // Resolve the root
+    i->getRoot()->accept(m_this);
+
+    if (!i->getRoot()->getTarget()) {
+        DEBUG_LEAVE("visitExprRefPathStaticRooted -- failed root resolution");
+        return;
+    }
+
+    i->getLeaf()->accept(m_this);
+
+    if (i->getRoot()->getTarget()->getPyref_idx() != -1) {
+        // The root ends in a Python-type reference
+        DEBUG("Root (static) reference has a Python component");
+    } else {
+        DEBUG("Root (static) reference does not have a Python component");
+        DEBUG("TODO: visitExprRefPathStaticRooted");
+    }
+
     DEBUG_LEAVE("visitExprRefPathStaticRooted");
 }
 

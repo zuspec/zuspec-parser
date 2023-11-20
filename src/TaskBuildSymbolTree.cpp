@@ -489,6 +489,47 @@ void TaskBuildSymbolTree::visitPackageImportStmt(ast::IPackageImportStmt *i) {
     DEBUG_LEAVE("visitPackageImportStmt");
 }
 
+void TaskBuildSymbolTree::visitPyImportStmt(ast::IPyImportStmt *i) {
+    DEBUG_ENTER("visitPyImportStmt");
+    ast::ISymbolScope *scope = m_scope_s.back();
+    std::map<std::string, int32_t>::const_iterator it;
+
+    if (i->getAlias()) {
+        // Register the alias name
+        if ((it=scope->getSymtab().find(i->getAlias()->getId())) != scope->getSymtab().end()) {
+            // Error: 
+            ERROR("TODO: symbol collision with pyimport %s", i->getAlias()->getId().c_str());
+        } else {
+            int32_t id = scope->getChildren().size();
+            scope->getChildren().push_back(i);
+            scope->getSymtab().insert({
+                i->getAlias()->getId(),
+                id
+            });
+        }
+    } else {
+        // Register the basename
+        if ((it=scope->getSymtab().find(i->getPath().front()->getId())) != scope->getSymtab().end()) {
+            // Error: 
+            ERROR("TODO: symbol collision with pyimport %s", i->getPath().front()->getId().c_str());
+        } else {
+            int32_t id = scope->getChildren().size();
+            scope->getChildren().push_back(i);
+            scope->getSymtab().insert({
+                i->getPath().front()->getId(),
+                id
+            });
+        }
+    }
+    DEBUG_LEAVE("visitPyImportStmt");
+}
+
+void TaskBuildSymbolTree::visitPyImportFromStmt(ast::IPyImportFromStmt *i) {
+    DEBUG_ENTER("visitPyImportFromStmt");
+    DEBUG("TODO: visitPyImportFromStmt");
+    DEBUG_LEAVE("visitPyImportFromStmt");
+}
+
 void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) {
     DEBUG_ENTER("visitProceduralStmtDataDeclaration");
     ast::ISymbolScope *scope = m_scope_s.back();

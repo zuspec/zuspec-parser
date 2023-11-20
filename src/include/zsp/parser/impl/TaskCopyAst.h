@@ -434,7 +434,7 @@ public:
     virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) { 
         DEBUG_ENTER("visitExprRefPathStaticRooted");
         ast::IExprRefPathStaticRooted *ic = m_factory->mkExprRefPathStaticRooted(
-            copyT<ast::IExprStaticRefPath>(i->getRoot()),
+            copyT<ast::IExprRefPathStatic>(i->getRoot()),
             (i->getLeaf())?copyT<ast::IExprHierarchicalId>(i->getLeaf()):0
         );
         m_expr = ic;
