@@ -132,7 +132,7 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
 void TaskResolveRootRef::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
     DEBUG_ENTER("visitSymbolFunctionScope");
-
+    visitSymbolScope(i);
     DEBUG_LEAVE("visitSymbolFunctionScope");
 }
 

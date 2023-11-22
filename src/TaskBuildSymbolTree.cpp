@@ -346,6 +346,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
                     func_sym->getChildren().at(sym_it->second),
                     it->get());
             } else {
+                DEBUG("Add parameter %s to function symtab", (*it)->getName()->getId().c_str());
                 func_sym->getSymtab().insert({(*it)->getName()->getId(), id});
                 func_sym->getChildren().push_back(it->get());
             }
@@ -372,6 +373,11 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
     m_scope_s.pop_back();
 
     func_sym->setDefinition(i);
+    // Ensure that the definition takes the primary prototype location
+    func_sym->getPrototypes().insert(
+        func_sym->getPrototypes().begin(),
+        i->getProto()
+    );
 
     DEBUG_LEAVE("visitFunctionDefinition %s", i->getProto()->getName()->getId().c_str());
 }
