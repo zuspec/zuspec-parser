@@ -365,7 +365,11 @@ void TaskResolveRefs::visitFunctionPrototype(ast::IFunctionPrototype *i) {
     for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
         it=i->getParameters().begin();
         it!=i->getParameters().end(); it++) {
-        (*it)->getType()->accept(m_this);
+        if ((*it)->getType()) {
+            (*it)->getType()->accept(m_this);
+        } else {
+            // TODO: likely a category type
+        }
     }
     DEBUG_LEAVE("visitFunctionPrototype");
 } 

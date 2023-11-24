@@ -1,4 +1,6 @@
 
 package std_pkg {
 
+    function void print(string fmt/*, type ... args*/);
+
 }
