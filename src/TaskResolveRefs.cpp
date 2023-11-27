@@ -455,13 +455,13 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
         m_symtab_it->pushScope(i);
         DEBUG("  has i: %d", (m_symtab_it->getScope()->getSymtab().find("i") != m_symtab_it->getScope()->getSymtab().end()));
 //        DEBUG("Push function body scope");
-//        m_symtab_it->pushScope(i->getBody());
+        m_symtab_it->pushScope(i->getBody());
         for (std::vector<ast::IScopeChild *>::const_iterator
             it=i->getBody()->getChildren().begin();
             it!=i->getBody()->getChildren().end(); it++) {
             (*it)->accept(m_this);
         }
- //       m_symtab_it->popScope();
+        m_symtab_it->popScope();
         m_symtab_it->popScope();
     }
 

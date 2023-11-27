@@ -70,7 +70,7 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
 
     DEBUG("imports: %p", i->getImports());
     if (it != i->getSymtab().end()) {
-        DEBUG("Found symbol @ index %d", it->second);
+        DEBUG("Found symbol %s @ index %d", m_id->getId().c_str(), it->second);
         m_ref = m_scope->getScopeSymbolPath(); // Path to 'i'
 
         // Now, add in the child element that we just found
@@ -90,7 +90,7 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
 
 void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {
     DEBUG_ENTER("visitSymbolExecScope");
-
+    visitSymbolScope(i);
     DEBUG_LEAVE("visitSymbolExecScope");
 }
 

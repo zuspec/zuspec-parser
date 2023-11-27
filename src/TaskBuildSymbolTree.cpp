@@ -359,7 +359,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
 
     // Build the body (and subscopes) symbol scopes
     int32_t id = func_sym->getChildren().size();
-    ast::ISymbolScope *body = m_factory->mkSymbolScope(id, "");
+    ast::ISymbolExecScope *body = m_factory->mkSymbolExecScope(id, "");
     body->setLocation(i->getLocation());
     body->setUpper(m_scope_s.back());
     m_scope_s.push_back(body);
@@ -537,8 +537,8 @@ void TaskBuildSymbolTree::visitPyImportFromStmt(ast::IPyImportFromStmt *i) {
 }
 
 void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) {
-    DEBUG_ENTER("visitProceduralStmtDataDeclaration");
-    ast::ISymbolScope *scope = m_scope_s.back();
+    DEBUG_ENTER("visitProceduralStmtDataDeclaration %s", i->getName()->getId().c_str());
+    ast::ISymbolExecScope *scope = dynamic_cast<ast::ISymbolExecScope *>(m_scope_s.back());
 
     std::map<std::string, int32_t>::const_iterator it =
         scope->getSymtab().find(i->getName()->getId());
@@ -551,6 +551,8 @@ void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStm
         );
     } else {
         int32_t id = scope->getChildren().size();
+        DEBUG("DataDeclaration %s: %d", i->getName()->getId().c_str(), id);
+        scope->getLocals().push_back(i);
         scope->getSymtab().insert({i->getName()->getId(), id});
         scope->getChildren().push_back(i);
     }

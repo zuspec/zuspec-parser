@@ -1584,11 +1584,11 @@ antlrcpp::Any AstBuilderInt::visitString_literal(PSSParser::String_literalContex
 	DEBUG_ENTER("visitString_literal");
 	if (ctx->DOUBLE_QUOTED_STRING()) {
 		std::string value = ctx->DOUBLE_QUOTED_STRING()->getText();
-		value = value.substr(1, value.size()-1);
+		value = value.substr(1, value.size()-2);
 		m_expr = m_factory->mkExprString(value, false);
 	} else { 
 		std::string value = ctx->TRIPLE_DOUBLE_QUOTED_STRING()->getText();
-		value = value.substr(3, value.size()-3);
+		value = value.substr(3, value.size()-6);
 		m_expr = m_factory->mkExprString(value, true);
 	}
 	DEBUG_LEAVE("visitString_literal");
