@@ -68,6 +68,10 @@ public:
 
 	virtual antlrcpp::Any visitImport_stmt(PSSParser::Import_stmtContext *ctx) override;
 
+    virtual antlrcpp::Any visitPyimport_single_module(PSSParser::Pyimport_single_moduleContext *ctx) override;
+
+    virtual antlrcpp::Any visitPyimport_from_module(PSSParser::Pyimport_from_moduleContext *ctx) override;
+
 	virtual antlrcpp::Any visitExtend_stmt(PSSParser::Extend_stmtContext *ctx) override;
 
 	virtual antlrcpp::Any visitConst_field_declaration(PSSParser::Const_field_declarationContext *ctx) override;
@@ -292,6 +296,12 @@ private:
 
 	ast::IExprHierarchicalId *mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx);
 
+	ast::IExprHierarchicalId *mkHierarchicalId(
+        PSSParser::Static_ref_pathContext *root_ctx,
+        PSSParser::Hierarchical_idContext *leaf_ctx);
+
+	ast::IExprHierarchicalId *mkHierarchicalId(PSSParser::Member_path_elemContext *ctx);
+
     ast::IExprMemberPathElem *mkMemberPathElem(PSSParser::Member_path_elemContext *ctx);
 
 	void mkTypeId(
@@ -316,7 +326,7 @@ private:
     ast::IExprRefPath *mkExprRefPath(
         PSSParser::Ref_pathContext              *ctx);
 
-    ast::IExprStaticRefPath *mkExprStaticRefPath(
+    ast::IExprRefPathStatic *mkExprRefPathStatic(
         PSSParser::Static_ref_pathContext       *ctx);
 
     ast::ITemplateParamDeclList *mkTypeParamDecl(

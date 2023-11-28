@@ -62,7 +62,10 @@ classes:
 
 - SymbolExecScope:
     super: SymbolScope
-    data: {}
+    data: 
+    - locals:
+      - type: list<P<ScopeChild>>
+        is_ctor: false
 
 - SymbolExtendScope:
     super: SymbolScope
@@ -104,7 +107,7 @@ classes:
         - type: UP<SymbolScope>
         - is_ctor: false
       - body:
-        - type: UP<SymbolScope>
+        - type: UP<SymbolExecScope>
         - is_ctor: false
 
 - SymbolRefPath: 
@@ -113,6 +116,10 @@ classes:
       - type: list<SymbolRefPathElem>
       - is_ctor: false
       - visit: false
+    - pyref_idx:
+      - type: int32_t
+      - is_ctor: false
+      - init: -1
 
 #- AggregateTypeScope:
 #    super: ScopeChild

@@ -346,6 +346,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
                     func_sym->getChildren().at(sym_it->second),
                     it->get());
             } else {
+                DEBUG("Add parameter %s to function symtab", (*it)->getName()->getId().c_str());
                 func_sym->getSymtab().insert({(*it)->getName()->getId(), id});
                 func_sym->getChildren().push_back(it->get());
             }
@@ -358,7 +359,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
 
     // Build the body (and subscopes) symbol scopes
     int32_t id = func_sym->getChildren().size();
-    ast::ISymbolScope *body = m_factory->mkSymbolScope(id, "");
+    ast::ISymbolExecScope *body = m_factory->mkSymbolExecScope(id, "");
     body->setLocation(i->getLocation());
     body->setUpper(m_scope_s.back());
     m_scope_s.push_back(body);
@@ -372,6 +373,11 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
     m_scope_s.pop_back();
 
     func_sym->setDefinition(i);
+    // Ensure that the definition takes the primary prototype location
+    func_sym->getPrototypes().insert(
+        func_sym->getPrototypes().begin(),
+        i->getProto()
+    );
 
     DEBUG_LEAVE("visitFunctionDefinition %s", i->getProto()->getName()->getId().c_str());
 }
@@ -489,9 +495,50 @@ void TaskBuildSymbolTree::visitPackageImportStmt(ast::IPackageImportStmt *i) {
     DEBUG_LEAVE("visitPackageImportStmt");
 }
 
-void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) {
-    DEBUG_ENTER("visitProceduralStmtDataDeclaration");
+void TaskBuildSymbolTree::visitPyImportStmt(ast::IPyImportStmt *i) {
+    DEBUG_ENTER("visitPyImportStmt");
     ast::ISymbolScope *scope = m_scope_s.back();
+    std::map<std::string, int32_t>::const_iterator it;
+
+    if (i->getAlias()) {
+        // Register the alias name
+        if ((it=scope->getSymtab().find(i->getAlias()->getId())) != scope->getSymtab().end()) {
+            // Error: 
+            ERROR("TODO: symbol collision with pyimport %s", i->getAlias()->getId().c_str());
+        } else {
+            int32_t id = scope->getChildren().size();
+            scope->getChildren().push_back(i);
+            scope->getSymtab().insert({
+                i->getAlias()->getId(),
+                id
+            });
+        }
+    } else {
+        // Register the basename
+        if ((it=scope->getSymtab().find(i->getPath().front()->getId())) != scope->getSymtab().end()) {
+            // Error: 
+            ERROR("TODO: symbol collision with pyimport %s", i->getPath().front()->getId().c_str());
+        } else {
+            int32_t id = scope->getChildren().size();
+            scope->getChildren().push_back(i);
+            scope->getSymtab().insert({
+                i->getPath().front()->getId(),
+                id
+            });
+        }
+    }
+    DEBUG_LEAVE("visitPyImportStmt");
+}
+
+void TaskBuildSymbolTree::visitPyImportFromStmt(ast::IPyImportFromStmt *i) {
+    DEBUG_ENTER("visitPyImportFromStmt");
+    DEBUG("TODO: visitPyImportFromStmt");
+    DEBUG_LEAVE("visitPyImportFromStmt");
+}
+
+void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) {
+    DEBUG_ENTER("visitProceduralStmtDataDeclaration %s", i->getName()->getId().c_str());
+    ast::ISymbolExecScope *scope = dynamic_cast<ast::ISymbolExecScope *>(m_scope_s.back());
 
     std::map<std::string, int32_t>::const_iterator it =
         scope->getSymtab().find(i->getName()->getId());
@@ -504,6 +551,8 @@ void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStm
         );
     } else {
         int32_t id = scope->getChildren().size();
+        DEBUG("DataDeclaration %s: %d", i->getName()->getId().c_str(), id);
+        scope->getLocals().push_back(i);
         scope->getSymtab().insert({i->getName()->getId(), id});
         scope->getChildren().push_back(i);
     }

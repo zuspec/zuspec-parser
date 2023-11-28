@@ -1281,6 +1281,7 @@ expression:
     lhs=expression binary_or_op rhs=expression			|
     lhs=expression logical_and_op rhs=expression		|
     lhs=expression logical_or_op rhs=expression			|
+//    lhs=expression TOK_SINGLE_EQ rhs=expression  { notify
     lhs=expression conditional_expr
 	;
 

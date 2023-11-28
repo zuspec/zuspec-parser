@@ -91,6 +91,25 @@ classes:
           - type: UP<TypeIdentifier>
           - is_ctor: false
 
+    - PyImportStmt:
+        super: ScopeChild
+        data:
+        - path: 
+            type: list<UP<ExprId>>
+            is_ctor: false
+        - alias:
+            type: UP<ExprId>
+            is_ctor: false
+    - PyImportFromStmt:
+        super: ScopeChild
+        data:
+        - path: 
+            type: list<UP<ExprId>>
+            is_ctor: false
+        - targets:
+            type: list<UP<ExprId>>
+            is_ctor: false
+
     - Action:
         super: TypeScope
         data:
