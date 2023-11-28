@@ -172,7 +172,24 @@ ML_COMMENT	: '/*' .*? '*/' -> channel (12) ;
 //ML_COMMENT	: '/*' .*? '*/' -> skip;
  
 
-DOUBLE_QUOTED_STRING	: '"' (~ [\n\r])* '"' ;
+//DOUBLE_QUOTED_STRING	: '"' (~ [\n\r])* '"' ;
+DOUBLE_QUOTED_STRING	: '"' SCharSequence? '"' ;
+
+fragment SCharSequence: SChar+ ;
+
+fragment SChar:
+    ~["\\\r\n]
+    | EscapeSequence
+    | '\\\n'
+    | '\\\r\n'
+    ;
+
+fragment EscapeSequence:
+    SimpleEscapeSequence
+
+    ;
+
+fragment SimpleEscapeSequence: '\\' ['"?abfnrtv\\];
 
 // TODO: unescaped_character, escaped_character
 
