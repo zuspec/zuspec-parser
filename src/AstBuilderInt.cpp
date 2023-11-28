@@ -552,6 +552,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
 
     ast::IProceduralStmtSequenceBlock *body = m_factory->mkProceduralStmtSequenceBlock();
     std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
+    DEBUG("Function has %d statements", items.size());
     m_exec_scope_s.push_back(body);
     for (std::vector<PSSParser::Procedural_stmtContext *>::const_iterator
         it=items.begin();
@@ -559,6 +560,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
         addExecStmt(*it);
     }
     m_exec_scope_s.pop_back();
+    DEBUG("Result is %d statements in body", body->getChildren().size());
 
     ast::PlatQual platqual = ast::PlatQual::PlatQual_None;
 
@@ -645,6 +647,8 @@ antlrcpp::Any AstBuilderInt::visitProcedural_sequence_block_stmt(PSSParser::Proc
         it!=items.end(); it++) {
         addExecStmt(*it);
     }
+
+    m_exec_scope_s.pop_back();
 
     m_exec_stmt = block;
     DEBUG_LEAVE("visitProcedural_sequence_block_stmt");
@@ -2197,12 +2201,16 @@ ast::IExecStmt *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *ctx
 }
 
 void AstBuilderInt::addExecStmt(PSSParser::Procedural_stmtContext *ctx) {
+    DEBUG_ENTER("addExecStmt");
     ast::IExecStmt *stmt = mkExecStmt(ctx);
 
     if (stmt) {
         m_exec_scope_s.back()->getChildren().push_back(ast::IExecStmtUP(stmt));
+    } else {
+        ERROR("null exec stmt");
     }
 
+    DEBUG_LEAVE("addExecStmt");
 }
 
 static std::map<std::string, ParamDir> param_dir_m = {

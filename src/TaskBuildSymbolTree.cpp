@@ -365,6 +365,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
     m_scope_s.push_back(body);
     func_sym->setBody(body);
     func_sym->getChildren().push_back(body);
+    DEBUG("Function body has %d statements", i->getBody()->getChildren().size());
     for (std::vector<ast::IExecStmtUP>::const_iterator
         it=i->getBody()->getChildren().begin();
         it!=i->getBody()->getChildren().end(); it++) {
