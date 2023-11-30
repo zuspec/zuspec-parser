@@ -43,8 +43,10 @@ public:
     virtual ~TaskEvalExpr() {}
 
     IVal *eval(ast::IExpr *expr) {
+        DEBUG_ENTER("eval");
         m_val.reset();
         expr->accept(m_this);
+        DEBUG_LEAVE("eval");
         return m_val.release();
     }
 
@@ -205,6 +207,16 @@ public:
         DEBUG_LEAVE("visitExprSubscript");
     }
 
+    virtual void visitField(ast::IField *i) override {
+        DEBUG_ENTER("visitField %s", i->getName()->getId().c_str());
+        if (i->getInit()) {
+            i->getInit()->accept(m_this);
+        } else {
+            DEBUG("TODO: Field doesn't have an initial value");
+        }
+        DEBUG_LEAVE("visitField %s", i->getName()->getId().c_str());
+    }
+
     virtual void visitExprUnary(ast::IExprUnary *i) override {
         DEBUG_ENTER("visitExprUnary");
         DEBUG("TODO: visitExprUnary");
@@ -212,7 +224,8 @@ public:
     }
 
     virtual void visitExprUnsignedNumber(ast::IExprUnsignedNumber *i) override {
-        DEBUG_ENTER("visitExprUnsignedNumber");
+        DEBUG_ENTER("visitExprUnsignedNumber width=%d value=%d",
+            i->getWidth(), i->getValue());
         m_val = IValUP(m_factory->mkValInt(false, i->getWidth(), i->getValue()));
         DEBUG_LEAVE("visitExprUnsignedNumber");
     }
