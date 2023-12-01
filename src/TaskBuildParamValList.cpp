@@ -118,7 +118,8 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
                 fprintf(stdout, "TODO: no ptype_decl captured\n");
             }
 
-            DEBUG("Add parameter %s", name->getId().c_str());
+            DEBUG("Add parameter %s", (name)?name->getId().c_str():"<unknown>");
+            fflush(stdout);
             ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
                 copier.copyT<ast::IExprId>(name),
                 copier.copy(m_pval_type->getValue())
@@ -186,8 +187,19 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
     return m_ret;
 }
 
+void TaskBuildParamValList::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
+    DEBUG_ENTER("visitDataTypeUserDefined");
+
+    DEBUG_LEAVE("visitDataTypeUserDefined");
+}
+
 void TaskBuildParamValList::visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) {
     DEBUG_ENTER("visitTemplateParamTypeValue");
+    if (i->getValue()) {
+        DEBUG_ENTER("Visit type-value");
+        i->getValue()->accept(m_this);
+        DEBUG_LEAVE("Visit type-value");
+    }
     m_pval_type = i;
     DEBUG_LEAVE("visitTemplateParamTypeValue");
 }

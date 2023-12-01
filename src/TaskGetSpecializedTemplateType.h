@@ -38,10 +38,12 @@ public:
     virtual ~TaskGetSpecializedTemplateType();
 
     ast::ISymbolRefPath *find(
+        const parser::ISymbolTableIterator  *root_it,
         const ast::ISymbolRefPath           *type,
         const ast::ITemplateParamDeclList   *params);
 
     ast::ISymbolRefPath *mk(
+        const parser::ISymbolTableIterator  *root_it,
         const ast::ISymbolRefPath           *type,
         ast::ITemplateParamDeclList         *params);
 

@@ -51,6 +51,9 @@ TOK_STREAM: 'stream';
 TOK_STATE: 'state';
 TOK_REF: 'ref';
 TOK_RESOURCE: 'resource';
+
+/* Make exec-block kinds local instead
+   of global keywords
 TOK_PRE_SOLVE: 'pre_solve';
 TOK_POST_SOLVE: 'post_solve';
 TOK_BODY: 'body';
@@ -61,6 +64,8 @@ TOK_RUN_END: 'run_end';
 TOK_INIT: 'init';
 TOK_INIT_UP: 'init_up';
 TOK_INIT_DOWN: 'init_down';
+ */ 
+
 TOK_SUPER: 'super';
 TOK_PLUS_EQ: '+=';
 TOK_MINUS_EQ: '-=';

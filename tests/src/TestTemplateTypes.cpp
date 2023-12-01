@@ -127,5 +127,53 @@ TEST_F(TestTemplateTypes, two_equiv_simple_specializations) {
     ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
 }
 
+TEST_F(TestTemplateTypes, type_param_with_specialized_default) {
+    const char *text = R"(
+        package p {
+            struct sz_t<type T> {
+                static const int xz;
+            }
+
+            struct Q<type R, int SZ=sz_t<R>::xz> {
+                rand R   v1;
+            }
+
+            struct Top {
+//                Q<int,sz_t<int>::xz>        v1;
+                Q<int>        v1;
+//                Q<int>        v2;
+            }
+        }
+    )";
+    enableDebug(true);
+    MarkerCollector marker_c; 
+    std::vector<ast::IGlobalScopeUP> files;
+
+    files.push_back(ast::IGlobalScopeUP(parse(
+        &marker_c,
+        text,
+        "template_smoke.pss"
+    )));
+
+    for (std::vector<IMarkerUP>::const_iterator
+        it=marker_c.markers().begin();
+        it!=marker_c.markers().end(); it++) {
+        fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
+    }
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+
+    ast::ISymbolScopeUP root(link(
+        &marker_c,
+        files
+    ));
+
+    for (std::vector<IMarkerUP>::const_iterator
+        it=marker_c.markers().begin();
+        it!=marker_c.markers().end(); it++) {
+        fprintf(stdout, "Marker: %s\n", (*it)->msg().c_str());
+    }
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+}
+
 }
 }

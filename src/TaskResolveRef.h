@@ -47,6 +47,8 @@ public:
         const ISymbolTableIterator      *scope,
         ast::IExpr                      *ref);
 
+    virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;
+
     virtual void visitExprId(ast::IExprId *i) override;
 
     virtual void visitExprMemberPathElem(ast::IExprMemberPathElem *i) override;
@@ -66,6 +68,10 @@ public:
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
 
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override;
+
+    virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) override;
+
+    virtual void visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) override;
 
     virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) override;
 

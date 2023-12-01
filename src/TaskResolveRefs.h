@@ -25,13 +25,14 @@
 #include "zsp/parser/ISymbolTableIterator.h"
 #include "zsp/ast/ISymbolScope.h"
 #include "zsp/ast/impl/VisitorBase.h"
+#include "TaskResolveBase.h"
 
 namespace zsp {
 namespace parser {
 
 
 
-class TaskResolveRefs : public ast::VisitorBase {
+class TaskResolveRefs : public TaskResolveBase {
 public:
     TaskResolveRefs(
         dmgr::IDebugMgr     *dmgr,
@@ -43,8 +44,8 @@ public:
     void resolve(ast::ISymbolScope *root);
 
     void resolve(
-        parser::ISymbolTableIterator   *root_it,
-        ast::ISymbolTypeScope          *scope);
+        const parser::ISymbolTableIterator  *root_it,
+        ast::ISymbolTypeScope               *scope);
 
     virtual void visitActivityActionHandleTraversal(ast::IActivityActionHandleTraversal *i) override;
     
@@ -90,8 +91,6 @@ private:
     static dmgr::IDebug     *m_dbg;
     ast::ISymbolScope       *m_root;
     dmgr::IDebugMgr         *m_dmgr;
-    IFactory                *m_factory;
-    IMarkerListener         *m_marker_l;
     ISymbolTableIteratorUP  m_symtab_it;
 
 };

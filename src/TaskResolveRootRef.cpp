@@ -71,6 +71,14 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG("imports: %p", i->getImports());
     if (it != i->getSymtab().end()) {
         DEBUG("Found symbol %s @ index %d", m_id->getId().c_str(), it->second);
+        ast::IScopeChild *c = i->getChildren().at(it->second);
+
+        if (dynamic_cast<ast::ISymbolTypeScope *>(c)) {
+            DEBUG("Is a type scope");
+            if (dynamic_cast<ast::ISymbolTypeScope *>(c)->getPlist()) {
+                DEBUG("Is parameterized");
+            }
+        }
         m_ref = m_scope->getScopeSymbolPath(); // Path to 'i'
 
         // Now, add in the child element that we just found
@@ -112,6 +120,7 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
         if ((it=i->getPlist()->getSymtab().find(m_id->getId())) != i->getPlist()->getSymtab().end()) {
             // Target is a parameter value
             m_ref = m_scope->getScopeSymbolPath();
+            DEBUG("Found %s as a parameter", m_id->getId().c_str());
 
             m_ref->getPath().push_back({
                 ast::SymbolRefPathElemKind::ElemKind_ParamIdx, 

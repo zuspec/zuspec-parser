@@ -25,6 +25,8 @@
 #include "zsp/ast/IExprRefPathStatic.h"
 #include "zsp/ast/IFactory.h"
 #include "zsp/ast/IFunctionPrototype.h"
+#include "zsp/ast/ITemplateParamValueList.h"
+#include "zsp/ast/ITemplateParamValue.h"
 #include "zsp/parser/IFactory.h"
 
 namespace zsp {
@@ -50,6 +52,18 @@ public:
         }
         DEBUG_LEAVE("copy(IConstraintStmt)");
         return m_constraint;
+    }
+
+    ast::ITemplateParamValue *copy(ast::ITemplateParamValue *i) {
+        DEBUG_ENTER("copy(ITemplateParamValue)");
+        m_param_val = 0;
+        i->accept(m_this);
+
+        if (!m_param_val) {
+            ERROR("copy(paramvalue) failed");
+        }
+        DEBUG_LEAVE("copy(ITemplateParamValue)");
+        return m_param_val;
     }
 
     template <class T> T *copyT(ast::IConstraintStmt *i) {
@@ -198,11 +212,24 @@ public:
             ));
         }
 
+        if (i->getTarget()) {
+            ic->setTarget(copy(i->getTarget()));
+        }
+
         m_expr = ic;
     }
     
     virtual void visitTypeIdentifierElem(ast::ITypeIdentifierElem *i) { 
         ast::ITemplateParamValueList *plist = 0;
+
+        if (i->getParams()) {
+            plist = m_factory->mkTemplateParamValueList();
+            for (std::vector<ast::ITemplateParamValueUP>::const_iterator
+                it=i->getParams()->getValues().begin();
+                it!=i->getParams()->getValues().end(); it++) {
+                plist->getValues().push_back(ast::ITemplateParamValueUP(copy(it->get())));
+            }
+        }
 
         ast::ITypeIdentifierElem *ic = m_factory->mkTypeIdentifierElem(
             copyT<ast::IExprId>(i->getId()),
@@ -246,9 +273,23 @@ public:
     
     virtual void visitTemplateParamDecl(ast::ITemplateParamDecl *i) { }
     
-    virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) { }
+    virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) { 
+        DEBUG_ENTER("visitTemplateParamTypeValue");
+        ast::ITemplateParamTypeValue *ic = m_factory->mkTemplateParamTypeValue(
+            copyT<ast::IDataType>(i->getValue())
+        );
+        m_param_val = ic;
+        DEBUG_LEAVE("visitTemplateParamTypeValue");
+    }
     
-    virtual void visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) { }
+    virtual void visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) { 
+        DEBUG_ENTER("visitTemplateParamExprValue");
+        ast::ITemplateParamExprValue *ic = m_factory->mkTemplateParamExprValue(
+            copyT<ast::IExpr>(i->getValue())
+        );
+        m_param_val = ic;
+        DEBUG_LEAVE("visitTemplateParamExprValue");
+    }
     
     virtual void visitActivityStmt(ast::IActivityStmt *i) { }
     
@@ -341,6 +382,7 @@ public:
                 plist->getParameters().push_back(ast::IExprUP(copy(it->get())));
             }
         }
+
         m_expr = m_factory->mkExprMemberPathElem(
             copyT<ast::IExprId>(i->getId()),
             plist,
@@ -745,6 +787,7 @@ private:
     ast::IConstraintStmt            *m_constraint;
     ast::IDataType                  *m_dt;
     ast::IExpr                      *m_expr;
+    ast::ITemplateParamValue        *m_param_val;
     ast::IScopeChild                *m_sc;
 
 };

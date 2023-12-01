@@ -506,9 +506,36 @@ static std::map<std::string, ast::ExecKind> exec_kind_m = {
 
 antlrcpp::Any AstBuilderInt::visitExec_block(PSSParser::Exec_blockContext *ctx) {
     DEBUG_ENTER("visitExec_block");
-    ast::IExecBlock *exec = m_factory->mkExecBlock(
-        exec_kind_m.find(ctx->exec_kind()->getText())->second
-    );
+    std::map<std::string, ast::ExecKind>::const_iterator kind_it;
+    kind_it = exec_kind_m.find(ctx->exec_kind()->identifier()->getText());
+
+    if (kind_it == exec_kind_m.end()) {
+	    if (m_marker_l) {
+            char tmp[1024];
+            std::string msg;
+		    ast::Location loc;
+		    loc.fileid = 0;
+		    loc.lineno = (int32_t)ctx->exec_kind()->identifier()->start->getLine();
+		    loc.linepos = (int32_t)ctx->exec_kind()->identifier()->start->getCharPositionInLine()+1;
+
+            snprintf(tmp, sizeof(tmp), 
+                "unknown exec-block kind \"%s\" specified. Expect one of ", 
+                ctx->exec_kind()->identifier()->getText().c_str());
+            msg = tmp;
+            msg += "(body, header, declaration, run_start, run_end, init, init_down, init_up, pre_solve, post_solve)";
+
+		    Marker m(
+				msg,
+				MarkerSeverityE::Error,
+				loc);
+		    m_marker_l->marker(&m);
+	    }
+
+        // Stub for now
+        kind_it = exec_kind_m.find("body");
+
+    }
+    ast::IExecBlock *exec = m_factory->mkExecBlock(kind_it->second);
 
     m_exec_scope_s.push_back(exec);
     std::vector<PSSParser::Exec_stmtContext *> items = ctx->exec_stmt();
@@ -1131,7 +1158,13 @@ antlrcpp::Any AstBuilderInt::visitInteger_type(PSSParser::Integer_typeContext *c
 
 	if (ctx->lhs) {
 		width = mkExpr(ctx->lhs);
-	}
+	} else {
+        if (ctx->integer_atom_type()->TOK_INT()) {
+            width = m_factory->mkExprUnsignedNumber("32", 32, 32);
+        } else {
+            width = m_factory->mkExprUnsignedNumber("1", 32, 1);
+        }
+    }
 
 	if (ctx->is_in) {
 		in = mkDomainOpenRangeList(ctx->domain);
@@ -2429,6 +2462,7 @@ ast::IExprMemberPathElem *AstBuilderInt::mkMemberPathElem(
 void AstBuilderInt::mkTypeId(
 		std::vector<IExprIdUP>					&type_id,
 		PSSParser::Type_identifierContext		*ctx) {
+    DEBUG("FIXME: mkTypeId<type_id, ctxt>");
 	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
 		it=ctx->type_identifier_elem().begin();
 		it!=ctx->type_identifier_elem().end(); it++) {
@@ -2452,6 +2486,7 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
         ast::ITemplateParamValueList *params = 0;
 
         if ((*it)->template_param_value_list()) {
+            DEBUG("Parameterized element");
             params = mkTemplateParamValueList((*it)->template_param_value_list());
         }
 

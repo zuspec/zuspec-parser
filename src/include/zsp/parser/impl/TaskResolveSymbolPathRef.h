@@ -55,7 +55,6 @@ public:
             it!=ref->getPath().end(); it++) {
             DEBUG("Path: %d %d", it->kind, it->idx);
         }
-        fflush(stdout);
 
         for (std::vector<ast::SymbolRefPathElem>::const_iterator
             it=ref->getPath().begin();
@@ -92,6 +91,13 @@ public:
             
             if (it+1 != ref->getPath().end()) {
                 scope = dynamic_cast<ast::ISymbolScope *>(ret);
+            }
+
+            if (!scope) {
+                ERROR("Failed to get scope @ %d/%d",
+                    (it-ref->getPath().begin()), ref->getPath().size());
+                ret = 0;
+                break;
             }
         }
 
@@ -174,6 +180,33 @@ public:
 //            if (it+1 != ref->getPath().end()) {
 //                scope = dynamic_cast<ast::ISymbolScope *>(ret);
 //            }
+        }
+
+        DEBUG_LEAVE("mkIterator");
+
+        return ret;
+    }
+
+parser::ISymbolTableIterator *mkIterator(
+            parser::ISymbolTableIterator    *ret,
+            ast::ISymbolScope               *target) {
+        DEBUG_ENTER("mkIterator root=%p", m_root);
+        ast::ISymbolScope *scope = m_root;
+
+        std::vector<ast::ISymbolScope *> scopes;
+
+        ast::ISymbolScope *c = target;
+        while (c && c != m_root) {
+            DEBUG("Scope: %s", c->getName().c_str());
+            scopes.push_back(c);
+            c = c->getUpper();
+        }
+
+        for (std::vector<ast::ISymbolScope *>::const_reverse_iterator
+            it=scopes.rbegin();
+            it!=scopes.rend(); it++) {
+            DEBUG("pushScope");
+            ret->pushScope(dynamic_cast<ast::ISymbolScope *>(*it));
         }
 
         DEBUG_LEAVE("mkIterator");

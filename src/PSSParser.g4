@@ -321,7 +321,11 @@ exec_block:
 	TOK_RCBRACE 
 	;
 
-exec_kind:
+exec_kind: 
+    identifier
+    ;
+    /* Make exec-block kinds local instead
+       of global keywords
 	TOK_PRE_SOLVE 
 	| TOK_POST_SOLVE 
 	| TOK_BODY
@@ -333,6 +337,7 @@ exec_kind:
 	| TOK_INIT_DOWN
 	| TOK_INIT
 	;	
+     */
 
 exec_stmt:
 	procedural_stmt

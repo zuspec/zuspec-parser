@@ -42,6 +42,8 @@ public:
         ast::ISymbolScope               *plist,
         ast::ITemplateParamValueList    *pvals);
 
+    virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;
+
     virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) override;
     
     virtual void visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) override;

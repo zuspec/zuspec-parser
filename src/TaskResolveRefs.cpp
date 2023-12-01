@@ -23,6 +23,7 @@
 #include "TaskResolveImports.h"
 #include "TaskResolveRef.h"
 #include "TaskResolveRefs.h"
+#include "TaskSpecializeParameterizedRef.h"
 #include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
 #include "zsp/parser/impl/TaskGetElemSymbolScope.h"
 #include "zsp/parser/impl/TaskIsPyRef.h"
@@ -35,7 +36,7 @@ namespace parser {
 TaskResolveRefs::TaskResolveRefs(
     dmgr::IDebugMgr     *dmgr,
     IFactory            *factory,
-    IMarkerListener     *marker_l) : m_factory(factory), m_marker_l(marker_l) {
+    IMarkerListener     *marker_l) : TaskResolveBase(factory, marker_l) {
     m_dmgr = dmgr;
     m_root = 0;
     DEBUG_INIT("TaskResolveRefs", dmgr);
@@ -65,9 +66,10 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
 }
 
 void TaskResolveRefs::resolve(
-    parser::ISymbolTableIterator            *root_it,
+    const parser::ISymbolTableIterator      *root_it,
     ast::ISymbolTypeScope                   *scope) {
     DEBUG_ENTER("resolve (iterator, scope)");
+
     // TODO: obtain root
     parser::ISymbolTableIteratorUP root_it_c(root_it->clone());
     DEBUG("Scope Stack");
@@ -81,18 +83,8 @@ void TaskResolveRefs::resolve(
 
     TaskLinkActionCompRefFields(m_factory).link(scope);
 
-//    m_symtab_it->pushScope(scope);
     scope->accept(m_this);
-//    m_symtab_it->popScope();
 
-    /*
-    for (std::vector<ast::IScopeChild *>::const_iterator
-        it=root->getChildren().begin();
-        it!=root->getChildren().end(); it++) {
-        (*it)->accept(this);
-    }
-     */
-    
     DEBUG_LEAVE("resolve (iterator, scope)");
 }
 
@@ -281,32 +273,49 @@ void TaskResolveRefs::visitExprRefPathStatic(ast::IExprRefPathStatic *i) {
                         (*it)->getId());
                 
                 if (!target) {
-                    ERROR("Failed to resolve symbol");
+                    addMarker(
+                        MarkerSeverityE::Error,
+                        (*it)->getId()->getLocation(),
+                        "failed to resolve symbol %s",
+                        (*it)->getId()->getId().c_str());
                     break;
                 }
+
+                if ((*it)->getParams()) {
+                    DEBUG("Ref elem %d is parameterized", (it-i->getBase().begin()));
+
+                    // Build out parameter value list
+                    target = TaskSpecializeParameterizedRef(
+                        m_root, m_factory, m_marker_l).specialize(
+                            m_symtab_it.get(),
+                            target, 
+                            (*it)->getParams());
+
+                    // TODO: do we need to delete target?
+                }
+
                 target_s = TaskResolveSymbolPathRef(
                     m_factory->getDebugMgr(),
                     m_root).resolve(target);
+
+                if ((*it)->getParams()) {
+                    DEBUG("Ref elem is parameterized");
+                }
 
                 if (!in_pyref) {
                     in_pyref |= TaskIsPyRef(m_factory->getDebugMgr()).check(target_s);
                     if (in_pyref) {
                         target->setPyref_idx(0);
+                    } else {
                     }
                 }
-            } else {
+            } else if (!in_pyref) {
                 // Need to resolve within root element ... unless we're down a Python scope
                 // Visit the element to resolve internal references
                 (*it)->accept(m_this);
 
-                if (!in_pyref) {
-                    // Resolve next element
-
-//                    in_pyref |= TaskIsPyRef().check(t);
-                } else {
-                    DEBUG("element is inside a pyref path");
-                }
-
+            } else {
+                DEBUG("element is inside a pyref path");
             }
         }
         i->setTarget(target);
@@ -480,10 +489,29 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
     } else {
         ast::SymbolRefPathElemKind kind = ast::SymbolRefPathElemKind::ElemKind_ChildIdx;
 
+
         if (i_ts->getParams() && i_ts->getParams()->getSpecialized()) {
             kind = ast::SymbolRefPathElemKind::ElemKind_TypeSpec;
+
+            // TODO: need a way to detect that we have a superseding 
+            // scope stack, so we don't redo it
+
+            // Create a symbol-table iterator that:
+            // - starts with m_root
+            // - is preloaded with the scopes of the target type
+
+            ISymbolTableIterator *prev = m_symtab_it.release();
+            m_symtab_it = ISymbolTableIteratorUP(
+                TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).mkIterator(
+                    m_factory->mkAstSymbolTableIterator(m_root),
+                    i));
+            // TODO: need to resolve refs in the parameter list
+            // relative to the containing type
             // Ensure parameter references are resolved
+            DEBUG_ENTER("Resolve refs in parameter decl list");
             i_ts->getParams()->accept(m_this);
+            DEBUG_LEAVE("Resolve refs in parameter decl list");
+            m_symtab_it = ISymbolTableIteratorUP(prev);
         }
 
         // TODO: might need to defer this until after we've resolved
@@ -520,6 +548,11 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
 void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
     DEBUG_ENTER("visitDataTypeUserDefined");
+    if (i->getType_id()->getTarget()) {
+        DEBUG("Symbol already resolved");
+        DEBUG_LEAVE("visitDataTypeUserDefined");
+        return;
+    }
     ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
         m_symtab_it.get(),
         i->getType_id()
@@ -542,6 +575,7 @@ void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
 
     DEBUG_LEAVE("visitDataTypeUserDefined");
 }
+
 
 void TaskResolveRefs::visitTypeIdentifier(ast::ITypeIdentifier *i) {
     DEBUG_ENTER("visitTypeIdentifier");

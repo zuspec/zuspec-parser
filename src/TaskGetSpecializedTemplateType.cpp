@@ -45,6 +45,7 @@ TaskGetSpecializedTemplateType::~TaskGetSpecializedTemplateType() {
 }
 
 ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
+    const parser::ISymbolTableIterator  *root_it,
     const ast::ISymbolRefPath           *type,
     const ast::ITemplateParamDeclList   *params) {
     DEBUG_ENTER("find");
@@ -88,6 +89,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
 }
 
 ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
+    const parser::ISymbolTableIterator  *root_it,
     const ast::ISymbolRefPath           *type,
     ast::ITemplateParamDeclList         *params) {
     DEBUG_ENTER("mk params=%p (%d)", params, (params)?params->getParams().size():-1);
@@ -136,8 +138,9 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
         type_up->getName().c_str(),
         type_up);
     type_up->getSpec_types().push_back(ast::ISymbolTypeScopeUP(type_ss));
+    type_ss->setUpper(type_up);
 
-    parser::ISymbolTableIteratorUP root_it(
+    parser::ISymbolTableIteratorUP root_it_c(
         TaskResolveSymbolPathRef(m_factory->getDebugMgr(),m_root).mkIterator(
             m_factory->mkAstSymbolTableIterator(m_root),
             type));
@@ -153,7 +156,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
         m_factory->getDebugMgr(),
         m_factory,
         m_marker_l).resolve(
-            root_it.get(),
+            root_it_c.get(), // .get(),
             type_ss);
     DEBUG_LEAVE("Resolve Specialized Type %s", type_ss->getName().c_str());
 
