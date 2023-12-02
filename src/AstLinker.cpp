@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "AstLinker.h"
+#include "ResolveContext.h"
 #include "TaskApplyTypeExtensions.h"
 #include "TaskBuildSymbolTree.h"
 #include "TaskResolveRefs.h"
@@ -53,7 +54,9 @@ ast::ISymbolScope *AstLinker::link(
     TaskApplyTypeExtensions(m_dmgr, m_factory, marker_l).apply(symtree);
 
     // Finally, resolve remaining names
-    TaskResolveRefs(m_dmgr, m_factory, marker_l).resolve(symtree);
+
+    ResolveContext ctxt(m_factory, marker_l, symtree);
+    TaskResolveRefs(&ctxt).resolve(symtree);
 
     return symtree;
 }

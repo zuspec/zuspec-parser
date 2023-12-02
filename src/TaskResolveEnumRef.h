@@ -21,28 +21,26 @@
 #pragma once
 #include "zsp/parser/IFactory.h"
 #include "zsp/ast/impl/VisitorBase.h"
+#include "TaskResolveBase.h"
 
 namespace zsp {
 namespace parser {
 
 
 
-class TaskResolveEnumRef : public virtual ast::VisitorBase {
+class TaskResolveEnumRef : public TaskResolveBase {
 public:
-    TaskResolveEnumRef(IFactory *factory);
+    TaskResolveEnumRef(ResolveContext *ctxt);
 
     virtual ~TaskResolveEnumRef();
 
-    ast::ISymbolRefPath *resolve(
-        ISymbolTableIterator            *scope,
-        const ast::IExprId              *id);
+    ast::ISymbolRefPath *resolve(const ast::IExprId *id);
 
     void visitSymbolEnumScope(ast::ISymbolEnumScope *i);
 
 private:
     static dmgr::IDebug                 *m_dbg;
     const ast::IExprId                  *m_id;
-    const ISymbolTableIterator          *m_scope;
     ast::ISymbolRefPath                 *m_ref;
 
 };

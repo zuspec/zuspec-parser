@@ -22,17 +22,16 @@
 #include "dmgr/IDebugMgr.h"
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/parser/IMarkerListener.h"
+#include "TaskResolveBase.h"
 
 
 namespace zsp {
 namespace parser {
 
 
-class TaskResolveFieldRef : public ast::VisitorBase {
+class TaskResolveFieldRef : public TaskResolveBase {
 public:
-    TaskResolveFieldRef(
-        dmgr::IDebugMgr             *dmgr,
-        IMarkerListener             *marker_l);
+    TaskResolveFieldRef(ResolveContext *ctxt);
 
     virtual ~TaskResolveFieldRef();
 
@@ -55,7 +54,6 @@ public:
 
 private:
     static dmgr::IDebug                     *m_dbg;
-    IMarkerListener                         *m_marker_l;
     ast::IExprId                            *m_id;
     ast::ISymbolRefPath                     *m_path;
     ast::IScopeChild                        *m_ret;

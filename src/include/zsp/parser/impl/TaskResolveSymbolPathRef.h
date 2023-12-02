@@ -80,6 +80,9 @@ public:
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
                     DEBUG("Elem: TypeSpec %d", it->idx);
+                    DEBUG("Scope: %s (%d specializations)",
+                        scope_ts->getName().c_str(),
+                        scope_ts->getSpec_types().size());
                     ret = scope_ts->getSpec_types().at(it->idx).get();
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;

@@ -1,5 +1,5 @@
-/**
- * TaskResolveBase.h
+/*
+ * AssocDataTypeScope.cpp
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -16,40 +16,22 @@
  * limitations under the License.
  *
  * Created on:
- *     Author: 
+ *     Author:
  */
-#pragma once
-#include "dmgr/IDebugMgr.h"
-#include "zsp/parser/IFactory.h"
-#include "zsp/parser/IMarkerListener.h"
-#include "zsp/parser/ISymbolTableIterator.h"
-#include "zsp/ast/ISymbolScope.h"
-#include "zsp/ast/impl/VisitorBase.h"
-#include "ResolveContext.h"
+#include "AssocDataTypeScope.h"
+
 
 namespace zsp {
 namespace parser {
 
 
+AssocDataTypeScope::AssocDataTypeScope() {
 
-class TaskResolveBase : public virtual ast::VisitorBase {
-public:
-    TaskResolveBase(ResolveContext *ctxt);
+}
 
-    virtual ~TaskResolveBase();
+AssocDataTypeScope::~AssocDataTypeScope() {
 
-    void addMarker(
-        MarkerSeverityE         severity,
-        const ast::Location     &loc,
-        const char              *fmt, 
-        ...);
-
-protected:
-    ResolveContext          *m_ctxt;
-
-};
+}
 
 }
 }
-
-

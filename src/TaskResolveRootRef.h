@@ -22,24 +22,22 @@
 #include "dmgr/IDebugMgr.h"
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/parser/IFactory.h"
+#include "TaskResolveBase.h"
 
 namespace zsp {
 namespace parser {
 
 
 
-class TaskResolveRootRef : public ast::VisitorBase {
+class TaskResolveRootRef : public TaskResolveBase {
 public:
     TaskResolveRootRef(
-        IFactory            *factory,
-        IMarkerListener     *marker_l,
+        ResolveContext      *ctxt,
         bool                search_imp=true);
 
     virtual ~TaskResolveRootRef();
 
-    ast::ISymbolRefPath *resolve(
-        const ISymbolTableIterator      *scope,
-        const ast::IExprId              *id);
+    ast::ISymbolRefPath *resolve(const ast::IExprId *id);
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
@@ -61,11 +59,7 @@ private:
 
 private:
     static dmgr::IDebug             *m_dbg;
-    IMarkerUP                       m_marker;
-    IMarkerListener                 *m_marker_l;
-    IFactory                        *m_factory;
     bool                            m_search_imp;
-    ISymbolTableIteratorUP          m_scope;
     const ast::IExprId              *m_id;
     ast::ISymbolRefPath             *m_ref;
 };

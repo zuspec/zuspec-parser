@@ -18,7 +18,6 @@
  * Created on:
  *     Author:
  */
-#include <sstream>
 #include "Factory.h"
 #include "AstBuilder.h"
 #include "AstLinker.h"
@@ -28,8 +27,8 @@
 #include "MarkerCollector.h"
 #include "NameResolver.h"
 #include "TaskFindElementByLocation.h"
+#include "TaskLoadStandardLibrary.h"
 #include "ValInt.h"
-#include "pss_stdlib.h"
 
 
 namespace zsp {
@@ -62,12 +61,7 @@ ast::IFactory *Factory::getAstFactory() {
 void Factory::loadStandardLibrary(
     IAstBuilder             *ast_builder,
     ast::IGlobalScope       *global) {
-    
-    for (uint32_t i=0; pss_stdlib[i]; i++) {
-        std::stringstream s(pss_stdlib[i]);
-
-        ast_builder->build(global, &s);
-    }
+    TaskLoadStandardLibrary(m_dmgr).load(ast_builder, global);
 }
 
 IAstBuilder *Factory::mkAstBuilder(IMarkerListener *marker_l) {

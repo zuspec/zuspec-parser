@@ -26,10 +26,7 @@ namespace zsp {
 namespace parser {
 
 
-TaskResolveBase::TaskResolveBase(
-        IFactory            *factory,
-        IMarkerListener     *marker_l) :
-    m_factory(factory), m_marker_l(marker_l) {
+TaskResolveBase::TaskResolveBase(ResolveContext *ctxt) : m_ctxt(ctxt) {
 
 }
 
@@ -41,18 +38,11 @@ void TaskResolveBase::addMarker(
         MarkerSeverityE         severity,
         const ast::Location     &loc,
         const char              *fmt, ...) {
-    char tmp[1024];
     va_list ap;
     
     va_start(ap, fmt);
-    vsnprintf(tmp, sizeof(tmp), fmt, ap);
+    m_ctxt->addMarker(severity, loc, fmt, ap);
     va_end(ap);
-
-    IMarkerUP marker(m_factory->mkMarker(
-        tmp,
-        severity,
-        loc));
-    m_marker_l->marker(marker.get());
 }
 
 }

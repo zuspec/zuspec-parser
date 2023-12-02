@@ -22,6 +22,7 @@
 #include "TaskGetSpecializedTemplateType.h"
 #include "zsp/parser/impl/TaskCopyAst.h"
 #include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
+#include "AssocDataTypeScope.h"
 #include "TaskBuildSymbolTree.h"
 #include "TaskCompareParamLists.h"
 #include "TaskResolveRefs.h"
@@ -32,11 +33,8 @@ namespace parser {
 
 
 TaskGetSpecializedTemplateType::TaskGetSpecializedTemplateType(
-    ast::ISymbolScope       *root,
-    IFactory                *factory,
-    IMarkerListener         *marker_l) : 
-        m_root(root), m_factory(factory), m_marker_l(marker_l) {
-    DEBUG_INIT("TaskGetSpecializedTemplateType", factory->getDebugMgr());
+    ResolveContext          *ctxt) : m_ctxt(ctxt) {
+    DEBUG_INIT("TaskGetSpecializedTemplateType", ctxt->getDebugMgr());
 
 }
 
@@ -45,12 +43,13 @@ TaskGetSpecializedTemplateType::~TaskGetSpecializedTemplateType() {
 }
 
 ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
-    const parser::ISymbolTableIterator  *root_it,
     const ast::ISymbolRefPath           *type,
     const ast::ITemplateParamDeclList   *params) {
     DEBUG_ENTER("find");
     ast::ISymbolTypeScope *type_up = 
-        TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolveT<ast::ISymbolTypeScope>(type);
+        TaskResolveSymbolPathRef(
+            m_ctxt->getDebugMgr(), 
+            m_ctxt->root()).resolveT<ast::ISymbolTypeScope>(type);
     
     DEBUG(" (find) type_up=%s", type_up->getName().c_str());
 
@@ -58,7 +57,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
 
     // Search through the list of available specializations for
     // a matching one
-    TaskCompareParamLists p_comp(m_factory, m_root);
+    TaskCompareParamLists p_comp(m_ctxt->getFactory(), m_ctxt->root());
     DEBUG("There are %d existing specializations", type_up->getSpec_types().size());
     for (int32_t i=0; i<type_up->getSpec_types().size(); i++) {
         ast::ISymbolTypeScope *sym_type_s_t = type_up->getSpec_types().at(i).get();
@@ -67,7 +66,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
         if (p_comp.equal(params, type_s_t->getParams())) {
             // Have a match!
             DEBUG("Found plist match");
-            ret = m_factory->getAstFactory()->mkSymbolRefPath();
+            ret = m_ctxt->getFactory()->getAstFactory()->mkSymbolRefPath();
 
             // Copy over initial path
             ret->getPath().insert(
@@ -89,16 +88,15 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::find(
 }
 
 ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
-    const parser::ISymbolTableIterator  *root_it,
     const ast::ISymbolRefPath           *type,
     ast::ITemplateParamDeclList         *params) {
     DEBUG_ENTER("mk params=%p (%d)", params, (params)?params->getParams().size():-1);
-    ast::ISymbolTypeScope *type_up = 
-        TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolveT<ast::ISymbolTypeScope>(type);
+    ast::ISymbolTypeScope *type_up = TaskResolveSymbolPathRef(
+        m_ctxt->getDebugMgr(), m_ctxt->root()).resolveT<ast::ISymbolTypeScope>(type);
     DEBUG("type_up=%s", type_up->getName().c_str());
     fflush(stdout);
 
-    TaskCopyAst copier(m_factory);
+    TaskCopyAst copier(m_ctxt->getFactory());
 
     ast::ITypeScope *type_s = 
         copier.copyT<ast::ITypeScope>(type_up->getTarget());
@@ -117,13 +115,13 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
 
     // Have the specialized type point to the unspecialized
     // parameterized type as its super type
-    ast::ITypeIdentifier *super_t = m_factory->getAstFactory()->mkTypeIdentifier();
+    ast::ITypeIdentifier *super_t = m_ctxt->getFactory()->getAstFactory()->mkTypeIdentifier();
     super_t->setTarget(copier.copy(type));
 
     // We must now build a symbol-scope node for the type scope
     ast::ISymbolTypeScope *type_ss = TaskBuildSymbolTree(
-        m_factory->getDebugMgr(),
-        m_factory->getAstFactory(),
+        m_ctxt->getDebugMgr(),
+        m_ctxt->getFactory()->getAstFactory(),
         0).build(type_s);
 
     // Give the new type an appropriate name
@@ -140,10 +138,18 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     type_up->getSpec_types().push_back(ast::ISymbolTypeScopeUP(type_ss));
     type_ss->setUpper(type_up);
 
-    parser::ISymbolTableIteratorUP root_it_c(
-        TaskResolveSymbolPathRef(m_factory->getDebugMgr(),m_root).mkIterator(
-            m_factory->mkAstSymbolTableIterator(m_root),
-            type));
+    if (!m_ctxt->specializationDepth()) {
+        DEBUG("Change symbol-lookup scope");
+        m_ctxt->pushSymtab(TaskResolveSymbolPathRef(
+            m_ctxt->getDebugMgr(), m_ctxt->root()).mkIterator(
+                m_ctxt->getFactory()->mkAstSymbolTableIterator(m_ctxt->root()),
+                type)
+            );
+    } else {
+        DEBUG("Leaving symbol-lookup scope %d", m_ctxt->specializationDepth());
+    }
+
+    m_ctxt->incSpecializationDepth();
 
     // Need to remove the leaf node in this case, since
     // the symbol resolver will attempt to push it on again
@@ -152,15 +158,21 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     // Resolution must be relative to the declaration 
     // scope of the specialized type
     DEBUG_ENTER("Resolve Specialized Type %s", type_ss->getName().c_str());
-    TaskResolveRefs(
-        m_factory->getDebugMgr(),
-        m_factory,
-        m_marker_l).resolve(
-            root_it_c.get(), // .get(),
-            type_ss);
+    TaskResolveRefs(m_ctxt).resolve(type_ss);
     DEBUG_LEAVE("Resolve Specialized Type %s", type_ss->getName().c_str());
 
-    ast::ISymbolRefPath *ret = m_factory->getAstFactory()->mkSymbolRefPath();
+    if (type_ss->getTarget()->getAssocData()) {
+        DEBUG("Type has associated data");
+        AssocDataTypeScope *ad = dynamic_cast<AssocDataTypeScope *>(
+            type_ss->getTarget()->getAssocData());
+        if (ad) {
+            ad->postSpecialize(
+                m_ctxt, 
+                dynamic_cast<ast::ITypeScope *>(type_ss->getTarget()));
+        }
+    }
+
+    ast::ISymbolRefPath *ret = m_ctxt->getFactory()->getAstFactory()->mkSymbolRefPath();
 
     // Copy over initial path
     ret->getPath().insert(
@@ -173,6 +185,12 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
         ast::SymbolRefPathElemKind::ElemKind_TypeSpec,
         id
     });
+
+    m_ctxt->decSpecializationDepth();
+
+    if (!m_ctxt->specializationDepth()) {
+        m_ctxt->popSymtab();
+    }
     
     DEBUG_LEAVE("mk %p", ret);
 
@@ -182,7 +200,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
 std::string TaskGetSpecializedTemplateType::mkTypename(
         const ast::ISymbolRefPath           *type,
         ast::ITemplateParamDeclList         *params) {
-    std::string name = TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).mkQName(type);
+    std::string name = TaskResolveSymbolPathRef(m_ctxt->getDebugMgr(), m_ctxt->root()).mkQName(type);
 
     name += "<";
 

@@ -26,26 +26,22 @@ namespace zsp {
 namespace parser {
 
 
-TaskResolveEnumRef::TaskResolveEnumRef(IFactory *factory) {
-    DEBUG_INIT("zsp::parser::TaskResolveEnumRef", factory->getDebugMgr());
-
+TaskResolveEnumRef::TaskResolveEnumRef(ResolveContext *ctxt) : TaskResolveBase(ctxt) {
+    DEBUG_INIT("zsp::parser::TaskResolveEnumRef", ctxt->getDebugMgr());
 }
 
 TaskResolveEnumRef::~TaskResolveEnumRef() {
 
 }
 
-ast::ISymbolRefPath *TaskResolveEnumRef::resolve(
-        ISymbolTableIterator            *scope,
-        const ast::IExprId              *id) {
+ast::ISymbolRefPath *TaskResolveEnumRef::resolve(const ast::IExprId *id) {
     DEBUG_ENTER("resolve");
-    m_scope = scope;
     m_id = id;
     m_ref = 0;
 
     for (std::vector<ast::IScopeChild *>::const_iterator
-        it=scope->getScope()->getChildren().begin();
-        it!=scope->getScope()->getChildren().end(); it++) {
+        it=m_ctxt->symtab()->getScope()->getChildren().begin();
+        it!=m_ctxt->symtab()->getScope()->getChildren().end(); it++) {
         (*it)->accept(m_this);
     }
 
@@ -61,7 +57,7 @@ void TaskResolveEnumRef::visitSymbolEnumScope(ast::ISymbolEnumScope *i) {
         i->getSymtab().find(m_id->getId());
     if (it != i->getSymtab().end()) {
         DEBUG("Found symbol %s", m_id->getId().c_str());
-        m_ref = m_scope->getScopeSymbolPath();
+        m_ref = m_ctxt->symtab()->getScopeSymbolPath();
 
         m_ref->getPath().push_back({
             ast::SymbolRefPathElemKind::ElemKind_ChildIdx, 

@@ -29,12 +29,9 @@ namespace zsp {
 namespace parser {
 
 
-TaskSpecializeParameterizedRef::TaskSpecializeParameterizedRef(
-    ast::ISymbolScope       *root,
-    IFactory                *factory,
-    IMarkerListener         *marker_l) : 
-        m_root(root), m_factory(factory), m_marker_l(marker_l) {
-    DEBUG_INIT("zsp::parser::TaskSpecializeParameterizedRef", m_factory->getDebugMgr());
+TaskSpecializeParameterizedRef::TaskSpecializeParameterizedRef(ResolveContext *ctxt) :
+    m_ctxt(ctxt) {
+    DEBUG_INIT("zsp::parser::TaskSpecializeParameterizedRef", ctxt->getDebugMgr());
 }
 
 TaskSpecializeParameterizedRef::~TaskSpecializeParameterizedRef() {
@@ -42,14 +39,17 @@ TaskSpecializeParameterizedRef::~TaskSpecializeParameterizedRef() {
 }
 
 ast::ISymbolRefPath *TaskSpecializeParameterizedRef::specialize(
-        const parser::ISymbolTableIterator  *root_it,
         ast::ISymbolRefPath                 *target,
         ast::ITemplateParamValueList        *pvals) {
     DEBUG_ENTER("specialize");
     // Find the base type
-    ast::IScopeChild *target_sc = TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolve(target);
+    ast::IScopeChild *target_sc = TaskResolveSymbolPathRef(
+        m_ctxt->getDebugMgr(), 
+        m_ctxt->root()).resolve(target);
     ast::ISymbolTypeScope *target_c = 
-        TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolveT<ast::ISymbolTypeScope>(target);
+        TaskResolveSymbolPathRef(
+            m_ctxt->getDebugMgr(), 
+            m_ctxt->root()).resolveT<ast::ISymbolTypeScope>(target);
 
     if (!target_c) {
         DEBUG("TODO: Flag error about templated type");
@@ -64,14 +64,12 @@ ast::ISymbolRefPath *TaskSpecializeParameterizedRef::specialize(
     DEBUG("target: %s", target_c->getName().c_str());
 
     // Form parameter list 
-    ast::ITemplateParamDeclList *pdecl_list = TaskBuildParamValList(
-        m_root, m_factory, m_marker_l).build(
+    ast::ITemplateParamDeclList *pdecl_list = TaskBuildParamValList(m_ctxt).build(
             target_c->getPlist(),
             pvals);
-    TaskGetSpecializedTemplateType typespec_getter(m_root, m_factory, m_marker_l);
+    TaskGetSpecializedTemplateType typespec_getter(m_ctxt);
 
     ast::ISymbolRefPath *target_t = typespec_getter.find(
-        root_it,
         target, 
         pdecl_list);
 
@@ -82,7 +80,6 @@ ast::ISymbolRefPath *TaskSpecializeParameterizedRef::specialize(
     } else {
         DEBUG("Must create new specialization");
         target_t = typespec_getter.mk(
-            root_it,
             target, 
             pdecl_list);
     }

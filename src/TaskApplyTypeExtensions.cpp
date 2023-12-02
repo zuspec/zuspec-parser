@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "ResolveContext.h"
 #include "TaskApplyTypeExtensions.h"
 #include "TaskResolveImports.h"
 #include "TaskResolveRef.h"
@@ -53,10 +54,8 @@ void TaskApplyTypeExtensions::apply(ast::ISymbolScope *root) {
 
 void TaskApplyTypeExtensions::visitExtendEnum(ast::IExtendEnum *i) {
     DEBUG_ENTER("visitExtendEnum");
-    ast::ISymbolRefPath *target_p = 
-        TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
-            m_symtab_it.get(),
-            i->getTarget());
+    ResolveContext ctxt(m_factory, m_marker_l, m_root);
+    ast::ISymbolRefPath *target_p = TaskResolveRef(&ctxt).resolve(i->getTarget());
 
     if (!target_p) {
         DEBUG_LEAVE("visitExtendEnum - name resolution failure");
@@ -89,10 +88,8 @@ void TaskApplyTypeExtensions::visitExtendEnum(ast::IExtendEnum *i) {
 
 void TaskApplyTypeExtensions::visitExtendType(ast::IExtendType *i) {
     DEBUG_ENTER("visitExtendType");
-    ast::ISymbolRefPath *target_p = 
-        TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
-            m_symtab_it.get(),
-            i->getTarget());
+    ResolveContext ctxt(m_factory, m_marker_l, m_root);
+    ast::ISymbolRefPath *target_p = TaskResolveRef(&ctxt).resolve(i->getTarget());
 
     if (!target_p) {
         DEBUG_LEAVE("visitExtendType - resolution failure");
@@ -125,10 +122,9 @@ void TaskApplyTypeExtensions::visitSymbolEnumScope(ast::ISymbolEnumScope *i) {
 void TaskApplyTypeExtensions::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
     DEBUG_ENTER("visitSymbolExtendScope");
     ast::IExtendType *ast_target = dynamic_cast<ast::IExtendType *>(i->getTarget());
-    ast::ISymbolRefPath *target_p = 
-        TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
-            m_symtab_it.get(),
-            ast_target->getTarget());
+    ResolveContext ctxt(m_factory, m_marker_l, m_root);
+    ast::ISymbolRefPath *target_p = TaskResolveRef(&ctxt).resolve(
+        ast_target->getTarget());
 
     if (!target_p) {
         DEBUG_LEAVE("visitSymbolExtendScope - resolution failure");
@@ -180,9 +176,8 @@ void TaskApplyTypeExtensions::visitSymbolScope(ast::ISymbolScope *i) {
 
         if (i->getImports()) {
             DEBUG_ENTER("  Resolve Imports");
-            TaskResolveImports(m_root, m_factory, m_marker_l).resolve(
-                m_symtab_it.get(),
-                i);
+            ResolveContext ctxt(m_factory, m_marker_l, m_root);
+            TaskResolveImports(&ctxt).resolve(i);
             DEBUG_LEAVE("  Resolve Imports");
         }
 

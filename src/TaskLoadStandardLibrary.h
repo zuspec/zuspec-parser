@@ -1,5 +1,5 @@
 /**
- * TaskResolveBase.h
+ * TaskLoadStandardLibrary.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -20,32 +20,31 @@
  */
 #pragma once
 #include "dmgr/IDebugMgr.h"
-#include "zsp/parser/IFactory.h"
-#include "zsp/parser/IMarkerListener.h"
-#include "zsp/parser/ISymbolTableIterator.h"
-#include "zsp/ast/ISymbolScope.h"
+#include "zsp/parser/IAstBuilder.h"
+#include "zsp/ast/IGlobalScope.h"
 #include "zsp/ast/impl/VisitorBase.h"
-#include "ResolveContext.h"
 
 namespace zsp {
 namespace parser {
 
 
 
-class TaskResolveBase : public virtual ast::VisitorBase {
+class TaskLoadStandardLibrary : public virtual ast::VisitorBase {
 public:
-    TaskResolveBase(ResolveContext *ctxt);
+    TaskLoadStandardLibrary(dmgr::IDebugMgr *dmgr);
 
-    virtual ~TaskResolveBase();
+    virtual ~TaskLoadStandardLibrary();
 
-    void addMarker(
-        MarkerSeverityE         severity,
-        const ast::Location     &loc,
-        const char              *fmt, 
-        ...);
+    void load(
+        IAstBuilder         *ast_builder,
+        ast::IGlobalScope   *global);
 
-protected:
-    ResolveContext          *m_ctxt;
+    virtual void visitComponent(ast::IComponent *i) override;
+
+    virtual void visitStruct(ast::IStruct *i) override;
+
+private:
+    static dmgr::IDebug             *m_dbg;
 
 };
 

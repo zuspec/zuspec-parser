@@ -23,6 +23,7 @@
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/parser/IMarkerListener.h"
+#include "ResolveContext.h"
 
 namespace zsp {
 namespace parser {
@@ -31,10 +32,7 @@ namespace parser {
 
 class TaskExpr2DataType : public ast::VisitorBase {
 public:
-    TaskExpr2DataType(
-        IFactory            *factory,
-        IMarkerListener     *marker_l
-    );
+    TaskExpr2DataType(ResolveContext *ctxt);
 
     virtual ~TaskExpr2DataType();
 
@@ -58,9 +56,7 @@ public:
 
 private:
     static dmgr::IDebug             *m_dbg;
-    IFactory                        *m_factory;
-    IMarkerListener                 *m_marker_l;
-    IMarkerUP                       m_marker;
+    ResolveContext                  *m_ctxt;
     ast::IDataType                  *m_ret;
 
 };

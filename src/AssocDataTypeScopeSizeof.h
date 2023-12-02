@@ -1,5 +1,5 @@
 /**
- * TaskResolveBase.h
+ * AssocDataTypeScopeSizeof.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -20,33 +20,24 @@
  */
 #pragma once
 #include "dmgr/IDebugMgr.h"
-#include "zsp/parser/IFactory.h"
-#include "zsp/parser/IMarkerListener.h"
-#include "zsp/parser/ISymbolTableIterator.h"
-#include "zsp/ast/ISymbolScope.h"
-#include "zsp/ast/impl/VisitorBase.h"
-#include "ResolveContext.h"
+#include "AssocDataTypeScope.h"
 
 namespace zsp {
 namespace parser {
 
 
-
-class TaskResolveBase : public virtual ast::VisitorBase {
+class AssocDataTypeScopeSizeof : public AssocDataTypeScope {
 public:
-    TaskResolveBase(ResolveContext *ctxt);
+    AssocDataTypeScopeSizeof();
 
-    virtual ~TaskResolveBase();
+    virtual ~AssocDataTypeScopeSizeof();
 
-    void addMarker(
-        MarkerSeverityE         severity,
-        const ast::Location     &loc,
-        const char              *fmt, 
-        ...);
+    virtual void postSpecialize(
+        ResolveContext          *ctxt,
+        ast::ITypeScope         *type) override;
 
-protected:
-    ResolveContext          *m_ctxt;
-
+private:
+    static dmgr::IDebug         *m_dbg;
 };
 
 }

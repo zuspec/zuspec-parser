@@ -743,6 +743,10 @@ public:
             ic->getChildren().push_back(ast::IScopeChildUP(copy(it->get())));
         }
 
+        if (i->getAssocData()) {
+            ic->setAssocData(i->getAssocData(), false);
+        }
+
         m_sc = ic;
     }
     
@@ -772,6 +776,10 @@ public:
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
             ic->getChildren().push_back(ast::IScopeChildUP(copy(it->get())));
+        }
+
+        if (i->getAssocData()) {
+            ic->setAssocData(i->getAssocData(), false);
         }
 
         m_sc = ic;

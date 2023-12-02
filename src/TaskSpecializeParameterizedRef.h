@@ -24,6 +24,7 @@
 #include "zsp/ast/ITemplateParamValueList.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/parser/IMarkerListener.h"
+#include "ResolveContext.h"
 
 namespace zsp {
 namespace parser {
@@ -32,24 +33,17 @@ namespace parser {
 
 class TaskSpecializeParameterizedRef {
 public:
-    TaskSpecializeParameterizedRef(
-        ast::ISymbolScope       *root,
-        IFactory                *factory,
-        IMarkerListener         *marker_l
-    );
+    TaskSpecializeParameterizedRef(ResolveContext *ctxt);
 
     virtual ~TaskSpecializeParameterizedRef();
 
     ast::ISymbolRefPath *specialize(
-        const parser::ISymbolTableIterator  *root_it,
         ast::ISymbolRefPath                 *target,
         ast::ITemplateParamValueList        *pvals);
 
 private:
     static dmgr::IDebug                     *m_dbg;
-    ast::ISymbolScope                       *m_root;
-    IFactory                                *m_factory;
-    IMarkerListener                         *m_marker_l;
+    ResolveContext                          *m_ctxt;
 
 };
 

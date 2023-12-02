@@ -1,5 +1,5 @@
-/**
- * TaskResolveBase.h
+/*
+ * AssocDataTypeScopeSizeof.cpp
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -16,40 +16,34 @@
  * limitations under the License.
  *
  * Created on:
- *     Author: 
+ *     Author:
  */
-#pragma once
-#include "dmgr/IDebugMgr.h"
-#include "zsp/parser/IFactory.h"
-#include "zsp/parser/IMarkerListener.h"
-#include "zsp/parser/ISymbolTableIterator.h"
-#include "zsp/ast/ISymbolScope.h"
-#include "zsp/ast/impl/VisitorBase.h"
-#include "ResolveContext.h"
+#include "dmgr/impl/DebugMacros.h"
+#include "AssocDataTypeScopeSizeof.h"
+
 
 namespace zsp {
 namespace parser {
 
 
+AssocDataTypeScopeSizeof::AssocDataTypeScopeSizeof() {
 
-class TaskResolveBase : public virtual ast::VisitorBase {
-public:
-    TaskResolveBase(ResolveContext *ctxt);
+}
 
-    virtual ~TaskResolveBase();
+AssocDataTypeScopeSizeof::~AssocDataTypeScopeSizeof() {
 
-    void addMarker(
-        MarkerSeverityE         severity,
-        const ast::Location     &loc,
-        const char              *fmt, 
-        ...);
+}
 
-protected:
-    ResolveContext          *m_ctxt;
+void AssocDataTypeScopeSizeof::postSpecialize(
+        ResolveContext          *ctxt,
+        ast::ITypeScope         *type) {
+    DEBUG_INIT("zsp::parser::AssocDataTypeScopeSizeof", ctxt->getDebugMgr());
+    DEBUG_ENTER("postSpecialize");
 
-};
+    DEBUG_LEAVE("postSpecialize");
+}
+
+dmgr::IDebug *AssocDataTypeScopeSizeof::m_dbg = 0;
 
 }
 }
-
-

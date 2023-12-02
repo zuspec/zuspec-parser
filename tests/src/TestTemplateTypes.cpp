@@ -175,5 +175,30 @@ TEST_F(TestTemplateTypes, type_param_with_specialized_default) {
     ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
 }
 
+TEST_F(TestTemplateTypes, sizeof_s) {
+    const char *text = R"(
+        import addr_reg_pkg::*;
+
+        component pss_top {
+            int sz = sizeof_s<int>::nbits;
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "smoke.pss",
+        files,
+        root,
+        true);
+}
+
 }
 }
