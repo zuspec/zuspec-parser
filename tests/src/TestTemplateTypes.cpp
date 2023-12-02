@@ -200,5 +200,37 @@ TEST_F(TestTemplateTypes, sizeof_s) {
         true);
 }
 
+TEST_F(TestTemplateTypes, sizeof_s_2) {
+    const char *text = R"(
+        import addr_reg_pkg::*;
+        struct R : packed_s<> {
+            bit[8]  a;
+            bit[8]  b;
+            bit[8]  c;
+        }
+
+        component pss_top {
+//            int sz1 = sizeof_s<int>::nbits;
+            int sz2 = sizeof_s<R>::nbits;
+//            int sz3 = sizeof_s<bit[64]>::nbits;
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "smoke.pss",
+        files,
+        root,
+        true);
+}
+
 }
 }

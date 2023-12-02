@@ -19,6 +19,8 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "zsp/parser/impl/TaskGetTemplateParamDeclDefault.h"
+#include "zsp/parser/impl/TaskComputeTypePackedSize.h"
 #include "AssocDataTypeScopeSizeof.h"
 
 
@@ -39,6 +41,46 @@ void AssocDataTypeScopeSizeof::postSpecialize(
         ast::ITypeScope         *type) {
     DEBUG_INIT("zsp::parser::AssocDataTypeScopeSizeof", ctxt->getDebugMgr());
     DEBUG_ENTER("postSpecialize");
+
+    std::pair<ast::IDataType *, ast::IExpr *> val = 
+        TaskGetTemplateParamDeclDefault(ctxt->getDebugMgr()).default_val(
+            type->getParams()->getParams().at(0).get());
+
+    if (!val.first) {
+        ERROR("sizeof_s parameter lacking default");
+        return;
+    }
+
+    // Need to calculate bit-width of 
+    int32_t bits = TaskComputeTypePackedSize(
+        ctxt->getFactory(),
+        ctxt->root()).bits(val.first);
+    DEBUG("bits: %d", bits);
+
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=type->getChildren().begin();
+        it!=type->getChildren().end(); it++) {
+        ast::IScopeChild *c = it->get();
+        ast::IField *f;
+        if ((f=dynamic_cast<ast::IField *>(c))) {
+            char tmp[16];
+            if (f->getName()->getId() == "nbytes") {
+                DEBUG("Setting nbytes");
+                snprintf(tmp, sizeof(tmp), "%d", bits/8);
+                f->setInit(ctxt->getFactory()->getAstFactory()->mkExprSignedNumber(
+                    tmp,
+                    32,
+                    bits/8));
+            } else if (f->getName()->getId() == "nbits") {
+                DEBUG("Setting nbits");
+                snprintf(tmp, sizeof(tmp), "%d", bits);
+                f->setInit(ctxt->getFactory()->getAstFactory()->mkExprSignedNumber(
+                    tmp,
+                    32,
+                    bits));
+            }
+        }
+    }
 
     DEBUG_LEAVE("postSpecialize");
 }

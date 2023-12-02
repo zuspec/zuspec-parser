@@ -26,7 +26,7 @@ namespace zsp {
 namespace parser {
 
 
-class AssocDataTypeScopeSizeof : public AssocDataTypeScope {
+class AssocDataTypeScopeSizeof : public virtual AssocDataTypeScope {
 public:
     AssocDataTypeScopeSizeof();
 
