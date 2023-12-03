@@ -551,12 +551,9 @@ void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
 
 
 void TaskResolveRefs::visitTypeIdentifier(ast::ITypeIdentifier *i) {
-    DEBUG_ENTER("visitTypeIdentifier");
-    ERROR("TODO: implement");
-    /*
+    DEBUG_ENTER("visitTypeIdentifier %s", i->getElems().at(0)->getId()->getId().c_str());
     ast::ISymbolRefPath *target = TaskResolveRef(m_ctxt).resolve(i);
     i->setTarget(target);
-     */
     DEBUG_LEAVE("visitTypeIdentifier");
 }
 

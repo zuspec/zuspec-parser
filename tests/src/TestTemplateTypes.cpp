@@ -236,7 +236,7 @@ TEST_F(TestTemplateTypes, reg_c_1) {
     const char *text = R"(
         import addr_reg_pkg::*;
 
-        pure component my_regs {
+        pure component my_regs : reg_group_c {
             reg_c<int>      r1;
         }
 
