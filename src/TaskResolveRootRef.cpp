@@ -48,7 +48,9 @@ ast::ISymbolRefPath *TaskResolveRootRef::resolve(const ast::IExprId *id) {
     m_id    = id;
 
     while (!m_ref && m_ctxt->symtab()->hasScopes()) {
+        DEBUG_ENTER("processing scope %s", m_ctxt->symtab()->getScope()->getName().c_str());
         m_ctxt->symtab()->getScope()->accept(m_this);
+        DEBUG_LEAVE("processing scope %s", m_ctxt->symtab()->getScope()->getName().c_str());
 
         if (!m_ref) {
             m_ctxt->symtab()->popScope();

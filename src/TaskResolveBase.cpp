@@ -34,6 +34,18 @@ TaskResolveBase::~TaskResolveBase() {
 
 }
 
+    /*
+void TaskResolveBase::visitSymbolScope(ast::ISymbolScope *i) {
+    m_ctxt->symtab()->pushScope(i);
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    m_ctxt->symtab()->popScope();
+}
+     */
+
 void TaskResolveBase::addMarker(
         MarkerSeverityE         severity,
         const ast::Location     &loc,

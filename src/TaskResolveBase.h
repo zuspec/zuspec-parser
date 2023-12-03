@@ -38,6 +38,8 @@ public:
 
     virtual ~TaskResolveBase();
 
+//    virtual void visitSymbolScope(ast::ISymbolScope *i) override;
+
     void addMarker(
         MarkerSeverityE         severity,
         const ast::Location     &loc,

@@ -125,6 +125,7 @@ void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeT
 
 void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     DEBUG_ENTER("visitExprRefPathContext %s", i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
+    fflush(stdout);
     // Find the first path element
     ast::ISymbolRefPath *target = TaskResolveRef(m_ctxt).resolve(
         i->getHier_id()->getElems().at(0)->getId());
