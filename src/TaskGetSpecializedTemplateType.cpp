@@ -140,11 +140,21 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
 
     if (!m_ctxt->specializationDepth()) {
         DEBUG("Change symbol-lookup scope");
-        m_ctxt->pushSymtab(TaskResolveSymbolPathRef(
+        ISymbolTableIterator *it = TaskResolveSymbolPathRef(
             m_ctxt->getDebugMgr(), m_ctxt->root()).mkIterator(
                 m_ctxt->getFactory()->mkAstSymbolTableIterator(m_ctxt->root()),
-                type)
-            );
+                type);
+        /*
+        it->popScope();
+        it->pushScope(type_ss, ast::SymbolRefPathElemKind::ElemKind_TypeSpec);
+         */
+
+        ISymbolTableIteratorUP tmp(it->clone());
+        while (tmp->hasScopes()) {
+            DEBUG("Scope: %s %d", tmp->getScope()->getName().c_str(), tmp->getScope()->getId());
+            tmp->popScope();
+        }
+        m_ctxt->pushSymtab(it);
     } else {
         DEBUG("Leaving symbol-lookup scope %d", m_ctxt->specializationDepth());
     }

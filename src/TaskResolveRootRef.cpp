@@ -120,12 +120,19 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
         if ((it=i->getPlist()->getSymtab().find(m_id->getId())) != i->getPlist()->getSymtab().end()) {
             // Target is a parameter value
             m_ref = m_ctxt->symtab()->getScopeSymbolPath();
-            DEBUG("Found %s as a parameter", m_id->getId().c_str());
+            DEBUG("Found %s as a parameter (%d)", 
+                m_id->getId().c_str(), it->second);
 
             m_ref->getPath().push_back({
                 ast::SymbolRefPathElemKind::ElemKind_ParamIdx, 
                 it->second
             });
+
+            DEBUG("Full path:");
+            for (uint32_t i=0; i<m_ref->getPath().size(); i++) {
+                DEBUG("  [%d] %d %d", i, m_ref->getPath().at(i).kind, m_ref->getPath().at(i).idx);
+            }
+            fflush(stdout);
         }
     }
 

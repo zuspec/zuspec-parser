@@ -115,7 +115,6 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
             }
 
             DEBUG("Add parameter %s", (name)?name->getId().c_str():"<unknown>");
-            fflush(stdout);
             ast::ITemplateGenericTypeParamDecl *p = m_ctxt->getFactory()->getAstFactory()->mkTemplateGenericTypeParamDecl(
                 copier.copyT<ast::IExprId>(name),
                 copier.copy(m_pval_type->getValue())

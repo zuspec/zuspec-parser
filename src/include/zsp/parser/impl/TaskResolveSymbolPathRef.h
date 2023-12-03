@@ -38,8 +38,7 @@ class TaskResolveSymbolPathRef : public ast::VisitorBase {
 public:
     TaskResolveSymbolPathRef(
         dmgr::IDebugMgr     *dmgr,
-        ast::ISymbolScope   *root) : m_root(root) { 
-        m_dbg = 0;
+        ast::ISymbolScope   *root) : m_dbg(0), m_root(root) { 
         DEBUG_INIT("TaskResolveSymbolPathRef", dmgr);
     }
 
@@ -170,7 +169,7 @@ public:
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
                     DEBUG("Elem: TypeSpec %d", it->idx);
                     ast::ISymbolTypeScope *c = scope_ts->getSpec_types().at(it->idx).get();
-                    ret->pushScope(c);
+                    ret->pushScope(c, ast::SymbolRefPathElemKind::ElemKind_TypeSpec);
                     scope = c;
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
@@ -209,7 +208,18 @@ parser::ISymbolTableIterator *mkIterator(
             it=scopes.rbegin();
             it!=scopes.rend(); it++) {
             DEBUG("pushScope");
-            ret->pushScope(dynamic_cast<ast::ISymbolScope *>(*it));
+            if (dynamic_cast<ast::ISymbolTypeScope *>(*it)) {
+                ast::ISymbolTypeScope *ts = dynamic_cast<ast::ISymbolTypeScope *>(*it);
+                ast::ITypeScope *tst = dynamic_cast<ast::ITypeScope *>(ts->getTarget());
+                if (tst->getParams()->getSpecialized()) {
+                    ret->pushScope(dynamic_cast<ast::ISymbolScope *>(*it),
+                        ast::SymbolRefPathElemKind::ElemKind_TypeSpec);
+                } else {
+                    ret->pushScope(dynamic_cast<ast::ISymbolScope *>(*it));
+                }
+            } else {
+                ret->pushScope(dynamic_cast<ast::ISymbolScope *>(*it));
+            }
         }
 
         DEBUG_LEAVE("mkIterator");

@@ -31,7 +31,8 @@ ResolveContext::ResolveContext(
     IFactory            *factory,
     IMarkerListener     *marker_l,
     ast::ISymbolScope   *root) : 
-    m_factory(factory), m_marker_l(marker_l), m_root(root) {
+    m_factory(factory), m_marker_l(marker_l), m_root(root),
+    m_specialization_depth(0) {
     m_symtab_it_s.push_back(ISymbolTableIteratorUP(new AstSymbolTableIterator(
         factory->getDebugMgr(),
         factory->getAstFactory(),

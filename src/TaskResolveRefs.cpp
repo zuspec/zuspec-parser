@@ -144,6 +144,8 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     // Set root reference
     i->setTarget(target);
 
+    fflush(stdout);
+
     ast::IScopeChild *target_c = TaskResolveSymbolPathRef(
         m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target);
     ast::ISymbolScope *target_s = TaskGetElemSymbolScope(
@@ -455,10 +457,9 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
         (i_ts->getParams())?"true":"false",
         (i_ts->getParams() && i_ts->getParams()->getSpecialized())?"true":"false");
     if (i_ts->getParams() && !i_ts->getParams()->getSpecialized()) {
-        DEBUG("Note: Skipping symbol resolution in a templated type");
+        DEBUG("Note: Skipping symbol resolution in an unspecialized templated type");
     } else {
         ast::SymbolRefPathElemKind kind = ast::SymbolRefPathElemKind::ElemKind_ChildIdx;
-
 
         if (i_ts->getParams() && i_ts->getParams()->getSpecialized()) {
             kind = ast::SymbolRefPathElemKind::ElemKind_TypeSpec;

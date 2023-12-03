@@ -232,5 +232,34 @@ TEST_F(TestTemplateTypes, sizeof_s_2) {
         true);
 }
 
+TEST_F(TestTemplateTypes, reg_c_1) {
+    const char *text = R"(
+        import addr_reg_pkg::*;
+
+        pure component my_regs {
+            reg_c<int>      r1;
+        }
+
+        component pss_top {
+            my_regs regs;
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "smoke.pss",
+        files,
+        root,
+        true);
+}
+
 }
 }
