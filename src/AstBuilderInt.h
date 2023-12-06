@@ -294,6 +294,8 @@ private:
 
 	ast::IExprId *mkId(PSSParser::IdentifierContext *ctx);
 
+    std::string toString(PSSParser::IdentifierContext *ctx);
+
 	ast::IExprHierarchicalId *mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx);
 
 	ast::IExprHierarchicalId *mkHierarchicalId(

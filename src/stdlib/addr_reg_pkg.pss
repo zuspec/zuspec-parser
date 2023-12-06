@@ -119,7 +119,6 @@ function void write_struct(addr_handle_t hndl, struct packed_struct);
 enum reg_access {READWRITE, READONLY, WRITEONLY};
 
 pure component reg_c < type R, reg_access ACC = READWRITE, int SZ2 = (8*sizeof_s<R>::nbytes)> {
-    /*
     function R read();
     import target function read;
     function void write(R r);
@@ -128,7 +127,6 @@ pure component reg_c < type R, reg_access ACC = READWRITE, int SZ2 = (8*sizeof_s
     import target function read_val;
     function void write_val(bit[SZ2] r);
     import target function write_val;
-     */
 };
 
 /*

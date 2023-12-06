@@ -323,11 +323,13 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
     // Otherwise, we need to create
     if (!func_sym) {
         int32_t id = m_scope_s.back()->getChildren().size();
+        DEBUG("mkSymbolFunctionScope %s (1)", i->getProto()->getName()->getId().c_str());
         func_sym = m_factory->mkSymbolFunctionScope(
             id, 
             i->getProto()->getName()->getId());
         func_sym->setLocation(i->getLocation());
         func_sym->setUpper(m_scope_s.back());
+        func_sym->getPrototypes().push_back(i->getProto());
         m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
         m_scope_s.back()->getChildren().push_back(func_sym);
 
@@ -399,10 +401,12 @@ void TaskBuildSymbolTree::visitFunctionImportProto(ast::IFunctionImportProto *i)
     // Otherwise, we need to create
     if (!func_sym) {
         int32_t id = m_scope_s.back()->getChildren().size();
+        DEBUG("mkSymbolFunctionScope %s (2)", i->getProto()->getName()->getId().c_str());
         func_sym = m_factory->mkSymbolFunctionScope(
             id, 
             i->getProto()->getName()->getId());
         func_sym->setLocation(i->getLocation());
+        func_sym->setUpper(m_scope_s.back());
         m_scope_s.back()->getSymtab().insert({func_sym->getName(), id});
         m_scope_s.back()->getChildren().push_back(func_sym);
 
@@ -465,6 +469,7 @@ void TaskBuildSymbolTree::visitFunctionPrototype(ast::IFunctionPrototype *i) {
     // Otherwise, we need to create
     if (!func_sym) {
         int32_t id = m_scope_s.back()->getChildren().size();
+        DEBUG("mkSymbolFunctionScope %s (3)", i->getName()->getId().c_str());
         func_sym = m_factory->mkSymbolFunctionScope(
             id, 
             i->getName()->getId());

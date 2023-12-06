@@ -2263,6 +2263,7 @@ static std::map<std::string, FunctionParamDeclKind> ref_param_kind_m = {
 
 ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
     PSSParser::Function_prototypeContext *ctx) {
+    DEBUG_ENTER("mkFunctionPrototype %s", toString(ctx->function_identifier()->identifier()).c_str());
     ast::IDataType *rtype = 0;
 
     if (ctx->function_return_type()->data_type()) {
@@ -2322,6 +2323,7 @@ ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
         proto->getParameters().push_back(ast::IFunctionParamDeclUP(param));
     }
 
+    DEBUG_LEAVE("mkFunctionPrototype");
     return proto;
 }
 
@@ -2383,6 +2385,18 @@ IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
     setLoc(id, ctx->start);
 
 	return id;
+}
+
+std::string AstBuilderInt::toString(PSSParser::IdentifierContext *ctx) {
+    if (ctx) {
+        if (ctx->ESCAPED_ID()) {
+            return ctx->ESCAPED_ID()->getText();
+        } else {
+            return ctx->ID()->getText();
+        }
+    } else {
+        return "<null>";
+    }
 }
 
 ast::IExprHierarchicalId *AstBuilderInt::mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx) {

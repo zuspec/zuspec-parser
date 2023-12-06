@@ -84,6 +84,11 @@ public:
         m_ret = i->getName()->getId();
     }
 
+    virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override {
+        m_ret = i->getName();
+        m_sym_s = i;
+    }
+
     virtual void visitSymbolScope(ast::ISymbolScope *i) override {
         m_ret = i->getName();
         m_sym_s = i;
