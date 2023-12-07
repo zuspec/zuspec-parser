@@ -199,18 +199,7 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
         std::map<std::string, int32_t>::const_iterator it = 
             target_s->getSymtab().find(elem->getId()->getId());
         
-<<<<<<< HEAD
-        if (it == target_s->getSymtab().end()) {
-            ast::ISymbolScope *ss = target_s;
-
-/*
-            while (dynamic_cast<ast::ISymbolTypeScope *>(ss) &&
-                dynamic_cast<ast::ISymbolTypeScope *>(ss)->getS)
-            if (dynamic_cast)
- */
-=======
         if (!res.sym) {
->>>>>>> refs/remotes/origin/main
             m_ctxt->addErrorMarker(
                 elem->getId()->getLocation(),
                 "Failed to find elem %s", 
