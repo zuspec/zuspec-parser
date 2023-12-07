@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "TaskFindPathElem.h"
 #include "TaskLinkActionCompRefFields.h"
 #include "TaskResolveImports.h"
 #include "TaskResolveRef.h"
@@ -188,10 +189,17 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
             break;
         }
 
+        TaskFindPathElem::Result res = TaskFindPathElem(
+            m_ctxt->getDebugMgr(), 
+            m_ctxt->root()).find(
+                target_s,
+                elem->getId()
+            );
+
         std::map<std::string, int32_t>::const_iterator it = 
             target_s->getSymtab().find(elem->getId()->getId());
         
-        if (it == target_s->getSymtab().end()) {
+        if (!res.sym) {
             m_ctxt->addErrorMarker(
                 elem->getId()->getLocation(),
                 "Failed to find elem %s", 
@@ -201,7 +209,8 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
             break;
         } else {
             DEBUG("NOTE: Found sub-element %s", elem->getId()->getId().c_str());
-            elem->setTarget(it->second);
+            elem->setTarget(res.idx);
+            elem->setSuper(res.super_idx);
 
 
 
@@ -211,7 +220,7 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
             }
 
             if (ii+1 < i->getHier_id()->getElems().size()) {
-                target_c = target_s->getChildren().at(it->second);
+                target_c = res.sym;
                 target_s = TaskGetElemSymbolScope(
                     m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target_c);
             }
