@@ -97,6 +97,11 @@ classes:
             - subscript: "UP<Expr>"
             - target:
                 type: int32_t
+                init: -1
+                is_ctor: false
+            - super:
+                type: int32_t
+                init: -1
                 is_ctor: false
 #                visit: false
 #            - target:
