@@ -192,6 +192,13 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
             target_s->getSymtab().find(elem->getId()->getId());
         
         if (it == target_s->getSymtab().end()) {
+            ast::ISymbolScope *ss = target_s;
+
+/*
+            while (dynamic_cast<ast::ISymbolTypeScope *>(ss) &&
+                dynamic_cast<ast::ISymbolTypeScope *>(ss)->getS)
+            if (dynamic_cast)
+ */
             m_ctxt->addErrorMarker(
                 elem->getId()->getLocation(),
                 "Failed to find elem %s", 
