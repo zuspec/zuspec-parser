@@ -261,5 +261,41 @@ TEST_F(TestTemplateTypes, reg_c_1) {
         true);
 }
 
+TEST_F(TestTemplateTypes, dflt_param_vals) {
+    const char *text = R"(
+        struct addr_trait_s { }
+        struct empty_addr_trait_s : addr_trait_s { int f1; }
+
+        component contiguous_addr_space_c<struct TRAIT : addr_trait_s = empty_addr_trait_s> { 
+            TRAIT trait;
+        }
+
+        component transparent_addr_space_c<struct TRAIT: addr_trait_s = empty_addr_trait_s> : contiguous_addr_space_c<TRAIT> { }
+
+        component pss_top {
+            transparent_addr_space_c<>   c1;
+
+            exec init_down {
+                c1.trait.f1 = 0;
+            }
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "smoke.pss",
+        files,
+        root,
+        false);
+}
+
 }
 }

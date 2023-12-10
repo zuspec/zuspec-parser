@@ -41,7 +41,9 @@ public:
 
     void resolve(ast::ISymbolScope *root);
 
-    void resolve(ast::ISymbolTypeScope *scope);
+    void resolve(
+        ast::ISymbolTypeScope       *scope,
+        ISymbolTableIterator        *body_sym_it=0);
 
     virtual void visitActivityActionHandleTraversal(ast::IActivityActionHandleTraversal *i) override;
     
