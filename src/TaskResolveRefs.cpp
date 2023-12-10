@@ -184,6 +184,10 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
             continue;
         }
 
+        DEBUG("Search for elem=%s target_s=%s", 
+            elem->getId()->getId().c_str(),
+            target_s->getName().c_str());
+
         if (target_s->getOpaque()) {
             DEBUG("Note: scope is opaque ; ending hierarchical search");
             break;
@@ -223,6 +227,7 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
                 target_c = res.sym;
                 target_s = TaskGetElemSymbolScope(
                     m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target_c);
+                DEBUG("Next target_s: %s", target_s->getName().c_str());
             }
         }
     }

@@ -533,7 +533,6 @@ antlrcpp::Any AstBuilderInt::visitExec_block(PSSParser::Exec_blockContext *ctx) 
 
         // Stub for now
         kind_it = exec_kind_m.find("body");
-
     }
     ast::IExecBlock *exec = m_factory->mkExecBlock(kind_it->second);
 
