@@ -60,7 +60,10 @@ void TaskFindPathElem::visitSymbolScope(ast::ISymbolScope *i) {
     it = i->getSymtab().find(m_id->getId());
 
     if (it != i->getSymtab().end()) {
-        m_ret = {.sym=i, .idx=it->second, .super_idx=m_super_depth};
+        m_ret = {
+            .sym=i->getChildren().at(it->second), 
+            .idx=it->second, 
+            .super_idx=m_super_depth};
     }
     DEBUG_LEAVE("visitSymbolScope %s", i->getName().c_str());
 }
