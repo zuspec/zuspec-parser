@@ -65,9 +65,7 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
     DEBUG_LEAVE("resolve");
 }
 
-void TaskResolveRefs::resolve(
-    ast::ISymbolTypeScope       *scope,
-    ISymbolTableIterator        *body_sym_it) {
+void TaskResolveRefs::resolve(ast::ISymbolTypeScope *scope) {
     DEBUG_ENTER("resolve (iterator, scope)");
 
     if (scope->getPlist()) {
@@ -81,23 +79,19 @@ void TaskResolveRefs::resolve(
         target_s->getSuper_t()->accept(m_this);
     }
 
-    // TODO: obtain root
-#ifdef UNDEFINED
-    parser::ISymbolTableIteratorUP root_it_c(root_it->clone());
-    DEBUG("Scope Stack");
-    while (root_it_c->hasScopes()) {
-        DEBUG("  Scope: %d", 
-            root_it_c->getScope()->getId());
-        root_it_c->popScope();
-    }
-#endif
-//    m_symtab_it = ISymbolTableIteratorUP(m_ctxt->cloneSymtab());
+    // Create an iterator based on the type-scope itself
+    ISymbolTableIterator *type_it = TaskResolveSymbolPathRef(
+        m_ctxt->getDebugMgr(),
+        m_ctxt->root()).mkIterator(
+            m_ctxt->getFactory()->mkAstSymbolTableIterator(m_ctxt->root()),
+            scope);
+    // Remove the type itself, since this will be added 
+    // during resolution
+    type_it->popScope();
 
     // Is this required here?
-    if (body_sym_it) {
-        DEBUG("Pushing symbol iterator for body");
-        m_ctxt->pushSymtab(body_sym_it);
-    }
+    DEBUG("Pushing symbol iterator for body");
+    m_ctxt->pushSymtab(type_it);
 
     ast::SymbolRefPathElemKind kind = ast::SymbolRefPathElemKind::ElemKind_ChildIdx;
 
@@ -146,10 +140,8 @@ void TaskResolveRefs::resolve(
 
     m_ctxt->symtab()->popScope();
 
-    if (body_sym_it) {
-        DEBUG("Removing symbol iterator for body");
-        m_ctxt->pushSymtab(body_sym_it);
-    }
+    DEBUG("Removing symbol iterator for body");
+    m_ctxt->popSymtab();
 
     DEBUG_LEAVE("resolve (iterator, scope)");
 }
