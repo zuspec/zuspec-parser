@@ -66,7 +66,7 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
 }
 
 void TaskResolveRefs::resolve(ast::ISymbolTypeScope *scope) {
-    DEBUG_ENTER("resolve (iterator, scope)");
+    DEBUG_ENTER("resolve (iterator, scope) %s", scope->getName().c_str());
 
     if (scope->getPlist()) {
         DEBUG_ENTER("Resolving names in plist");
