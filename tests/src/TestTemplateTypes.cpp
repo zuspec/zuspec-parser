@@ -345,5 +345,41 @@ TEST_F(TestTemplateTypes, nested_template_specializations) {
         false);
 }
 
+TEST_F(TestTemplateTypes, reg_c_templated) {
+    const char *text = R"(
+        import addr_reg_pkg::*;
+
+        component my_regs : reg_group_c {
+            reg_c<bit[32]>      r1;
+        }
+
+/*
+        component pss_top {
+            transparent_addr_space_c<>   c1;
+//            addr_region_s<>              r1;
+
+            exec init_down {
+//                r1.trait.f1 = 0;
+            }
+        }
+ */
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "smoke.pss",
+        files,
+        root,
+        true);
+}
+
 }
 }

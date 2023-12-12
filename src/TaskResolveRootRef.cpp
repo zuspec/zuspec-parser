@@ -20,6 +20,7 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/ast/IPackageImportStmt.h"
+#include "zsp/parser/impl/TaskGetSymbolRefPathKind.h"
 #include "TaskResolveRootRef.h"
 #include "TaskResolveEnumRef.h"
 
@@ -82,7 +83,9 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
         m_ref = m_ctxt->symtab()->getScopeSymbolPath(); // Path to 'i'
 
         // Now, add in the child element that we just found
-        m_ref->getPath().push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second});
+        m_ref->getPath().push_back({
+            TaskGetSymbolRefPathKind(m_ctxt->getDebugMgr()).get(c),
+            it->second});
     } else if ((m_ref=TaskResolveEnumRef(m_ctxt).resolve(m_id))) {
         // Found in this scope
         DEBUG("Found symbol as an enumerator");

@@ -146,8 +146,8 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
                 type);
         /*
         it->popScope();
-        it->pushScope(type_ss, ast::SymbolRefPathElemKind::ElemKind_TypeSpec);
          */
+        it->pushScope(type_ss, ast::SymbolRefPathElemKind::ElemKind_TypeSpec);
 
         ISymbolTableIteratorUP tmp(it->clone());
         while (tmp->hasScopes()) {
