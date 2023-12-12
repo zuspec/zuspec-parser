@@ -41,9 +41,13 @@ public:
 
     virtual ~TaskIndexField() { }
 
-    ast::IScopeChild *index(ast::IScopeChild *root, int32_t index) {
-        DEBUG_ENTER("index %d", index);
-        m_index = index;
+    ast::IScopeChild *index(
+        ast::IScopeChild *root, 
+        int32_t     idx,
+        int32_t     super_idx) {
+        DEBUG_ENTER("idx=%d super_idx=%d", idx, super_idx);
+        m_idx = idx;
+        m_super_idx = super_idx;
         m_ret = 0;
 
         root->accept(m_this);
@@ -74,13 +78,30 @@ public:
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override {
         DEBUG_ENTER("visitSymbolScope");
-        m_ret = i->getChildren().at(m_index);
+        m_ret = i->getChildren().at(m_idx);
         DEBUG_LEAVE("visitSymbolScope");
+    }
+
+    virtual void visitTypeScope(ast::ITypeScope *i) override {
+        DEBUG_ENTER("visitTypeScope (super_idx=%d)", m_super_idx);
+        if (m_super_idx > 0) {
+            m_super_idx--;
+            ast::IScopeChild *super_t = TaskResolveSymbolPathRef(
+                m_dmgr, m_root_scope).resolve(
+                    i->getSuper_t()->getTarget());
+            super_t->accept(m_this);
+            m_super_idx++;
+        }
+        DEBUG_LEAVE("visitTypeScope (super_idx=%d)", m_super_idx);
     }
 
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
         DEBUG_ENTER("visitSymbolTypeScope");
-        m_ret = i->getChildren().at(m_index);
+        if (m_super_idx > 0) {
+            i->getTarget()->accept(m_this);
+        } else {
+            m_ret = i->getChildren().at(m_idx);
+        }
         DEBUG_LEAVE("visitSymbolTypeScope");
     }
 
@@ -88,7 +109,8 @@ protected:
     dmgr::IDebugMgr                     *m_dmgr;
     dmgr::IDebug                        *m_dbg;
     ast::ISymbolScope                   *m_root_scope;
-    int32_t                             m_index;
+    int32_t                             m_idx;
+    int32_t                             m_super_idx;
     ast::IScopeChild                    *m_ret;
 
 };

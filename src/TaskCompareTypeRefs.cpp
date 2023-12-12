@@ -49,7 +49,7 @@ bool TaskCompareTypeRefs::equal(
     ast::IDataTypeString *type_str = 0;
 
     m_type_int = 0;
-    m_type_int = 0;
+    m_type_str = 0;
     tref1->accept(m_this);
     type_int = m_type_int;
     type_str = m_type_str;
