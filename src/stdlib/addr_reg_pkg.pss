@@ -14,7 +14,7 @@ package addr_reg_pkg {
     component contiguous_addr_space_c<
             struct TRAIT : addr_trait_s = empty_addr_trait_s> : addr_space_base_c {
         function addr_handle_t add_region(addr_region_s <TRAIT> r);
-        function addr_handle_t add_nonallocatable_region(addr_region_s <> r);
+        function addr_handle_t add_nonallocatable_region(addr_region_s <TRAIT> r);
         bool byte_addressable = true;
     };
 

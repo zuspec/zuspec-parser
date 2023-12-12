@@ -57,7 +57,11 @@ ast::ISymbolRefPath *TaskSpecializeParameterizedRef::specialize(
     }
 
     if (!target_c->getPlist()) {
-        DEBUG("TODO: Flag type as not being templated");
+        ERROR("Type %s is not templated", target_c->getName().c_str());
+        m_ctxt->addErrorMarker(
+            ast::Location{-1, -1, -1},
+            "Type %s is not templated",
+            target_c->getName().c_str());
         return 0;
     }
 
@@ -68,6 +72,11 @@ ast::ISymbolRefPath *TaskSpecializeParameterizedRef::specialize(
             target_c->getPlist(),
             pvals);
     TaskGetSpecializedTemplateType typespec_getter(m_ctxt);
+
+    if (!pdecl_list) {
+        // Encountered an error while building out the param list
+        return 0;
+    }
 
     ast::ISymbolRefPath *target_t = typespec_getter.find(
         target, 

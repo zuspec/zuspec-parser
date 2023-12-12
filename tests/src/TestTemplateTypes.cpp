@@ -261,5 +261,89 @@ TEST_F(TestTemplateTypes, reg_c_1) {
         true);
 }
 
+TEST_F(TestTemplateTypes, dflt_param_vals) {
+    const char *text = R"(
+        struct addr_trait_s { }
+        struct empty_addr_trait_s : addr_trait_s { int f1; }
+
+        component contiguous_addr_space_c<struct TRAIT : addr_trait_s = empty_addr_trait_s> { 
+            TRAIT trait;
+        }
+
+        component transparent_addr_space_c<struct TRAIT: addr_trait_s = empty_addr_trait_s> : contiguous_addr_space_c<TRAIT> { }
+
+        component pss_top {
+            transparent_addr_space_c<>   c1;
+
+            exec init_down {
+                c1.trait.f1 = 0;
+            }
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "smoke.pss",
+        files,
+        root,
+        false);
+}
+
+TEST_F(TestTemplateTypes, nested_template_specializations) {
+    const char *text = R"(
+        component addr_space_base_c {};
+
+        struct addr_trait_s { int f1; };
+
+        struct addr_region_s <struct TRAIT : addr_trait_s = empty_addr_trait_s> { 
+            TRAIT trait;
+        };
+
+        struct empty_addr_trait_s : addr_trait_s {};
+
+//    typedef chandle addr_handle_t;
+        struct addr_handle_t { }
+
+        component contiguous_addr_space_c<struct TRAIT : addr_trait_s = empty_addr_trait_s> : addr_space_base_c {
+            function addr_handle_t add_region(addr_region_s <TRAIT> r);
+        };
+
+        component transparent_addr_space_c<
+            struct TRAIT: addr_trait_s = empty_addr_trait_s> : contiguous_addr_space_c<TRAIT> {};
+
+        component pss_top {
+            transparent_addr_space_c<>   c1;
+//            addr_region_s<>              r1;
+
+            exec init_down {
+//                r1.trait.f1 = 0;
+            }
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "smoke.pss",
+        files,
+        root,
+        false);
+}
+
 }
 }

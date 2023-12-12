@@ -68,22 +68,80 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
 void TaskResolveRefs::resolve(ast::ISymbolTypeScope *scope) {
     DEBUG_ENTER("resolve (iterator, scope)");
 
-    // TODO: obtain root
-#ifdef UNDEFINED
-    parser::ISymbolTableIteratorUP root_it_c(root_it->clone());
-    DEBUG("Scope Stack");
-    while (root_it_c->hasScopes()) {
-        DEBUG("  Scope: %d", 
-            root_it_c->getScope()->getId());
-        root_it_c->popScope();
+    if (scope->getPlist()) {
+        DEBUG_ENTER("Resolving names in plist");
+        scope->getPlist()->accept(m_this);
+        DEBUG_LEAVE("Resolving names in plist");
     }
-#endif
-//    m_symtab_it = ISymbolTableIteratorUP(m_ctxt->cloneSymtab());
+
+    ast::ITypeScope *target_s = dynamic_cast<ast::ITypeScope *>(scope->getTarget());
+    if (target_s->getSuper_t()) {
+        target_s->getSuper_t()->accept(m_this);
+    }
+
+    // Create an iterator based on the type-scope itself
+    ISymbolTableIterator *type_it = TaskResolveSymbolPathRef(
+        m_ctxt->getDebugMgr(),
+        m_ctxt->root()).mkIterator(
+            m_ctxt->getFactory()->mkAstSymbolTableIterator(m_ctxt->root()),
+            scope);
+    // Remove the type itself, since this will be added 
+    // during resolution
+    type_it->popScope();
 
     // Is this required here?
+    DEBUG("Pushing symbol iterator for body");
+    m_ctxt->pushSymtab(type_it);
+
+    ast::SymbolRefPathElemKind kind = ast::SymbolRefPathElemKind::ElemKind_ChildIdx;
+
+    ast::ITypeScope *i_ts = dynamic_cast<ast::ITypeScope *>(scope->getTarget());
+    if (i_ts->getParams() && i_ts->getParams()->getSpecialized()) {
+            kind = ast::SymbolRefPathElemKind::ElemKind_TypeSpec;
+            DEBUG("Processing specialization depth=%d", m_ctxt->specializationDepth());
+
+            // TODO: need a way to detect that we have a superseding 
+            // scope stack, so we don't redo it
+
+            // Create a symbol-table iterator that:
+            // - starts with m_root
+            // - is preloaded with the scopes of the target type
+
+            // if (m_ctxt->specializationDepth() == 1) {
+            //     DEBUG("Updating resolution stack to use local scope");
+            //     m_ctxt->pushSymtab(TaskResolveSymbolPathRef(
+            //         m_ctxt->getDebugMgr(), m_ctxt->root()).mkIterator(
+            //             m_ctxt->getFactory()->mkAstSymbolTableIterator(m_ctxt->root()),
+            //             i));
+            // } else {
+            //     DEBUG("Retaining existing resolution stack");
+            // }
+            // // TODO: need to resolve refs in the parameter list
+            // // relative to the containing type
+            // // Ensure parameter references are resolved
+            // DEBUG_ENTER("Resolve refs in parameter decl list");
+            // i_ts->getParams()->accept(m_this);
+            // DEBUG_LEAVE("Resolve refs in parameter decl list");
+            // if (m_ctxt->specializationDepth() == 1) {
+            //     m_ctxt->popSymtab();
+            // }
+        }
+
+    m_ctxt->symtab()->pushScope(scope, kind);
+
     TaskLinkActionCompRefFields(m_ctxt->getFactory()).link(scope);
 
-    scope->accept(m_this);
+    // Check on children
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=scope->getChildren().begin();
+        it!=scope->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+
+    m_ctxt->symtab()->popScope();
+
+    DEBUG("Removing symbol iterator for body");
+    m_ctxt->popSymtab();
 
     DEBUG_LEAVE("resolve (iterator, scope)");
 }
@@ -216,8 +274,6 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
             elem->setTarget(res.idx);
             elem->setSuper(res.super_idx);
 
-
-
             // Resolve name references for parameter values
             if (elem->getParams()) {
                 elem->getParams()->accept(m_this);
@@ -226,7 +282,9 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
             if (ii+1 < i->getHier_id()->getElems().size()) {
                 target_c = res.sym;
                 target_s = TaskGetElemSymbolScope(
-                    m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target_c);
+                    m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(
+                        target_c
+                    );
                 DEBUG("Next target_s: %s", target_s->getName().c_str());
             }
         }

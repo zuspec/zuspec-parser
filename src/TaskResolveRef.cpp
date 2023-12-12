@@ -203,6 +203,11 @@ void TaskResolveRef::visitTypeIdentifier(ast::ITypeIdentifier *i) {
 
         delete root;
         root = root_s;
+
+        if (!root_s) {
+            // Had an error that will be marked by an error marker
+            return;
+        }
     }
 
     ast::IScopeChild *root_t = TaskResolveSymbolPathRef(

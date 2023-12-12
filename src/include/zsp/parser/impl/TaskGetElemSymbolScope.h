@@ -41,6 +41,9 @@ public:
     ast::ISymbolScope *resolve(ast::IScopeChild *c) {
         m_ret = 0;
         c->accept(m_this);
+        if (!m_ret) {
+            ERROR("Failed to resolve target item");
+        }
         return m_ret;
     }
     
@@ -55,7 +58,10 @@ public:
         if (i->getType_id()->getTarget()) {
             // Don't attempt to resolve unless the linkage is present
             ast::IScopeChild *c = m_path_resolver.resolve(i->getType_id()->getTarget());
-            m_ret = dynamic_cast<ast::ISymbolScope *>(c);
+
+            // This could be an indirect reference (eg via a parameter). Delegate
+            // resolution to support further refinement
+            c->accept(m_this);
         }
         DEBUG_LEAVE("visitDataTypeUserDefined");
     }
@@ -63,8 +69,40 @@ public:
     virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) override {
         DEBUG_ENTER("visitTypeIdentifier");
         ast::IScopeChild *c = m_path_resolver.resolve(i->getTarget());
-        m_ret = dynamic_cast<ast::ISymbolScope *>(c);
+        // This could be an indirect reference (eg via a parameter). Delegate
+        // resolution to support further refinement
+        c->accept(m_this);
         DEBUG_LEAVE("visitTypeIdentifier");
+    }
+
+    virtual void visitSymbolScope(ast::ISymbolScope *i) override {
+        DEBUG_ENTER("vistiSymbolScope \"%s\"", i->getName().c_str());
+        m_ret = i;
+        DEBUG_LEAVE("vistiSymbolScope");
+    }
+
+    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
+        DEBUG_ENTER("vistiSymbolTypeScope \"%s\"", i->getName().c_str());
+        m_ret = i;
+        DEBUG_LEAVE("vistiSymbolTypeScope");
+    }
+
+    virtual void visitTemplateGenericTypeParamDecl(ast::ITemplateGenericTypeParamDecl *i) override {
+        DEBUG_ENTER("vistiTemplateGenericTypeParamDecl");
+        i->getDflt()->accept(m_this);
+        DEBUG_LEAVE("vistiTemplateGenericTypeParamDecl");
+    }
+
+    virtual void visitTemplateCategoryTypeParamDecl(ast::ITemplateCategoryTypeParamDecl *i) override {
+        DEBUG_ENTER("visitTemplateCategoryTypeParamDecl");
+        i->getDflt()->accept(m_this);
+        DEBUG_LEAVE("visitTemplateCategoryTypeParamDecl");
+    }
+
+    virtual void visitTemplateValueParamDecl(ast::ITemplateValueParamDecl *i) override {
+        DEBUG_ENTER("visitTemplateValueParamDecl");
+        i->getDflt()->accept(m_this);
+        DEBUG_LEAVE("visitTemplateValueParamDecl");
     }
 
 protected:

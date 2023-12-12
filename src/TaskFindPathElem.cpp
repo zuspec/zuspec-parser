@@ -60,6 +60,9 @@ void TaskFindPathElem::visitSymbolScope(ast::ISymbolScope *i) {
     it = i->getSymtab().find(m_id->getId());
 
     if (it != i->getSymtab().end()) {
+        DEBUG("Found symbol %s @ idx=%d super_idx=%d (scope=%s)", 
+            m_id->getId().c_str(), it->second, m_super_depth,
+            i->getName().c_str());
         m_ret = {
             .sym=i->getChildren().at(it->second), 
             .idx=it->second, 

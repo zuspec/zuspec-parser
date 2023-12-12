@@ -167,13 +167,22 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
             p = m_ctxt->getFactory()->getAstFactory()->mkTemplateValueParamDecl(
                 copier.copyT<ast::IExprId>(name),
                 copier.copy(type),
-                copier.copy(value)
+                value?copier.copy(value):0
             );
-        } else {
+        } else if (type) {
             p = m_ctxt->getFactory()->getAstFactory()->mkTemplateGenericTypeParamDecl(
                 copier.copyT<ast::IExprId>(name),
-                copier.copy(type)
+                type?copier.copy(type):0
             );
+        } else {
+            m_ctxt->addErrorMarker(
+                plist->getChildren().at(plist_idx)->getLocation(),
+                "No default provided for template parameter %s",
+                (name)?name->getId().c_str():"<unknown>"
+            );
+            delete m_ret;
+            m_ret = 0;
+            break;
         }
         m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
     }
