@@ -227,6 +227,60 @@ parser::ISymbolTableIterator *mkIterator(
         return ret;
     }
 
+    std::string mkName(
+            const ast::ISymbolRefPath       *ref) {
+        DEBUG_ENTER("mkName root=%p", m_root);
+        std::string ret;
+        ast::IScopeChild *item;
+        ast::ISymbolScope *scope = m_root;
+
+        for (std::vector<ast::SymbolRefPathElem>::const_iterator
+            it=ref->getPath().begin();
+            it!=ref->getPath().end(); it++) {
+            
+            switch (it->kind) {
+                case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
+                    DEBUG("Elem: ChildIdx %d", it->idx);
+                    item = scope->getChildren().at(it->idx);
+                    ret = TaskGetName().get(item);
+                    if (!(scope=dynamic_cast<ast::ISymbolScope *>(item))) {
+                        break;
+                    }
+                } break;
+                case ast::SymbolRefPathElemKind::ElemKind_ParamIdx: {
+                    DEBUG("Elem: ParamIdx %d", it->idx);
+//                    ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+//                    ret = scope_ts->getPlist()->getChildren().at(it->idx);
+//                    DEBUG("  scope %p => %p", scope_ts, ret);
+                } break;
+                case ast::SymbolRefPathElemKind::ElemKind_Super: {
+                    ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+                    fprintf(stdout, "TODO: handle super ref\n");
+                    fflush(stdout);
+                } break;
+                case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
+                    ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+                    DEBUG("Elem: TypeSpec %d", it->idx);
+//                    ast::ISymbolTypeScope *c = scope_ts->getSpec_types().at(it->idx).get();
+//                    ret->pushScope(c);
+                    DEBUG("  scope %p => %p", scope_ts, ret);
+                } break;
+                default:
+                    fprintf(stdout, "TODO: handle ElemKind %d\n", it->kind);
+                    fflush(stdout);
+                    break;
+            }
+            
+//            if (it+1 != ref->getPath().end()) {
+//                scope = dynamic_cast<ast::ISymbolScope *>(i);
+//            }
+        }
+
+        DEBUG_LEAVE("mkName");
+
+        return ret;
+    }
+
     std::string mkQName(
             const ast::ISymbolRefPath       *ref) {
         DEBUG_ENTER("mkQName root=%p", m_root);

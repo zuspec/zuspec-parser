@@ -210,7 +210,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
 std::string TaskGetSpecializedTemplateType::mkTypename(
         const ast::ISymbolRefPath           *type,
         ast::ITemplateParamDeclList         *params) {
-    std::string name = TaskResolveSymbolPathRef(m_ctxt->getDebugMgr(), m_ctxt->root()).mkQName(type);
+    std::string name = TaskResolveSymbolPathRef(m_ctxt->getDebugMgr(), m_ctxt->root()).mkName(type);
 
     name += "<";
 

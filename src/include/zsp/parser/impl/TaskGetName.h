@@ -21,6 +21,7 @@
 #pragma once
 #include <string>
 #include "zsp/ast/impl/VisitorBase.h"
+#include "zsp/parser/impl/TaskIsUnspecializedGenericType.h"
 
 namespace zsp {
 namespace parser {
@@ -42,17 +43,21 @@ public:
             if (m_sym_s) {
                 // This is a symbol scope
                 ast::ISymbolScope *ss = m_sym_s;
+                bool prev_elem = false;
 
                 full_path = m_ret;
 
                 while ((ss=ss->getUpper())) {
                     m_ret = "";
-                    ss->accept(m_this);
-                
-                    if (full_path.size() && m_ret.size()) {
-                        full_path = "::" + full_path;
+
+                    if (!TaskIsUnspecializedGenericType().check(ss)) {
+                        ss->accept(m_this);
+
+                        if (full_path.size() && m_ret.size()) {
+                            full_path = "::" + full_path;
+                        }
+                        full_path = m_ret + full_path;
                     }
-                    full_path = m_ret + full_path;
                 }
 
                 m_ret = full_path;
