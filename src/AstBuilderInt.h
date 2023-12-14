@@ -356,6 +356,7 @@ private:
 	ast::IExprId								*m_labeled_activity_id;
 	ast::IConstraintStmt						*m_constraint;
     ast::IExecStmt                              *m_exec_stmt;
+    int32_t                                     m_exec_stmt_cnt;
     std::vector<ast::IExecScope *>              m_exec_scope_s;
 	std::vector<ast::IConstraintScope *>		m_constraint_s;
     std::unique_ptr<CommonTokenStream>			m_tokens;

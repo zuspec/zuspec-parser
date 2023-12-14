@@ -677,6 +677,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_sequence_block_stmt(PSSParser::Proc
     m_exec_scope_s.pop_back();
 
     m_exec_stmt = block;
+    m_exec_stmt_cnt++;
     DEBUG_LEAVE("visitProcedural_sequence_block_stmt");
     return 0;
 }
@@ -703,6 +704,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_assignment_stmt(PSSParser::Procedur
         rhs);
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
 
     DEBUG_LEAVE("visitProcedural_assignment_stmt");
     return 0;
@@ -759,10 +761,12 @@ antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::
                 prefix,
                 hid));
         m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     } else {
         ast::IProceduralStmtExpr *stmt = m_factory->mkProceduralStmtExpr(
             m_factory->mkExprRefPathContext(hid));
         m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     }
 
     DEBUG_LEAVE("visitProcedural_void_function_call_stmt");
@@ -775,6 +779,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_return_stmt(PSSParser::Procedural_r
     ast::IProceduralStmtReturn *stmt = m_factory->mkProceduralStmtReturn(expr);
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
 
     DEBUG_LEAVE("visitProcedural_return_stmt");
     return 0;
@@ -810,6 +815,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_if_else_stmt(PSSParser::Procedural_
         false_s);
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
     DEBUG_LEAVE("visitProcedural_if_else_stmt");
     return 0;
 }
@@ -826,6 +832,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_break_stmt(PSSParser::Procedural_br
     ast::IProceduralStmtBreak *stmt = m_factory->mkProceduralStmtBreak();
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
     DEBUG_LEAVE("visitProcedural_break_stmt");
     return 0;
 }
@@ -835,6 +842,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_continue_stmt(PSSParser::Procedural
     ast::IProceduralStmtContinue *stmt = m_factory->mkProceduralStmtContinue();
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
 
     DEBUG_LEAVE("visitProcedural_continue_stmt");
     return 0;
@@ -862,6 +870,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedu
 
     // We've already added to the super scope
     m_exec_stmt = 0;
+    m_exec_stmt_cnt++;
 
     DEBUG_LEAVE("visitProcedural_data_declaration");
     return 0;
@@ -2228,7 +2237,18 @@ ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::D
 
 ast::IExecStmt *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *ctx) {
     m_exec_stmt = 0;
-    ctx->accept(this);
+    m_exec_stmt_cnt = 0;
+
+    if (!ctx->TOK_SEMICOLON()) {
+        ctx->accept(this);
+
+        if (!m_exec_stmt_cnt) {
+            ERROR("No exec stmt produced");
+        }
+    } else {
+        // Null statement
+        m_exec_stmt_cnt++;
+    }
     return m_exec_stmt;
 }
 
@@ -2238,8 +2258,6 @@ void AstBuilderInt::addExecStmt(PSSParser::Procedural_stmtContext *ctx) {
 
     if (stmt) {
         m_exec_scope_s.back()->getChildren().push_back(ast::IExecStmtUP(stmt));
-    } else {
-        ERROR("null exec stmt");
     }
 
     DEBUG_LEAVE("addExecStmt");
