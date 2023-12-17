@@ -116,13 +116,17 @@ public:
         TaskResolveSymbolPathRefResult ret;
 
         ast::IScopeChild *ref_t = resolve(ref);
-        m_st = 0;
+        m_ts = 0;
+        m_ss = 0;
         m_dt = 0;
         ref_t->accept(m_this);
 
-        if (m_st) {
+        if (m_ts) {
             ret.kind = TaskResolveSymbolPathRefResult::SymbolTypeScope;
-            ret.val.ts = m_st;
+            ret.val.ts = m_ts;
+        } else if (m_ss) {
+            ret.kind = TaskResolveSymbolPathRefResult::SymbolScope;
+            ret.val.ss = m_ss;
         } else if (m_dt) {
             ret.kind = TaskResolveSymbolPathRefResult::DataType;
             ret.val.dt = m_dt;
@@ -366,9 +370,16 @@ parser::ISymbolTableIterator *mkIterator(
         DEBUG_LEAVE("visitDataTypeUserDefined");
     }
 
+    virtual void visitSymbolEnumScope(ast::ISymbolEnumScope *i) override {
+        DEBUG_ENTER("visitSymbolEnumScope %s", i->getName().c_str());
+        m_ss = i;
+        DEBUG_LEAVE("visitSymbolEnumScope");
+    }
+
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
         DEBUG_ENTER("visitSymbolTypeScope");
-        m_st = i;
+        m_ss = i;
+        m_ts = i;
         DEBUG_LEAVE("visitSymbolTypeScope");
     }
 
@@ -387,7 +398,8 @@ parser::ISymbolTableIterator *mkIterator(
 private:
     dmgr::IDebug                         *m_dbg;
     ast::ISymbolScope                    *m_root;
-    ast::ISymbolTypeScope                *m_st;
+    ast::ISymbolTypeScope                *m_ts;
+    ast::ISymbolScope                    *m_ss;
     ast::IDataType                       *m_dt;
 
 

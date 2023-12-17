@@ -41,9 +41,6 @@ public:
     ast::ISymbolScope *resolve(ast::IScopeChild *c) {
         m_ret = 0;
         c->accept(m_this);
-        if (!m_ret) {
-            ERROR("Failed to resolve target item");
-        }
         return m_ret;
     }
     

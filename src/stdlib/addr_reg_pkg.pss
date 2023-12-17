@@ -1,6 +1,7 @@
 
 package addr_reg_pkg {
     import executor_pkg::* ;
+    import std_pkg::*;
 
     component addr_space_base_c {};
 
@@ -61,10 +62,6 @@ package addr_reg_pkg {
             struct TRAIT : addr_trait_s = empty_addr_trait_s> : addr_claim_s<TRAIT> {
         rand bit[64] addr;
     };
-
-    enum endianness_e {LITTLE_ENDIAN, BIG_ENDIAN};
-
-    struct packed_s<endianness_e e = LITTLE_ENDIAN> {};
 
     struct sizeof_s<type T> {
         static const int nbytes = /* implementation-specific */ -1;

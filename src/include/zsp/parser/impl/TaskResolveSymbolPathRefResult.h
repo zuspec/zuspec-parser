@@ -31,6 +31,7 @@ namespace parser {
 struct TaskResolveSymbolPathRefResult {
     enum Kind {
         SymbolTypeScope,
+        SymbolScope,
         DataType,
         Value
     };
@@ -38,6 +39,7 @@ struct TaskResolveSymbolPathRefResult {
     Kind        kind;
     union {
         ast::ISymbolTypeScope       *ts;
+        ast::ISymbolScope           *ss;
         ast::IDataType              *dt;
         ast::IExpr                  *v;
     } val;

@@ -1,6 +1,10 @@
 
 package std_pkg {
 
+    enum endianness_e {LITTLE_ENDIAN, BIG_ENDIAN};
+
+    struct packed_s<endianness_e e = LITTLE_ENDIAN> {};
+
     function void print(string fmt/*, type ... args*/);
 
 }
