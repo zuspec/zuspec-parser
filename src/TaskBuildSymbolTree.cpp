@@ -489,12 +489,12 @@ void TaskBuildSymbolTree::visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *
     ast::ISymbolScope *scope = symbolScope();
 
     int32_t id = scope->getChildren().size();
+//    ast::ISymbolChildrenScope *if_scope = m_factory->mkSymbolChildrenScope("<if>");
     ast::ISymbolScope *if_scope = m_factory->mkSymbolScope("<if>");
-    scope->getChildren().push_back(ast::IScopeChildUP(if_scope, true));
     if_scope->setLocation(i->getLocation());
     if_scope->setTarget(i);
-    if_scope->setUpper(scope);
-    m_scope_s.push_back(if_scope);
+    addChild(if_scope, true);
+    pushSymbolScope(if_scope);
     for (std::vector<ast::IProceduralStmtIfClauseUP>::const_iterator
         it=i->getIf_then().begin();
         it!=i->getIf_then().end(); it++) {
@@ -503,34 +503,11 @@ void TaskBuildSymbolTree::visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *
         pushSymbolScope(cc);
         (*it)->accept(m_this);
         popSymbolScope();
-
-        // If the new last element is not the if-clause element,
-        // then the if-clause has a child scope
-        /*
-        if (m_scope_s.back()->getChildren().back() != it->get()) {
-            DEBUG("New child-scope added");
-            m_scope_s.back()->getOwned().back().release();
-            m_scope_s.back()->getOwned().pop_back();
-            ast::ISymbolScope *ss = dynamic_cast<ast::ISymbolScope *>(
-                m_scope_s.back()->getChildren().back());
-            m_scope_s.back()->getChildren().pop_back();
-            // Remove the 'simple statement' if-clause
-            m_scope_s.back()->getChildren().pop_back();
-            ast::ISymbolIfClause *if_c = m_factory->mkSymbolIfClause(
-                (*it)->getCond(),
-                0,
-                ss);
-            m_scope_s.back()->getChildren().push_back(if_c);
-            m_scope_s.back()->getOwned().push_back(if_c);
-        } else {
-            DEBUG("Single-statement if clause");
-        }
-         */
     }
     if (i->getElse_then()) {
         i->getElse_then()->accept(m_this);
     }
-    m_scope_s.pop_back();
+    popSymbolScope();
 
     DEBUG_LEAVE("visitProceduralStmtIfElse");
 }
@@ -646,8 +623,8 @@ void TaskBuildSymbolTree::addChild(
     ast::IScopeChild    *c,
     bool                owned) {
     DEBUG_ENTER("addChild(ScopeChild");
-    if (dynamic_cast<ast::ISymbolScope *>(m_scope_s.back())) {
-        dynamic_cast<ast::ISymbolScope *>(m_scope_s.back())->getChildren().push_back(
+    if (dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back())) {
+        dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back())->getChildren().push_back(
             ast::IScopeChildUP(c, owned));
     } else {
         ast::ISymbolCondConnector *cond = dynamic_cast<ast::ISymbolCondConnector *>(m_scope_s.back());

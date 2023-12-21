@@ -71,5 +71,31 @@ TEST_F(TestProceduralStmts, nested_if_else_vars) {
 
 }
 
+TEST_F(TestProceduralStmts, iteration_var) {
+    const char *text = R"(
+        function void doit(int pval) {
+            repeat (i : 20) {
+                i = i + 1;
+            }
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "nested_if_else_vars.pss",
+        files,
+        root,
+        false);
+
+}
+
 }
 }
