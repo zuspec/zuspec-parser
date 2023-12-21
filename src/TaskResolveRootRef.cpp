@@ -72,7 +72,7 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG("imports: %p", i->getImports());
     if (it != i->getSymtab().end()) {
         DEBUG("Found symbol %s @ index %d", m_id->getId().c_str(), it->second);
-        ast::IScopeChild *c = i->getChildren().at(it->second);
+        ast::IScopeChild *c = i->getChildren().at(it->second).get();
 
         if (dynamic_cast<ast::ISymbolTypeScope *>(c)) {
             DEBUG("Is a type scope");

@@ -39,10 +39,10 @@ ast::ISymbolRefPath *TaskResolveEnumRef::resolve(const ast::IExprId *id) {
     m_id = id;
     m_ref = 0;
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=m_ctxt->symtab()->getScope()->getChildren().begin();
         it!=m_ctxt->symtab()->getScope()->getChildren().end(); it++) {
-        (*it)->accept(m_this);
+        it->get()->accept(m_this);
     }
 
     DEBUG_LEAVE("resolve");
@@ -76,10 +76,10 @@ void TaskResolveEnumRef::visitSymbolEnumScope(ast::ISymbolEnumScope *i) {
         }
         fflush(stdout);
     }
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
-        (*it)->accept(m_this);
+        it->get()->accept(m_this);
     }
     DEBUG_LEAVE("visitSymbolEnumScope %s", i->getName().c_str());
 }

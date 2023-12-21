@@ -137,10 +137,10 @@ void TaskApplyTypeExtensions::visitSymbolExtendScope(ast::ISymbolExtendScope *i)
     DEBUG("Target scope: %s", target_s->getName().c_str());
     
     m_target_s = target_s;
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
-        (*it)->accept(this);
+        it->get()->accept(this);
     }
     m_target_s = 0;
 
@@ -181,10 +181,10 @@ void TaskApplyTypeExtensions::visitSymbolScope(ast::ISymbolScope *i) {
             DEBUG_LEAVE("  Resolve Imports");
         }
 
-        for (std::vector<ast::IScopeChild *>::const_iterator
+        for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
-            (*it)->accept(this);
+            it->get()->accept(this);
         }
 
         if (i->getId() >= 0) {

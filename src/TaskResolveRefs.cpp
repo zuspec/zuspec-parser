@@ -54,10 +54,10 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
     // Phases:
     // - 
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=root->getChildren().begin();
         it!=root->getChildren().end(); it++) {
-        (*it)->accept(this);
+        it->get()->accept(this);
     }
 
     m_ctxt->popSymtab();
@@ -132,10 +132,10 @@ void TaskResolveRefs::resolve(ast::ISymbolTypeScope *scope) {
     TaskLinkActionCompRefFields(m_ctxt->getFactory()).link(scope);
 
     // Check on children
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=scope->getChildren().begin();
         it!=scope->getChildren().end(); it++) {
-        (*it)->accept(m_this);
+        it->get()->accept(m_this);
     }
 
     m_ctxt->symtab()->popScope();
@@ -431,7 +431,8 @@ void TaskResolveRefs::visitFunctionPrototype(ast::IFunctionPrototype *i) {
 } 
 
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
-    DEBUG_ENTER("visitSymbolScope \"%s\"", i->getName().c_str());
+    DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
+    /*
     if (i->getName() != "") {
         if (m_ctxt->symtab()->pushNamedScope(i->getName()) == -1) {
             // TODO: internal error
@@ -440,8 +441,9 @@ void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
                 m_ctxt->symtab()->getScope()->getName().c_str());
         }
     } else {
+        */
         m_ctxt->symtab()->pushScope(i);
-    }
+//    }
 
     if (i->getImports()) {
         DEBUG_ENTER("  Resolve Imports");
@@ -449,14 +451,19 @@ void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
         DEBUG_LEAVE("  Resolve Imports");
     }
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    DEBUG("Have %d children", i->getChildren().size());
+    DEBUG_ENTER("visit children");
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
-        (*it)->accept(this);
+        DEBUG_ENTER("visit child");
+        it->get()->accept(this);
+        DEBUG_LEAVE("visit child");
     }
+    DEBUG_LEAVE("visit children");
 
     m_ctxt->symtab()->popScope();
-    DEBUG_LEAVE("visitSymbolScope \"%s\"", i->getName().c_str());
+    DEBUG_LEAVE("visitSymbolScope %s", i->getName().c_str());
 }
 
 void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
@@ -482,7 +489,7 @@ void TaskResolveRefs::visitSymbolExecScope(ast::ISymbolExecScope *i) {
     DEBUG_ENTER("visitSymbolExecScope \"%s\"", i->getName().c_str());
     m_ctxt->symtab()->pushScope(i);
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
         (*it)->accept(this);
@@ -509,7 +516,7 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
         m_ctxt->symtab()->pushScope(i);
 //        DEBUG("Push function body scope");
         m_ctxt->symtab()->pushScope(i->getBody());
-        for (std::vector<ast::IScopeChild *>::const_iterator
+        for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getBody()->getChildren().begin();
             it!=i->getBody()->getChildren().end(); it++) {
             (*it)->accept(m_this);
@@ -583,7 +590,7 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
         }
 
         // Check on children
-        for (std::vector<ast::IScopeChild *>::const_iterator
+        for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
             (*it)->accept(m_this);
@@ -642,7 +649,7 @@ ast::IScopeChild *TaskResolveRefs::resolvePath(ast::ISymbolRefPath *path) {
     for (std::vector<ast::SymbolRefPathElem>::const_iterator
         it=path->getPath().begin();
         it!=path->getPath().end(); it++) {
-        ret = scope->getChildren().at(it->idx);
+        ret = scope->getChildren().at(it->idx).get();
 
         if (it+1 != path->getPath().end()) {
             scope = dynamic_cast<ast::ISymbolScope *>(ret);

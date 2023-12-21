@@ -81,10 +81,10 @@ void TaskLinkActionCompRefFields::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
     m_symtab->pushScope(i);
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
-        (*it)->accept(m_this);
+        it->get()->accept(m_this);
     }
 
     m_symtab->popScope();
@@ -96,10 +96,10 @@ void TaskLinkActionCompRefFields::visitSymbolTypeScope(ast::ISymbolTypeScope *i)
     m_symtab->pushScope(i);
     i->getTarget()->accept(m_this);
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
-        (*it)->accept(m_this);
+        it->get()->accept(m_this);
     }
 
     m_symtab->popScope();

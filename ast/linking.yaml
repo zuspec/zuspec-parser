@@ -16,38 +16,40 @@ structs:
     - idx: int32_t
 
 classes:
-- SymbolScope:
+- SymbolChild:
     super: ScopeChild
-    data:
+    data: 
     - id:
       - type: int32_t
-      - is_ctor: true
-    - name:
-      - type: string
-      - is_ctor: true
+      - is_ctor: false
+      - init: -1
     - upper:
       - type: P<SymbolScope>
       - is_ctor: false
       - init: 0
       - visit: false
+
+- SymbolChildrenScope:
+    super: SymbolChild
+    data:
+    - name:
+      - type: string
+      - is_ctor: true
     - children: 
-      - type: list<P<ScopeChild>>
-      - is_ctor: false
-    - symtab: 
-      - type: map<string,int32_t>
+      - type: list<UP<ScopeChild>>
       - is_ctor: false
     - target: 
       - type: P<ScopeChild>
       - is_ctor: false
       - init: 0
       - visit: true
-    - owned: 
-      - type: list<UP<ScopeChild>>
+
+- SymbolScope:
+    super: SymbolChildrenScope
+    data:
+    - symtab: 
+      - type: map<string,int32_t>
       - is_ctor: false
-      - visit: false
-#    - failed:
-#      - type: set<string>
-#      - is_ctor: false
     - imports: 
       - type: UP<SymbolImportSpec>
       - is_ctor: false
@@ -62,14 +64,17 @@ classes:
 
 - SymbolExecScope:
     super: SymbolScope
-    data: 
-    - locals:
-      - type: list<P<ScopeChild>>
-        is_ctor: false
+    data: {}
 
 - SymbolExtendScope:
     super: SymbolScope
     data: {}
+
+- SymbolCondConnector:
+    super: SymbolChild
+    data:
+    - cond: P<Expr>
+    - stmt: P<ScopeChild>
 
 - SymbolImportSpec:
     data:

@@ -134,10 +134,10 @@ void NameResolver::visitSymbolScope(ast::ISymbolScope *i) {
 	DEBUG_ENTER("visitSymbolScope");
 
 	m_sym_it_s.back()->pushNamedScope(i->getName());
-	for (std::vector<ast::IScopeChild *>::const_iterator
+	for (std::vector<ast::IScopeChildUP>::const_iterator
 		it=i->getChildren().begin();
 		it!=i->getChildren().end(); it++) {
-		(*it)->accept(this);
+		it->get()->accept(this);
 	}
 	m_sym_it_s.back()->popScope();
 
@@ -148,10 +148,10 @@ void NameResolver::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 	DEBUG_ENTER("visitSymbolTypeScope");
 
 	m_sym_it_s.back()->pushNamedScope(i->getName());
-	for (std::vector<ast::IScopeChild *>::const_iterator
+	for (std::vector<ast::IScopeChildUP>::const_iterator
 		it=i->getChildren().begin();
 		it!=i->getChildren().end(); it++) {
-		(*it)->accept(this);
+		it->get()->accept(this);
 	}
 	m_sym_it_s.back()->popScope();
 

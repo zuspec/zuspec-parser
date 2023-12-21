@@ -246,10 +246,10 @@ ast::IScopeChild *TestBase::findItem(
         if (s_it != scope->getSymtab().end()) {
             if (it+1 != path.end()) {
                 scope = dynamic_cast<ast::ISymbolScope *>(
-                    scope->getChildren().at(s_it->second));
+                    scope->getChildren().at(s_it->second).get());
             } else {
                 ret = dynamic_cast<ast::ISymbolScope *>(
-                    scope->getChildren().at(s_it->second));
+                    scope->getChildren().at(s_it->second).get());
             }
         } else {
             break;

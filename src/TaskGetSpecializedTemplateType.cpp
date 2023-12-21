@@ -127,7 +127,6 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     // Give the new type an appropriate name
 
     // Store the specialized AST under the symbol table
-    type_ss->getOwned().push_back(ast::IScopeChildUP(type_s));
     type_ss->setName(mkTypename(type, params));
 
     int32_t id = type_up->getSpec_types().size();

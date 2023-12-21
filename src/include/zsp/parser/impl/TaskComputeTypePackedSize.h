@@ -91,10 +91,10 @@ public:
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
         DEBUG_ENTER("visitSymbolTypeScope %s", i->getName().c_str());
 
-        for (std::vector<ast::IScopeChild *>::const_iterator
+        for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
-            (*it)->accept(m_this);
+            it->get()->accept(m_this);
         }
 
         DEBUG_LEAVE("visitSymbolTypeScope %s", i->getName().c_str());

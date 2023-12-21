@@ -29,7 +29,7 @@ classes:
             type: Location
             is_ctor: False
         - proto: UP<FunctionPrototype>
-        - body: UP<ProceduralStmtSequenceBlock>
+        - body: UP<ExecScope>
         - plat: PlatQual
   - FunctionParamDecl:
     - super: ScopeChild

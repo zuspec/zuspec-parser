@@ -82,6 +82,10 @@ public:
 
     virtual void visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) override;
 
+    virtual void visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *i) override;
+
+//    virtual void visitProceduralStmtIfClause(ast::IProceduralStmtIfClause *i) override;
+
     virtual void visitScope(ast::IScope *i) override;
 
     virtual void visitScopeChild(ast::IScopeChild *i) override;
@@ -98,11 +102,31 @@ protected:
 
     ast::IScopeChild *findSymbol(const std::string &name);
 
+    void pushSymbolScope(ast::ISymbolChild *s);
+
+    ast::ISymbolScope *symbolScope();
+
+    void popSymbolScope();
+
+    void addChild(
+        ast::IScopeChild    *c,
+        bool                owned);
+
+    bool addChild(
+        ast::IScopeChild    *c, 
+        const std::string   &name,
+        bool                owned=true);
+
+    bool addChild(
+        ast::ISymbolChild   *c, 
+        const std::string   &name,
+        bool                owned=true);
+
 private:
     static dmgr::IDebug                 *m_dbg;
     ast::IFactory                       *m_factory;
     IMarkerListener                     *m_marker_l;
-    std::vector<ast::ISymbolScope *>     m_scope_s;
+    std::vector<ast::ISymbolChild *>    m_scope_s;
 
 };
 

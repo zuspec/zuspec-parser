@@ -132,7 +132,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
 
     // Now, we deal with parameters without explicitly-specified values
     for (; plist_idx<plist->getChildren().size(); plist_idx++) {
-        DEBUG("Apply default to parameter (%p)", plist->getChildren().at(plist_idx));
+        DEBUG("Apply default to parameter (%p)", plist->getChildren().at(plist_idx).get());
         m_ptype_value = 0;
         m_ptype_generic_type = 0;
         m_ptype_category_type = 0;

@@ -724,8 +724,6 @@ public:
     
     virtual void visitExecBlock(ast::IExecBlock *i) { }
     
-    virtual void visitProceduralStmtSequenceBlock(ast::IProceduralStmtSequenceBlock *i) { }
-    
     virtual void visitStruct(ast::IStruct *i) {
         ast::IStruct *ic = m_factory->mkStruct(
             copyT<ast::IExprId>(i->getName()),

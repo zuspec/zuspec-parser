@@ -62,13 +62,13 @@ public:
             switch (it->kind) {
                 case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
                     DEBUG("Elem: ChildIdx %d", it->idx);
-                    ret = scope->getChildren().at(it->idx);
+                    ret = scope->getChildren().at(it->idx).get();
                     DEBUG("  scope %p => %p", scope, ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ParamIdx: {
                     DEBUG("Elem: ParamIdx %d", it->idx);
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    ret = scope_ts->getPlist()->getChildren().at(it->idx);
+                    ret = scope_ts->getPlist()->getChildren().at(it->idx).get();
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
@@ -150,7 +150,7 @@ public:
             switch (it->kind) {
                 case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
                     DEBUG("Elem: ChildIdx %d", it->idx);
-                    ast::IScopeChild *c = scope->getChildren().at(it->idx);
+                    ast::IScopeChild *c = scope->getChildren().at(it->idx).get();
                     if ((scope=dynamic_cast<ast::ISymbolScope *>(c))) {
                         ret->pushScope(scope);
                     } else {
@@ -245,7 +245,7 @@ parser::ISymbolTableIterator *mkIterator(
             switch (it->kind) {
                 case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
                     DEBUG("Elem: ChildIdx %d", it->idx);
-                    item = scope->getChildren().at(it->idx);
+                    item = scope->getChildren().at(it->idx).get();
                     ret = TaskGetName().get(item);
                     if (!(scope=dynamic_cast<ast::ISymbolScope *>(item))) {
                         break;
@@ -299,7 +299,7 @@ parser::ISymbolTableIterator *mkIterator(
             switch (it->kind) {
                 case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
                     DEBUG("Elem: ChildIdx %d", it->idx);
-                    item = scope->getChildren().at(it->idx);
+                    item = scope->getChildren().at(it->idx).get();
                     if (ret.size()) {
                         ret += "::";
                     }

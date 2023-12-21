@@ -64,7 +64,7 @@ void TaskFindPathElem::visitSymbolScope(ast::ISymbolScope *i) {
             m_id->getId().c_str(), it->second, m_super_depth,
             i->getName().c_str());
         m_ret = {
-            .sym=i->getChildren().at(it->second), 
+            .sym=i->getChildren().at(it->second).get(), 
             .idx=it->second, 
             .super_idx=m_super_depth};
     }

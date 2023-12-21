@@ -50,9 +50,6 @@ classes:
         - expr: UP<Expr>
         - start: int32_t
         - end: int32_t
-  - ProceduralStmtSequenceBlock:
-    - super: ExecScope
-    - data: []
   - ProceduralStmtAssignment:
     - super: ExecStmt
     - data:
@@ -97,12 +94,18 @@ classes:
         - it_id: UP<ExprId>
         - idx_id: UP<ExprId>
         - body: UP<ExecStmt>
+  - ProceduralStmtIfClause:
+    - super: ScopeChild
+    - data:
+        - cond: UP<Expr>
+        - body: UP<ExecStmt>
   - ProceduralStmtIfElse:
     - super: ExecStmt
     - data:
-        - cond: UP<Expr>
-        - true_s: UP<ExecStmt>
-        - false_s: UP<ExecStmt>
+        - if_then: list<UP<ProceduralStmtIfClause>>
+        - else_then: 
+            type: UP<ExecStmt>
+            is_ctor: false
   - ProceduralStmtMatch:
     - super: ExecStmt
     - data:

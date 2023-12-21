@@ -129,10 +129,10 @@ void TaskFindElementByLocation::visitSymbolScope(ast::ISymbolScope *i) {
         m_ctxt_s.push_back({0, i});
     }
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
-        (*it)->accept(this);
+        it->get()->accept(this);
     }
     if (i->getTarget()) {
         i->getTarget()->accept(this);

@@ -576,7 +576,7 @@ antlrcpp::Any AstBuilderInt::visitExec_super_stmt(PSSParser::Exec_super_stmtCont
 antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_functionContext *ctx) {
     DEBUG_ENTER("visitProcedural_function");
 
-    ast::IProceduralStmtSequenceBlock *body = m_factory->mkProceduralStmtSequenceBlock();
+    ast::IExecScope *body = m_factory->mkExecScope();
     std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
     DEBUG("Function has %d statements", items.size());
     m_exec_scope_s.push_back(body);
@@ -664,7 +664,7 @@ antlrcpp::Any AstBuilderInt::visitImport_function(PSSParser::Import_functionCont
 // B.7 Procedural Statements
 antlrcpp::Any AstBuilderInt::visitProcedural_sequence_block_stmt(PSSParser::Procedural_sequence_block_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_sequence_block_stmt");
-    ast::IProceduralStmtSequenceBlock *block = m_factory->mkProceduralStmtSequenceBlock();
+    ast::IExecScope *block = m_factory->mkExecScope();
     m_exec_scope_s.push_back(block);
 
     std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
@@ -806,13 +806,38 @@ antlrcpp::Any AstBuilderInt::visitProcedural_foreach_stmt(PSSParser::Procedural_
 antlrcpp::Any AstBuilderInt::visitProcedural_if_else_stmt(PSSParser::Procedural_if_else_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_if_else_stmt");
 
+    ast:IProceduralStmtIfElse *stmt = m_factory->mkProceduralStmtIfElse();
+
     ast::IExpr *cond = mkExpr(ctx->expression());
-    ast::IExecStmt *true_s = mkExecStmt(ctx->procedural_stmt(0));
-    ast::IExecStmt *false_s = ctx->procedural_stmt(1)?mkExecStmt(ctx->procedural_stmt(1)):0;
-    ast::IProceduralStmtIfElse *stmt = m_factory->mkProceduralStmtIfElse(
+    ast::IExecStmt *if_s = mkExecStmt(ctx->procedural_stmt(0));
+    ast::IProceduralStmtIfClause *clause = m_factory->mkProceduralStmtIfClause(
         cond,
-        true_s,
-        false_s);
+        if_s);
+    DEBUG("Add initial if clause");
+    stmt->getIf_then().push_back(ast::IProceduralStmtIfClauseUP(clause));
+
+    PSSParser::Procedural_stmtContext *else_ctx = ctx->procedural_stmt(1);
+
+    // Process else-if stmts
+    while (else_ctx && else_ctx->procedural_if_else_stmt()) {
+        cond = mkExpr(else_ctx->procedural_if_else_stmt()->expression());
+        if_s = mkExecStmt(else_ctx->procedural_if_else_stmt()->procedural_stmt(0));
+        clause = m_factory->mkProceduralStmtIfClause(
+            cond,
+            if_s);
+        DEBUG("Add if-then clause");
+        stmt->getIf_then().push_back(ast::IProceduralStmtIfClauseUP(clause));
+        else_ctx = else_ctx->procedural_if_else_stmt()->procedural_stmt(1);
+    }
+
+    // Now, add final 'else' if present
+    if (else_ctx) {
+        DEBUG("Add final 'else' clause");
+        ast::IExecStmt *else_s = mkExecStmt(else_ctx->procedural_if_else_stmt()->procedural_stmt(1));
+        stmt->setElse_then(else_s);
+    } else {
+        DEBUG("No final 'else' clause");
+    }
 
     m_exec_stmt = stmt;
     m_exec_stmt_cnt++;
