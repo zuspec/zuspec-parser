@@ -112,6 +112,10 @@ protected:
         ast::IScopeChild    *c,
         bool                owned);
 
+    void addChild(
+        ast::ISymbolScope   *c,
+        bool                owned);
+
     bool addChild(
         ast::IScopeChild    *c, 
         const std::string   &name,

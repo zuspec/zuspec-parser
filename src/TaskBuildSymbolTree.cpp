@@ -626,7 +626,7 @@ void TaskBuildSymbolTree::popSymbolScope() {
 void TaskBuildSymbolTree::addChild(
     ast::IScopeChild    *c,
     bool                owned) {
-    DEBUG_ENTER("addChild(ScopeChild");
+    DEBUG_ENTER("addChild(ScopeChild)");
     if (dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back())) {
         dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back())->getChildren().push_back(
             ast::IScopeChildUP(c, owned));
@@ -635,7 +635,23 @@ void TaskBuildSymbolTree::addChild(
         DEBUG("Setting cond-connector target");
         cond->setStmt(c);
     }
-    DEBUG_LEAVE("addChild(ScopeChild");
+    DEBUG_LEAVE("addChild(ScopeChild)");
+}
+
+void TaskBuildSymbolTree::addChild(
+    ast::ISymbolScope   *c,
+    bool                owned) {
+    DEBUG_ENTER("addChild(ScopeChild)");
+    if (dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back())) {
+        ast::ISymbolChildrenScope *scs = dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back());
+        c->setId(scs->getChildren().size());
+        scs->getChildren().push_back(ast::IScopeChildUP(c, owned));
+    } else {
+        ast::ISymbolCondConnector *cond = dynamic_cast<ast::ISymbolCondConnector *>(m_scope_s.back());
+        DEBUG("Setting cond-connector target");
+        cond->setStmt(c);
+    }
+    DEBUG_LEAVE("addChild(ScopeChild)");
 }
 
 bool TaskBuildSymbolTree::addChild(
