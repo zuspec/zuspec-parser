@@ -838,7 +838,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_if_else_stmt(PSSParser::Procedural_
     // Now, add final 'else' if present
     if (else_ctx) {
         DEBUG("Add final 'else' clause");
-        ast::IExecStmt *else_s = mkExecStmt(else_ctx->procedural_if_else_stmt()->procedural_stmt(1));
+        ast::IExecStmt *else_s = mkExecStmt(else_ctx);
         stmt->setElse_then(else_s);
     } else {
         DEBUG("No final 'else' clause");

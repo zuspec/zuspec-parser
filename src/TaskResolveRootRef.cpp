@@ -150,8 +150,22 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 }
 
 void TaskResolveRootRef::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
-    DEBUG_ENTER("visitSymbolFunctionScope");
-    visitSymbolScope(i);
+    DEBUG_ENTER("visitSymbolFunctionScope %s (searching for %s)", i->getName().c_str(), m_id->getId().c_str());
+
+    std::map<std::string,int32_t>::const_iterator it = i->getPlist()->getSymtab().find(m_id->getId());
+
+    if (it != i->getPlist()->getSymtab().end()) {
+        ast::IScopeChild *c = i->getPlist()->getChildren().at(it->second).get();
+        DEBUG("Found as a function parameter @ %d", it->second);
+        m_ref = m_ctxt->symtab()->getScopeSymbolPath(); // Path to 'i'
+        m_ref->getPath().push_back({
+            ast::SymbolRefPathElemKind::ElemKind_ArgIdx,
+            it->second});
+    } else {
+        DEBUG("Delegate to SymbolScope");
+        visitSymbolScope(i);
+    }
+
     DEBUG_LEAVE("visitSymbolFunctionScope");
 }
 

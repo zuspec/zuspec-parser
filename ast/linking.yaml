@@ -6,6 +6,7 @@
 enums:
 - SymbolRefPathElemKind:
   - ElemKind_ChildIdx
+  - ElemKind_ArgIdx
   - ElemKind_ParamIdx
   - ElemKind_Super
   - ElemKind_TypeSpec
@@ -64,7 +65,10 @@ classes:
 
 - SymbolExecScope:
     super: SymbolScope
-    data: {}
+    data: 
+    - locals: 
+      - type: list<UP<ScopeChild>>
+      - is_ctor: false
 
 - SymbolExtendScope:
     super: SymbolScope
@@ -112,8 +116,9 @@ classes:
         - type: UP<SymbolScope>
         - is_ctor: false
       - body:
-        - type: UP<SymbolExecScope>
+        - type: bool
         - is_ctor: false
+        - init: false
 
 - SymbolRefPath: 
     data:

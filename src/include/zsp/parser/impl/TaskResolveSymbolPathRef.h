@@ -65,6 +65,11 @@ public:
                     ret = scope->getChildren().at(it->idx).get();
                     DEBUG("  scope %p => %p", scope, ret);
                 } break;
+                case ast::SymbolRefPathElemKind::ElemKind_ArgIdx: {
+                    DEBUG("Elem: ArgIdx %d", it->idx);
+                    ast::ISymbolFunctionScope *fs = dynamic_cast<ast::ISymbolFunctionScope *>(scope);
+                    ret = fs->getPlist()->getChildren().at(it->idx).get();
+                } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ParamIdx: {
                     DEBUG("Elem: ParamIdx %d", it->idx);
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);

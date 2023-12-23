@@ -78,7 +78,7 @@ public:
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override {
         DEBUG_ENTER("visitSymbolScope");
-        m_ret = i->getChildren().at(m_idx);
+        m_ret = i->getChildren().at(m_idx).get();
         DEBUG_LEAVE("visitSymbolScope");
     }
 
@@ -100,7 +100,7 @@ public:
         if (m_super_idx > 0) {
             i->getTarget()->accept(m_this);
         } else {
-            m_ret = i->getChildren().at(m_idx);
+            m_ret = i->getChildren().at(m_idx).get();
         }
         DEBUG_LEAVE("visitSymbolTypeScope");
     }

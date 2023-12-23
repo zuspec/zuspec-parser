@@ -511,19 +511,19 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
         (*it)->accept(m_this);
     }
 
-    if (i->getBody()) {
+//    if (i->getBody()) {
         DEBUG("Push function scope %s", i->getName().c_str());
         m_ctxt->symtab()->pushScope(i);
 //        DEBUG("Push function body scope");
-        m_ctxt->symtab()->pushScope(i->getBody());
+//        m_ctxt->symtab()->pushScope(i->getBody());
         for (std::vector<ast::IScopeChildUP>::const_iterator
-            it=i->getBody()->getChildren().begin();
-            it!=i->getBody()->getChildren().end(); it++) {
+            it=i->getChildren().begin();
+            it!=i->getChildren().end(); it++) {
             (*it)->accept(m_this);
         }
+//        m_ctxt->symtab()->popScope();
         m_ctxt->symtab()->popScope();
-        m_ctxt->symtab()->popScope();
-    }
+//    }
 
 
     DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
