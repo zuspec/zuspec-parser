@@ -788,13 +788,24 @@ antlrcpp::Any AstBuilderInt::visitProcedural_return_stmt(PSSParser::Procedural_r
 antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_repeat_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_repeat_stmt");
     if (ctx->is_repeat) {
-        /*
         ast::IProceduralStmtRepeat *stmt = m_factory->mkProceduralStmtRepeat(
-            (ctx->identifier())?mk
-        );
-         */
+            (ctx->identifier())?mkId(ctx->identifier()):0,
+            mkExpr(ctx->expression()),
+            mkExecStmt(ctx->procedural_stmt()));
+        m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     } else if (ctx->is_repeat_while) {
+        ast::IProceduralStmtRepeatWhile *stmt = m_factory->mkProceduralStmtRepeatWhile(
+            mkExpr(ctx->expression()),
+            mkExecStmt(ctx->procedural_stmt()));
+        m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     } else { // 'while'
+        ast::IProceduralStmtWhile *stmt = m_factory->mkProceduralStmtWhile(
+            mkExpr(ctx->expression()),
+            mkExecStmt(ctx->procedural_stmt()));
+        m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     }
 
     DEBUG_LEAVE("visitProcedural_repeat_stmt");

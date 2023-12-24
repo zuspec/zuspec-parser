@@ -70,6 +70,10 @@ classes:
       - type: list<UP<ScopeChild>>
       - is_ctor: false
 
+- SymbolStmtScope:
+    super: SymbolScope
+    data: {}
+
 - SymbolExtendScope:
     super: SymbolScope
     data: {}

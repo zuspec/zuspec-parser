@@ -114,8 +114,7 @@ void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
         id_it=i->getId().begin();
         id_it!=i->getId().end(); id_it++) {
         DEBUG("  process name-elem %s", (*id_it)->getId().c_str());
-        ast::ISymbolScope *scope = 
-            dynamic_cast<ast::ISymbolScope *>(m_scope_s.back());
+        ast::ISymbolScope *scope = dynamic_cast<ast::ISymbolScope *>(symbolScope());
         std::map<std::string,int32_t>::const_iterator p_it;
         p_it = scope->getSymtab().find((*id_it)->getId());
 
@@ -179,6 +178,7 @@ void TaskBuildSymbolTree::visitEnumItem(ast::IEnumItem *i) {
 
 void TaskBuildSymbolTree::visitExecStmt(ast::IExecStmt *i) {
     DEBUG_ENTER("visitExecStmt");
+    DEBUG("Adding to scope %s", (symbolScope())?symbolScope()->getName().c_str():"<null>");
     addChild(i, false);
     DEBUG_LEAVE("visitExecStmt");
 }
@@ -194,16 +194,16 @@ void TaskBuildSymbolTree::visitExecScope(ast::IExecScope *i) {
     ast::ISymbolScope *scope = m_factory->mkSymbolExecScope("<inner-exec>");
     scope->setLocation(i->getLocation());
     scope->setTarget(i);
-    addChild(scope, true);
     DEBUG("Adding to scope %s", (symbolScope())?symbolScope()->getName().c_str():"<null>");
+    addChild(scope, true);
 
-    m_scope_s.push_back(scope);
+    pushSymbolScope(scope);
     for (std::vector<ast::IExecStmtUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
         (*it)->accept(m_this);
     }
-    m_scope_s.pop_back();
+    popSymbolScope();
 
     DEBUG_LEAVE("visitExecScope");
 }
@@ -514,6 +514,37 @@ void TaskBuildSymbolTree::visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *
     popSymbolScope();
 
     DEBUG_LEAVE("visitProceduralStmtIfElse");
+}
+
+void TaskBuildSymbolTree::visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) {
+    DEBUG_ENTER("visitProceduralStmtRepeat");
+    ast::ISymbolStmtScope *repeat_s = m_factory->mkSymbolStmtScope("<repeat>");
+    addChild(repeat_s, true);
+    repeat_s->setLocation(i->getLocation());
+    repeat_s->setTarget(i);
+
+
+    // Create an index variable if the statement has one
+    if (i->getIt_id()) {
+        DEBUG("Add data declaration");
+        ast::IProceduralStmtDataDeclaration *it_var = 
+            m_factory->mkProceduralStmtDataDeclaration(
+                m_factory->mkExprId(i->getIt_id()->getId(), false),
+                m_factory->mkDataTypeInt(false, 
+                    m_factory->mkExprUnsignedNumber("32", 32, 32),
+                    0),
+                    0, 0);
+            repeat_s->getSymtab().insert({
+                i->getIt_id()->getId(),
+                0
+            });
+            repeat_s->getChildren().push_back(it_var);
+    }
+
+    pushSymbolScope(repeat_s);
+    i->getBody()->accept(m_this);
+    popSymbolScope();
+    DEBUG_LEAVE("visitProceduralStmtRepeat");
 }
 
 /*

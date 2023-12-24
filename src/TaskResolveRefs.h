@@ -71,6 +71,8 @@ public:
 
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override;
 
+    virtual void visitSymbolStmtScope(ast::ISymbolStmtScope *i) override;
+
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
 
     virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;

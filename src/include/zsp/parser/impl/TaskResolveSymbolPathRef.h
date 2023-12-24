@@ -37,8 +37,8 @@ namespace parser {
 class TaskResolveSymbolPathRef : public ast::VisitorBase {
 public:
     TaskResolveSymbolPathRef(
-        dmgr::IDebugMgr     *dmgr,
-        ast::ISymbolScope   *root) : m_dbg(0), m_root(root) { 
+        dmgr::IDebugMgr             *dmgr,
+        ast::ISymbolChildrenScope   *root) : m_dbg(0), m_root(root) { 
         DEBUG_INIT("TaskResolveSymbolPathRef", dmgr);
     }
 
@@ -47,7 +47,7 @@ public:
     ast::IScopeChild *resolve(const ast::ISymbolRefPath *ref) {
         DEBUG_ENTER("resolve root=%p", m_root);
         ast::IScopeChild *ret = 0;
-        ast::ISymbolScope *scope = m_root;
+        ast::ISymbolChildrenScope *scope = m_root;
 
         for (std::vector<ast::SymbolRefPathElem>::const_iterator
             it=ref->getPath().begin();
@@ -146,7 +146,7 @@ public:
             parser::ISymbolTableIterator    *ret,
             const ast::ISymbolRefPath       *ref) {
         DEBUG_ENTER("mkIterator root=%p", m_root);
-        ast::ISymbolScope *scope = m_root;
+        ast::ISymbolChildrenScope *scope = m_root;
 
         for (std::vector<ast::SymbolRefPathElem>::const_iterator
             it=ref->getPath().begin();
@@ -157,7 +157,7 @@ public:
                     DEBUG("Elem: ChildIdx %d", it->idx);
                     ast::IScopeChild *c = scope->getChildren().at(it->idx).get();
                     if ((scope=dynamic_cast<ast::ISymbolScope *>(c))) {
-                        ret->pushScope(scope);
+                        ret->pushScope(dynamic_cast<ast::ISymbolScope *>(scope));
                     } else {
                         break;
                     }
@@ -202,7 +202,7 @@ parser::ISymbolTableIterator *mkIterator(
             parser::ISymbolTableIterator    *ret,
             ast::ISymbolScope               *target) {
         DEBUG_ENTER("mkIterator root=%p", m_root);
-        ast::ISymbolScope *scope = m_root;
+        ast::ISymbolChildrenScope *scope = m_root;
 
         std::vector<ast::ISymbolScope *> scopes;
 
@@ -241,7 +241,7 @@ parser::ISymbolTableIterator *mkIterator(
         DEBUG_ENTER("mkName root=%p", m_root);
         std::string ret;
         ast::IScopeChild *item;
-        ast::ISymbolScope *scope = m_root;
+        ast::ISymbolChildrenScope *scope = m_root;
 
         for (std::vector<ast::SymbolRefPathElem>::const_iterator
             it=ref->getPath().begin();
@@ -295,7 +295,7 @@ parser::ISymbolTableIterator *mkIterator(
         DEBUG_ENTER("mkQName root=%p", m_root);
         std::string ret;
         ast::IScopeChild *item;
-        ast::ISymbolScope *scope = m_root;
+        ast::ISymbolChildrenScope *scope = m_root;
 
         for (std::vector<ast::SymbolRefPathElem>::const_iterator
             it=ref->getPath().begin();
@@ -402,7 +402,7 @@ parser::ISymbolTableIterator *mkIterator(
 
 private:
     dmgr::IDebug                         *m_dbg;
-    ast::ISymbolScope                    *m_root;
+    ast::ISymbolChildrenScope            *m_root;
     ast::ISymbolTypeScope                *m_ts;
     ast::ISymbolScope                    *m_ss;
     ast::IDataType                       *m_dt;

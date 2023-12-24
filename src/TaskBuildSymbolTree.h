@@ -80,9 +80,12 @@ public:
 
     virtual void visitPyImportFromStmt(ast::IPyImportFromStmt *i) override;
 
+
     virtual void visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) override;
 
     virtual void visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *i) override;
+
+    virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override;
 
 //    virtual void visitProceduralStmtIfClause(ast::IProceduralStmtIfClause *i) override;
 

@@ -529,6 +529,14 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
     DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
 }
 
+void TaskResolveRefs::visitSymbolStmtScope(ast::ISymbolStmtScope *i) {
+    DEBUG_ENTER("visitSymbolStmtScope %s", i->getName().c_str());
+    m_ctxt->symtab()->pushScope(i);
+    i->getTarget()->accept(m_this);
+    m_ctxt->symtab()->popScope();
+    DEBUG_LEAVE("visitSymbolStmtScope %s", i->getName().c_str());
+}
+
 void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
     ast::ITypeScope *i_ts = dynamic_cast<ast::ITypeScope *>(i->getTarget());
     DEBUG_ENTER("visitSymbolTypeScope %s (param=%s specialized=%s)", 
