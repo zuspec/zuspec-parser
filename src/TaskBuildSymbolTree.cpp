@@ -500,6 +500,7 @@ void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStm
 
 void TaskBuildSymbolTree::visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *i) {
     DEBUG_ENTER("visitProceduralStmtIfElse");
+    addChild(i, false);
 //     ast::ISymbolScope *scope = symbolScope();
 
 //     int32_t id = scope->getChildren().size();

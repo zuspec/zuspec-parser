@@ -314,6 +314,7 @@ antlrcpp::Any AstBuilderInt::visitAction_declaration(PSSParser::Action_declarati
         m_factory->mkExprId("comp", false),
         0 // Type: must back-patch later
     );
+    comp->setIndex(action->getChildren().size());
     action->getChildren().push_back(ast::IScopeChildUP(comp));
 
 	if (ctx->template_param_decl_list()) {
@@ -909,6 +910,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedu
             type,
             array_dim,
             init);
+        decl->setIndex(m_exec_scope_s.back()->getChildren().size());
         m_exec_scope_s.back()->getChildren().push_back(ast::IScopeChildUP(decl));
     }
 
@@ -1903,6 +1905,7 @@ void AstBuilderInt::syntaxError(
 }
 
 void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t) {
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 	c->setParent(scope());
     c->setLocation({
@@ -1917,6 +1920,7 @@ void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t) {
 }
 
 void AstBuilderInt::addChild(ast::INamedScopeChild *c, Token *t) {
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 	c->setParent(scope());
     c->setLocation({
@@ -1942,6 +1946,7 @@ void AstBuilderInt::addChild(ast::IConstraintScope *c, Token *start, Token *end)
         (int32_t)end->getCharPositionInLine()+1
     });
 	c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1961,6 +1966,7 @@ void AstBuilderInt::addChild(ast::IExecScope *c, Token *start, Token *end) {
         (int32_t)end->getCharPositionInLine()+1
     });
     c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1980,6 +1986,7 @@ void AstBuilderInt::addChild(ast::IFunctionDefinition *c, Token *start, Token *e
         (int32_t)end->getCharPositionInLine()+1
     });
     c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1999,6 +2006,7 @@ void AstBuilderInt::addChild(ast::INamedScope *c, Token *start, Token *end) {
         (int32_t)end->getCharPositionInLine()+1
     });
     c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -2018,6 +2026,7 @@ void AstBuilderInt::addChild(ast::IScope *c, Token *start, Token *end) {
         (int32_t)end->getCharPositionInLine()
     });
     c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -2209,6 +2218,7 @@ void AstBuilderInt::addActivityStmt(
         PSSParser::Activity_stmtContext     *ctx) {
     ast::IScopeChild *a_stmt = mkActivityStmt(ctx);
     if (a_stmt) {
+        a_stmt->setIndex(scope->getChildren().size());
         scope->getChildren().push_back(ast::IScopeChildUP(a_stmt));
     }
 }
@@ -2301,6 +2311,7 @@ void AstBuilderInt::addExecStmt(PSSParser::Procedural_stmtContext *ctx) {
     ast::IScopeChild *stmt = mkExecStmt(ctx);
 
     if (stmt) {
+        stmt->setIndex(m_exec_scope_s.back()->getChildren().size());
         m_exec_scope_s.back()->getChildren().push_back(ast::IScopeChildUP(stmt));
     }
 
