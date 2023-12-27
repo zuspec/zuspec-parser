@@ -146,10 +146,6 @@ void TaskResolveRef::visitSymbolScope(ast::ISymbolScope *i) {
 //    m_ref = 
 }
 
-void TaskResolveRef::visitSymbolExecScope(ast::ISymbolExecScope *i) { 
-
-}
-
 void TaskResolveRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
 }

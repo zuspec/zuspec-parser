@@ -284,7 +284,7 @@ private:
 
 	ast::IExprDomainOpenRangeList *mkDomainOpenRangeList(PSSParser::Domain_open_range_listContext *ctx);
 
-    ast::IExecStmt *mkExecStmt(PSSParser::Procedural_stmtContext *ctx);
+    ast::IScopeChild *mkExecStmt(PSSParser::Procedural_stmtContext *ctx);
 
     void addExecStmt(PSSParser::Procedural_stmtContext *ctx);
 
@@ -355,7 +355,7 @@ private:
 	ast::IScopeChild							*m_activity_stmt;
 	ast::IExprId								*m_labeled_activity_id;
 	ast::IConstraintStmt						*m_constraint;
-    ast::IExecStmt                              *m_exec_stmt;
+    ast::IScopeChild                            *m_exec_stmt;
     int32_t                                     m_exec_stmt_cnt;
     std::vector<ast::IExecScope *>              m_exec_scope_s;
 	std::vector<ast::IConstraintScope *>		m_constraint_s;

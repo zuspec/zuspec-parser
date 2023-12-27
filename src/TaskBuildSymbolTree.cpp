@@ -44,6 +44,7 @@ ast::ISymbolScope *TaskBuildSymbolTree::build(
         const std::vector<ast::IGlobalScope *>  &roots) {
     DEBUG_ENTER("build");
     ast::ISymbolScope *root = m_factory->mkSymbolScope("");
+    root->setSynthetic(true);
     pushSymbolScope(root);
 
     DEBUG_ENTER("visitBuiltins");
@@ -83,6 +84,7 @@ ast::ISymbolTypeScope *TaskBuildSymbolTree::build(ast::ITypeScope *ts) {
     ast::ISymbolScope *root = m_factory->mkSymbolScope("");
     root->setLocation(ts->getLocation());
     root->setOpaque(ts->getOpaque());
+    root->setSynthetic(true);
     pushSymbolScope(root);
 
     ts->accept(m_this);
@@ -122,6 +124,7 @@ void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
             int32_t id = scope->getChildren().size();
             ast::ISymbolScope *pkg = m_factory->mkSymbolScope((*id_it)->getId());
             pkg->setLocation(i->getLocation());
+            pkg->setSynthetic(true);
             addChild(pkg, (*id_it)->getId(), true);
 
             pushSymbolScope(pkg);
@@ -156,6 +159,7 @@ void TaskBuildSymbolTree::visitEnumDecl(ast::IEnumDecl *i) {
     int32_t id = scope->getChildren().size();
     ast::ISymbolEnumScope *ts = m_factory->mkSymbolEnumScope(i->getName()->getId());
     ts->setLocation(i->getLocation());
+    ts->setSynthetic(true);
 
 
     if (addChild(ts, i->getName()->getId(), true)) {
@@ -178,30 +182,32 @@ void TaskBuildSymbolTree::visitEnumItem(ast::IEnumItem *i) {
 
 void TaskBuildSymbolTree::visitExecStmt(ast::IExecStmt *i) {
     DEBUG_ENTER("visitExecStmt");
+    /*
     DEBUG("Adding to scope %s", (symbolScope())?symbolScope()->getName().c_str():"<null>");
     addChild(i, false);
+     */
     DEBUG_LEAVE("visitExecStmt");
 }
 
 void TaskBuildSymbolTree::visitExecBlock(ast::IExecBlock *i) {
     DEBUG_ENTER("visitExecBlock");
+    addChild(i, false);
     visitExecScope(i);
     DEBUG_LEAVE("visitExecBlock");
 }
 
 void TaskBuildSymbolTree::visitExecScope(ast::IExecScope *i) {
     DEBUG_ENTER("visitExecScope");
-    ast::ISymbolScope *scope = m_factory->mkSymbolExecScope("<inner-exec>");
-    scope->setLocation(i->getLocation());
-    scope->setTarget(i);
     DEBUG("Adding to scope %s", (symbolScope())?symbolScope()->getName().c_str():"<null>");
-    addChild(scope, true);
+    addChild(i, false);
 
-    pushSymbolScope(scope);
-    for (std::vector<ast::IExecStmtUP>::const_iterator
+    pushSymbolScope(i);
+    DEBUG("Children: %d", i->getChildren().size());
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
-        (*it)->accept(m_this);
+        DEBUG("Child: %p", it->get());
+        it->get()->accept(m_this);
     }
     popSymbolScope();
 
@@ -261,6 +267,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
         func_sym->setLocation(i->getLocation());
         addChild(func_sym, i->getProto()->getName()->getId(), false);
         func_sym->getPrototypes().push_back(i->getProto());
+        func_sym->setSynthetic(true);
 
         func_sym->setPlist(m_factory->mkSymbolScope("<plist>"));
 
@@ -292,14 +299,12 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
 
     // Build the body (and subscopes) symbol scopes
     int32_t id = func_sym->getChildren().size();
-    ast::ISymbolExecScope *body = m_factory->mkSymbolExecScope("");
+//    ast::ISymbolExecScope *body = m_factory->mkSymbolExecScope("");
 //    body->setLocation(i->getLocation());
 //    body->setUpper(symbolScope());
     pushSymbolScope(func_sym);
     func_sym->setBody(true);
-//    func_sym->getChildren().push_back(ast::IScopeChildUP(body, false));
-    DEBUG("Function body has %d statements", i->getBody()->getChildren().size());
-    for (std::vector<ast::IExecStmtUP>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getBody()->getChildren().begin();
         it!=i->getBody()->getChildren().end(); it++) {
         (*it)->accept(m_this);
@@ -479,10 +484,15 @@ void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStm
             i
         );
     } else {
-        int32_t id = scope->getChildren().size();
-        DEBUG("DataDeclaration %s: %d", i->getName()->getId().c_str(), id);
+        int32_t id = -1;
+        if (scope->getSynthetic()) {
+            id = scope->getChildren().size();
+            DEBUG("DataDeclaration %s: %d", i->getName()->getId().c_str(), id);
+            scope->getChildren().push_back(ast::IScopeChildUP(i, false));
+        } else {
+            id = i->getIndex();
+        }
         scope->getSymtab().insert({i->getName()->getId(), id});
-        scope->getChildren().push_back(ast::IScopeChildUP(i, false));
     }
 
     DEBUG_LEAVE("visitProceduralStmtDataDeclaration");
@@ -490,62 +500,75 @@ void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStm
 
 void TaskBuildSymbolTree::visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *i) {
     DEBUG_ENTER("visitProceduralStmtIfElse");
-    ast::ISymbolScope *scope = symbolScope();
+//     ast::ISymbolScope *scope = symbolScope();
 
-    int32_t id = scope->getChildren().size();
-//    ast::ISymbolChildrenScope *if_scope = m_factory->mkSymbolChildrenScope("<if>");
-    ast::ISymbolScope *if_scope = m_factory->mkSymbolScope("<if>");
-    if_scope->setLocation(i->getLocation());
-    if_scope->setTarget(i);
-    addChild(if_scope, true);
-    pushSymbolScope(if_scope);
-    for (std::vector<ast::IProceduralStmtIfClauseUP>::const_iterator
-        it=i->getIf_then().begin();
-        it!=i->getIf_then().end(); it++) {
-        ast::ISymbolCondConnector *cc = m_factory->mkSymbolCondConnector((*it)->getCond(), 0);
-        addChild(cc, true);
-        pushSymbolScope(cc);
-        (*it)->accept(m_this);
-        popSymbolScope();
-    }
-    if (i->getElse_then()) {
-        i->getElse_then()->accept(m_this);
-    }
-    popSymbolScope();
+//     int32_t id = scope->getChildren().size();
+// //    ast::ISymbolChildrenScope *if_scope = m_factory->mkSymbolChildrenScope("<if>");
+//     ast::ISymbolScope *if_scope = m_factory->mkSymbolScope("<if>");
+//     if_scope->setLocation(i->getLocation());
+//     if_scope->setTarget(i);
+//     addChild(if_scope, true);
+//     pushSymbolScope(if_scope);
+//     for (std::vector<ast::IProceduralStmtIfClauseUP>::const_iterator
+//         it=i->getIf_then().begin();
+//         it!=i->getIf_then().end(); it++) {
+//         ast::ISymbolCondConnector *cc = m_factory->mkSymbolCondConnector((*it)->getCond(), 0);
+//         addChild(cc, true);
+//         pushSymbolScope(cc);
+//         (*it)->accept(m_this);
+//         popSymbolScope();
+//     }
+//     if (i->getElse_then()) {
+//         i->getElse_then()->accept(m_this);
+//     }
+//     popSymbolScope();
 
     DEBUG_LEAVE("visitProceduralStmtIfElse");
 }
 
-void TaskBuildSymbolTree::visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) {
-    DEBUG_ENTER("visitProceduralStmtRepeat");
-    ast::ISymbolStmtScope *repeat_s = m_factory->mkSymbolStmtScope("<repeat>");
-    addChild(repeat_s, true);
-    repeat_s->setLocation(i->getLocation());
-    repeat_s->setTarget(i);
+// void TaskBuildSymbolTree::visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) {
+//     DEBUG_ENTER("visitProceduralStmtRepeat");
+//     ast::ISymbolStmtScope *repeat_s = m_factory->mkSymbolStmtScope("<repeat>");
+//     addChild(repeat_s, true);
+//     repeat_s->setLocation(i->getLocation());
+//     repeat_s->setTarget(i);
 
 
-    // Create an index variable if the statement has one
-    if (i->getIt_id()) {
-        DEBUG("Add data declaration");
-        ast::IProceduralStmtDataDeclaration *it_var = 
-            m_factory->mkProceduralStmtDataDeclaration(
-                m_factory->mkExprId(i->getIt_id()->getId(), false),
-                m_factory->mkDataTypeInt(false, 
-                    m_factory->mkExprUnsignedNumber("32", 32, 32),
-                    0),
-                    0, 0);
-            repeat_s->getSymtab().insert({
-                i->getIt_id()->getId(),
-                0
-            });
-            repeat_s->getChildren().push_back(it_var);
-    }
+//     // Create an index variable if the statement has one
+//     if (i->getIt_id()) {
+//         DEBUG("Add data declaration");
+//         ast::IProceduralStmtDataDeclaration *it_var = 
+//             m_factory->mkProceduralStmtDataDeclaration(
+//                 m_factory->mkExprId(i->getIt_id()->getId(), false),
+//                 m_factory->mkDataTypeInt(false, 
+//                     m_factory->mkExprUnsignedNumber("32", 32, 32),
+//                     0),
+//                     0, 0);
+//             repeat_s->getSymtab().insert({
+//                 i->getIt_id()->getId(),
+//                 0
+//             });
+//             repeat_s->getChildren().push_back(it_var);
+//     }
 
-    pushSymbolScope(repeat_s);
-    i->getBody()->accept(m_this);
-    popSymbolScope();
-    DEBUG_LEAVE("visitProceduralStmtRepeat");
-}
+//     pushSymbolScope(repeat_s);
+//     i->getBody()->accept(m_this);
+//     popSymbolScope();
+//     DEBUG_LEAVE("visitProceduralStmtRepeat");
+// }
+
+// void TaskBuildSymbolTree::visitProceduralStmtWhile(ast::IProceduralStmtWhile *i) {
+//     DEBUG_ENTER("visitProceduralStmtWhile");
+//     ast::ISymbolStmtScope *while_s = m_factory->mkSymbolStmtScope("<while>");
+//     addChild(while_s, true);
+//     while_s->setLocation(i->getLocation());
+//     while_s->setTarget(i);
+
+//     pushSymbolScope(while_s);
+//     i->getBody()->accept(m_this);
+//     popSymbolScope();
+//     DEBUG_LEAVE("visitProceduralStmtWhile");
+// }
 
 /*
 void TaskBuildSymbolTree::visitProceduralStmtIfClause(ast::IProceduralStmtIfClause *i) {
@@ -594,6 +617,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
         DEBUG("No plist");
     }
     ast::ISymbolTypeScope *ts = m_factory->mkSymbolTypeScope(i->getName()->getId(), plist);
+    ts->setSynthetic(true);
     ts->setLocation(i->getLocation());
     ts->setTarget(i);
 
@@ -658,14 +682,19 @@ void TaskBuildSymbolTree::addChild(
     ast::IScopeChild    *c,
     bool                owned) {
     DEBUG_ENTER("addChild(ScopeChild)");
-    if (dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back())) {
-        dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back())->getChildren().push_back(
-            ast::IScopeChildUP(c, owned));
-    } else {
+    if (dynamic_cast<ast::ISymbolScope *>(m_scope_s.back())) {
+        ast::ISymbolScope *scope = dynamic_cast<ast::ISymbolScope *>(m_scope_s.back());
+        DEBUG("Scope: isSynth=%d", scope->getSynthetic());
+        if (scope->getSynthetic()) {
+            scope->getChildren().push_back(ast::IScopeChildUP(c, owned));
+        }
+//        dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back())->getChildren().push_back(
+//            ast::IScopeChildUP(c, owned));
+    }/* else {
         ast::ISymbolCondConnector *cond = dynamic_cast<ast::ISymbolCondConnector *>(m_scope_s.back());
         DEBUG("Setting cond-connector target");
         cond->setStmt(c);
-    }
+    } */
     DEBUG_LEAVE("addChild(ScopeChild)");
 }
 
@@ -673,15 +702,16 @@ void TaskBuildSymbolTree::addChild(
     ast::ISymbolScope   *c,
     bool                owned) {
     DEBUG_ENTER("addChild(ScopeChild)");
+    owned = false;
     if (dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back())) {
         ast::ISymbolChildrenScope *scs = dynamic_cast<ast::ISymbolChildrenScope *>(m_scope_s.back());
         c->setId(scs->getChildren().size());
         scs->getChildren().push_back(ast::IScopeChildUP(c, owned));
-    } else {
+    } /*else {
         ast::ISymbolCondConnector *cond = dynamic_cast<ast::ISymbolCondConnector *>(m_scope_s.back());
         DEBUG("Setting cond-connector target");
         cond->setStmt(c);
-    }
+    }*/
     DEBUG_LEAVE("addChild(ScopeChild)");
 }
 
@@ -690,6 +720,7 @@ bool TaskBuildSymbolTree::addChild(
     const std::string   &name,
     bool                owned) {
     ast::ISymbolScope *scope = symbolScope();
+    owned = false;
     if (c == scope) {
         ERROR("recursive");
     }
@@ -697,8 +728,13 @@ bool TaskBuildSymbolTree::addChild(
         scope->getSymtab().find(name);
     
     if (it == scope->getSymtab().end()) {
-        int32_t id = scope->getChildren().size();
-        scope->getChildren().push_back(ast::IScopeChildUP(c, owned));
+        int32_t id = -1;
+        if (scope->getSynthetic()) {
+            id = scope->getChildren().size();
+            scope->getChildren().push_back(ast::IScopeChildUP(c, owned));
+        } else {
+            id = c->getIndex();
+        }
         scope->getSymtab().insert({name, id});
         return true;
     } else {
@@ -716,12 +752,11 @@ bool TaskBuildSymbolTree::addChild(
     bool                owned) {
     DEBUG_ENTER("addChild(SymbolChild");
     ast::ISymbolScope *scope = symbolScope();
+    owned = false;
 
     if (c == scope) {
         ERROR("recursive");
     }
-    int32_t id = scope->getChildren().size();
-    c->setId(id);
     if (name != "") {
         std::map<std::string, int32_t>::const_iterator it =
             scope->getSymtab().find(name);
@@ -733,10 +768,17 @@ bool TaskBuildSymbolTree::addChild(
                 c);
             return false;
         } else {
+            int32_t id = -1;
+            if (scope->getSynthetic()) {
+                id = scope->getChildren().size();
+                scope->getChildren().push_back(ast::IScopeChildUP(c, owned));
+            } else {
+                id = c->getIndex();
+            }
+            c->setId(id);
             scope->getSymtab().insert({name, id});
         }
     }
-    scope->getChildren().push_back(ast::IScopeChildUP(c, owned));
     c->setUpper(scope);
     DEBUG_LEAVE("addChild(SymbolChild");
     return true;

@@ -60,9 +60,9 @@ void TaskResolveFieldRef::visitSymbolScope(ast::ISymbolScope *i) {
 
 }
 
-void TaskResolveFieldRef::visitSymbolExecScope(ast::ISymbolExecScope *i) { 
-
-}
+//void TaskResolveFieldRef::visitSymbolExecScope(ast::ISymbolExecScope *i) { 
+//
+//}
 
 void TaskResolveFieldRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) { 
 

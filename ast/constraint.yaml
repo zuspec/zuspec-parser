@@ -10,7 +10,7 @@ classes:
         - data:
           - endLocation:
               type: Location
-              is_ctor: False
+              is_ctor: false
           - constraints: list<UP<ConstraintStmt>>
     - ConstraintStmt:
         - super: ScopeChild

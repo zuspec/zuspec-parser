@@ -54,6 +54,10 @@ classes:
     - imports: 
       - type: UP<SymbolImportSpec>
       - is_ctor: false
+    - synthetic:
+      - type: bool
+      - is_ctor: false
+      - init: false
     - opaque:
       - type: bool
       - is_ctor: false
@@ -63,26 +67,32 @@ classes:
     super: SymbolScope
     data: {}
 
-- SymbolExecScope:
-    super: SymbolScope
-    data: 
-    - locals: 
-      - type: list<UP<ScopeChild>>
-      - is_ctor: false
+# - SymbolExecScope:
+#     super: SymbolScope
+#     data: 
+#     - locals: 
+#       - type: list<UP<ScopeChild>>
+#       - is_ctor: false
 
-- SymbolStmtScope:
-    super: SymbolScope
-    data: {}
+# - SymbolStmtScope:
+#     super: SymbolScope
+#     data: {}
 
 - SymbolExtendScope:
     super: SymbolScope
     data: {}
 
-- SymbolCondConnector:
-    super: SymbolChild
-    data:
-    - cond: P<Expr>
-    - stmt: P<ScopeChild>
+# - SymbolCondConnector:
+#     super: SymbolChild
+#     data:
+#     - cond: P<Expr>
+#     - stmt: P<ScopeChild>
+
+# - SymbolStmtConnector:
+#     super: SymbolChild
+#     data:
+#     - target: P<ScopeChild>
+#     - body: UP<ScopeChild>
 
 - SymbolImportSpec:
     data:

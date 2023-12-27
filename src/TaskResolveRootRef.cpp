@@ -99,11 +99,11 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_LEAVE("visitSymbolScope");
 }
 
-void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {
-    DEBUG_ENTER("visitSymbolExecScope");
-    visitSymbolScope(i);
-    DEBUG_LEAVE("visitSymbolExecScope");
-}
+//void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {
+//    DEBUG_ENTER("visitSymbolExecScope");
+//    visitSymbolScope(i);
+//    DEBUG_LEAVE("visitSymbolExecScope");
+//}
 
 void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
     DEBUG_ENTER("visitSymbolTypeScope id=%s (%s)", 

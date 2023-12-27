@@ -485,19 +485,19 @@ void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
     DEBUG_LEAVE("visitSymbolExtendScope");
 }
 
-void TaskResolveRefs::visitSymbolExecScope(ast::ISymbolExecScope *i) {
-    DEBUG_ENTER("visitSymbolExecScope \"%s\"", i->getName().c_str());
-    m_ctxt->symtab()->pushScope(i);
+// void TaskResolveRefs::visitSymbolExecScope(ast::ISymbolExecScope *i) {
+//     DEBUG_ENTER("visitSymbolExecScope \"%s\"", i->getName().c_str());
+//     m_ctxt->symtab()->pushScope(i);
 
-    for (std::vector<ast::IScopeChildUP>::const_iterator
-        it=i->getChildren().begin();
-        it!=i->getChildren().end(); it++) {
-        (*it)->accept(this);
-    }
+//     for (std::vector<ast::IScopeChildUP>::const_iterator
+//         it=i->getChildren().begin();
+//         it!=i->getChildren().end(); it++) {
+//         (*it)->accept(this);
+//     }
 
-    m_ctxt->symtab()->popScope();
-    DEBUG_LEAVE("visitSymbolExecScope \"%s\"", i->getName().c_str());
-}
+//     m_ctxt->symtab()->popScope();
+//     DEBUG_LEAVE("visitSymbolExecScope \"%s\"", i->getName().c_str());
+// }
 
 void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
     DEBUG_ENTER("visitSymbolFunctionScope %s (%d)", 
@@ -529,13 +529,13 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
     DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
 }
 
-void TaskResolveRefs::visitSymbolStmtScope(ast::ISymbolStmtScope *i) {
-    DEBUG_ENTER("visitSymbolStmtScope %s", i->getName().c_str());
-    m_ctxt->symtab()->pushScope(i);
-    i->getTarget()->accept(m_this);
-    m_ctxt->symtab()->popScope();
-    DEBUG_LEAVE("visitSymbolStmtScope %s", i->getName().c_str());
-}
+// void TaskResolveRefs::visitSymbolStmtScope(ast::ISymbolStmtScope *i) {
+//     DEBUG_ENTER("visitSymbolStmtScope %s", i->getName().c_str());
+//     m_ctxt->symtab()->pushScope(i);
+//     i->getTarget()->accept(m_this);
+//     m_ctxt->symtab()->popScope();
+//     DEBUG_LEAVE("visitSymbolStmtScope %s", i->getName().c_str());
+// }
 
 void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
     ast::ITypeScope *i_ts = dynamic_cast<ast::ITypeScope *>(i->getTarget());

@@ -600,8 +600,6 @@ public:
     
     virtual void visitSymbolEnumScope(ast::ISymbolEnumScope *i) { }
     
-    virtual void visitSymbolExecScope(ast::ISymbolExecScope *i) { }
-    
     virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) { }
     
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) { 

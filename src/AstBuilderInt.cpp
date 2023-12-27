@@ -534,7 +534,9 @@ antlrcpp::Any AstBuilderInt::visitExec_block(PSSParser::Exec_blockContext *ctx) 
         // Stub for now
         kind_it = exec_kind_m.find("body");
     }
-    ast::IExecBlock *exec = m_factory->mkExecBlock(kind_it->second);
+    ast::IExecBlock *exec = m_factory->mkExecBlock(
+        "<exec>",
+        kind_it->second);
 
     m_exec_scope_s.push_back(exec);
     std::vector<PSSParser::Exec_stmtContext *> items = ctx->exec_stmt();
@@ -576,7 +578,7 @@ antlrcpp::Any AstBuilderInt::visitExec_super_stmt(PSSParser::Exec_super_stmtCont
 antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_functionContext *ctx) {
     DEBUG_ENTER("visitProcedural_function");
 
-    ast::IExecScope *body = m_factory->mkExecScope();
+    ast::IExecScope *body = m_factory->mkExecScope("<func-body>");
     std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
     DEBUG("Function has %d statements", items.size());
     m_exec_scope_s.push_back(body);
@@ -664,7 +666,7 @@ antlrcpp::Any AstBuilderInt::visitImport_function(PSSParser::Import_functionCont
 // B.7 Procedural Statements
 antlrcpp::Any AstBuilderInt::visitProcedural_sequence_block_stmt(PSSParser::Procedural_sequence_block_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_sequence_block_stmt");
-    ast::IExecScope *block = m_factory->mkExecScope();
+    ast::IExecScope *block = m_factory->mkExecScope("<sequence>");
     m_exec_scope_s.push_back(block);
 
     std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
@@ -789,6 +791,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_r
     DEBUG_ENTER("visitProcedural_repeat_stmt");
     if (ctx->is_repeat) {
         ast::IProceduralStmtRepeat *stmt = m_factory->mkProceduralStmtRepeat(
+            "<repeat>",
             (ctx->identifier())?mkId(ctx->identifier()):0,
             mkExpr(ctx->expression()),
             mkExecStmt(ctx->procedural_stmt()));
@@ -825,7 +828,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_if_else_stmt(PSSParser::Procedural_
     ast:IProceduralStmtIfElse *stmt = m_factory->mkProceduralStmtIfElse();
 
     ast::IExpr *cond = mkExpr(ctx->expression());
-    ast::IExecStmt *if_s = mkExecStmt(ctx->procedural_stmt(0));
+    ast::IScopeChild *if_s = mkExecStmt(ctx->procedural_stmt(0));
     ast::IProceduralStmtIfClause *clause = m_factory->mkProceduralStmtIfClause(
         cond,
         if_s);
@@ -849,7 +852,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_if_else_stmt(PSSParser::Procedural_
     // Now, add final 'else' if present
     if (else_ctx) {
         DEBUG("Add final 'else' clause");
-        ast::IExecStmt *else_s = mkExecStmt(else_ctx);
+        ast::IScopeChild *else_s = mkExecStmt(else_ctx);
         stmt->setElse_then(else_s);
     } else {
         DEBUG("No final 'else' clause");
@@ -906,7 +909,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedu
             type,
             array_dim,
             init);
-        m_exec_scope_s.back()->getChildren().push_back(ast::IExecStmtUP(decl));
+        m_exec_scope_s.back()->getChildren().push_back(ast::IScopeChildUP(decl));
     }
 
     // We've already added to the super scope
@@ -2276,7 +2279,7 @@ ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::D
 	return ret;
 }
 
-ast::IExecStmt *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *ctx) {
+ast::IScopeChild *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *ctx) {
     m_exec_stmt = 0;
     m_exec_stmt_cnt = 0;
 
@@ -2295,10 +2298,10 @@ ast::IExecStmt *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *ctx
 
 void AstBuilderInt::addExecStmt(PSSParser::Procedural_stmtContext *ctx) {
     DEBUG_ENTER("addExecStmt");
-    ast::IExecStmt *stmt = mkExecStmt(ctx);
+    ast::IScopeChild *stmt = mkExecStmt(ctx);
 
     if (stmt) {
-        m_exec_scope_s.back()->getChildren().push_back(ast::IExecStmtUP(stmt));
+        m_exec_scope_s.back()->getChildren().push_back(ast::IScopeChildUP(stmt));
     }
 
     DEBUG_LEAVE("addExecStmt");

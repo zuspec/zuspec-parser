@@ -27,7 +27,7 @@ classes:
     - data:
         - endLocation: 
             type: Location
-            is_ctor: False
+            is_ctor: false
         - proto: UP<FunctionPrototype>
         - body: UP<ExecScope>
         - plat: PlatQual
