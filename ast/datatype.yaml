@@ -37,6 +37,10 @@ classes:
     - width: UP<Expr>
     - in_range: UP<ExprDomainOpenRangeList>
 
+- DataTypePyObj:
+    super: DataType
+    data: {}
+
 - DataTypeRef:
     super: DataType
     data:

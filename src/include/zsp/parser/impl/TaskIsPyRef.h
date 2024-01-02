@@ -22,6 +22,7 @@
 #include "dmgr/IDebugMgr.h"
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/ast/impl/VisitorBase.h"
+#include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
 
 namespace zsp {
 namespace parser {
@@ -31,7 +32,9 @@ namespace parser {
 class TaskIsPyRef : public ast::VisitorBase {
 public:
 
-    TaskIsPyRef(dmgr::IDebugMgr *dmgr) : m_dbg(0) {
+    TaskIsPyRef(
+        dmgr::IDebugMgr     *dmgr,
+        ast::ISymbolScope   *root) : m_dmgr(dmgr), m_dbg(0), m_root(root) {
         DEBUG_INIT("zsp::parser::TaskIsPyRef", dmgr);
     }
 
@@ -43,6 +46,48 @@ public:
         it->accept(m_this);
         DEBUG_LEAVE("check %d", m_is_pyref);
         return m_is_pyref;
+    }
+
+    virtual void visitDataTypePyObj(ast::IDataTypePyObj *i) override {
+        DEBUG_ENTER("visitDataTypePyObj");
+        m_is_pyref = true;
+        DEBUG_LEAVE("visitDataTypePyObj");
+    }
+
+    virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override {
+        DEBUG_ENTER("visitDataTypeUserDefined");
+        ast::IScopeChild *target = TaskResolveSymbolPathRef(m_dmgr, m_root).resolve(
+            i->getType_id()->getTarget()
+        );
+        if (target) {
+            target->accept(m_this);
+        } else {
+            ERROR("Failed to resolve user-defined data type target");
+        }
+        DEBUG_LEAVE("visitDataTypeUserDefined");
+    }
+
+    virtual void visitField(ast::IField *i) override {
+        DEBUG_ENTER("visitField");
+        i->getType()->accept(m_this);
+        DEBUG_LEAVE("visitField");
+    }
+
+    virtual void visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) override {
+        DEBUG_ENTER("visitProceduralStmtDataDeclaration");
+        i->getDatatype()->accept(m_this);
+        DEBUG_LEAVE("visitProceduralStmtDataDeclaration");
+    }
+
+    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
+        DEBUG_ENTER("visitSymbolTypeScope %s", i->getName().c_str());
+        i->getTarget()->accept(m_this);
+        DEBUG_LEAVE("visitSymbolTypeScope %s", i->getName().c_str());
+    }
+
+    virtual void visitStruct(ast::IStruct *i) override {
+        DEBUG_ENTER("visitStruct %s", i->getName()->getId().c_str());
+        DEBUG_LEAVE("visitStruct");
     }
 
     virtual void visitPyImportStmt(ast::IPyImportStmt *i) override {
@@ -58,7 +103,9 @@ public:
     }
 
 private:
+    dmgr::IDebugMgr         *m_dmgr;
     dmgr::IDebug            *m_dbg;
+    ast::ISymbolScope       *m_root;
     bool                    m_is_pyref;
 };
 

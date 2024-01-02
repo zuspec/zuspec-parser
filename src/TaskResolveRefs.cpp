@@ -350,7 +350,7 @@ void TaskResolveRefs::visitExprRefPathStatic(ast::IExprRefPathStatic *i) {
                 }
 
                 if (!in_pyref) {
-                    in_pyref |= TaskIsPyRef(m_ctxt->getDebugMgr()).check(target_s);
+                    in_pyref |= TaskIsPyRef(m_ctxt->getDebugMgr(), m_ctxt->root()).check(target_s);
                     if (in_pyref) {
                         target->setPyref_idx(0);
                     } else {

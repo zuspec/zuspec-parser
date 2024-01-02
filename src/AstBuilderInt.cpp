@@ -1276,26 +1276,7 @@ antlrcpp::Any AstBuilderInt::visitPyobj_type(PSSParser::Pyobj_typeContext *ctx) 
     // Create a user-defined data type with a direct
     // reference to ::std_pkg::pyobj
 
-    ast::ITypeIdentifier *ti = m_factory->mkTypeIdentifier();
-    /*
-    ti->getElems().push_back(ast::ITypeIdentifierElemUP(
-        m_factory->mkTypeIdentifierElem(
-            m_factory->mkExprId("pss", false),
-            0)));
-    ti->getElems().push_back(ast::ITypeIdentifierElemUP(
-        m_factory->mkTypeIdentifierElem(
-            m_factory->mkExprId("core", false),
-            0)));
-     */
-    ti->getElems().push_back(ast::ITypeIdentifierElemUP(
-        m_factory->mkTypeIdentifierElem(
-            m_factory->mkExprId("pyobj", false),
-            0)));
-
-    ast::IDataTypeUserDefined *dt = m_factory->mkDataTypeUserDefined(
-        true, // global ref
-        ti
-    );
+    ast::IDataTypePyObj *dt = m_factory->mkDataTypePyObj();
 
     m_type = dt;
     DEBUG_LEAVE("visitPyobj_type");
