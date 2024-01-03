@@ -191,7 +191,6 @@ void TaskBuildSymbolTree::visitExecStmt(ast::IExecStmt *i) {
 
 void TaskBuildSymbolTree::visitExecBlock(ast::IExecBlock *i) {
     DEBUG_ENTER("visitExecBlock");
-    addChild(i, false);
     visitExecScope(i);
     DEBUG_LEAVE("visitExecBlock");
 }
