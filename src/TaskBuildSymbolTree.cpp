@@ -182,10 +182,7 @@ void TaskBuildSymbolTree::visitEnumItem(ast::IEnumItem *i) {
 
 void TaskBuildSymbolTree::visitExecStmt(ast::IExecStmt *i) {
     DEBUG_ENTER("visitExecStmt");
-    /*
-    DEBUG("Adding to scope %s", (symbolScope())?symbolScope()->getName().c_str():"<null>");
     addChild(i, false);
-     */
     DEBUG_LEAVE("visitExecStmt");
 }
 
