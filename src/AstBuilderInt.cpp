@@ -1753,14 +1753,11 @@ std::string AstBuilderInt::processDocStringMultiLineComment(
 		last_ws_line = ws_tokens.back()->getLine();
 	}
 
-	fprintf(stdout, "last_ws_line=%d comment_line=%d\n",
-			last_ws_line,
-			mlc_tokens.back()->getLine());
 	std::string comment;
 	if (last_ws_line < 0 || last_ws_line < mlc_tokens.back()->getLine()) {
-		fprintf(stdout, "OK: no whitespace between element and comment\n");
+//		fprintf(stdout, "OK: no whitespace between element and comment\n");
 	} else if (last_ws_line >= 0) {
-		fprintf(stdout, "TODO: check if whitespace exceeds a limit\n");
+//		fprintf(stdout, "TODO: check if whitespace exceeds a limit\n");
 
 		// Find the extent of the comment
 		uint32_t comment_last_line = mlc_tokens.back()->getLine();
@@ -1779,12 +1776,13 @@ std::string AstBuilderInt::processDocStringMultiLineComment(
 			last_ws_line++;
 			i++;
 		}
-
+/*
 		fprintf(stdout, "Comment last line: %d\n", comment_last_line);
 		fprintf(stdout, "Whitespace last line: %d\n", last_ws_line);
+ */
 
 		if (last_ws_line <= (comment_last_line+2)) {
-			fprintf(stdout, "Note: Have a doc comment\n");
+//			fprintf(stdout, "Note: Have a doc comment\n");
 
 			// TODO: now we need to clean up the comment
 			//
@@ -1792,17 +1790,17 @@ std::string AstBuilderInt::processDocStringMultiLineComment(
 			// Trim off the beginning and end of the comment
 			comment = comment.substr(2,comment.size()-4);
 
-			fprintf(stdout, "Comment: %s\n", comment.c_str());
+//			fprintf(stdout, "Comment: %s\n", comment.c_str());
 			// Step through the lines looking for a '*' prefix
 			i=0;
 			while (i<comment.size()) {
 				if (comment.at(i) == '*') {
 					comment.erase(i, 1);
-					fprintf(stdout, "Post-remove(1): %s\n", comment.c_str());
+//					fprintf(stdout, "Post-remove(1): %s\n", comment.c_str());
 				} else if ((i+1<comment.size()) &&
 						(isspace(comment.at(i)) && comment.at(i+1) == '*')) {
 					comment.erase(i, 2);
-					fprintf(stdout, "Post-remove(2): %s\n", comment.c_str());
+//					fprintf(stdout, "Post-remove(2): %s\n", comment.c_str());
 				}
 				if ((i=comment.find('\n',i)) != std::string::npos) {
 					i++;
@@ -1811,7 +1809,7 @@ std::string AstBuilderInt::processDocStringMultiLineComment(
 				}
 			}
 		} else {
-			fprintf(stdout, "Note: False alarm\n");
+//			fprintf(stdout, "Note: False alarm\n");
 			comment.clear();
 		}
 	}
