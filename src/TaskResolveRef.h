@@ -24,28 +24,30 @@
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/parser/ISymbolTableIterator.h"
 #include "zsp/ast/impl/VisitorBase.h"
+#include "TaskResolveBase.h"
+#include "ResolveContext.h"
 
 namespace zsp {
 namespace parser {
 
 
-class TaskResolveRef : public ast::VisitorBase {
+class TaskResolveRef : public TaskResolveBase {
 public:
     TaskResolveRef(
-        ast::ISymbolScope   *root,
-        IFactory            *factory,
-        IMarkerListener     *marker_l,
-        bool                search_imp=true);
+        ResolveContext *ctxt,
+        bool           search_imp=true);
 
     virtual ~TaskResolveRef();
 
-    ast::ISymbolRefPath *resolve(
-        const ISymbolTableIterator      *scope,
-        ast::ITypeIdentifier            *type_id);
+    ast::ISymbolRefPath *resolve(ast::ITypeIdentifier *type_id);
 
-    ast::ISymbolRefPath *resolve(
-        const ISymbolTableIterator      *scope,
-        ast::IExpr                      *ref);
+    ast::ISymbolRefPath *resolve(ast::IExpr *ref);
+
+    virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;
+
+    virtual void visitExprId(ast::IExprId *i) override;
+
+    virtual void visitExprMemberPathElem(ast::IExprMemberPathElem *i) override;
 
     virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) override;
 
@@ -57,18 +59,18 @@ public:
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
-    virtual void visitSymbolExecScope(ast::ISymbolExecScope *i) override;
-
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
 
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override;
 
+    virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) override;
+
+    virtual void visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) override;
+
     virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) override;
 
 private:
-    ast::ISymbolRefPath *findRoot(
-        ISymbolTableIterator            *scope,
-        const ast::IExprId              *sym);
+    ast::ISymbolRefPath *findRoot(const ast::IExprId *sym);
 
     ast::ISymbolRefPath *specializeParameterizedRef(
         ast::ISymbolRefPath             *target,
@@ -76,12 +78,7 @@ private:
 
 private:
     static dmgr::IDebug                 *m_dbg;
-    ast::ISymbolScope                   *m_root;
-    IFactory                            *m_factory;
-    IMarkerListener                     *m_marker_l;    
-    IMarkerUP                           m_marker;
     bool                                m_search_imp;
-    std::vector<ISymbolTableIteratorUP> m_symtab_it_s;
     ast::ISymbolRefPath                 *m_ref;
 
 };

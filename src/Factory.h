@@ -73,6 +73,13 @@ public:
 
     virtual ISymbolTable *mkSymbolTable() override;
 
+    virtual ITaskFindElementByLocation *mkTaskFindElementByLocation() override;
+
+    virtual IValInt *mkValInt(
+        bool        is_signed,
+        int32_t     width,
+        int64_t     init=0) override;
+
     static IFactory *inst();
 
 private:

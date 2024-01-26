@@ -37,6 +37,10 @@ classes:
     - width: UP<Expr>
     - in_range: UP<ExprDomainOpenRangeList>
 
+- DataTypePyObj:
+    super: DataType
+    data: {}
+
 - DataTypeRef:
     super: DataType
     data:
@@ -47,6 +51,7 @@ classes:
     data:
     - has_range: bool
     - in_range: list<string>
+
 - DataTypeUserDefined:
     super: DataType
     data: 

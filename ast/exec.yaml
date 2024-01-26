@@ -27,14 +27,19 @@ enums:
 classes:
   - ExecStmt:
     - super: ScopeChild
-    - data: []
+    - data: 
+      - upper:
+          type: P<SymbolScope>
+          is_ctor: false
+          init: 0
+          visit: false
   - ExecScope:
-    - super: ExecStmt
+    - super: SymbolScope
     - data:
       - endLocation:
           type: Location
-          is_ctor: False
-      - children: list<UP<ExecStmt>>
+          is_ctor: false
+
   - ExecBlock:
     - super: ExecScope
     - data:
@@ -50,9 +55,6 @@ classes:
         - expr: UP<Expr>
         - start: int32_t
         - end: int32_t
-  - ProceduralStmtSequenceBlock:
-    - super: ExecScope
-    - data: []
   - ProceduralStmtAssignment:
     - super: ExecStmt
     - data:
@@ -64,7 +66,6 @@ classes:
     - super: ExecStmt
     - data:
       - expr: UP<Expr>
-
   - ProceduralStmtFunctionCall:
     - super: ExecStmt
     - data: 
@@ -75,34 +76,40 @@ classes:
     - data:
         - expr: UP<Expr>
   - ProceduralStmtRepeat:
-    - super: ExecStmt
+    - super: SymbolScope
     - data:
         - it_id: UP<ExprId>
         - count: UP<Expr>
-        - body: UP<ExecStmt>
+        - body: UP<ScopeChild>
   - ProceduralStmtRepeatWhile:
     - super: ExecStmt
     - data:
         - expr: UP<Expr>
-        - body: UP<ExecStmt>
+        - body: UP<ScopeChild>
   - ProceduralStmtWhile:
     - super: ExecStmt
     - data:
         - expr: UP<Expr>
-        - body: UP<ExecStmt>
+        - body: UP<ScopeChild>
   - ProceduralStmtForeach:
-    - super: ExecStmt
+    - super: SymbolScope
     - data:
         - path: UP<ExprRefPath>
         - it_id: UP<ExprId>
         - idx_id: UP<ExprId>
-        - body: UP<ExecStmt>
+        - body: UP<ScopeChild>
+  - ProceduralStmtIfClause:
+    - super: ScopeChild
+    - data:
+        - cond: UP<Expr>
+        - body: UP<ScopeChild>
   - ProceduralStmtIfElse:
     - super: ExecStmt
     - data:
-        - cond: UP<Expr>
-        - true_s: UP<ExecStmt>
-        - false_s: UP<ExecStmt>
+        - if_then: list<UP<ProceduralStmtIfClause>>
+        - else_then: 
+            type: UP<ScopeChild>
+            is_ctor: false
   - ProceduralStmtMatch:
     - super: ExecStmt
     - data:
@@ -115,7 +122,7 @@ classes:
     - data:
         - is_default: bool
         - cond: UP<ExprOpenRangeList>
-        - body: UP<ExecStmt>
+        - body: UP<ScopeChild>
   - ProceduralStmtBreak:
     - super: ExecStmt
     - data: []

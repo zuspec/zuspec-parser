@@ -1,6 +1,7 @@
 
 package addr_reg_pkg {
     import executor_pkg::* ;
+    import std_pkg::*;
 
     component addr_space_base_c {};
 
@@ -14,7 +15,7 @@ package addr_reg_pkg {
     component contiguous_addr_space_c<
             struct TRAIT : addr_trait_s = empty_addr_trait_s> : addr_space_base_c {
         function addr_handle_t add_region(addr_region_s <TRAIT> r);
-        function addr_handle_t add_nonallocatable_region(addr_region_s <> r);
+        function addr_handle_t add_nonallocatable_region(addr_region_s <TRAIT> r);
         bool byte_addressable = true;
     };
 
@@ -62,10 +63,6 @@ package addr_reg_pkg {
         rand bit[64] addr;
     };
 
-    enum endianness_e {LITTLE_ENDIAN, BIG_ENDIAN};
-
-    struct packed_s<endianness_e e = LITTLE_ENDIAN> {};
-
     struct sizeof_s<type T> {
         static const int nbytes = /* implementation-specific */ -1;
         static const int nbits = /* implementation-specific */ -1;
@@ -93,47 +90,56 @@ function void write8 (addr_handle_t hndl, bit[8] data);
 function void write16(addr_handle_t hndl, bit[16] data);
 function void write32(addr_handle_t hndl, bit[32] data);
 function void write64(addr_handle_t hndl, bit[64] data);
+/* TODO: generic type
 function void read_bytes (addr_handle_t hndl, list<bit[8]> data,
  int size);
 function void write_bytes(addr_handle_t hndl, list<bit[8]> data);
 function void read_struct (addr_handle_t hndl, struct packed_struct);
 function void write_struct(addr_handle_t hndl, struct packed_struct);
-extend component executor_base_c {
- function bit[8] read8(addr_handle_t hndl);
- function bit[16] read16(addr_handle_t hndl);
- function bit[32] read32(addr_handle_t hndl);
- function bit[64] read64(addr_handle_t hndl);
- function void write8 (addr_handle_t hndl, bit[8] data);
- function void write16(addr_handle_t hndl, bit[16] data);
- function void write32(addr_handle_t hndl, bit[32] data);
- function void write64(addr_handle_t hndl, bit[64] data);
- function void read_bytes (addr_handle_t hndl, list<bit[8]> data,
- int size);
- function void write_bytes(addr_handle_t hndl, list<bit[8]> data);
- };
+ */
+// extend component executor_base_c {
+//     function bit[8] read8(addr_handle_t hndl);
+//     function bit[16] read16(addr_handle_t hndl);
+//     function bit[32] read32(addr_handle_t hndl);
+//     function bit[64] read64(addr_handle_t hndl);
+//     function void write8 (addr_handle_t hndl, bit[8] data);
+//     function void write16(addr_handle_t hndl, bit[16] data);
+//     function void write32(addr_handle_t hndl, bit[32] data);
+//     function void write64(addr_handle_t hndl, bit[64] data);
+//  /** TODO: list
+//  function void read_bytes (addr_handle_t hndl, list<bit[8]> data,
+//  int size);
+//  function void write_bytes(addr_handle_t hndl, list<bit[8]> data);
+//   */
+//  };
+
 enum reg_access {READWRITE, READONLY, WRITEONLY};
-pure component reg_c < type R,
- reg_access ACC = READWRITE,
-int SZ = (8*sizeof_s<R>::nbytes)> {
-function R read();
- import target function read;
- function void write(R r);
- import target function write;
- function bit[SZ] read_val();
- import target function read_val;
- function void write_val(bit[SZ] r);
-import target function write_val;
+
+pure component reg_c < type R, reg_access ACC = READWRITE, int SZ2 = (8*sizeof_s<R>::nbytes)> {
+    function R read();
+    import target function read;
+    function void write(R r);
+    import target function write;
+    function bit[SZ2] read_val();
+    import target function read_val;
+    function void write_val(bit[SZ2] r);
+    import target function write_val;
 };
+
+/*
 struct node_s {
  string name;
  int index;
 };
+ */
 pure component reg_group_c {
- pure function bit[64] get_offset_of_instance(string name);
- pure function bit[64] get_offset_of_instance_array(string name,
- int index);
- pure function bit[64] get_offset_of_path(list<node_s> path);
- function void set_handle(addr_handle_t addr);
- import solve function set_handle;
+    pure function bit[64] get_offset_of_instance(string name);
+    pure function bit[64] get_offset_of_instance_array(string name, int index);
+    /** TODO: list
+    pure function bit[64] get_offset_of_path(list<node_s> path);
+     */
+    function void set_handle(addr_handle_t addr);
+    import solve function set_handle;
 };
+
 }

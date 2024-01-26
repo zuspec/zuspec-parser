@@ -25,26 +25,23 @@
 #include "zsp/parser/ISymbolTableIterator.h"
 #include "zsp/ast/ISymbolScope.h"
 #include "zsp/ast/impl/VisitorBase.h"
+#include "ResolveContext.h"
+#include "TaskResolveBase.h"
 
 namespace zsp {
 namespace parser {
 
 
 
-class TaskResolveRefs : public ast::VisitorBase {
+class TaskResolveRefs : public TaskResolveBase {
 public:
-    TaskResolveRefs(
-        dmgr::IDebugMgr     *dmgr,
-        IFactory            *factory,
-        IMarkerListener     *marker_l);
+    TaskResolveRefs(ResolveContext      *ctxt);
 
     virtual ~TaskResolveRefs();
 
     void resolve(ast::ISymbolScope *root);
 
-    void resolve(
-        parser::ISymbolTableIterator   *root_it,
-        ast::ISymbolTypeScope          *scope);
+    void resolve(ast::ISymbolTypeScope *scope);
 
     virtual void visitActivityActionHandleTraversal(ast::IActivityActionHandleTraversal *i) override;
     
@@ -54,6 +51,8 @@ public:
 
     virtual void visitExprRefPathId(ast::IExprRefPathId *i) override;
 
+    virtual void visitExprRefPathStatic(ast::IExprRefPathStatic *i) override;
+
     virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) override;
 
     virtual void visitExtendEnum(ast::IExtendEnum *i) override;
@@ -62,13 +61,17 @@ public:
 
     virtual void visitFieldCompRef(ast::IFieldCompRef *i) override;
 
+    virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override;
+
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
     virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override;
 
-    virtual void visitSymbolExecScope(ast::ISymbolExecScope *i) override;
+//    virtual void visitSymbolExecScope(ast::ISymbolExecScope *i) override;
 
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override;
+
+//    virtual void visitSymbolStmtScope(ast::ISymbolStmtScope *i) override;
 
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
 
@@ -84,11 +87,6 @@ protected:
 
 private:
     static dmgr::IDebug     *m_dbg;
-    ast::ISymbolScope       *m_root;
-    dmgr::IDebugMgr         *m_dmgr;
-    IFactory                *m_factory;
-    IMarkerListener         *m_marker_l;
-    ISymbolTableIteratorUP  m_symtab_it;
 
 };
 

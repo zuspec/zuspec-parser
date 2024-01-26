@@ -23,6 +23,7 @@
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/ast/ISymbolScope.h"
 #include "zsp/parser/IFactory.h"
+#include "ResolveContext.h"
 
 namespace zsp {
 namespace parser {
@@ -31,16 +32,15 @@ namespace parser {
 
 class TaskBuildParamValList : public ast::VisitorBase {
 public:
-    TaskBuildParamValList(
-        ast::ISymbolScope       *root,
-        IFactory                *factory,
-        IMarkerListener         *marker_l);
+    TaskBuildParamValList(ResolveContext *ctxt);
 
     virtual ~TaskBuildParamValList();
 
     ast::ITemplateParamDeclList *build(
         ast::ISymbolScope               *plist,
         ast::ITemplateParamValueList    *pvals);
+
+    virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;
 
     virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) override;
     
@@ -54,9 +54,7 @@ public:
 
 private:
     static dmgr::IDebug                 *m_dbg; 
-    ast::ISymbolScope                   *m_root;
-    IFactory                            *m_factory;
-    IMarkerListener                     *m_marker_l;
+    ResolveContext                      *m_ctxt;
     ast::ITemplateParamDeclList         *m_ret;
     ast::ITemplateParamTypeValue        *m_pval_type;
     ast::ITemplateParamExprValue        *m_pval_expr;

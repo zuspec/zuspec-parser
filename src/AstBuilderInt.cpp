@@ -9,6 +9,7 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "AstBuilderInt.h"
 #include "PSSLexer.h"
+#include "atn/ParseInfo.h"
 #include "zsp/ast/IFactory.h"
 #include "zsp/ast/IAction.h"
 #include "zsp/ast/IComponent.h"
@@ -29,8 +30,9 @@ AstBuilderInt::AstBuilderInt(
     dmgr::IDebugMgr     *dmgr,
 	ast::IFactory		*factory,
 	IMarkerListener 	*marker_l) : m_factory(factory), m_marker_l(marker_l) {
-    DEBUG_INIT("AstBuilderInt", dmgr);
+    DEBUG_INIT("zsp::parser::AstBuilderInt", dmgr);
 	m_collectDocStrings = false;
+    m_enableProfile = false;
 	m_field_depth = 0;
 	m_labeled_activity_id = 0;
 	m_constraint = 0;
@@ -44,6 +46,9 @@ AstBuilderInt::~AstBuilderInt() {
 void AstBuilderInt::build(
 			ast::IGlobalScope		*global,
 			std::istream 			*in) {
+
+    m_fileid = global->getFileid();
+
 	ANTLRInputStream input(*in);
 	PSSLexer lexer(&input);
 	m_tokens = std::unique_ptr<CommonTokenStream>(new CommonTokenStream(&lexer));
@@ -51,6 +56,8 @@ void AstBuilderInt::build(
 
 	parser.removeErrorListeners();
 	parser.addErrorListener(this);
+
+    parser.setProfile(m_enableProfile);
 
 	PSSParser::Compilation_unitContext *ctx = parser.compilation_unit();
 
@@ -60,15 +67,30 @@ void AstBuilderInt::build(
 		ctx->accept(this);
 		pop_scope();
 	}
+
+    if (m_enableProfile) {
+        // Collect and save the resulting data
+        atn::ParseInfo info = parser.getParseInfo();
+        const atn::ATN &atn_i = parser.getATN();
+
+        std::vector<atn::DecisionInfo> decision_info = info.getDecisionInfo();
+        for (std::vector<atn::DecisionInfo>::const_iterator
+            it=decision_info.begin();
+            it!=decision_info.end(); it++) {
+            if (it->ambiguities.size()) {
+                fprintf(stdout, "Info: %s\n", it->toString().c_str());
+            }
+        }
+    }
 }
 
 antlrcpp::Any AstBuilderInt::visitPackage_declaration(
 	PSSParser::Package_declarationContext *ctx) {
 	IPackageScope *pkg = m_factory->mkPackageScope();
 
+    setLoc(pkg, ctx->start);
+
 	// TODO: populate Id list
-	fprintf(stdout, "%d elements in package_identifier\n",
-		ctx->package_id_path()->package_identifier().size());
 	std::vector<PSSParser::Package_identifierContext *> id =
 		ctx->package_id_path()->package_identifier();
 	for (std::vector<PSSParser::Package_identifierContext *>::const_iterator
@@ -106,11 +128,40 @@ antlrcpp::Any AstBuilderInt::visitImport_stmt(PSSParser::Import_stmtContext *ctx
 	}
 
 	IPackageImportStmt *imp = m_factory->mkPackageImportStmt(is_wildcard, alias);
+    setLoc(imp, ctx->start);
 
 	imp->setPath(mkTypeId(ctx->package_import_pattern()->type_identifier()));
 	addChild(imp, ctx->start);
 	DEBUG_LEAVE("visitImport_stmt");
 	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitPyimport_single_module(PSSParser::Pyimport_single_moduleContext *ctx) {
+    DEBUG_ENTER("visitPyimport_single_module");
+    ast::IPyImportStmt *imp = m_factory->mkPyImportStmt();
+
+    std::vector<PSSParser::IdentifierContext *> path = ctx->pyimport_mod_path()->identifier();
+    for (std::vector<PSSParser::IdentifierContext *>::const_iterator
+        it=path.begin();
+        it!=path.end(); it++) {
+        imp->getPath().push_back(ast::IExprIdUP(mkId(*it)));
+    }
+    if (ctx->identifier()) {
+        // Have an alias
+        imp->setAlias(mkId(ctx->identifier()));
+    }
+
+    setLoc(imp, ctx->start);
+    addChild(imp, ctx->start);
+    DEBUG_LEAVE("visitPyimport_single_module");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitPyimport_from_module(PSSParser::Pyimport_from_moduleContext *ctx) {
+    DEBUG_ENTER("visitPyimport_from_module");
+    ast::IPyImportFromStmt *imp = m_factory->mkPyImportFromStmt();
+    DEBUG_LEAVE("visitPyimport_from_module");
+    return 0;
 }
 
 static std::map<std::string,ast::ExtendTargetE> ExtendKind_m = {
@@ -149,6 +200,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 	if (kind == ast::ExtendTargetE::Enum) {
 		IExtendEnum *ext = m_factory->mkExtendEnum(mkTypeId(ctx->type_identifier()));
 		std::vector<PSSParser::Enum_itemContext *> items = ctx->enum_item();
+        setLoc(ext, ctx->start);
 
 		for (std::vector<PSSParser::Enum_itemContext *>::const_iterator
 			it=items.begin();
@@ -168,6 +220,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 		IExtendType *ext = m_factory->mkExtendType(
 			kind,
 			mkTypeId(ctx->type_identifier()));
+        setLoc(ext, ctx->start);
 
 		addChild(ext, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 		push_scope(ext);
@@ -254,12 +307,14 @@ antlrcpp::Any AstBuilderInt::visitAction_declaration(PSSParser::Action_declarati
 		mkId(ctx->action_identifier()->identifier()),
 		super_t,
 		false);
+    setLoc(action, ctx->start);
 
     // Add in a ref field
     ast::IFieldCompRef *comp = m_factory->mkFieldCompRef(
         m_factory->mkExprId("comp", false),
         0 // Type: must back-patch later
     );
+    comp->setIndex(action->getChildren().size());
     action->getChildren().push_back(ast::IScopeChildUP(comp));
 
 	if (ctx->template_param_decl_list()) {
@@ -288,6 +343,7 @@ antlrcpp::Any AstBuilderInt::visitAbstract_action_declaration(PSSParser::Abstrac
 	ctx->action_declaration()->accept(this);
 	ast::IAction *action = dynamic_cast<ast::IAction *>(scope()->getChildren().back().get());
 	action->setIs_abstract(true);
+    setLoc(action, ctx->start);
 	DEBUG_LEAVE("visitAbstract_action_declaration");
 	return 0;
 }
@@ -295,6 +351,7 @@ antlrcpp::Any AstBuilderInt::visitAbstract_action_declaration(PSSParser::Abstrac
 antlrcpp::Any AstBuilderInt::visitActivity_declaration(PSSParser::Activity_declarationContext *ctx) {
     DEBUG_ENTER("visitActivity_declaration");
     ast::IActivityDecl *activity = m_factory->mkActivityDecl();
+    setLoc(activity, ctx->start);
 
 	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
 	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
@@ -321,15 +378,7 @@ antlrcpp::Any AstBuilderInt::visitFlow_ref_field_declaration(PSSParser::Flow_ref
 		ast::IExpr *array_dim = 0;
 		ast::IDataTypeUserDefined *type = 0;
 
-		if (ctx->flow_object_type()->buffer_type_identifier()) {
-			type = mkDataTypeUserDefined(ctx->flow_object_type()->buffer_type_identifier()->type_identifier());
-		} else if (ctx->flow_object_type()->state_type_identifier()) {
-			type = mkDataTypeUserDefined(ctx->flow_object_type()->state_type_identifier()->type_identifier());
-		} else if (ctx->flow_object_type()->stream_type_identifier()) {
-			type = mkDataTypeUserDefined(ctx->flow_object_type()->stream_type_identifier()->type_identifier());
-		} else {
-			DEBUG("Unknown flow-object type");
-		}
+		type = mkDataTypeUserDefined(ctx->flow_object_type()->type_identifier());
 
 		if ((*it)->array_dim()) {
 			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
@@ -340,6 +389,7 @@ antlrcpp::Any AstBuilderInt::visitFlow_ref_field_declaration(PSSParser::Flow_ref
 			type,
 			array_dim,
 			ctx->is_input);
+        setLoc(field, (*it)->identifier()->start);
 		addChild(field, ctx->start);
 	}
 
@@ -367,6 +417,7 @@ antlrcpp::Any AstBuilderInt::visitResource_ref_field_declaration(PSSParser::Reso
 			type,
 			array_dim,
 			ctx->lock);
+        setLoc(field, (*it)->identifier()->start);
 		addChild(field, ctx->start);
 	}
 
@@ -417,6 +468,7 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 		id,
 		super_t,
 		StructKind_m.find(ctx->struct_kind()->getText())->second);
+    setLoc(s, ctx->identifier()->start);
 
     if (ctx->template_param_decl_list()) {
         s->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
@@ -436,6 +488,8 @@ antlrcpp::Any AstBuilderInt::visitStruct_declaration(PSSParser::Struct_declarati
 	return 0;
 }
 
+/* TODO: setLoc checkpoint */
+
 // B.4 Exec blocks
 
 static std::map<std::string, ast::ExecKind> exec_kind_m = {
@@ -453,9 +507,37 @@ static std::map<std::string, ast::ExecKind> exec_kind_m = {
 
 antlrcpp::Any AstBuilderInt::visitExec_block(PSSParser::Exec_blockContext *ctx) {
     DEBUG_ENTER("visitExec_block");
+    std::map<std::string, ast::ExecKind>::const_iterator kind_it;
+    kind_it = exec_kind_m.find(ctx->exec_kind()->identifier()->getText());
+
+    if (kind_it == exec_kind_m.end()) {
+	    if (m_marker_l) {
+            char tmp[1024];
+            std::string msg;
+		    ast::Location loc;
+		    loc.fileid = 0;
+		    loc.lineno = (int32_t)ctx->exec_kind()->identifier()->start->getLine();
+		    loc.linepos = (int32_t)ctx->exec_kind()->identifier()->start->getCharPositionInLine()+1;
+
+            snprintf(tmp, sizeof(tmp), 
+                "unknown exec-block kind \"%s\" specified. Expect one of ", 
+                ctx->exec_kind()->identifier()->getText().c_str());
+            msg = tmp;
+            msg += "(body, header, declaration, run_start, run_end, init, init_down, init_up, pre_solve, post_solve)";
+
+		    Marker m(
+				msg,
+				MarkerSeverityE::Error,
+				loc);
+		    m_marker_l->marker(&m);
+	    }
+
+        // Stub for now
+        kind_it = exec_kind_m.find("body");
+    }
     ast::IExecBlock *exec = m_factory->mkExecBlock(
-        exec_kind_m.find(ctx->exec_kind()->getText())->second
-    );
+        "<exec>",
+        kind_it->second);
 
     m_exec_scope_s.push_back(exec);
     std::vector<PSSParser::Exec_stmtContext *> items = ctx->exec_stmt();
@@ -497,8 +579,9 @@ antlrcpp::Any AstBuilderInt::visitExec_super_stmt(PSSParser::Exec_super_stmtCont
 antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_functionContext *ctx) {
     DEBUG_ENTER("visitProcedural_function");
 
-    ast::IProceduralStmtSequenceBlock *body = m_factory->mkProceduralStmtSequenceBlock();
+    ast::IExecScope *body = m_factory->mkExecScope("<func-body>");
     std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
+    DEBUG("Function has %d statements", items.size());
     m_exec_scope_s.push_back(body);
     for (std::vector<PSSParser::Procedural_stmtContext *>::const_iterator
         it=items.begin();
@@ -506,13 +589,33 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
         addExecStmt(*it);
     }
     m_exec_scope_s.pop_back();
+    DEBUG("Result is %d statements in body", body->getChildren().size());
+
+    ast::PlatQual platqual = ast::PlatQual::PlatQual_None;
+
+    if (ctx->platform_qualifier()) {
+        if (ctx->platform_qualifier()->TOK_TARGET()) {
+            platqual = ast::PlatQual::PlatQual_Target;
+        } else {
+            platqual = ast::PlatQual::PlatQual_Solve;
+        }
+    }
 
     ast::IFunctionDefinition *func = m_factory->mkFunctionDefinition(
         mkFunctionPrototype(ctx->function_prototype()),
-        body
+        body,
+        platqual
     );
 
-    addChild(func, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
+    if (ctx->platform_qualifier()) {
+        if (ctx->platform_qualifier()->TOK_TARGET()) {
+            func->getProto()->setIs_target(true);
+        } else {
+            func->getProto()->setIs_solve(true);
+        }
+    }
+
+    addChild(func, ctx->start);
     DEBUG_LEAVE("visitProcedural_function");
     return 0;
 }
@@ -520,7 +623,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_function(PSSParser::Procedural_func
 antlrcpp::Any AstBuilderInt::visitFunction_decl(PSSParser::Function_declContext *ctx) {
     DEBUG_ENTER("visitFunction_decl");
     ast::IFunctionPrototype *proto = mkFunctionPrototype(ctx->function_prototype());
-    DEBUG("TODO: visitFunction_decl");
+    addChild(proto, ctx->start);
     DEBUG_LEAVE("visitFunction_decl");
     return 0;
 }
@@ -532,10 +635,39 @@ antlrcpp::Any AstBuilderInt::visitFunction_prototype(PSSParser::Function_prototy
     return 0;
 }
 
+antlrcpp::Any AstBuilderInt::visitImport_function(PSSParser::Import_functionContext *ctx) {
+    DEBUG_ENTER("visitImport_function");
+    if (ctx->type_identifier()) {
+        // Two-step import specification
+    } else {
+        // One-step import specification
+        ast::PlatQual platqual = ast::PlatQual::PlatQual_None;
+
+        if (ctx->platform_qualifier()) {
+            if (ctx->platform_qualifier()->TOK_TARGET()) {
+                platqual = ast::PlatQual::PlatQual_Target;
+            } else {
+                platqual = ast::PlatQual::PlatQual_Solve;
+            }
+        }
+
+        ast::IFunctionImportProto *func = m_factory->mkFunctionImportProto(
+            platqual,
+            "",
+            mkFunctionPrototype(ctx->function_prototype())
+            );
+
+
+        addChild(func, ctx->start);
+    }
+    DEBUG_LEAVE("visitImport_function");
+    return 0;
+}
+
 // B.7 Procedural Statements
 antlrcpp::Any AstBuilderInt::visitProcedural_sequence_block_stmt(PSSParser::Procedural_sequence_block_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_sequence_block_stmt");
-    ast::IProceduralStmtSequenceBlock *block = m_factory->mkProceduralStmtSequenceBlock();
+    ast::IExecScope *block = m_factory->mkExecScope("<sequence>");
     m_exec_scope_s.push_back(block);
 
     std::vector<PSSParser::Procedural_stmtContext *> items = ctx->procedural_stmt();
@@ -545,7 +677,10 @@ antlrcpp::Any AstBuilderInt::visitProcedural_sequence_block_stmt(PSSParser::Proc
         addExecStmt(*it);
     }
 
+    m_exec_scope_s.pop_back();
+
     m_exec_stmt = block;
+    m_exec_stmt_cnt++;
     DEBUG_LEAVE("visitProcedural_sequence_block_stmt");
     return 0;
 }
@@ -572,6 +707,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_assignment_stmt(PSSParser::Procedur
         rhs);
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
 
     DEBUG_LEAVE("visitProcedural_assignment_stmt");
     return 0;
@@ -579,14 +715,12 @@ antlrcpp::Any AstBuilderInt::visitProcedural_assignment_stmt(PSSParser::Procedur
 
 antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::Procedural_void_function_call_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_void_function_call_stmt");
-    IExprStaticRefPath *prefix = 0;
+    IExprRefPathStatic *prefix = 0;
 
     if (ctx->function_call()->is_global || 
         ctx->function_call()->type_identifier_elem().size() > 0) {
         // Have a static component
-        prefix = m_factory->mkExprStaticRefPath(
-            ctx->function_call()->is_global,
-            0);
+        prefix = m_factory->mkExprRefPathStatic(ctx->function_call()->is_global);
 
         std::vector<PSSParser::Type_identifier_elemContext *> items =
             ctx->function_call()->type_identifier_elem();
@@ -630,10 +764,12 @@ antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::
                 prefix,
                 hid));
         m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     } else {
         ast::IProceduralStmtExpr *stmt = m_factory->mkProceduralStmtExpr(
             m_factory->mkExprRefPathContext(hid));
         m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     }
 
     DEBUG_LEAVE("visitProcedural_void_function_call_stmt");
@@ -646,6 +782,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_return_stmt(PSSParser::Procedural_r
     ast::IProceduralStmtReturn *stmt = m_factory->mkProceduralStmtReturn(expr);
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
 
     DEBUG_LEAVE("visitProcedural_return_stmt");
     return 0;
@@ -654,8 +791,25 @@ antlrcpp::Any AstBuilderInt::visitProcedural_return_stmt(PSSParser::Procedural_r
 antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_repeat_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_repeat_stmt");
     if (ctx->is_repeat) {
+        ast::IProceduralStmtRepeat *stmt = m_factory->mkProceduralStmtRepeat(
+            "<repeat>",
+            (ctx->identifier())?mkId(ctx->identifier()):0,
+            mkExpr(ctx->expression()),
+            mkExecStmt(ctx->procedural_stmt()));
+        m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     } else if (ctx->is_repeat_while) {
+        ast::IProceduralStmtRepeatWhile *stmt = m_factory->mkProceduralStmtRepeatWhile(
+            mkExpr(ctx->expression()),
+            mkExecStmt(ctx->procedural_stmt()));
+        m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     } else { // 'while'
+        ast::IProceduralStmtWhile *stmt = m_factory->mkProceduralStmtWhile(
+            mkExpr(ctx->expression()),
+            mkExecStmt(ctx->procedural_stmt()));
+        m_exec_stmt = stmt;
+        m_exec_stmt_cnt++;
     }
 
     DEBUG_LEAVE("visitProcedural_repeat_stmt");
@@ -672,15 +826,41 @@ antlrcpp::Any AstBuilderInt::visitProcedural_foreach_stmt(PSSParser::Procedural_
 antlrcpp::Any AstBuilderInt::visitProcedural_if_else_stmt(PSSParser::Procedural_if_else_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_if_else_stmt");
 
+    ast:IProceduralStmtIfElse *stmt = m_factory->mkProceduralStmtIfElse();
+
     ast::IExpr *cond = mkExpr(ctx->expression());
-    ast::IExecStmt *true_s = mkExecStmt(ctx->procedural_stmt(0));
-    ast::IExecStmt *false_s = ctx->procedural_stmt(1)?mkExecStmt(ctx->procedural_stmt(1)):0;
-    ast::IProceduralStmtIfElse *stmt = m_factory->mkProceduralStmtIfElse(
+    ast::IScopeChild *if_s = mkExecStmt(ctx->procedural_stmt(0));
+    ast::IProceduralStmtIfClause *clause = m_factory->mkProceduralStmtIfClause(
         cond,
-        true_s,
-        false_s);
+        if_s);
+    DEBUG("Add initial if clause");
+    stmt->getIf_then().push_back(ast::IProceduralStmtIfClauseUP(clause));
+
+    PSSParser::Procedural_stmtContext *else_ctx = ctx->procedural_stmt(1);
+
+    // Process else-if stmts
+    while (else_ctx && else_ctx->procedural_if_else_stmt()) {
+        cond = mkExpr(else_ctx->procedural_if_else_stmt()->expression());
+        if_s = mkExecStmt(else_ctx->procedural_if_else_stmt()->procedural_stmt(0));
+        clause = m_factory->mkProceduralStmtIfClause(
+            cond,
+            if_s);
+        DEBUG("Add if-then clause");
+        stmt->getIf_then().push_back(ast::IProceduralStmtIfClauseUP(clause));
+        else_ctx = else_ctx->procedural_if_else_stmt()->procedural_stmt(1);
+    }
+
+    // Now, add final 'else' if present
+    if (else_ctx) {
+        DEBUG("Add final 'else' clause");
+        ast::IScopeChild *else_s = mkExecStmt(else_ctx);
+        stmt->setElse_then(else_s);
+    } else {
+        DEBUG("No final 'else' clause");
+    }
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
     DEBUG_LEAVE("visitProcedural_if_else_stmt");
     return 0;
 }
@@ -697,6 +877,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_break_stmt(PSSParser::Procedural_br
     ast::IProceduralStmtBreak *stmt = m_factory->mkProceduralStmtBreak();
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
     DEBUG_LEAVE("visitProcedural_break_stmt");
     return 0;
 }
@@ -706,6 +887,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_continue_stmt(PSSParser::Procedural
     ast::IProceduralStmtContinue *stmt = m_factory->mkProceduralStmtContinue();
 
     m_exec_stmt = stmt;
+    m_exec_stmt_cnt++;
 
     DEBUG_LEAVE("visitProcedural_continue_stmt");
     return 0;
@@ -728,11 +910,13 @@ antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedu
             type,
             array_dim,
             init);
-        m_exec_scope_s.back()->getChildren().push_back(ast::IExecStmtUP(decl));
+        decl->setIndex(m_exec_scope_s.back()->getChildren().size());
+        m_exec_scope_s.back()->getChildren().push_back(ast::IScopeChildUP(decl));
     }
 
     // We've already added to the super scope
     m_exec_stmt = 0;
+    m_exec_stmt_cnt++;
 
     DEBUG_LEAVE("visitProcedural_data_declaration");
     return 0;
@@ -1028,7 +1212,13 @@ antlrcpp::Any AstBuilderInt::visitInteger_type(PSSParser::Integer_typeContext *c
 
 	if (ctx->lhs) {
 		width = mkExpr(ctx->lhs);
-	}
+	} else {
+        if (ctx->integer_atom_type()->TOK_INT()) {
+            width = m_factory->mkExprUnsignedNumber("32", 32, 32);
+        } else {
+            width = m_factory->mkExprUnsignedNumber("1", 32, 1);
+        }
+    }
 
 	if (ctx->is_in) {
 		in = mkDomainOpenRangeList(ctx->domain);
@@ -1079,6 +1269,18 @@ antlrcpp::Any AstBuilderInt::visitEnum_type(PSSParser::Enum_typeContext *ctx) {
 	m_type = type_enum;
 	DEBUG_LEAVE("visitEnum_type");
 	return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitPyobj_type(PSSParser::Pyobj_typeContext *ctx) {
+    DEBUG_ENTER("visitPyobj_type");
+    // Create a user-defined data type with a direct
+    // reference to ::std_pkg::pyobj
+
+    ast::IDataTypePyObj *dt = m_factory->mkDataTypePyObj();
+
+    m_type = dt;
+    DEBUG_LEAVE("visitPyobj_type");
+    return 0;
 }
 
 antlrcpp::Any AstBuilderInt::visitEnum_declaration(PSSParser::Enum_declarationContext *ctx) {
@@ -1249,7 +1451,7 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
 
 	m_constraint = c;
 	if (m_constraint_s.size() > 0) {
-		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintScopeUP(c));
+		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
 	}
 	DEBUG_LEAVE("visitForeach_constraint_item");
 	return 0;
@@ -1454,11 +1656,11 @@ antlrcpp::Any AstBuilderInt::visitString_literal(PSSParser::String_literalContex
 	DEBUG_ENTER("visitString_literal");
 	if (ctx->DOUBLE_QUOTED_STRING()) {
 		std::string value = ctx->DOUBLE_QUOTED_STRING()->getText();
-		value = value.substr(1, value.size()-1);
+		value = value.substr(1, value.size()-2);
 		m_expr = m_factory->mkExprString(value, false);
 	} else { 
 		std::string value = ctx->TRIPLE_DOUBLE_QUOTED_STRING()->getText();
-		value = value.substr(3, value.size()-3);
+		value = value.substr(3, value.size()-6);
 		m_expr = m_factory->mkExprString(value, true);
 	}
 	DEBUG_LEAVE("visitString_literal");
@@ -1503,6 +1705,7 @@ antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) 
 	if (ctx->ESCAPED_ID()) {
 		id = m_factory->mkExprId(ctx->ESCAPED_ID()->getText(), true);
 	} else {
+        DEBUG("visitIdentifier: %s", ctx->ID()->getText().c_str());
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
@@ -1510,9 +1713,6 @@ antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) 
 	loc.lineno = ctx->start->getLine();
 	loc.linepos = ctx->start->getCharPositionInLine()+1;
 	id->setLocation(loc);
-
-
-	// TODO: Fill in location info
 
 	m_expr = id;
 
@@ -1530,9 +1730,132 @@ antlrcpp::Any AstBuilderInt::visitType_identifier(PSSParser::Type_identifierCont
 // B.19 Numbers
 
 antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
-	DEBUG_ENTER("visitNumber");
-	DEBUG("TODO: Number");
-	m_expr = m_factory->mkExprSignedNumber("0", 0, 0);
+	DEBUG_ENTER("visitNumber %s", ctx->getText().c_str());
+    uint64_t value;
+    bool is_signed = false;
+    int32_t width = 32;
+    std::string img;
+    if (ctx->based_hex_number()) {
+        DEBUG("Based hex number");
+        if (ctx->based_hex_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_hex_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_hex_number()->BASED_HEX_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 16);
+    } else if (ctx->based_oct_number()) {
+        DEBUG("Based oct number");
+        if (ctx->based_oct_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_oct_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_oct_number()->BASED_OCT_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 8);
+    } else if (ctx->based_dec_number()) {
+        DEBUG("Based dec number");
+        if (ctx->based_dec_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_dec_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_dec_number()->BASED_DEC_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 10);
+    } else if (ctx->based_bin_number()) {
+        DEBUG("Based bin number");
+        if (ctx->based_bin_number()->DEC_LITERAL()) {
+            // Explicit width
+            width = strtoul(
+                ctx->based_bin_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+        }
+        img = ctx->based_bin_number()->BASED_BIN_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+        is_signed = (img[1] == 's' || img[1] == 'S');
+
+        for (uint32_t i=2+is_signed; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 2);
+    } else if (ctx->hex_number()) {
+        DEBUG("Unbased hex number");
+        img = ctx->hex_number()->HEX_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+
+        for (uint32_t i=2; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 16);
+    } else if (ctx->dec_number()) {
+        DEBUG("Unbased dec number");
+        img = ctx->dec_number()->DEC_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+
+        for (uint32_t i=0; i<img.size(); i++) {
+            if (img.at(i) != '_') {
+                val_t.push_back(img.at(i));
+            }
+        }
+
+        value = strtoull(val_t.c_str(), 0, 10);
+    } else if (ctx->oct_number()) {
+        DEBUG("Unbased oct number");
+        img = ctx->oct_number()->OCT_LITERAL()->getSymbol()->getText();
+        std::string val_t;
+
+        if (img.size() > 1) {
+            for (uint32_t i=1; i<img.size(); i++) {
+                if (img.at(i) != '_') {
+                    val_t.push_back(img.at(i));
+                }
+            }
+
+            value = strtoull(val_t.c_str(), 0, 8);
+        } else {
+            value = 0;
+        }
+    } else {
+        FATAL("Unknown format");
+    }
+
+    if (is_signed) {
+    	m_expr = m_factory->mkExprSignedNumber(img, width, value);
+    } else {
+    	m_expr = m_factory->mkExprUnsignedNumber(img, width, value);
+    }
 
 	DEBUG_LEAVE("visitNumber");
 
@@ -1563,6 +1886,7 @@ void AstBuilderInt::syntaxError(
 }
 
 void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t) {
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 	c->setParent(scope());
     c->setLocation({
@@ -1577,6 +1901,7 @@ void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t) {
 }
 
 void AstBuilderInt::addChild(ast::INamedScopeChild *c, Token *t) {
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 	c->setParent(scope());
     c->setLocation({
@@ -1601,6 +1926,8 @@ void AstBuilderInt::addChild(ast::IConstraintScope *c, Token *start, Token *end)
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+	c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1619,6 +1946,8 @@ void AstBuilderInt::addChild(ast::IExecScope *c, Token *start, Token *end) {
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+    c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1637,6 +1966,8 @@ void AstBuilderInt::addChild(ast::IFunctionDefinition *c, Token *start, Token *e
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+    c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1655,6 +1986,8 @@ void AstBuilderInt::addChild(ast::INamedScope *c, Token *start, Token *end) {
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()+1
     });
+    c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1673,6 +2006,8 @@ void AstBuilderInt::addChild(ast::IScope *c, Token *start, Token *end) {
         (int32_t)end->getLine(),
         (int32_t)end->getCharPositionInLine()
     });
+    c->setParent(scope());
+    c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 
 	if (m_collectDocStrings && start) {
@@ -1695,7 +2030,6 @@ void AstBuilderInt::addDocstring(ast::IScopeChild *c, Token *t) {
 	if (slc_tokens.size() == 0 && mlc_tokens.size() == 0) {
 		return;
 	}
-
 
 	int32_t last_ws_line = -1;
 	if (ws_tokens.size() > 0) {
@@ -1820,7 +2154,15 @@ std::string AstBuilderInt::processDocStringMultiLineComment(
 std::string AstBuilderInt::processDocStringSingleLineComment(
     		const std::vector<Token *>		&slc_tokens,
 			const std::vector<Token *>		&ws_tokens) {
-	return "";
+    std::string comment;
+
+    for (std::vector<Token *>::const_iterator
+        it=slc_tokens.begin();
+        it!=slc_tokens.end(); it++) {
+        comment += (*it)->getText().substr(2);
+    }
+
+	return comment;
 }
 
 void AstBuilderInt::push_scope(ast::IScope *s) { 
@@ -1855,6 +2197,7 @@ void AstBuilderInt::addActivityStmt(
         PSSParser::Activity_stmtContext     *ctx) {
     ast::IScopeChild *a_stmt = mkActivityStmt(ctx);
     if (a_stmt) {
+        a_stmt->setIndex(scope->getChildren().size());
         scope->getChildren().push_back(ast::IScopeChildUP(a_stmt));
     }
 }
@@ -1925,19 +2268,33 @@ ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::D
 	return ret;
 }
 
-ast::IExecStmt *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *ctx) {
+ast::IScopeChild *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *ctx) {
     m_exec_stmt = 0;
-    ctx->accept(this);
+    m_exec_stmt_cnt = 0;
+
+    if (!ctx->TOK_SEMICOLON()) {
+        ctx->accept(this);
+
+        if (!m_exec_stmt_cnt) {
+            ERROR("No exec stmt produced");
+        }
+    } else {
+        // Null statement
+        m_exec_stmt_cnt++;
+    }
     return m_exec_stmt;
 }
 
 void AstBuilderInt::addExecStmt(PSSParser::Procedural_stmtContext *ctx) {
-    ast::IExecStmt *stmt = mkExecStmt(ctx);
+    DEBUG_ENTER("addExecStmt");
+    ast::IScopeChild *stmt = mkExecStmt(ctx);
 
     if (stmt) {
-        m_exec_scope_s.back()->getChildren().push_back(ast::IExecStmtUP(stmt));
+        stmt->setIndex(m_exec_scope_s.back()->getChildren().size());
+        m_exec_scope_s.back()->getChildren().push_back(ast::IScopeChildUP(stmt));
     }
 
+    DEBUG_LEAVE("addExecStmt");
 }
 
 static std::map<std::string, ParamDir> param_dir_m = {
@@ -1957,15 +2314,21 @@ static std::map<std::string, FunctionParamDeclKind> ref_param_kind_m = {
 
 ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
     PSSParser::Function_prototypeContext *ctx) {
+    DEBUG_ENTER("mkFunctionPrototype %s", toString(ctx->function_identifier()->identifier()).c_str());
     ast::IDataType *rtype = 0;
 
     if (ctx->function_return_type()->data_type()) {
         rtype = mkDataType(ctx->function_return_type()->data_type());
     }
 
+    bool is_target = false;
+    bool is_solve = false;
+
     ast::IFunctionPrototype *proto = m_factory->mkFunctionPrototype(
         mkId(ctx->function_identifier()->identifier()),
-        rtype);
+        rtype,
+        is_target,
+        is_solve);
 
     std::vector<PSSParser::Function_parameterContext *> items =
         ctx->function_parameter_list_prototype()->function_parameter();
@@ -2011,6 +2374,7 @@ ast::IFunctionPrototype *AstBuilderInt::mkFunctionPrototype(
         proto->getParameters().push_back(ast::IFunctionParamDeclUP(param));
     }
 
+    DEBUG_LEAVE("mkFunctionPrototype");
     return proto;
 }
 
@@ -2060,19 +2424,30 @@ ast::IFunctionParamDecl *AstBuilderInt::mkFunctionParamDecl(PSSParser::Function_
 
 IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 	IExprId *id;
+
 	
 	if (ctx->ESCAPED_ID()) {
 		id = m_factory->mkExprId(ctx->ESCAPED_ID()->getText(), true);
 	} else {
+        DEBUG("mkId: %s", ctx->ID()->getText().c_str());
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
-	Location loc = id->getLocation();
-	loc.lineno = ctx->start->getLine();
-	loc.linepos = ctx->start->getCharPositionInLine();
-	id->setLocation(loc);
+    setLoc(id, ctx->start);
 
 	return id;
+}
+
+std::string AstBuilderInt::toString(PSSParser::IdentifierContext *ctx) {
+    if (ctx) {
+        if (ctx->ESCAPED_ID()) {
+            return ctx->ESCAPED_ID()->getText();
+        } else {
+            return ctx->ID()->getText();
+        }
+    } else {
+        return "<null>";
+    }
 }
 
 ast::IExprHierarchicalId *AstBuilderInt::mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx) {
@@ -2089,6 +2464,36 @@ ast::IExprHierarchicalId *AstBuilderInt::mkHierarchicalId(PSSParser::Hierarchica
 	DEBUG_LEAVE("mkHierarchicalId");
 	return ret;
 }
+
+ast::IExprHierarchicalId *AstBuilderInt::mkHierarchicalId(PSSParser::Member_path_elemContext *ctx) {
+	DEBUG_ENTER("mkHierarchicalId(member_path_elem)");
+	ast::IExprHierarchicalId *ret = m_factory->mkExprHierarchicalId();
+    ret->getElems().push_back(ast::IExprMemberPathElemUP(mkMemberPathElem(ctx)));
+
+	DEBUG_LEAVE("mkHierarchicalId(member_path_elem)");
+	return ret;
+}
+
+ast::IExprHierarchicalId *AstBuilderInt::mkHierarchicalId(
+        PSSParser::Static_ref_pathContext *root_ctx,
+        PSSParser::Hierarchical_idContext *leaf_ctx) {
+    DEBUG_ENTER("mkHierarchicalId(base_ctx, leaf_ctx)");
+	ast::IExprHierarchicalId *ret = m_factory->mkExprHierarchicalId();
+    ret->getElems().push_back(ast::IExprMemberPathElemUP(mkMemberPathElem(
+        root_ctx->member_path_elem())));
+
+	std::vector<PSSParser::Member_path_elemContext *> items = leaf_ctx->member_path_elem();
+
+	for (std::vector<PSSParser::Member_path_elemContext *>::const_iterator
+		it=items.begin();
+		it!=items.end(); it++) {
+        ret->getElems().push_back(ast::IExprMemberPathElemUP(mkMemberPathElem(*it)));
+	}
+
+    DEBUG_LEAVE("mkHierarchicalId(base_ctx, leaf_ctx)");
+    return ret;
+}
+
 
 ast::IExprMemberPathElem *AstBuilderInt::mkMemberPathElem(
     PSSParser::Member_path_elemContext *ctx) {
@@ -2122,6 +2527,7 @@ ast::IExprMemberPathElem *AstBuilderInt::mkMemberPathElem(
 void AstBuilderInt::mkTypeId(
 		std::vector<IExprIdUP>					&type_id,
 		PSSParser::Type_identifierContext		*ctx) {
+    DEBUG("FIXME: mkTypeId<type_id, ctxt>");
 	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
 		it=ctx->type_identifier_elem().begin();
 		it!=ctx->type_identifier_elem().end(); it++) {
@@ -2145,6 +2551,7 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
         ast::ITemplateParamValueList *params = 0;
 
         if ((*it)->template_param_value_list()) {
+            DEBUG("Parameterized element");
             params = mkTemplateParamValueList((*it)->template_param_value_list());
         }
 
@@ -2170,6 +2577,14 @@ ast::ITypeIdentifierElem *AstBuilderInt::mkTypeIdElem(
             (ctx->template_param_value_list())?mkTemplateParamValueList(
                 ctx->template_param_value_list()):0
             );
+    return elem;
+}
+
+ast::ITypeIdentifierElem *AstBuilderInt::mkTypeIdElem(
+		PSSParser::IdentifierContext		*ctx) {
+	ast::ITypeIdentifierElem *elem = m_factory->mkTypeIdentifierElem(
+			mkId(ctx),
+            0);
     return elem;
 }
 
@@ -2200,8 +2615,10 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
         if (ctx->hierarchical_id()) {
             DEBUG("hierarchical_id: ");
             // Has a context portion
-            ast::IExprStaticRefPath *static_ref = mkExprStaticRefPath(ctx->static_ref_path());
-            ast::IExprHierarchicalId *context_ref = mkHierarchicalId(ctx->hierarchical_id());
+            ast::IExprRefPathStatic *static_ref = mkExprRefPathStatic(ctx->static_ref_path());
+            ast::IExprHierarchicalId *context_ref = mkHierarchicalId(
+                ctx->static_ref_path(),
+                ctx->hierarchical_id());
 
             fprintf(stdout, "mkExprRefPath: static_ref=%p context_ref=%p\n", static_ref, context_ref);
             ast::IExprRefPathStaticRooted *ref = m_factory->mkExprRefPathStaticRooted(
@@ -2213,16 +2630,38 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
             }
 
             ret = ref;
-        } else {
+        } else { // Does not have a hierarchical_id component
+            /*
+             * ref_path:
+             *   static_ref_path ( TOK_DOT hierarchical_id )? bit_slice?     // <-- We're here
+             *   | (is_super=TOK_SUPER TOK_DOT)? hierarchical_id bit_slice?
+             * 
+             * static_ref_path:
+             *   static_ref_path_prefix (type_identifier_elem TOK_DOUBLE_COLON )* member_path_elem
+             * 
+             * static_ref_path_prefix:
+             *   (type_identifier_elem TOK_DOUBLE_COLON)
+             *   | is_global=TOK_DOUBLE_COLON
+             * 
+             * member_path_elem:
+             * 	identifier function_parameter_list? ( TOK_LSBRACE expression TOK_RSBRACE )?
+             */
+
             DEBUG("!hierarchical_id: ");
             std::vector<PSSParser::Type_identifier_elemContext *> items =
                 ctx->static_ref_path()->type_identifier_elem();
             if (!ctx->static_ref_path()->static_ref_path_prefix()->is_global && items.size() == 0 && 
                 !ctx->static_ref_path()->member_path_elem()->function_parameter_list()) {
-                // This is just a simple identifier reference
-                ast::IExprRefPathId *ref = m_factory->mkExprRefPathId(
-                    mkId(ctx->static_ref_path()->member_path_elem()->identifier())
-                );
+                DEBUG("case1");
+                // static_ref_path_prefix member_path_elem
+                DEBUG("Non-function static reference");
+                ast::IExprRefPathStatic *ref = m_factory->mkExprRefPathStatic(false);
+                ref->getBase().push_back(ast::ITypeIdentifierElemUP(
+                    mkTypeIdElem(ctx->static_ref_path()->static_ref_path_prefix()->type_identifier_elem())
+                ));
+                ref->getBase().push_back(ast::ITypeIdentifierElemUP(
+                    mkTypeIdElem(ctx->static_ref_path()->member_path_elem()->identifier())
+                ));
 
                 if (ctx->bit_slice()) {
                     ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
@@ -2230,10 +2669,18 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
 
                 ret = ref;
             } else {
-                // This is a multi-element path
+                DEBUG("case2 (multi-element path) size=%d", items.size());
+                // static_ref_path_prefix type_identifier_elem+ member_path_elem
+
                 ast::IExprRefPathStatic *ref = m_factory->mkExprRefPathStatic(
                     ctx->static_ref_path()->static_ref_path_prefix()->is_global
                 );
+
+                if (!ctx->static_ref_path()->static_ref_path_prefix()->is_global) {
+                    DEBUG("Add root elem");
+                    ref->getBase().push_back(ast::ITypeIdentifierElemUP(
+                        mkTypeIdElem(ctx->static_ref_path()->static_ref_path_prefix()->type_identifier_elem())));
+                }
 
                 for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
                     it=items.begin();
@@ -2241,15 +2688,28 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
                     ref->getBase().push_back(ast::ITypeIdentifierElemUP(mkTypeIdElem(*it)));
                 }
 
-                if (ctx->bit_slice()) {
-                    ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
+                if (ctx->static_ref_path()->member_path_elem()->function_parameter_list()) {
+                    // Last element is a function call. Use ExprStaticRooted to express
+                    ast::IExprRefPathStaticRooted *expr = m_factory->mkExprRefPathStaticRooted(
+                        ref,
+                        mkHierarchicalId(ctx->static_ref_path()->member_path_elem())
+                    );
+                    ret = expr;
+                } else {
+                    // Last element is a field/constant reference
+                    ref->getBase().push_back(ast::ITypeIdentifierElemUP(
+                        mkTypeIdElem(ctx->static_ref_path()->member_path_elem()->identifier())));
+                    ret = ref;
                 }
 
-                ret = ref;
+                if (ctx->bit_slice()) {
+                    ERROR("Revisit handling of bit_slice");
+                    ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
+                }
             }
         }
 
-    } else {
+    } else { // Does not have a static_ref_path prefix
         // Context ref
         DEBUG("!static_ref_path: ExprRefPathContext");
         ast::IExprRefPathContext *cref = m_factory->mkExprRefPathContext(
@@ -2267,13 +2727,11 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
     return ret;
 }
 
-ast::IExprStaticRefPath *AstBuilderInt::mkExprStaticRefPath(
+ast::IExprRefPathStatic *AstBuilderInt::mkExprRefPathStatic(
         PSSParser::Static_ref_pathContext       *ctx) {
-    IExprStaticRefPath *ret = 0;
+    IExprRefPathStatic *ret = 0;
 
-    ret = m_factory->mkExprStaticRefPath(
-            ctx->static_ref_path_prefix()->is_global,
-            mkMemberPathElem(ctx->member_path_elem()));
+    ret = m_factory->mkExprRefPathStatic(ctx->static_ref_path_prefix()->is_global);
 
     std::vector<PSSParser::Type_identifier_elemContext *> items =
         ctx->type_identifier_elem();
@@ -2374,6 +2832,24 @@ ast::ITemplateParamValueList *AstBuilderInt::mkTemplateParamValueList(
 
     return plist;
 
+}
+
+void AstBuilderInt::setLoc(ast::IScopeChild *c, Token *start) {
+    Location loc = {
+        .fileid = m_fileid,
+        .lineno = (int32_t)start->getLine(),
+        .linepos = (int32_t)start->getCharPositionInLine()+1
+    };
+	c->setLocation(loc);
+}
+
+void AstBuilderInt::setLoc(ast::IExprId *c, Token *start) {
+    Location loc = {
+        .fileid = m_fileid,
+        .lineno = (int32_t)start->getLine(),
+        .linepos = (int32_t)start->getCharPositionInLine()+1
+    };
+	c->setLocation(loc);
 }
 
 dmgr::IDebug *AstBuilderInt::m_dbg = 0;

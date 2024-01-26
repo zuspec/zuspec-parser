@@ -22,6 +22,7 @@
 #include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/ast/ISymbolScope.h"
+#include "ResolveContext.h"
 
 namespace zsp {
 namespace parser {
@@ -30,10 +31,7 @@ namespace parser {
 
 class TaskGetSpecializedTemplateType {
 public:
-    TaskGetSpecializedTemplateType(
-        ast::ISymbolScope  *root,
-        IFactory           *factory,
-        IMarkerListener    *marker_l);
+    TaskGetSpecializedTemplateType(ResolveContext *ctxt);
 
     virtual ~TaskGetSpecializedTemplateType();
 
@@ -51,9 +49,7 @@ public:
 
 private:
     static dmgr::IDebug                 *m_dbg;
-    IFactory                            *m_factory;
-    IMarkerListener                     *m_marker_l;
-    ast::ISymbolScope                   *m_root;
+    ResolveContext                      *m_ctxt;
 };
 
 }

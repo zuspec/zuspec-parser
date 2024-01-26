@@ -7,6 +7,11 @@ classes:
       - params:
           type: UP<TemplateParamDeclList>
           is_ctor: false
+      - opaque:
+          type: bool
+          is_ctor: false
+          init: false
+
   
 
 

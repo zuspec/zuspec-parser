@@ -19,23 +19,23 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "TaskFindPathElem.h"
 #include "TaskLinkActionCompRefFields.h"
 #include "TaskResolveImports.h"
 #include "TaskResolveRef.h"
 #include "TaskResolveRefs.h"
+#include "TaskSpecializeParameterizedRef.h"
+#include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
+#include "zsp/parser/impl/TaskGetElemSymbolScope.h"
+#include "zsp/parser/impl/TaskIsPyRef.h"
 
 namespace zsp {
 namespace parser {
 
 
 
-TaskResolveRefs::TaskResolveRefs(
-    dmgr::IDebugMgr     *dmgr,
-    IFactory            *factory,
-    IMarkerListener     *marker_l) : m_factory(factory), m_marker_l(marker_l) {
-    m_dmgr = dmgr;
-    m_root = 0;
-    DEBUG_INIT("TaskResolveRefs", dmgr);
+TaskResolveRefs::TaskResolveRefs(ResolveContext *ctxt) : TaskResolveBase(ctxt) {
+    DEBUG_INIT("TaskResolveRefs", ctxt->getDebugMgr());
 }
 
 TaskResolveRefs::~TaskResolveRefs() {
@@ -44,60 +44,112 @@ TaskResolveRefs::~TaskResolveRefs() {
 
 void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
     DEBUG_ENTER("resolve (SymbolScope root)");
-    m_root = root;
-    m_symtab_it = ISymbolTableIteratorUP(m_factory->mkAstSymbolTableIterator(root));
+//    m_root = root;
+    m_ctxt->pushSymtab(m_ctxt->getFactory()->mkAstSymbolTableIterator(root));
 
     // First, ensure all actions have their 'comp' refs updated
-    TaskLinkActionCompRefFields(m_factory).link(root);
+    // Should this be done at root level?
+    TaskLinkActionCompRefFields(m_ctxt->getFactory()).link(root);
 
     // Phases:
     // - 
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=root->getChildren().begin();
         it!=root->getChildren().end(); it++) {
-        (*it)->accept(this);
+        it->get()->accept(this);
     }
+
+    m_ctxt->popSymtab();
+
     DEBUG_LEAVE("resolve");
 }
 
-void TaskResolveRefs::resolve(
-    parser::ISymbolTableIterator            *root_it,
-    ast::ISymbolTypeScope                   *scope) {
-    DEBUG_ENTER("resolve (iterator, scope)");
-    // TODO: obtain root
-    parser::ISymbolTableIteratorUP root_it_c(root_it->clone());
-    DEBUG("Scope Stack");
-    while (root_it_c->hasScopes()) {
-        DEBUG("  Scope: %d", 
-            root_it_c->getScope()->getId());
-        root_it_c->popScope();
+void TaskResolveRefs::resolve(ast::ISymbolTypeScope *scope) {
+    DEBUG_ENTER("resolve (iterator, scope) %s", scope->getName().c_str());
+
+    if (scope->getPlist()) {
+        DEBUG_ENTER("Resolving names in plist");
+        scope->getPlist()->accept(m_this);
+        DEBUG_LEAVE("Resolving names in plist");
     }
-    m_root = root_it->getRootScope();
-    m_symtab_it = ISymbolTableIteratorUP(root_it->clone());
 
-    TaskLinkActionCompRefFields(m_factory).link(scope);
-
-//    m_symtab_it->pushScope(scope);
-    scope->accept(m_this);
-//    m_symtab_it->popScope();
-
-    /*
-    for (std::vector<ast::IScopeChild *>::const_iterator
-        it=root->getChildren().begin();
-        it!=root->getChildren().end(); it++) {
-        (*it)->accept(this);
+    ast::ITypeScope *target_s = dynamic_cast<ast::ITypeScope *>(scope->getTarget());
+    if (target_s->getSuper_t()) {
+        target_s->getSuper_t()->accept(m_this);
     }
-     */
-    
+
+    // Create an iterator based on the type-scope itself
+    ISymbolTableIterator *type_it = TaskResolveSymbolPathRef(
+        m_ctxt->getDebugMgr(),
+        m_ctxt->root()).mkIterator(
+            m_ctxt->getFactory()->mkAstSymbolTableIterator(m_ctxt->root()),
+            scope);
+    // Remove the type itself, since this will be added 
+    // during resolution
+    type_it->popScope();
+
+    // Is this required here?
+    DEBUG("Pushing symbol iterator for body");
+    m_ctxt->pushSymtab(type_it);
+
+    ast::SymbolRefPathElemKind kind = ast::SymbolRefPathElemKind::ElemKind_ChildIdx;
+
+    ast::ITypeScope *i_ts = dynamic_cast<ast::ITypeScope *>(scope->getTarget());
+    if (i_ts->getParams() && i_ts->getParams()->getSpecialized()) {
+            kind = ast::SymbolRefPathElemKind::ElemKind_TypeSpec;
+            DEBUG("Processing specialization depth=%d", m_ctxt->specializationDepth());
+
+            // TODO: need a way to detect that we have a superseding 
+            // scope stack, so we don't redo it
+
+            // Create a symbol-table iterator that:
+            // - starts with m_root
+            // - is preloaded with the scopes of the target type
+
+            // if (m_ctxt->specializationDepth() == 1) {
+            //     DEBUG("Updating resolution stack to use local scope");
+            //     m_ctxt->pushSymtab(TaskResolveSymbolPathRef(
+            //         m_ctxt->getDebugMgr(), m_ctxt->root()).mkIterator(
+            //             m_ctxt->getFactory()->mkAstSymbolTableIterator(m_ctxt->root()),
+            //             i));
+            // } else {
+            //     DEBUG("Retaining existing resolution stack");
+            // }
+            // // TODO: need to resolve refs in the parameter list
+            // // relative to the containing type
+            // // Ensure parameter references are resolved
+            // DEBUG_ENTER("Resolve refs in parameter decl list");
+            // i_ts->getParams()->accept(m_this);
+            // DEBUG_LEAVE("Resolve refs in parameter decl list");
+            // if (m_ctxt->specializationDepth() == 1) {
+            //     m_ctxt->popSymtab();
+            // }
+        }
+
+    m_ctxt->symtab()->pushScope(scope, kind);
+
+    TaskLinkActionCompRefFields(m_ctxt->getFactory()).link(scope);
+
+    // Check on children
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=scope->getChildren().begin();
+        it!=scope->getChildren().end(); it++) {
+        it->get()->accept(m_this);
+    }
+
+    m_ctxt->symtab()->popScope();
+
+    DEBUG("Removing symbol iterator for body");
+    m_ctxt->popSymtab();
+
     DEBUG_LEAVE("resolve (iterator, scope)");
 }
 
 void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHandleTraversal *i) {
     DEBUG_ENTER("visitActivityActionHandleTraversal");
-    ast::ISymbolRefPath *target_ref = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
-        m_symtab_it.get(),
-        i->getTarget());
+    ast::ISymbolRefPath *target_ref = TaskResolveRef(m_ctxt).resolve(i->getTarget());
+
     if (!target_ref) {
         return;
     }
@@ -114,54 +166,230 @@ void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHan
     ast::IScopeChild *field_c = resolvePath(field_udt->getType_id()->getTarget());
     ast::ISymbolScope *field_scope = dynamic_cast<ast::ISymbolScope *>(field_c);
     DEBUG("field_c=%p field_scope=%s", field_c, field_scope->getName().c_str());
-    m_symtab_it->pushScope(field_scope);
+    m_ctxt->symtab()->pushScope(field_scope);
     if (i->getWith_c()) {
         DEBUG_ENTER(" ::getWith()");
         i->getWith_c()->accept(m_this);
         DEBUG_LEAVE(" ::getWith()");
     }
-    m_symtab_it->popScope();
+    m_ctxt->symtab()->popScope();
     DEBUG_LEAVE("visitActivityActionHandleTraversal");
 }
     
 void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeTraversal *i) {
     DEBUG_ENTER("visitActivityActionTypeTraversal");
-    DEBUG("TODO: visitActivityActionTypeTraversal");
+    i->getTarget()->accept(m_this);
     DEBUG_LEAVE("visitActivityActionTypeTraversal");
 }
 
 void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
-    DEBUG_ENTER("visitExprRefPathContext");
+    DEBUG_ENTER("visitExprRefPathContext %s", i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
+    fflush(stdout);
     // Find the first path element
-    ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
-        m_symtab_it.get(),
+    ast::ISymbolRefPath *target = TaskResolveRef(m_ctxt).resolve(
         i->getHier_id()->getElems().at(0)->getId());
-    
+
+    if (!target) {
+        m_ctxt->addMarker(
+            MarkerSeverityE::Error,
+            i->getHier_id()->getElems().at(0)->getId()->getLocation(),
+            "failed to find root ref-path element %s",
+            i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
+
+        DEBUG_LEAVE("visitExprRefPathContext -- fail");
+        return;
+    }
+
+    // Set root reference
     i->setTarget(target);
 
-    if (i->getHier_id()->getElems().at(0)->getParams()) {
-        i->getHier_id()->getElems().at(0)->getParams()->accept(m_this);
+    fflush(stdout);
+
+    ast::IScopeChild *target_c = TaskResolveSymbolPathRef(
+        m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target);
+    ast::ISymbolScope *target_s = TaskGetElemSymbolScope(
+        m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target_c);
+
+    if (!target_s && i->getHier_id()->getElems().size() > 1) {
+        m_ctxt->addMarker(
+            MarkerSeverityE::Error,
+            i->getHier_id()->getElems().at(0)->getId()->getLocation(),
+            "root ref-path element %s is not a composite scope",
+            i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
+
+        DEBUG_LEAVE("visitExprRefPathContext -- fail");
+        return;
     }
+
+    // Target already points to the first elem
+    i->getHier_id()->getElems().at(0)->setTarget(-1);
+
+    for (uint32_t ii=0; ii<i->getHier_id()->getElems().size(); ii++) {
+        ast::IExprMemberPathElem *elem = i->getHier_id()->getElems().at(ii).get();
+
+        // Ensure we resolve expression references in function parameters
+        if (elem->getParams()) {
+            DEBUG_ENTER("Resolve parameter references");
+            for (std::vector<ast::IExprUP>::const_iterator
+                it=elem->getParams()->getParameters().begin();
+                it!=elem->getParams()->getParameters().end(); it++) {
+                (*it)->accept(m_this);
+            }
+            DEBUG_LEAVE("Resolve parameter references");
+        }
+
+        if (!ii) {
+            continue;
+        }
+
+        DEBUG("Search for elem=%s target_s=%s", 
+            elem->getId()->getId().c_str(),
+            target_s->getName().c_str());
+
+        if (target_s->getOpaque()) {
+            DEBUG("Note: scope is opaque ; ending hierarchical search");
+            break;
+        }
+
+        TaskFindPathElem::Result res = TaskFindPathElem(
+            m_ctxt->getDebugMgr(), 
+            m_ctxt->root()).find(
+                target_s,
+                elem->getId()
+            );
+
+        std::map<std::string, int32_t>::const_iterator it = 
+            target_s->getSymtab().find(elem->getId()->getId());
+        
+        if (!res.sym) {
+            m_ctxt->addErrorMarker(
+                elem->getId()->getLocation(),
+                "Failed to find elem %s", 
+                elem->getId()->getId().c_str());
+
+            DEBUG("ERROR: Failed to find elem %s", elem->getId()->getId().c_str());
+            break;
+        } else {
+            DEBUG("NOTE: Found sub-element %s", elem->getId()->getId().c_str());
+            elem->setTarget(res.idx);
+            elem->setSuper(res.super_idx);
+
+            // Resolve name references for parameter values
+            if (elem->getParams()) {
+                elem->getParams()->accept(m_this);
+            }
+
+            if (ii+1 < i->getHier_id()->getElems().size()) {
+                target_c = res.sym;
+                target_s = TaskGetElemSymbolScope(
+                    m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(
+                        target_c
+                    );
+                DEBUG("Next target_s: %s", target_s->getName().c_str());
+            }
+        }
+    }
+
     DEBUG_LEAVE("visitExprRefPathContext");
 }
 
 
 void TaskResolveRefs::visitExprRefPathId(ast::IExprRefPathId *i) {
     DEBUG_ENTER("visitExprRefPathId %s", i->getId()->getId().c_str());
-    ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
-        m_symtab_it.get(),
-        i
-    );
+    ast::ISymbolRefPath *target = TaskResolveRef(m_ctxt).resolve(i);
     if (!target) {
-        fprintf(stdout, "Failed to resolve ref-path %s\n", i->getId()->getId().c_str());
+        m_ctxt->addErrorMarker(
+            i->getId()->getLocation(),
+            "failed to resolve ref-path %s", 
+            i->getId()->getId().c_str());
     }
     i->setTarget(target);
     DEBUG_LEAVE("visitExprRefPathId");
 }
 
+void TaskResolveRefs::visitExprRefPathStatic(ast::IExprRefPathStatic *i) {
+    DEBUG_ENTER("visitExprRefPathStatic size=%d", i->getBase().size());
+    ast::ISymbolRefPath *target = 0;
+    if (i->getIs_global()) {
+        DEBUG("TODO: support global-rooted references");
+    } else {
+        // relative root
+        ast::ISymbolRefPath *target = 0;
+        ast::IScopeChild *target_s = 0;
+        bool in_pyref = false;
+        for (std::vector<ast::ITypeIdentifierElemUP>::const_iterator
+            it=i->getBase().begin();
+            it!=i->getBase().end(); it++) {
+            if (it==i->getBase().begin()) {
+                target = TaskResolveRef(m_ctxt).resolve((*it)->getId());
+                
+                if (!target) {
+                    addMarker(
+                        MarkerSeverityE::Error,
+                        (*it)->getId()->getLocation(),
+                        "failed to resolve symbol %s",
+                        (*it)->getId()->getId().c_str());
+                    break;
+                }
+
+                if ((*it)->getParams()) {
+                    DEBUG("Ref elem %d is parameterized", (it-i->getBase().begin()));
+
+                    // Build out parameter value list
+                    target = TaskSpecializeParameterizedRef(m_ctxt).specialize(
+                            target, 
+                            (*it)->getParams());
+
+                    // TODO: do we need to delete target?
+                }
+
+                target_s = m_ctxt->resolveSymbolPathRef(target);
+
+                if ((*it)->getParams()) {
+                    DEBUG("Ref elem is parameterized");
+                }
+
+                if (!in_pyref) {
+                    in_pyref |= TaskIsPyRef(m_ctxt->getDebugMgr(), m_ctxt->root()).check(target_s);
+                    if (in_pyref) {
+                        target->setPyref_idx(0);
+                    } else {
+                    }
+                }
+            } else if (!in_pyref) {
+                // Need to resolve within root element ... unless we're down a Python scope
+                // Visit the element to resolve internal references
+                (*it)->accept(m_this);
+
+            } else {
+                DEBUG("element is inside a pyref path");
+            }
+        }
+        i->setTarget(target);
+    }
+    DEBUG_LEAVE("visitExprRefPathStatic");
+}
+
 void TaskResolveRefs::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) {
     DEBUG_ENTER("visitExprRefPathStaticRooted");
-    DEBUG("TODO: visitExprRefPathStaticRooted");
+    // Resolve the root
+    i->getRoot()->accept(m_this);
+
+    if (!i->getRoot()->getTarget()) {
+        DEBUG_LEAVE("visitExprRefPathStaticRooted -- failed root resolution");
+        return;
+    }
+
+    i->getLeaf()->accept(m_this);
+
+    if (i->getRoot()->getTarget()->getPyref_idx() != -1) {
+        // The root ends in a Python-type reference
+        DEBUG("Root (static) reference has a Python component");
+    } else {
+        DEBUG("Root (static) reference does not have a Python component");
+        DEBUG("TODO: visitExprRefPathStaticRooted");
+    }
+
     DEBUG_LEAVE("visitExprRefPathStaticRooted");
 }
 
@@ -183,35 +411,59 @@ void TaskResolveRefs::visitFieldCompRef(ast::IFieldCompRef *i) {
     DEBUG_LEAVE("visitFieldCompRef");
 }
 
+void TaskResolveRefs::visitFunctionPrototype(ast::IFunctionPrototype *i) {
+    DEBUG_ENTER("visitFunctionPrototype");
+
+    if (i->getRtype()) {
+        i->getRtype()->accept(m_this);
+    }
+
+    for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
+        it=i->getParameters().begin();
+        it!=i->getParameters().end(); it++) {
+        if ((*it)->getType()) {
+            (*it)->getType()->accept(m_this);
+        } else {
+            // TODO: likely a category type
+        }
+    }
+    DEBUG_LEAVE("visitFunctionPrototype");
+} 
+
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
-    DEBUG_ENTER("visitSymbolScope \"%s\"", i->getName().c_str());
+    DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
+    /*
     if (i->getName() != "") {
-        if (m_symtab_it->pushNamedScope(i->getName()) == -1) {
+        if (m_ctxt->symtab()->pushNamedScope(i->getName()) == -1) {
             // TODO: internal error
             fprintf(stdout, "Internal Error: no scope named %s in %s\n", 
                 i->getName().c_str(),
-                m_symtab_it->getScope()->getName().c_str());
+                m_ctxt->symtab()->getScope()->getName().c_str());
         }
     } else {
-        m_symtab_it->pushScope(i);
-    }
+        */
+        m_ctxt->symtab()->pushScope(i);
+//    }
 
     if (i->getImports()) {
         DEBUG_ENTER("  Resolve Imports");
-        TaskResolveImports(m_root, m_factory, m_marker_l).resolve(
-            m_symtab_it.get(),
-            i);
+        TaskResolveImports(m_ctxt).resolve(i);
         DEBUG_LEAVE("  Resolve Imports");
     }
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
+    DEBUG("Have %d children", i->getChildren().size());
+    DEBUG_ENTER("visit children");
+    for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
-        (*it)->accept(this);
+        DEBUG_ENTER("visit child");
+        it->get()->accept(this);
+        DEBUG_LEAVE("visit child");
     }
+    DEBUG_LEAVE("visit children");
 
-    m_symtab_it->popScope();
-    DEBUG_LEAVE("visitSymbolScope \"%s\"", i->getName().c_str());
+    m_ctxt->symtab()->popScope();
+    DEBUG_LEAVE("visitSymbolScope %s", i->getName().c_str());
 }
 
 void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
@@ -233,33 +485,57 @@ void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
     DEBUG_LEAVE("visitSymbolExtendScope");
 }
 
-void TaskResolveRefs::visitSymbolExecScope(ast::ISymbolExecScope *i) {
-    DEBUG_ENTER("visitSymbolExecScope \"%s\"", i->getName().c_str());
-    m_symtab_it->pushScope(i);
+// void TaskResolveRefs::visitSymbolExecScope(ast::ISymbolExecScope *i) {
+//     DEBUG_ENTER("visitSymbolExecScope \"%s\"", i->getName().c_str());
+//     m_ctxt->symtab()->pushScope(i);
 
-    for (std::vector<ast::IScopeChild *>::const_iterator
-        it=i->getChildren().begin();
-        it!=i->getChildren().end(); it++) {
-        (*it)->accept(this);
-    }
+//     for (std::vector<ast::IScopeChildUP>::const_iterator
+//         it=i->getChildren().begin();
+//         it!=i->getChildren().end(); it++) {
+//         (*it)->accept(this);
+//     }
 
-    m_symtab_it->popScope();
-    DEBUG_LEAVE("visitSymbolExecScope \"%s\"", i->getName().c_str());
-}
+//     m_ctxt->symtab()->popScope();
+//     DEBUG_LEAVE("visitSymbolExecScope \"%s\"", i->getName().c_str());
+// }
 
 void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
-    DEBUG_ENTER("visitSymbolFunctionScope %s", i->getName().c_str());
-    m_symtab_it->pushScope(i);
-    m_symtab_it->pushScope(i->getBody());
-    for (std::vector<ast::IScopeChild *>::const_iterator
-        it=i->getBody()->getChildren().begin();
-        it!=i->getBody()->getChildren().end(); it++) {
+    DEBUG_ENTER("visitSymbolFunctionScope %s (%d)", 
+    i->getName().c_str(),
+    i->getPrototypes().size());
+
+
+    for (std::vector<ast::IFunctionPrototype *>::const_iterator
+        it=i->getPrototypes().begin();
+        it!=i->getPrototypes().end(); it++) {
         (*it)->accept(m_this);
     }
-    m_symtab_it->popScope();
-    m_symtab_it->popScope();
+
+//    if (i->getBody()) {
+        DEBUG("Push function scope %s", i->getName().c_str());
+        m_ctxt->symtab()->pushScope(i);
+//        DEBUG("Push function body scope");
+//        m_ctxt->symtab()->pushScope(i->getBody());
+        for (std::vector<ast::IScopeChildUP>::const_iterator
+            it=i->getChildren().begin();
+            it!=i->getChildren().end(); it++) {
+            (*it)->accept(m_this);
+        }
+//        m_ctxt->symtab()->popScope();
+        m_ctxt->symtab()->popScope();
+//    }
+
+
     DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
 }
+
+// void TaskResolveRefs::visitSymbolStmtScope(ast::ISymbolStmtScope *i) {
+//     DEBUG_ENTER("visitSymbolStmtScope %s", i->getName().c_str());
+//     m_ctxt->symtab()->pushScope(i);
+//     i->getTarget()->accept(m_this);
+//     m_ctxt->symtab()->popScope();
+//     DEBUG_LEAVE("visitSymbolStmtScope %s", i->getName().c_str());
+// }
 
 void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
     ast::ITypeScope *i_ts = dynamic_cast<ast::ITypeScope *>(i->getTarget());
@@ -268,19 +544,44 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
         (i_ts->getParams())?"true":"false",
         (i_ts->getParams() && i_ts->getParams()->getSpecialized())?"true":"false");
     if (i_ts->getParams() && !i_ts->getParams()->getSpecialized()) {
-        DEBUG("Note: Skipping symbol resolution in a templated type");
+        DEBUG("Note: Skipping symbol resolution in an unspecialized templated type");
     } else {
         ast::SymbolRefPathElemKind kind = ast::SymbolRefPathElemKind::ElemKind_ChildIdx;
 
         if (i_ts->getParams() && i_ts->getParams()->getSpecialized()) {
             kind = ast::SymbolRefPathElemKind::ElemKind_TypeSpec;
+            DEBUG("Processing specialization depth=%d", m_ctxt->specializationDepth());
+
+            // TODO: need a way to detect that we have a superseding 
+            // scope stack, so we don't redo it
+
+            // Create a symbol-table iterator that:
+            // - starts with m_root
+            // - is preloaded with the scopes of the target type
+
+            if (m_ctxt->specializationDepth() == 1) {
+                DEBUG("Updating resolution stack to use local scope");
+                m_ctxt->pushSymtab(TaskResolveSymbolPathRef(
+                    m_ctxt->getDebugMgr(), m_ctxt->root()).mkIterator(
+                        m_ctxt->getFactory()->mkAstSymbolTableIterator(m_ctxt->root()),
+                        i));
+            } else {
+                DEBUG("Retaining existing resolution stack");
+            }
+            // TODO: need to resolve refs in the parameter list
+            // relative to the containing type
             // Ensure parameter references are resolved
+            DEBUG_ENTER("Resolve refs in parameter decl list");
             i_ts->getParams()->accept(m_this);
+            DEBUG_LEAVE("Resolve refs in parameter decl list");
+            if (m_ctxt->specializationDepth() == 1) {
+                m_ctxt->popSymtab();
+            }
         }
 
         // TODO: might need to defer this until after we've resolved
         // super-class
-        m_symtab_it->pushScope(i, kind);
+        m_ctxt->symtab()->pushScope(i, kind);
 
         // Resolve the super class (if any)
         if (dynamic_cast<ast::ITypeScope *>(i->getTarget())->getSuper_t()) {
@@ -292,47 +593,53 @@ void TaskResolveRefs::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
         if (i->getImports()) {
             DEBUG_ENTER("  Resolve Imports");
-            TaskResolveImports(m_root, m_factory, m_marker_l).resolve(
-                m_symtab_it.get(),
-                i);
+            TaskResolveImports(m_ctxt).resolve(i);
             DEBUG_LEAVE("  Resolve Imports");
         }
 
         // Check on children
-        for (std::vector<ast::IScopeChild *>::const_iterator
+        for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
             (*it)->accept(m_this);
         }
 
-        m_symtab_it->popScope();
+        m_ctxt->symtab()->popScope();
     }
     DEBUG_LEAVE("visitSymbolTypeScope %s", i->getName().c_str());
 }
 
 void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
     DEBUG_ENTER("visitDataTypeUserDefined");
-    ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
-        m_symtab_it.get(),
-        i->getType_id()
-    );
+    if (i->getType_id()->getTarget()) {
+        DEBUG("Symbol already resolved");
+        DEBUG_LEAVE("visitDataTypeUserDefined");
+        return;
+    }
+    ast::ISymbolRefPath *target = TaskResolveRef(m_ctxt).resolve(i->getType_id());
 
     if (target) {
         DEBUG("Success");
         i->getType_id()->setTarget(target);
     } else {
         DEBUG("Failed");
+        // char tmp[1024];
+        // sprintf(tmp, "failed to find user-defined datatype");
+        // IMarkerUP marker(m_factory->mkMarker(
+        //     tmp,
+        //     MarkerSeverityE::Error,
+        //     i->getLocation()
+        // ));
+        // m_marker_l->marker(marker.get());
     }
 
     DEBUG_LEAVE("visitDataTypeUserDefined");
 }
 
+
 void TaskResolveRefs::visitTypeIdentifier(ast::ITypeIdentifier *i) {
-    DEBUG_ENTER("visitTypeIdentifier");
-    ast::ISymbolRefPath *target = TaskResolveRef(m_root, m_factory, m_marker_l).resolve(
-        m_symtab_it.get(),
-        i
-    );
+    DEBUG_ENTER("visitTypeIdentifier %s", i->getElems().at(0)->getId()->getId().c_str());
+    ast::ISymbolRefPath *target = TaskResolveRef(m_ctxt).resolve(i);
     i->setTarget(target);
     DEBUG_LEAVE("visitTypeIdentifier");
 }
@@ -344,13 +651,13 @@ void TaskResolveRefs::visitStruct(ast::IStruct *i) {
 }
 
 ast::IScopeChild *TaskResolveRefs::resolvePath(ast::ISymbolRefPath *path) {
-    ast::ISymbolScope *scope = m_root;
-    ast::IScopeChild *ret = m_root;
+    ast::ISymbolScope *scope = m_ctxt->root();
+    ast::IScopeChild *ret = m_ctxt->root();
 
     for (std::vector<ast::SymbolRefPathElem>::const_iterator
         it=path->getPath().begin();
         it!=path->getPath().end(); it++) {
-        ret = scope->getChildren().at(it->idx);
+        ret = scope->getChildren().at(it->idx).get();
 
         if (it+1 != path->getPath().end()) {
             scope = dynamic_cast<ast::ISymbolScope *>(ret);

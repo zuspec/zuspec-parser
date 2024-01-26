@@ -27,23 +27,16 @@ namespace parser {
 
 
 
-TaskResolveImports::TaskResolveImports(
-    ast::ISymbolScope       *root,
-    IFactory                *factory,
-    IMarkerListener         *marker_l) : 
-        m_root(root), m_factory(factory), m_marker_l(marker_l) {
-    DEBUG_INIT("TaskResolveImports", factory->getDebugMgr());
+TaskResolveImports::TaskResolveImports(ResolveContext *ctxt) : TaskResolveBase(ctxt) {
+    DEBUG_INIT("TaskResolveImports", ctxt->getDebugMgr());
 }
 
 TaskResolveImports::~TaskResolveImports() {
 
 }
 
-void TaskResolveImports::resolve(
-    const ISymbolTableIterator      *scope,
-    ast::ISymbolScope               *sym_scope) {
+void TaskResolveImports::resolve(ast::ISymbolScope *sym_scope) {
     DEBUG_ENTER("resolve");
-    m_scope_it = ISymbolTableIteratorUP(scope->clone());
     if (sym_scope->getImports()) {
         for (std::vector<ast::IPackageImportStmt *>::const_iterator
             it=sym_scope->getImports()->getImports().begin();
@@ -58,9 +51,7 @@ void TaskResolveImports::visitPackageImportStmt(ast::IPackageImportStmt *i) {
     DEBUG_ENTER("visitPackageImportStmt %s", i->getPath()->getElems().at(0)->getId()->getId().c_str());
     if (!i->getPath()->getTarget()) {
         DEBUG_ENTER("  Resolve path");
-        ast::ISymbolRefPath *path = TaskResolveRef(m_root, m_factory, m_marker_l, false).resolve(
-            m_scope_it.get(),
-            i->getPath());
+        ast::ISymbolRefPath *path = TaskResolveRef(m_ctxt, false).resolve(i->getPath());
         i->getPath()->setTarget(path);
         DEBUG_LEAVE("  Resolve path");
     } else {

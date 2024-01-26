@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "MarkerCollector.h"
 #include "TestDocString.h"
 
 
@@ -46,7 +47,37 @@ TEST_F(TestDocString, smoke) {
         }
     )";
 
-    runTest(text, "smoke.pss");
+
+    MarkerCollector marker_c;
+    ast::IGlobalScopeUP root(parse(&marker_c, text, "smoke.pss", true));
+    ASSERT_TRUE(root.get());
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+    ASSERT_EQ(root->getChildren().size(), 1);
+    ast::IStruct *s = dynamic_cast<ast::IStruct *>(root->getChildren().at(0).get());
+    ASSERT_TRUE(s);
+    ASSERT_NE(s->getDocstring(), "");
+}
+
+TEST_F(TestDocString, smoke2) {
+    const char *text = R"(
+        //
+        // This is a docstring
+        // 
+        //
+        struct myStruct {
+
+        }
+    )";
+
+
+    MarkerCollector marker_c;
+    ast::IGlobalScopeUP root(parse(&marker_c, text, "smoke.pss", true));
+    ASSERT_TRUE(root.get());
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+    ASSERT_EQ(root->getChildren().size(), 1);
+    ast::IStruct *s = dynamic_cast<ast::IStruct *>(root->getChildren().at(0).get());
+    ASSERT_TRUE(s);
+    ASSERT_NE(s->getDocstring(), "");
 }
 
 }

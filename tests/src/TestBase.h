@@ -23,6 +23,7 @@
 #include "zsp/parser/IFactory.h"
 #include "zsp/ast/IFactory.h"
 #include "gtest/gtest.h"
+#include "MarkerCollector.h"
 
 namespace zsp {
 namespace parser {
@@ -48,10 +49,11 @@ protected:
 	ast::IGlobalScope *parse(
 		parser::IMarkerListener		        *marker_l,
 		const std::string 			        &content,
-		const std::string 			        &name);
+		const std::string 			        &name,
+        bool                                process_doc_comments=false);
 
 	ast::ISymbolScope *link(
-		parser::IMarkerListener				        *marker_l,
+		parser::IMarkerListener				    *marker_l,
 		const std::vector<ast::IGlobalScopeUP>	&files
 	);
 
@@ -65,11 +67,25 @@ protected:
         ast::ISymbolScope *>;
 
     void parseLink(
+        MarkerCollector                     &marker_c,
+        const std::string                   &content,
+        const std::string                   &name,
+        std::vector<ast::IGlobalScopeUP>    &files,
+        ast::ISymbolScopeUP                 &root,
+        bool                                load_stdlib=true);
+
+    void parseLink(
         parser::IMarkerListener        *marker_l,
         const std::string              &content,
         const std::string              &name,
         ast::IGlobalScopeUP            &global,
         ast::ISymbolScopeUP            &root);
+
+    std::pair<ast::IGlobalScope *, ast::ISymbolScope *> parseLink(
+        parser::IMarkerListener        *marker_l,
+        const std::string              &content,
+        const std::string              &name,
+        bool                           process_doc_comments=false);
 
     ast::IScopeChild *findItem(
         ast::ISymbolScope                   *root,

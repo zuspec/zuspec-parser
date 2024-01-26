@@ -44,11 +44,17 @@ public:
 
     virtual void visitActivityDecl(ast::IActivityDecl *i) override;
 
+    virtual void visitConstraintBlock(ast::IConstraintBlock *i) override;
+    
+    virtual void visitConstraintStmt(ast::IConstraintStmt *i) override;
+
     virtual void visitPackageScope(ast::IPackageScope *i) override;
 
     virtual void visitEnumDecl(ast::IEnumDecl *i) override;
 
     virtual void visitEnumItem(ast::IEnumItem *i) override;
+
+    virtual void visitExecBlock(ast::IExecBlock *i) override;
 
     virtual void visitExecStmt(ast::IExecStmt *i) override;
 
@@ -70,7 +76,20 @@ public:
 
     virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
 
+    virtual void visitPyImportStmt(ast::IPyImportStmt *i) override;
+
+    virtual void visitPyImportFromStmt(ast::IPyImportFromStmt *i) override;
+
+
     virtual void visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) override;
+
+    virtual void visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *i) override;
+
+//    virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override;
+
+//    virtual void visitProceduralStmtWhile(ast::IProceduralStmtWhile *i) override;
+
+//    virtual void visitProceduralStmtIfClause(ast::IProceduralStmtIfClause *i) override;
 
     virtual void visitScope(ast::IScope *i) override;
 
@@ -88,11 +107,35 @@ protected:
 
     ast::IScopeChild *findSymbol(const std::string &name);
 
+    void pushSymbolScope(ast::ISymbolChild *s);
+
+    ast::ISymbolScope *symbolScope();
+
+    void popSymbolScope();
+
+    void addChild(
+        ast::IScopeChild    *c,
+        bool                owned);
+
+    void addChild(
+        ast::ISymbolScope   *c,
+        bool                owned);
+
+    bool addChild(
+        ast::IScopeChild    *c, 
+        const std::string   &name,
+        bool                owned=true);
+
+    bool addChild(
+        ast::ISymbolChild   *c, 
+        const std::string   &name,
+        bool                owned=true);
+
 private:
     static dmgr::IDebug                 *m_dbg;
     ast::IFactory                       *m_factory;
     IMarkerListener                     *m_marker_l;
-    std::vector<ast::ISymbolScope *>     m_scope_s;
+    std::vector<ast::ISymbolChild *>    m_scope_s;
 
 };
 

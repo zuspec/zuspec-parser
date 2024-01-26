@@ -47,10 +47,30 @@ public:
         m_marker_l = l;
     }
 
+    virtual void setCollectDocStrings(bool c) {
+        m_collectDocStrings = c;
+    }
+
+    virtual bool getCollectDocStrings() {
+        return m_collectDocStrings;
+    }
+
+    virtual void setEnableProfile(bool e) {
+        m_enableProfile = e;
+    }
+
+    virtual bool getEnableProfile() {
+        return m_enableProfile;
+    }
+
 	// B.1 package declaration
 	virtual antlrcpp::Any visitPackage_declaration(PSSParser::Package_declarationContext *ctx) override;
 
 	virtual antlrcpp::Any visitImport_stmt(PSSParser::Import_stmtContext *ctx) override;
+
+    virtual antlrcpp::Any visitPyimport_single_module(PSSParser::Pyimport_single_moduleContext *ctx) override;
+
+    virtual antlrcpp::Any visitPyimport_from_module(PSSParser::Pyimport_from_moduleContext *ctx) override;
 
 	virtual antlrcpp::Any visitExtend_stmt(PSSParser::Extend_stmtContext *ctx) override;
 
@@ -88,6 +108,8 @@ public:
     virtual antlrcpp::Any visitFunction_decl(PSSParser::Function_declContext *ctx) override;
 
     virtual antlrcpp::Any visitFunction_prototype(PSSParser::Function_prototypeContext *ctx) override;
+
+    virtual antlrcpp::Any visitImport_function(PSSParser::Import_functionContext *ctx) override;
 
 	// B.7 Procedural Statements
     virtual antlrcpp::Any visitProcedural_sequence_block_stmt(PSSParser::Procedural_sequence_block_stmtContext *ctx) override;
@@ -149,6 +171,8 @@ public:
 	virtual antlrcpp::Any visitEnum_type(PSSParser::Enum_typeContext *ctx) override;
 	
     virtual antlrcpp::Any visitEnum_declaration(PSSParser::Enum_declarationContext *ctx) override;
+
+    virtual antlrcpp::Any visitPyobj_type(PSSParser::Pyobj_typeContext *ctx) override;
 
 	virtual antlrcpp::Any visitReference_type(PSSParser::Reference_typeContext *ctx) override;
 
@@ -260,7 +284,7 @@ private:
 
 	ast::IExprDomainOpenRangeList *mkDomainOpenRangeList(PSSParser::Domain_open_range_listContext *ctx);
 
-    ast::IExecStmt *mkExecStmt(PSSParser::Procedural_stmtContext *ctx);
+    ast::IScopeChild *mkExecStmt(PSSParser::Procedural_stmtContext *ctx);
 
     void addExecStmt(PSSParser::Procedural_stmtContext *ctx);
 
@@ -270,7 +294,15 @@ private:
 
 	ast::IExprId *mkId(PSSParser::IdentifierContext *ctx);
 
+    std::string toString(PSSParser::IdentifierContext *ctx);
+
 	ast::IExprHierarchicalId *mkHierarchicalId(PSSParser::Hierarchical_idContext *ctx);
+
+	ast::IExprHierarchicalId *mkHierarchicalId(
+        PSSParser::Static_ref_pathContext *root_ctx,
+        PSSParser::Hierarchical_idContext *leaf_ctx);
+
+	ast::IExprHierarchicalId *mkHierarchicalId(PSSParser::Member_path_elemContext *ctx);
 
     ast::IExprMemberPathElem *mkMemberPathElem(PSSParser::Member_path_elemContext *ctx);
 
@@ -284,6 +316,9 @@ private:
 	ast::ITypeIdentifierElem *mkTypeIdElem(
 		PSSParser::Type_identifier_elemContext		*ctx);
 
+	ast::ITypeIdentifierElem *mkTypeIdElem(
+		PSSParser::IdentifierContext		    *ctx);
+
 	ast::IExpr *mkExpr(
 		PSSParser::ExpressionContext 			*ctx);
 
@@ -293,7 +328,7 @@ private:
     ast::IExprRefPath *mkExprRefPath(
         PSSParser::Ref_pathContext              *ctx);
 
-    ast::IExprStaticRefPath *mkExprStaticRefPath(
+    ast::IExprRefPathStatic *mkExprRefPathStatic(
         PSSParser::Static_ref_pathContext       *ctx);
 
     ast::ITemplateParamDeclList *mkTypeParamDecl(
@@ -302,10 +337,16 @@ private:
     ast::ITemplateParamValueList *mkTemplateParamValueList(
         PSSParser::Template_param_value_listContext *ctx);
 
+    void setLoc(ast::IScopeChild *c, Token *start);
+
+    void setLoc(ast::IExprId *c, Token *start);
+
 private:
     static dmgr::IDebug                         *m_dbg;
     int32_t                                     m_file_id;
 	bool										m_collectDocStrings;
+    bool                                        m_enableProfile;
+    int32_t                                     m_fileid;
     IMarkerListener								*m_marker_l;
 	ast::IFactory								*m_factory;
 	ast::IExpr									*m_expr;
@@ -314,7 +355,8 @@ private:
 	ast::IScopeChild							*m_activity_stmt;
 	ast::IExprId								*m_labeled_activity_id;
 	ast::IConstraintStmt						*m_constraint;
-    ast::IExecStmt                              *m_exec_stmt;
+    ast::IScopeChild                            *m_exec_stmt;
+    int32_t                                     m_exec_stmt_cnt;
     std::vector<ast::IExecScope *>              m_exec_scope_s;
 	std::vector<ast::IConstraintScope *>		m_constraint_s;
     std::unique_ptr<CommonTokenStream>			m_tokens;

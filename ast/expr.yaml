@@ -96,9 +96,18 @@ classes:
             - params: "UP<MethodParameterList>"
             - subscript: "UP<Expr>"
             - target:
+                type: int32_t
+                init: -1
                 is_ctor: false
-                type: UP<SymbolRefPath>
-                visit: false
+            - super:
+                type: int32_t
+                init: -1
+                is_ctor: false
+#                visit: false
+#            - target:
+#                is_ctor: false
+#                type: UP<SymbolRefPath>
+#                visit: false
     - ExprNull:
         - super: Expr
 
@@ -120,6 +129,11 @@ classes:
         - super: Expr
         - data:
           - target:
+#              doc: |
+#                `target` points to the root, or first element, of this
+#                path. The balance of the reference expression may 
+#                contain further relative references relative to this
+#                initial base
               is_ctor: false
               type: UP<SymbolRefPath>
               init: 0
@@ -163,7 +177,7 @@ classes:
     - ExprRefPathStaticRooted:
         super: ExprRefPath
         data: 
-          - root: "UP<ExprStaticRefPath>"
+          - root: "UP<ExprRefPathStatic>"
           - leaf: "UP<ExprHierarchicalId>"
           - slice: 
               type: UP<ExprBitSlice>
@@ -178,6 +192,7 @@ classes:
             - image: string
             - width: int32_t
             - value: int64_t
+    # TODO: Remove this once it is safe to do so
     - ExprStaticRefPath:
         super: Expr
         data: 

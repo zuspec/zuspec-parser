@@ -69,6 +69,7 @@ void TestBase::runTest(
 
 	MarkerCollector marker_c;
 	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(&marker_c));
+//    ast_builder->setEnableProfile(true);
 
     if (load_stdlib) {
         m_factory->loadStandardLibrary(ast_builder.get(), global.get());
@@ -103,12 +104,14 @@ void TestBase::runTest(
 ast::IGlobalScope *TestBase::parse(
 		IMarkerListener		        *marker_l,
 		const std::string 			&content,
-		const std::string 			&name) {
+		const std::string 			&name,
+        bool                        process_doc_comments) {
 	std::stringstream s(content);
 
 	ast::IGlobalScopeUP global(m_ast_factory->mkGlobalScope(0));
 
 	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(marker_l));
+    ast_builder->setCollectDocStrings(process_doc_comments);
 
 	ast_builder->build(global.get(), &s);
 
@@ -153,8 +156,80 @@ void TestBase::parseLink(
         const std::string           &name,
         ast::IGlobalScopeUP         &global,
         ast::ISymbolScopeUP         &root) {
+    std::vector<ast::IGlobalScope *> files;
     global = ast::IGlobalScopeUP(parse(marker_l, content, name));
-    root = ast::ISymbolScopeUP(link(marker_l, {global.get()}));
+    files.push_back(global.get());
+    root = ast::ISymbolScopeUP(link(marker_l, files));
+}
+
+std::pair<ast::IGlobalScope *, ast::ISymbolScope *> TestBase::parseLink(
+        parser::IMarkerListener        *marker_l,
+        const std::string              &content,
+        const std::string              &name,
+        bool                           process_doc_comments) {
+    ast::IGlobalScope *global = parse(marker_l, content, name, process_doc_comments); 
+    ast::ISymbolScope *root = 0;
+    if (!marker_l->hasSeverity(MarkerSeverityE::Error)) {
+        std::vector<ast::IGlobalScope *> files;
+        files.push_back(global);
+        root = link(marker_l, files);
+    }
+
+    return {global, root};
+}
+
+void TestBase::parseLink(
+        MarkerCollector                     &marker_c,
+        const std::string                   &content,
+        const std::string                   &name,
+        std::vector<ast::IGlobalScopeUP>    &files,
+        ast::ISymbolScopeUP                 &root,
+        bool                                load_stdlib) {
+    std::vector<ast::IGlobalScope *> files_p;
+	std::stringstream s(content);
+	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(&marker_c));
+
+    if (load_stdlib) {
+	    ast::IGlobalScope *stdlib = m_ast_factory->mkGlobalScope(files.size());
+        m_factory->loadStandardLibrary(ast_builder.get(), stdlib);
+        files.push_back(ast::IGlobalScopeUP(stdlib));
+        files_p.push_back(stdlib);
+    }
+
+    ast::IGlobalScope *file = m_ast_factory->mkGlobalScope(files.size());
+	ast_builder->build(file, &s);
+
+    files.push_back(ast::IGlobalScopeUP(file));
+    files_p.push_back(file);
+
+	for (std::vector<IMarkerUP>::const_iterator
+			it=marker_c.markers().begin();
+			it!=marker_c.markers().end(); it++) {
+		fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
+	}
+
+	ASSERT_FALSE(marker_c.hasSeverity(parser::MarkerSeverityE::Error));
+	if (marker_c.hasSeverity(parser::MarkerSeverityE::Error)) {
+        return;
+    }
+
+	ILinkerUP linker(m_factory->mkAstLinker());
+
+	ast::ISymbolScopeUP root(linker->link(
+		&marker_c,
+        files_p
+	));
+
+	for (std::vector<IMarkerUP>::const_iterator
+			it=marker_c.markers().begin();
+			it!=marker_c.markers().end(); it++) {
+		fprintf(stdout, "Link Error: %s\n", (*it)->msg().c_str());
+	}
+
+	ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+	if (marker_c.hasSeverity(parser::MarkerSeverityE::Error)) {
+        return;
+    }
 }
 
 ast::IScopeChild *TestBase::findItem(
@@ -171,10 +246,10 @@ ast::IScopeChild *TestBase::findItem(
         if (s_it != scope->getSymtab().end()) {
             if (it+1 != path.end()) {
                 scope = dynamic_cast<ast::ISymbolScope *>(
-                    scope->getChildren().at(s_it->second));
+                    scope->getChildren().at(s_it->second).get());
             } else {
                 ret = dynamic_cast<ast::ISymbolScope *>(
-                    scope->getChildren().at(s_it->second));
+                    scope->getChildren().at(s_it->second).get());
             }
         } else {
             break;

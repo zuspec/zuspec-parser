@@ -38,6 +38,14 @@ public:
 
     virtual void setMarkerListener(IMarkerListener *l) override;
 
+    virtual void setCollectDocStrings(bool c) override;
+
+    virtual bool getCollectDocStrings() override;
+
+    virtual void setEnableProfile(bool e) override;
+
+    virtual bool getEnableProfile() override;
+
 private:
 	AstBuilderIntUP				m_builder_int;
 };

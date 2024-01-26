@@ -6,6 +6,7 @@
 enums:
 - SymbolRefPathElemKind:
   - ElemKind_ChildIdx
+  - ElemKind_ArgIdx
   - ElemKind_ParamIdx
   - ElemKind_Super
   - ElemKind_TypeSpec
@@ -16,53 +17,82 @@ structs:
     - idx: int32_t
 
 classes:
-- SymbolScope:
+- SymbolChild:
     super: ScopeChild
-    data:
+    data: 
     - id:
       - type: int32_t
-      - is_ctor: true
-    - name:
-      - type: string
-      - is_ctor: true
+      - is_ctor: false
+      - init: -1
     - upper:
       - type: P<SymbolScope>
       - is_ctor: false
       - init: 0
       - visit: false
+
+- SymbolChildrenScope:
+    super: SymbolChild
+    data:
+    - name:
+      - type: string
+      - is_ctor: true
     - children: 
-      - type: list<P<ScopeChild>>
-      - is_ctor: false
-    - symtab: 
-      - type: map<string,int32_t>
+      - type: list<UP<ScopeChild>>
       - is_ctor: false
     - target: 
-      - type: P<Scope>
+      - type: P<ScopeChild>
       - is_ctor: false
       - init: 0
       - visit: true
-    - owned: 
-      - type: list<UP<ScopeChild>>
+
+- SymbolScope:
+    super: SymbolChildrenScope
+    data:
+    - symtab: 
+      - type: map<string,int32_t>
       - is_ctor: false
-      - visit: false
-#    - failed:
-#      - type: set<string>
-#      - is_ctor: false
     - imports: 
       - type: UP<SymbolImportSpec>
       - is_ctor: false
+    - synthetic:
+      - type: bool
+      - is_ctor: false
+      - init: false
+    - opaque:
+      - type: bool
+      - is_ctor: false
+      - init: false
 
 - SymbolEnumScope:
     super: SymbolScope
     data: {}
 
-- SymbolExecScope:
-    super: SymbolScope
-    data: {}
+# - SymbolExecScope:
+#     super: SymbolScope
+#     data: 
+#     - locals: 
+#       - type: list<UP<ScopeChild>>
+#       - is_ctor: false
+
+# - SymbolStmtScope:
+#     super: SymbolScope
+#     data: {}
 
 - SymbolExtendScope:
     super: SymbolScope
     data: {}
+
+# - SymbolCondConnector:
+#     super: SymbolChild
+#     data:
+#     - cond: P<Expr>
+#     - stmt: P<ScopeChild>
+
+# - SymbolStmtConnector:
+#     super: SymbolChild
+#     data:
+#     - target: P<ScopeChild>
+#     - body: UP<ScopeChild>
 
 - SymbolImportSpec:
     data:
@@ -95,12 +125,14 @@ classes:
       - definition:
         - type: P<FunctionDefinition>
         - is_ctor: false
+        - init: 0
       - plist:
         - type: UP<SymbolScope>
         - is_ctor: false
       - body:
-        - type: UP<SymbolScope>
+        - type: bool
         - is_ctor: false
+        - init: false
 
 - SymbolRefPath: 
     data:
@@ -108,6 +140,10 @@ classes:
       - type: list<SymbolRefPathElem>
       - is_ctor: false
       - visit: false
+    - pyref_idx:
+      - type: int32_t
+      - is_ctor: false
+      - init: -1
 
 #- AggregateTypeScope:
 #    super: ScopeChild

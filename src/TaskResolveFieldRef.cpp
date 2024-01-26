@@ -26,10 +26,8 @@ namespace zsp {
 namespace parser {
 
 
-TaskResolveFieldRef::TaskResolveFieldRef(
-    dmgr::IDebugMgr             *dmgr,
-    IMarkerListener             *marker_l) : m_marker_l(marker_l) {
-    DEBUG_INIT("TaskResolveFieldRef", dmgr);
+TaskResolveFieldRef::TaskResolveFieldRef(ResolveContext *ctxt) : TaskResolveBase(ctxt) {
+    DEBUG_INIT("TaskResolveFieldRef", ctxt->getDebugMgr());
     m_id = 0;
     m_path = 0;
     m_ret = 0;
@@ -62,9 +60,9 @@ void TaskResolveFieldRef::visitSymbolScope(ast::ISymbolScope *i) {
 
 }
 
-void TaskResolveFieldRef::visitSymbolExecScope(ast::ISymbolExecScope *i) { 
-
-}
+//void TaskResolveFieldRef::visitSymbolExecScope(ast::ISymbolExecScope *i) { 
+//
+//}
 
 void TaskResolveFieldRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) { 
 

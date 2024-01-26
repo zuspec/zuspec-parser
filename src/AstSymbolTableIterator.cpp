@@ -81,12 +81,19 @@ ast::ISymbolRefPath *AstSymbolTableIterator::findLocalSymbolPath(const std::stri
 }
 
 ast::ISymbolRefPath *AstSymbolTableIterator::getScopeSymbolPath(int32_t off) const {
+    DEBUG_ENTER("getScopeSymbolPath");
     ast::ISymbolRefPath *ret = m_factory->mkSymbolRefPath();
 
     for (int32_t i=0; i<(m_path.size()-off); i++) {
-        ret->getPath().push_back(m_path.at(i));
+        if (m_path.at(i).idx >= 0) {
+            ret->getPath().push_back(m_path.at(i));
+            DEBUG("Add child-idx %d (idx=%d)", m_path.at(i).idx, i);
+        } else {
+            DEBUG("NOTE: skip index %d with child-idx %d", i, m_path.at(i).idx);
+        }
     }
 
+    DEBUG_LEAVE("getScopeSymbolPath");
     return ret;
 }
 
@@ -99,7 +106,7 @@ ast::ISymbolScope *AstSymbolTableIterator::getScope(int32_t off) const {
 }
 
 ast::IScopeChild *AstSymbolTableIterator::getScopeChild(int32_t idx) const {
-    return m_scope_s.back()->getChildren().at(idx);
+    return m_scope_s.back()->getChildren().at(idx).get();
 }
 
 ast::IScopeChild *AstSymbolTableIterator::resolveAbsPath(const ast::ISymbolRefPath *path) {
@@ -109,7 +116,7 @@ ast::IScopeChild *AstSymbolTableIterator::resolveAbsPath(const ast::ISymbolRefPa
     for (uint32_t i=0; i<path->getPath().size(); i++) {
         DEBUG("Scope: %s @ %d", scope->getName().c_str(), path->getPath().at(i));
         const ast::SymbolRefPathElem &elem = path->getPath().at(i);
-        ast::IScopeChild *next = scope->getChildren().at(elem.idx);
+        ast::IScopeChild *next = scope->getChildren().at(elem.idx).get();
 
         if (i+1 < path->getPath().size()) {
             if (!(scope=dynamic_cast<ast::ISymbolScope *>(next))) {
@@ -132,7 +139,7 @@ int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
 
     if (it != m_scope_s.back()->getSymtab().end()) {
         ast::ISymbolScope *scope = dynamic_cast<ast::ISymbolScope *>(
-            m_scope_s.back()->getChildren().at(it->second));
+            m_scope_s.back()->getChildren().at(it->second).get());
         if (scope) {
             m_scope_s.push_back(scope);
             m_path.push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second});

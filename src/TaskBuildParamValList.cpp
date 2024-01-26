@@ -28,12 +28,8 @@ namespace zsp {
 namespace parser {
 
 
-TaskBuildParamValList::TaskBuildParamValList(
-    ast::ISymbolScope           *root,
-    IFactory                    *factory,
-    IMarkerListener             *marker_l) : 
-        m_root(root), m_factory(factory), m_marker_l(marker_l) {
-    DEBUG_INIT("TaskBuildParamValList", factory->getDebugMgr());
+TaskBuildParamValList::TaskBuildParamValList(ResolveContext *ctxt) : m_ctxt(ctxt) {
+    DEBUG_INIT("TaskBuildParamValList", ctxt->getDebugMgr());
 
 }
 
@@ -47,7 +43,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
     DEBUG_ENTER("build plist=%d n_pvals=%d", 
         plist->getChildren().size(),
         pvals->getValues().size());
-    TaskCopyAst copier(m_factory->getAstFactory());
+    TaskCopyAst copier(m_ctxt->getFactory());
     m_ret = 0;
 
     if (pvals->getValues().size() > plist->getChildren().size()) {
@@ -57,7 +53,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
         return 0;
     }
 
-    m_ret = m_factory->getAstFactory()->mkTemplateParamDeclList();
+    m_ret = m_ctxt->getFactory()->getAstFactory()->mkTemplateParamDeclList();
     
     // First, pick up explicitly-supplied parameter values
 //    m_ptype_mk_pval = false;
@@ -75,7 +71,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
         if (m_pval_expr) {
             if (m_ptype_value) {
                 DEBUG("Value parameter");
-                ast::ITemplateValueParamDecl *p = m_factory->getAstFactory()->mkTemplateValueParamDecl(
+                ast::ITemplateValueParamDecl *p = m_ctxt->getFactory()->getAstFactory()->mkTemplateValueParamDecl(
                     copier.copyT<ast::IExprId>(m_ptype_value->getName()),
                     copier.copyT<ast::IDataType>(m_ptype_value->getType()),
                     copier.copyT<ast::IExpr>(m_pval_expr->getValue()));
@@ -85,13 +81,13 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
                 DEBUG("Generic type parameter");
                 ast::IDataType *dt = 0;
 
-                dt = TaskExpr2DataType(m_factory, m_marker_l).expr2dt(
-                    m_pval_expr->getValue());
+                dt = TaskExpr2DataType(m_ctxt).expr2dt(m_pval_expr->getValue());
 
-                ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
-                    copier.copyT<ast::IExprId>(m_ptype_generic_type->getName()),
-                    dt
-                );
+                ast::ITemplateGenericTypeParamDecl *p = 
+                    m_ctxt->getFactory()->getAstFactory()->mkTemplateGenericTypeParamDecl(
+                        copier.copyT<ast::IExprId>(m_ptype_generic_type->getName()),
+                        dt
+                    );
                 m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
             } else if (m_ptype_category_type) {
                 DEBUG("Category type parameter");
@@ -118,8 +114,8 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
                 fprintf(stdout, "TODO: no ptype_decl captured\n");
             }
 
-            DEBUG("Add parameter %s", name->getId().c_str());
-            ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
+            DEBUG("Add parameter %s", (name)?name->getId().c_str():"<unknown>");
+            ast::ITemplateGenericTypeParamDecl *p = m_ctxt->getFactory()->getAstFactory()->mkTemplateGenericTypeParamDecl(
                 copier.copyT<ast::IExprId>(name),
                 copier.copy(m_pval_type->getValue())
             );
@@ -136,36 +132,58 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
 
     // Now, we deal with parameters without explicitly-specified values
     for (; plist_idx<plist->getChildren().size(); plist_idx++) {
-        DEBUG("TODO: apply default to %p", 
-            plist->getChildren().at(plist_idx));
+        DEBUG("Apply default to parameter (%p)", plist->getChildren().at(plist_idx).get());
         m_ptype_value = 0;
         m_ptype_generic_type = 0;
         m_ptype_category_type = 0;
 
+        // Get the default value
         plist->getChildren().at(plist_idx)->accept(m_this);
 
         ast::IExprId *name = 0;
         ast::IDataType *type = 0;
+        ast::IExpr *value = 0;
 
         if (m_ptype_value) {
-            DEBUG("TODO: value");
+            DEBUG("Note: value parameter");
+            name = m_ptype_value->getName();
+            type = m_ptype_value->getType();
+            value = m_ptype_value->getDflt();
         } else if (m_ptype_category_type) {
-            DEBUG("TODO: category type");
+            DEBUG("Note: category type parameter");
             name = m_ptype_category_type->getName();
             type = m_ptype_category_type->getDflt();
         } else if (m_ptype_generic_type) {
-            DEBUG("TODO: generic type");
+            DEBUG("Note: generic type parameter");
             name = m_ptype_generic_type->getName();
             type = m_ptype_generic_type->getDflt();
         } else {
-            DEBUG("Unknown kind");
+            DEBUG("Error: Unknown parameter kind");
         }
 
-        DEBUG("Add parameter %s", name->getId().c_str());
-        ast::ITemplateGenericTypeParamDecl *p = m_factory->getAstFactory()->mkTemplateGenericTypeParamDecl(
-            copier.copyT<ast::IExprId>(name),
-            copier.copy(type)
-        );
+        DEBUG("Add parameter %s", (name)?name->getId().c_str():"<unset>");
+        ast::ITemplateParamDecl *p = 0;
+        if (value) {
+            p = m_ctxt->getFactory()->getAstFactory()->mkTemplateValueParamDecl(
+                copier.copyT<ast::IExprId>(name),
+                copier.copy(type),
+                value?copier.copy(value):0
+            );
+        } else if (type) {
+            p = m_ctxt->getFactory()->getAstFactory()->mkTemplateGenericTypeParamDecl(
+                copier.copyT<ast::IExprId>(name),
+                type?copier.copy(type):0
+            );
+        } else {
+            m_ctxt->addErrorMarker(
+                plist->getChildren().at(plist_idx)->getLocation(),
+                "No default provided for template parameter %s",
+                (name)?name->getId().c_str():"<unknown>"
+            );
+            delete m_ret;
+            m_ret = 0;
+            break;
+        }
         m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
     }
 
@@ -173,8 +191,19 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
     return m_ret;
 }
 
+void TaskBuildParamValList::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
+    DEBUG_ENTER("visitDataTypeUserDefined");
+
+    DEBUG_LEAVE("visitDataTypeUserDefined");
+}
+
 void TaskBuildParamValList::visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) {
     DEBUG_ENTER("visitTemplateParamTypeValue");
+    if (i->getValue()) {
+        DEBUG_ENTER("Visit type-value");
+        i->getValue()->accept(m_this);
+        DEBUG_LEAVE("Visit type-value");
+    }
     m_pval_type = i;
     DEBUG_LEAVE("visitTemplateParamTypeValue");
 }

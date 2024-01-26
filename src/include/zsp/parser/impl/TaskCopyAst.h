@@ -19,20 +19,30 @@
  *     Author: 
  */
 #pragma once
+#include "dmgr/IDebugMgr.h"
+#include "dmgr/impl/DebugMacros.h"
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/ast/IExprRefPathStatic.h"
 #include "zsp/ast/IFactory.h"
+#include "zsp/ast/IFunctionPrototype.h"
+#include "zsp/ast/ITemplateParamValueList.h"
+#include "zsp/ast/ITemplateParamValue.h"
+#include "zsp/parser/IFactory.h"
 
 namespace zsp {
 namespace parser {
 
 class TaskCopyAst : public ast::VisitorBase {
 public:
-    TaskCopyAst(ast::IFactory *factory) : m_factory(factory) { }
+    TaskCopyAst(IFactory    *factory) : 
+        m_factory(factory->getAstFactory()), m_dbg(0) {
+        DEBUG_INIT("zsp::parser::TaskCopyAst", factory->getDebugMgr());
+    }
 
     virtual ~TaskCopyAst() { }
 
     ast::IConstraintStmt *copy(ast::IConstraintStmt *i) {
+        DEBUG_ENTER("copy(IConstraintStmt)");
         m_constraint = 0;
         i->accept(m_this);
 
@@ -40,7 +50,20 @@ public:
             fprintf(stdout, "Error: copy(constraint) failed\n");
             fflush(stdout);
         }
+        DEBUG_LEAVE("copy(IConstraintStmt)");
         return m_constraint;
+    }
+
+    ast::ITemplateParamValue *copy(ast::ITemplateParamValue *i) {
+        DEBUG_ENTER("copy(ITemplateParamValue)");
+        m_param_val = 0;
+        i->accept(m_this);
+
+        if (!m_param_val) {
+            ERROR("copy(paramvalue) failed");
+        }
+        DEBUG_LEAVE("copy(ITemplateParamValue)");
+        return m_param_val;
     }
 
     template <class T> T *copyT(ast::IConstraintStmt *i) {
@@ -53,12 +76,14 @@ public:
     }
 
     ast::IScopeChild *copy(ast::IScopeChild *i) {
+        DEBUG_ENTER("copy(IScopeChild)");
         m_sc = 0;
         i->accept(m_this);
         if (!m_sc) {
             fprintf(stdout, "Error: copy(ScopeChild) failed\n");
             fflush(stdout);
         }
+        DEBUG_LEAVE("copy(IScopeChild)");
         return m_sc;
     };
 
@@ -72,12 +97,14 @@ public:
     }
 
     ast::IExpr *copy(ast::IExpr *i) {
+        DEBUG_ENTER("copy(IExpr)");
         m_expr = 0;
         i->accept(m_this);
         if (!m_expr) {
             fprintf(stdout, "Error: copy(Expr) failed\n");
             fflush(stdout);
         }
+        DEBUG_LEAVE("copy(IExpr)");
         return m_expr;
     };
 
@@ -91,12 +118,14 @@ public:
     }
 
     ast::IDataType *copy(ast::IDataType *i) {
+        DEBUG_ENTER("copy(IDataType)");
         m_dt = 0;
         i->accept(m_this);
         if (!m_dt) {
             fprintf(stdout, "Error: copy(DataType) failed\n");
             fflush(stdout);
         }
+        DEBUG_LEAVE("copy(IDataType)");
         return m_dt;
     }
 
@@ -142,15 +171,21 @@ public:
     virtual void visitExecTargetTemplateParam(ast::IExecTargetTemplateParam *i) { }
     
     virtual void visitConstraintStmt(ast::IConstraintStmt *i) { }
-    
-    virtual void visitExprRefPathElem(ast::IExprRefPathElem *i) { }
+
+    virtual void visitExprRefPathElem(ast::IExprRefPathElem *i) { 
+        DEBUG_ENTER("visitExprRefPathElem");
+        DEBUG("TODO: visitExprRefPathElem");
+        DEBUG_LEAVE("visitExprRefPathElem");
+    }
     
     virtual void visitExprStaticRefPath(ast::IExprStaticRefPath *i) {
+        DEBUG_ENTER("visitExprStaticRefPath");
         ast::IExprStaticRefPath *ic = m_factory->mkExprStaticRefPath(
             i->getIs_global(),
             copyT<ast::IExprMemberPathElem>(i->getLeaf())
         );
         m_expr = ic;
+        DEBUG_LEAVE("visitExprStaticRefPath");
     }
     
     virtual void visitExprString(ast::IExprString *i) { 
@@ -177,11 +212,24 @@ public:
             ));
         }
 
+        if (i->getTarget()) {
+            ic->setTarget(copy(i->getTarget()));
+        }
+
         m_expr = ic;
     }
     
     virtual void visitTypeIdentifierElem(ast::ITypeIdentifierElem *i) { 
         ast::ITemplateParamValueList *plist = 0;
+
+        if (i->getParams()) {
+            plist = m_factory->mkTemplateParamValueList();
+            for (std::vector<ast::ITemplateParamValueUP>::const_iterator
+                it=i->getParams()->getValues().begin();
+                it!=i->getParams()->getValues().end(); it++) {
+                plist->getValues().push_back(ast::ITemplateParamValueUP(copy(it->get())));
+            }
+        }
 
         ast::ITypeIdentifierElem *ic = m_factory->mkTypeIdentifierElem(
             copyT<ast::IExprId>(i->getId()),
@@ -197,7 +245,17 @@ public:
     
     virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) { }
     
-    virtual void visitFunctionParamDecl(ast::IFunctionParamDecl *i) { }
+    virtual void visitFunctionParamDecl(ast::IFunctionParamDecl *i) override {
+        ast::IFunctionParamDecl *ic = m_factory->mkFunctionParamDecl(
+            i->getKind(),
+            copyT<ast::IExprId>(i->getName()),
+            copy(i->getType()),
+            i->getDir(),
+            (i->getDflt())?copy(i->getDflt()):0
+        );
+        ic->setIs_varargs(i->getIs_varargs());
+        m_sc = ic;
+    }
     
     virtual void visitFunctionImport(ast::IFunctionImport *i) { }
     
@@ -215,9 +273,23 @@ public:
     
     virtual void visitTemplateParamDecl(ast::ITemplateParamDecl *i) { }
     
-    virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) { }
+    virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) { 
+        DEBUG_ENTER("visitTemplateParamTypeValue");
+        ast::ITemplateParamTypeValue *ic = m_factory->mkTemplateParamTypeValue(
+            copyT<ast::IDataType>(i->getValue())
+        );
+        m_param_val = ic;
+        DEBUG_LEAVE("visitTemplateParamTypeValue");
+    }
     
-    virtual void visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) { }
+    virtual void visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) { 
+        DEBUG_ENTER("visitTemplateParamExprValue");
+        ast::ITemplateParamExprValue *ic = m_factory->mkTemplateParamExprValue(
+            copyT<ast::IExpr>(i->getValue())
+        );
+        m_param_val = ic;
+        DEBUG_LEAVE("visitTemplateParamExprValue");
+    }
     
     virtual void visitActivityStmt(ast::IActivityStmt *i) { }
     
@@ -310,6 +382,7 @@ public:
                 plist->getParameters().push_back(ast::IExprUP(copy(it->get())));
             }
         }
+
         m_expr = m_factory->mkExprMemberPathElem(
             copyT<ast::IExprId>(i->getId()),
             plist,
@@ -327,20 +400,37 @@ public:
     
     virtual void visitExprOpenRangeValue(ast::IExprOpenRangeValue *i) { }
     
-    virtual void visitExprRefPath(ast::IExprRefPath *i) { }
+    virtual void visitExprRefPath(ast::IExprRefPath *i) { 
+        DEBUG_ENTER("visitExprRefPath");
+        DEBUG("TODO: visitExprRefPath");
+        DEBUG_LEAVE("visitExprRefPath");
+    }
     
     virtual void visitExprRefPathId(ast::IExprRefPathId *i) { 
+        DEBUG_ENTER("visitExprRefPathId");
         ast::IExprRefPathId *ic = m_factory->mkExprRefPathId(
             copyT<ast::IExprId>(i->getId()));
         if (i->getSlice()) {
             ic->setSlice(copyT<ast::IExprBitSlice>(i->getSlice()));
         }
         m_expr = ic;
+        DEBUG_LEAVE("visitExprRefPathId");
     }
     
     virtual void visitConstraintScope(ast::IConstraintScope *i) { }
     
-    virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) { }
+    virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) { 
+        DEBUG_ENTER("visitExprRefPathContext");
+        ast::IExprRefPathContext *ic = m_factory->mkExprRefPathContext(
+            copyT<ast::IExprHierarchicalId>(i->getHier_id())
+        );
+        ic->setIs_super(i->getIs_super());
+        if (i->getSlice()) {
+            ic->setSlice(copyT<ast::IExprBitSlice>(i->getSlice()));
+        }
+        m_expr = ic;
+        DEBUG_LEAVE("visitExprRefPathContext");
+    }
     
     virtual void visitConstraintStmtExpr(ast::IConstraintStmtExpr *i) { 
         m_constraint = m_factory->mkConstraintStmtExpr(
@@ -348,8 +438,21 @@ public:
         );
     }
     
-    virtual void visitExprRefPathStatic(ast::IExprRefPathStatic *i) { 
-
+    virtual void visitExprRefPathStatic(ast::IExprRefPathStatic *i) {
+        DEBUG_ENTER("visitExprRefPathStatic");
+        ast::IExprRefPathStatic *ic = m_factory->mkExprRefPathStatic(
+            i->getIs_global());
+        for (std::vector<ast::ITypeIdentifierElemUP>::const_iterator
+            it=i->getBase().begin();
+            it!=i->getBase().end(); it++) {
+            ic->getBase().push_back(ast::ITypeIdentifierElemUP(
+                copyT<ast::ITypeIdentifierElem>(it->get())));
+        }
+        if (i->getSlice()) {
+            ic->setSlice(copyT<ast::IExprBitSlice>(i->getSlice()), true);
+        }
+        m_expr = ic;
+        DEBUG_LEAVE("visitExprRefPathStatic");
     }
 
     virtual void visitExprSignedNumber(ast::IExprSignedNumber *i) { 
@@ -371,11 +474,13 @@ public:
     virtual void visitConstraintStmtField(ast::IConstraintStmtField *i) { }
     
     virtual void visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) { 
+        DEBUG_ENTER("visitExprRefPathStaticRooted");
         ast::IExprRefPathStaticRooted *ic = m_factory->mkExprRefPathStaticRooted(
-            copyT<ast::IExprStaticRefPath>(i->getRoot()),
+            copyT<ast::IExprRefPathStatic>(i->getRoot()),
             (i->getLeaf())?copyT<ast::IExprHierarchicalId>(i->getLeaf()):0
         );
         m_expr = ic;
+        DEBUG_LEAVE("visitExprRefPathStaticRooted");
     }
     
     virtual void visitConstraintStmtIf(ast::IConstraintStmtIf *i) { 
@@ -394,11 +499,36 @@ public:
     
     virtual void visitPackageScope(ast::IPackageScope *i) { }
     
-    virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) { }
+    virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override {
+        DEBUG_ENTER("visitFunctionPrototype %s", i->getName()->getId().c_str());
+        ast::IFunctionPrototype *ic = m_factory->mkFunctionPrototype(
+            copyT<ast::IExprId>(i->getName()),
+            (i->getRtype())?copy(i->getRtype()):0,
+            i->getIs_target(),
+            i->getIs_solve());
+        ic->setIs_pure(i->getIs_pure());
+        for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
+            it=i->getParameters().begin();
+            it!=i->getParameters().end(); it++) {
+            ic->getParameters().push_back(
+                ast::IFunctionParamDeclUP(copyT<ast::IFunctionParamDecl>(it->get())));
+        }
+
+        m_sc = ic;
+        DEBUG_ENTER("visitFunctionPrototype");
+    }
     
-    virtual void visitFunctionImportType(ast::IFunctionImportType *i) { }
+    virtual void visitFunctionImportType(ast::IFunctionImportType *i) { 
+        DEBUG_ENTER("visitFunctionImportType");
+        DEBUG("TODO: visitFunctionImportType");
+        DEBUG_LEAVE("visitFunctionImportType");
+    }
     
-    virtual void visitFunctionImportProto(ast::IFunctionImportProto *i) { }
+    virtual void visitFunctionImportProto(ast::IFunctionImportProto *i) { 
+        DEBUG_ENTER("visitFunctionImportProto");
+        DEBUG("TODO: visitFunctionImportProto");
+        DEBUG_LEAVE("visitFunctionImportProto");
+    }
     
     virtual void visitDataTypeArray(ast::IDataTypeArray *i) { }
     
@@ -470,13 +600,19 @@ public:
     
     virtual void visitSymbolEnumScope(ast::ISymbolEnumScope *i) { }
     
-    virtual void visitSymbolExecScope(ast::ISymbolExecScope *i) { }
-    
     virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) { }
     
-    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) { }
+    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) { 
+        DEBUG_ENTER("visitSymbolTypeScope %s", i->getName().c_str());
+        DEBUG("TODO: visitSymbolTypeScope %s", i->getName().c_str());
+        DEBUG_LEAVE("visitSymbolTypeScope %s", i->getName().c_str());
+    }
     
-    virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) { }
+    virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) { 
+        DEBUG_ENTER("visitSymbolFunctionScope %s", i->getName().c_str());
+        DEBUG("TODO: visitSymbolFunctionScope %s", i->getName().c_str());
+        DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
+    }
     
     virtual void visitTemplateGenericTypeParamDecl(ast::ITemplateGenericTypeParamDecl *i) { }
     
@@ -540,11 +676,19 @@ public:
     
     virtual void visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) { }
     
-    virtual void visitExprRefPathStaticFunc(ast::IExprRefPathStaticFunc *i) { }
+    virtual void visitExprRefPathStaticFunc(ast::IExprRefPathStaticFunc *i) { 
+        DEBUG_ENTER("visitExprRefPathStaticFunc");
+        DEBUG("TODO: visitExprRefPathStaticFunc");
+        DEBUG_LEAVE("visitExprRefPathStaticFunc");
+    }
     
     virtual void visitConstraintStmtForall(ast::IConstraintStmtForall *i) { }
     
-    virtual void visitExprRefPathSuper(ast::IExprRefPathSuper *i) { }
+    virtual void visitExprRefPathSuper(ast::IExprRefPathSuper *i) { 
+        DEBUG_ENTER("visitExprRefPathSuper");
+        DEBUG("TODO: visitExprRefPathSuper");
+        DEBUG_LEAVE("visitExprRefPathSuper");
+    }
     
     virtual void visitConstraintStmtImplication(ast::IConstraintStmtImplication *i) { }
     
@@ -578,8 +722,6 @@ public:
     
     virtual void visitExecBlock(ast::IExecBlock *i) { }
     
-    virtual void visitProceduralStmtSequenceBlock(ast::IProceduralStmtSequenceBlock *i) { }
-    
     virtual void visitStruct(ast::IStruct *i) {
         ast::IStruct *ic = m_factory->mkStruct(
             copyT<ast::IExprId>(i->getName()),
@@ -595,6 +737,10 @@ public:
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
             ic->getChildren().push_back(ast::IScopeChildUP(copy(it->get())));
+        }
+
+        if (i->getAssocData()) {
+            ic->setAssocData(i->getAssocData(), false);
         }
 
         m_sc = ic;
@@ -628,15 +774,24 @@ public:
             ic->getChildren().push_back(ast::IScopeChildUP(copy(it->get())));
         }
 
+        if (i->getAssocData()) {
+            ic->setAssocData(i->getAssocData(), false);
+        }
+
         m_sc = ic;
     }
 
+
+
+
 private:
     ast::IFactory                   *m_factory;
+    dmgr::IDebug                    *m_dbg;
 
     ast::IConstraintStmt            *m_constraint;
     ast::IDataType                  *m_dt;
     ast::IExpr                      *m_expr;
+    ast::ITemplateParamValue        *m_param_val;
     ast::IScopeChild                *m_sc;
 
 };

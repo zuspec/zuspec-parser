@@ -16,6 +16,7 @@ TOK_LCBRACE: '{';
 TOK_RCBRACE: '}';
 TOK_SEMICOLON: ';';
 TOK_IMPORT: 'import';
+TOK_PYIMPORT: 'pyimport';
 TOK_DOUBLE_COLON: '::';
 TOK_AS: 'as';
 TOK_ASTERISK: '*';
@@ -23,6 +24,7 @@ TOK_EXTEND: 'extend';
 TOK_ACTION: 'action';
 TOK_COMPONENT: 'component';
 TOK_ENUM: 'enum';
+TOK_FROM: 'from';
 TOK_CONST: 'const';
 TOK_STATIC: 'static';
 TOK_ABSTRACT: 'abstract';
@@ -42,12 +44,16 @@ TOK_CONSTRAINT: 'constraint';
 TOK_PARALLEL: 'parallel';
 TOK_SEQUENCE: 'sequence';
 TOK_EXEC: 'exec';
+TOK_PYOBJ: 'pyobj';
 TOK_STRUCT: 'struct';
 TOK_BUFFER: 'buffer';
 TOK_STREAM: 'stream';
 TOK_STATE: 'state';
 TOK_REF: 'ref';
 TOK_RESOURCE: 'resource';
+
+/* Make exec-block kinds local instead
+   of global keywords
 TOK_PRE_SOLVE: 'pre_solve';
 TOK_POST_SOLVE: 'post_solve';
 TOK_BODY: 'body';
@@ -58,6 +64,8 @@ TOK_RUN_END: 'run_end';
 TOK_INIT: 'init';
 TOK_INIT_UP: 'init_up';
 TOK_INIT_DOWN: 'init_down';
+ */ 
+
 TOK_SUPER: 'super';
 TOK_PLUS_EQ: '+=';
 TOK_MINUS_EQ: '-=';
@@ -169,7 +177,24 @@ ML_COMMENT	: '/*' .*? '*/' -> channel (12) ;
 //ML_COMMENT	: '/*' .*? '*/' -> skip;
  
 
-DOUBLE_QUOTED_STRING	: '"' (~ [\n\r])* '"' ;
+//DOUBLE_QUOTED_STRING	: '"' (~ [\n\r])* '"' ;
+DOUBLE_QUOTED_STRING	: '"' SCharSequence? '"' ;
+
+fragment SCharSequence: SChar+ ;
+
+fragment SChar:
+    ~["\\\r\n]
+    | EscapeSequence
+    | '\\\n'
+    | '\\\r\n'
+    ;
+
+fragment EscapeSequence:
+    SimpleEscapeSequence
+
+    ;
+
+fragment SimpleEscapeSequence: '\\' ['"?abfnrtv\\];
 
 // TODO: unescaped_character, escaped_character
 

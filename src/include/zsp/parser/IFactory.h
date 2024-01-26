@@ -1,13 +1,15 @@
 
 #pragma once
 #include "dmgr/IDebugMgr.h"
+#include "zsp/ast/IFactory.h"
 #include "zsp/parser/IAstBuilder.h"
 #include "zsp/parser/ILinker.h"
 #include "zsp/parser/IMarkerCollector.h"
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/parser/INameResolver.h"
 #include "zsp/parser/ISymbolTable.h"
-#include "zsp/ast/IFactory.h"
+#include "zsp/parser/ITaskFindElementByLocation.h"
+#include "zsp/parser/IValFactory.h"
 
 namespace zsp {
 namespace parser {
@@ -17,7 +19,7 @@ class IMarkerListener;
 
 class IFactory;
 using IFactoryUP=std::unique_ptr<IFactory>;
-class IFactory {
+class IFactory : public virtual IValFactory {
 public:
 
     virtual ~IFactory() { }
@@ -54,6 +56,8 @@ public:
 
 
     virtual ISymbolTable *mkSymbolTable() = 0;
+
+    virtual ITaskFindElementByLocation *mkTaskFindElementByLocation() = 0;
 
 };
 

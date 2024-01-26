@@ -27,9 +27,10 @@ classes:
     - data:
         - endLocation: 
             type: Location
-            is_ctor: False
+            is_ctor: false
         - proto: UP<FunctionPrototype>
-        - body: UP<ProceduralStmtSequenceBlock>
+        - body: UP<ExecScope>
+        - plat: PlatQual
   - FunctionParamDecl:
     - super: ScopeChild
     - data:
@@ -52,6 +53,11 @@ classes:
         - is_pure:
             type: bool
             is_ctor: false
+            init: false
+        - is_target:
+            type: bool
+        - is_solve:
+            type: bool
 
   - FunctionImport:
     - super: ScopeChild

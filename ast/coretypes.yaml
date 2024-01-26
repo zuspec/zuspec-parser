@@ -17,6 +17,8 @@ structs:
         init: -1
 
 classes:
+    - AssocData:
+        data: []
     - Scope:
         super: ScopeChild
         data:
@@ -45,6 +47,9 @@ classes:
             type: int32_t
             is_ctor: false
             init: -1
+        - assocData:
+            type: UP<AssocData>
+            is_ctor: false
 
     - ScopeChildRef:
         super: ScopeChild
@@ -85,6 +90,25 @@ classes:
         - path: 
           - type: UP<TypeIdentifier>
           - is_ctor: false
+
+    - PyImportStmt:
+        super: ScopeChild
+        data:
+        - path: 
+            type: list<UP<ExprId>>
+            is_ctor: false
+        - alias:
+            type: UP<ExprId>
+            is_ctor: false
+    - PyImportFromStmt:
+        super: ScopeChild
+        data:
+        - path: 
+            type: list<UP<ExprId>>
+            is_ctor: false
+        - targets:
+            type: list<UP<ExprId>>
+            is_ctor: false
 
     - Action:
         super: TypeScope

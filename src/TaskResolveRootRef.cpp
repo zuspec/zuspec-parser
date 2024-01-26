@@ -20,7 +20,9 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/ast/IPackageImportStmt.h"
+#include "zsp/parser/impl/TaskGetSymbolRefPathKind.h"
 #include "TaskResolveRootRef.h"
+#include "TaskResolveEnumRef.h"
 
 
 namespace zsp {
@@ -28,34 +30,34 @@ namespace parser {
 
 
 TaskResolveRootRef::TaskResolveRootRef(
-    IFactory            *factory,
-    IMarkerListener     *marker_l,
-    bool                search_imp) : 
-        m_factory(factory), m_marker_l(marker_l), m_search_imp(search_imp) {
-    DEBUG_INIT("TaskResolveRootRef", factory->getDebugMgr());
-
+    ResolveContext      *ctxt,
+    bool                search_imp) : TaskResolveBase(ctxt), m_search_imp(search_imp) {
+    DEBUG_INIT("TaskResolveRootRef", ctxt->getDebugMgr());
 }
 
 TaskResolveRootRef::~TaskResolveRootRef() {
 
 }
 
-ast::ISymbolRefPath *TaskResolveRootRef::resolve(
-        const ISymbolTableIterator      *scope,
-        const ast::IExprId              *id) {
+ast::ISymbolRefPath *TaskResolveRootRef::resolve(const ast::IExprId *id) {
     DEBUG_ENTER("resolve %s", id->getId().c_str());
     m_ref = 0;
 
-    m_scope = ISymbolTableIteratorUP(scope->clone());
+    // Push a clone of the active symbol table, since we
+    // will be traversing it
+    m_ctxt->pushCloneSymtab();
     m_id    = id;
 
-    while (!m_ref && m_scope->hasScopes()) {
-        m_scope->getScope()->accept(m_this);
+    while (!m_ref && m_ctxt->symtab()->hasScopes()) {
+        DEBUG_ENTER("processing scope %s", m_ctxt->symtab()->getScope()->getName().c_str());
+        m_ctxt->symtab()->getScope()->accept(m_this);
+        DEBUG_LEAVE("processing scope %s", m_ctxt->symtab()->getScope()->getName().c_str());
 
         if (!m_ref) {
-            m_scope->popScope();
+            m_ctxt->symtab()->popScope();
         }
     }
+    m_ctxt->popSymtab();
 
     DEBUG_LEAVE("resolve %p (%d)", m_ref, (m_ref)?m_ref->getPath().size():-1);
 
@@ -69,22 +71,39 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
 
     DEBUG("imports: %p", i->getImports());
     if (it != i->getSymtab().end()) {
-        m_ref = m_scope->getScopeSymbolPath(); // Path to 'i'
+        DEBUG("Found symbol %s @ index %d", m_id->getId().c_str(), it->second);
+        ast::IScopeChild *c = i->getChildren().at(it->second).get();
+
+        if (dynamic_cast<ast::ISymbolTypeScope *>(c)) {
+            DEBUG("Is a type scope");
+            if (dynamic_cast<ast::ISymbolTypeScope *>(c)->getPlist()) {
+                DEBUG("Is parameterized");
+            }
+        }
+        m_ref = m_ctxt->symtab()->getScopeSymbolPath(); // Path to 'i'
 
         // Now, add in the child element that we just found
-        m_ref->getPath().push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second});
+        m_ref->getPath().push_back({
+            TaskGetSymbolRefPathKind(m_ctxt->getDebugMgr()).get(c),
+            it->second});
+    } else if ((m_ref=TaskResolveEnumRef(m_ctxt).resolve(m_id))) {
+        // Found in this scope
+        DEBUG("Found symbol as an enumerator");
     } else if (m_search_imp && i->getImports() && (m_ref=searchImports(m_id, i->getImports()))) {
         // Found in imports
+        DEBUG("Found symbol via imports");
+    } else {
+        DEBUG("Failed to find symbol");
     }
 
     DEBUG_LEAVE("visitSymbolScope");
 }
 
-void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {
-    DEBUG_ENTER("visitSymbolExecScope");
-
-    DEBUG_LEAVE("visitSymbolExecScope");
-}
+//void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {
+//    DEBUG_ENTER("visitSymbolExecScope");
+//    visitSymbolScope(i);
+//    DEBUG_LEAVE("visitSymbolExecScope");
+//}
 
 void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
     DEBUG_ENTER("visitSymbolTypeScope id=%s (%s)", 
@@ -103,12 +122,20 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
         if ((it=i->getPlist()->getSymtab().find(m_id->getId())) != i->getPlist()->getSymtab().end()) {
             // Target is a parameter value
-            m_ref = m_scope->getScopeSymbolPath();
+            m_ref = m_ctxt->symtab()->getScopeSymbolPath();
+            DEBUG("Found %s as a parameter (%d)", 
+                m_id->getId().c_str(), it->second);
 
             m_ref->getPath().push_back({
                 ast::SymbolRefPathElemKind::ElemKind_ParamIdx, 
                 it->second
             });
+
+            DEBUG("Full path:");
+            for (uint32_t i=0; i<m_ref->getPath().size(); i++) {
+                DEBUG("  [%d] %d %d", i, m_ref->getPath().at(i).kind, m_ref->getPath().at(i).idx);
+            }
+            fflush(stdout);
         }
     }
 
@@ -123,7 +150,21 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 }
 
 void TaskResolveRootRef::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
-    DEBUG_ENTER("visitSymbolFunctionScope");
+    DEBUG_ENTER("visitSymbolFunctionScope %s (searching for %s)", i->getName().c_str(), m_id->getId().c_str());
+
+    std::map<std::string,int32_t>::const_iterator it = i->getPlist()->getSymtab().find(m_id->getId());
+
+    if (it != i->getPlist()->getSymtab().end()) {
+        ast::IScopeChild *c = i->getPlist()->getChildren().at(it->second).get();
+        DEBUG("Found as a function parameter @ %d", it->second);
+        m_ref = m_ctxt->symtab()->getScopeSymbolPath(); // Path to 'i'
+        m_ref->getPath().push_back({
+            ast::SymbolRefPathElemKind::ElemKind_ArgIdx,
+            it->second});
+    } else {
+        DEBUG("Delegate to SymbolScope");
+        visitSymbolScope(i);
+    }
 
     DEBUG_LEAVE("visitSymbolFunctionScope");
 }
@@ -141,16 +182,10 @@ ast::ISymbolRefPath *TaskResolveRootRef::searchImports(
 			// Found it.
 			if (ret) {
 				// Uh-oh. We have ambiguity...
-				std::string msg = "Ambiguous symbol resolution when looking up ";
-				msg += id->getId();
-                if (!m_marker) {
-                    m_marker = IMarkerUP(m_factory->mkMarker("", MarkerSeverityE::Error, {-1,-1,-1}));
-                }
-                m_marker->setMsg(msg);
-                m_marker->setSeverity(MarkerSeverityE::Error);
-                m_marker->setMsg(msg);
-                m_marker->setLocation(id->getLocation());
-				m_marker_l->marker(m_marker.get());
+                m_ctxt->addErrorMarker(
+                    id->getLocation(),
+				    "Ambiguous symbol resolution when looking up %s",
+                    id->getId().c_str());
 				delete ret_t;
 				break;
 			} else {
@@ -177,7 +212,7 @@ ast::ISymbolRefPath *TaskResolveRootRef::searchImport(
 	for (uint32_t i=0; i<imp->getPath()->getTarget()->getPath().size(); i++) {
 		DEBUG("Imp Path[%d] %d", i, imp->getPath()->getTarget()->getPath().at(i));
 	}
-	ast::IScopeChild *target_c = m_scope->resolveAbsPath(imp->getPath()->getTarget());
+	ast::IScopeChild *target_c = m_ctxt->symtab()->resolveAbsPath(imp->getPath()->getTarget());
 	ast::ISymbolScope *target_s = dynamic_cast<ast::ISymbolScope *>(target_c);
 	DEBUG("target_c: %p ; target_s: %p", target_c, target_s);
 
@@ -188,7 +223,7 @@ ast::ISymbolRefPath *TaskResolveRootRef::searchImport(
 
 		if (it != target_s->getSymtab().end()) {
 			DEBUG("Found the symbol (%s)", id->getId().c_str());
-			ret = m_factory->getAstFactory()->mkSymbolRefPath();
+			ret = m_ctxt->getFactory()->getAstFactory()->mkSymbolRefPath();
 			ret->getPath().insert(
 				ret->getPath().begin(),
 				imp->getPath()->getTarget()->getPath().begin(),

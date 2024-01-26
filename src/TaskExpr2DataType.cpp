@@ -27,10 +27,8 @@ namespace zsp {
 namespace parser {
 
 
-TaskExpr2DataType::TaskExpr2DataType(
-    IFactory        *factory,
-    IMarkerListener *marker_l) : m_factory(factory), m_marker_l(marker_l) {
-    DEBUG_INIT("TaskExpr2DataType", factory->getDebugMgr());
+TaskExpr2DataType::TaskExpr2DataType(ResolveContext *ctxt) : m_ctxt(ctxt) {
+    DEBUG_INIT("TaskExpr2DataType", ctxt->getDebugMgr());
 }
 
 TaskExpr2DataType::~TaskExpr2DataType() {
@@ -70,15 +68,15 @@ void TaskExpr2DataType::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     if (i->getIs_super() || i->getSlice() || i->getHier_id()->getElems().size() > 1) {
         DEBUG("TODO: flag error");
     } else {
-        ast::ITypeIdentifier *tid = m_factory->getAstFactory()->mkTypeIdentifier();
+        ast::ITypeIdentifier *tid = m_ctxt->getFactory()->getAstFactory()->mkTypeIdentifier();
         tid->getElems().push_back(ast::ITypeIdentifierElemUP(
-            m_factory->getAstFactory()->mkTypeIdentifierElem(
-                TaskCopyAst(m_factory->getAstFactory()).copyT<ast::IExprId>(
+            m_ctxt->getFactory()->getAstFactory()->mkTypeIdentifierElem(
+                TaskCopyAst(m_ctxt->getFactory()).copyT<ast::IExprId>(
                     i->getHier_id()->getElems().at(0)->getId()
                 ),
                 0
         )));
-        m_ret = m_factory->getAstFactory()->mkDataTypeUserDefined(false, tid);
+        m_ret = m_ctxt->getFactory()->getAstFactory()->mkDataTypeUserDefined(false, tid);
     }
     DEBUG_LEAVE("visitExprRefPathContext");
 }
@@ -88,13 +86,13 @@ void TaskExpr2DataType::visitExprRefPathId(ast::IExprRefPathId *i) {
     if (i->getSlice()) {
         DEBUG("TODO: flag error -- slice not permitted on a type identifier");
     } else {
-        ast::ITypeIdentifier *tid = m_factory->getAstFactory()->mkTypeIdentifier();
+        ast::ITypeIdentifier *tid = m_ctxt->getFactory()->getAstFactory()->mkTypeIdentifier();
         tid->getElems().push_back(ast::ITypeIdentifierElemUP(
-            m_factory->getAstFactory()->mkTypeIdentifierElem(
-                TaskCopyAst(m_factory->getAstFactory()).copyT<ast::IExprId>(i->getId()),
+            m_ctxt->getFactory()->getAstFactory()->mkTypeIdentifierElem(
+                TaskCopyAst(m_ctxt->getFactory()).copyT<ast::IExprId>(i->getId()),
                 0
             )));
-        m_ret = m_factory->getAstFactory()->mkDataTypeUserDefined(
+        m_ret = m_ctxt->getFactory()->getAstFactory()->mkDataTypeUserDefined(
             false,
             tid
         );

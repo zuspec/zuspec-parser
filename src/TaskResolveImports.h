@@ -23,33 +23,25 @@
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/ast/impl/VisitorBase.h"
+#include "TaskResolveBase.h"
 
 namespace zsp {
 namespace parser {
 
 
 
-class TaskResolveImports : public ast::VisitorBase {
+class TaskResolveImports : public TaskResolveBase {
 public:
-    TaskResolveImports(
-        ast::ISymbolScope   *root,
-        IFactory            *factory,
-        IMarkerListener     *marker_l);
+    TaskResolveImports(ResolveContext *ctxt);
 
     virtual ~TaskResolveImports();
 
-    void resolve(
-        const ISymbolTableIterator      *scope,
-        ast::ISymbolScope               *sym_scope);
+    void resolve(ast::ISymbolScope *sym_scope);
 
     virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
 
 private:
     static dmgr::IDebug         *m_dbg;
-    ast::ISymbolScope           *m_root;
-    IFactory                    *m_factory;
-    IMarkerListener             *m_marker_l;
-    ISymbolTableIteratorUP      m_scope_it;
 
 };
 

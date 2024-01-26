@@ -5,6 +5,7 @@ cimport zsp_parser.decl as decl
 cimport debug_mgr.core as dm_core
 cimport zsp_parser.ast as ast
 cimport ciostream
+from libc.stdint cimport int32_t
 from libcpp cimport bool
 
 cdef class Factory(object):
@@ -53,6 +54,21 @@ cdef class Linker(object):
     @staticmethod
     cdef Linker mk(decl.ILinker *hndl, bool owned=*)
 
+cdef class Location(object):
+    cdef int32_t        _file
+    cdef int32_t        _line
+    cdef int32_t        _pos
+
+cdef class Marker(object):
+    cdef decl.IMarker               *_hndl
+    cdef bool                       _owned
+
+    cpdef str msg(self)
+
+    cpdef Location loc(self)
+
+    @staticmethod
+    cdef Marker mk(decl.IMarker *hndl, bool owned=*)
 
 cdef class MarkerListener(object):
     cdef decl.IMarkerListener       *_hndl
@@ -61,6 +77,10 @@ cdef class MarkerListener(object):
     cpdef bool hasSeverity(self, s)
 
 cdef class MarkerCollector(MarkerListener):
+
+    cpdef markers(self)
+
+    cdef decl.IMarkerCollector *asCollector(self)
 
     @staticmethod
     cdef MarkerCollector mk(decl.IMarkerCollector *hndl, bool owned=*)

@@ -21,13 +21,17 @@
 #pragma once
 #include "dmgr/IDebugMgr.h"
 #include "zsp/ast/impl/VisitorBase.h"
+#include "zsp/parser/IFactory.h"
+#include "TaskCompareTypeRefs.h"
 
 namespace zsp {
 namespace parser {
 
 class TaskCompareParamLists : public ast::VisitorBase {
 public:
-    TaskCompareParamLists(dmgr::IDebugMgr *dmgr);
+    TaskCompareParamLists(
+        IFactory                *factory,
+        ast::ISymbolScope       *root);
 
     virtual ~TaskCompareParamLists();
 
@@ -35,8 +39,29 @@ public:
         const ast::ITemplateParamDeclList     *plist1,
         const ast::ITemplateParamDeclList     *plist2);
 
+    virtual void visitExpr(ast::IExpr *i) override;
+
+    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
+
+    virtual void visitTemplateGenericTypeParamDecl(ast::ITemplateGenericTypeParamDecl *i) override;
+
+    virtual void visitTemplateCategoryTypeParamDecl(ast::ITemplateCategoryTypeParamDecl *i) override;
+
+    virtual void visitTemplateValueParamDecl(ast::ITemplateValueParamDecl *i) override;
+
+    virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) override;
+
+    virtual void visitTemplateParamExprValue(ast::ITemplateParamExprValue *i) override;
+
 private:
     static dmgr::IDebug                 *m_dbg;
+    uint32_t                            m_idx;
+    uint32_t                            m_phase;
+    ast::ITemplateGenericTypeParamDecl  *m_type_value;
+    ast::ITemplateValueParamDecl        *m_expr_value;
+    const ast::ITemplateParamDeclList   *m_plist1;
+    const ast::ITemplateParamDeclList   *m_plist2;
+    TaskCompareTypeRefs                 m_tref_comp;
 
 };
 

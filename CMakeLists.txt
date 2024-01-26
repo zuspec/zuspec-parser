@@ -11,6 +11,14 @@ if (NOT PACKAGES_DIR)
 
 endif()
 
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  message("Set CMAKE_INSTALL_PREFIX")
+  set (CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
+else()
+  message("CMAKE_INSTALL_PREFIX set to ${CMAKE_INSTALL_PREFIX}")
+endif()
+
+
 message("PSSParser: PACKAGES_DIR=${PACKAGES_DIR}")
 
 
@@ -65,6 +73,8 @@ message("IVPM_CMAKE_PATH: ${IVPM_CMAKE_PATH} ${CMAKE_MODULE_PATH}")
 include(ivpm)
 
 Ivpm_AddPythonExtProject(debug-mgr debug_mgr)
+
+message("Note: CMAKE_INSTALL_PREFIX set to ${CMAKE_INSTALL_PREFIX}")
 
 ExternalProject_Add(libantlr4
     PREFIX antlr4

@@ -54,6 +54,7 @@ package_body_item:
 	| export_action
 	| typedef_declaration
 	| import_stmt
+    | pyimport_stmt // zuspec extension
 	| extend_stmt
 	| const_field_declaration
 	| component_declaration
@@ -84,6 +85,27 @@ package_import_wildcard:
 package_import_alias: 
 	TOK_AS package_identifier
 	;
+
+pyimport_stmt:
+    pyimport_single_module
+    | pyimport_from_module
+    ;
+
+pyimport_single_module:
+    TOK_PYIMPORT pyimport_mod_path (TOK_AS identifier)? TOK_SEMICOLON
+    ;
+
+pyimport_from_module:
+    TOK_FROM pyimport_mod_path TOK_PYIMPORT pyimport_elem_list TOK_SEMICOLON
+    ;
+
+pyimport_mod_path:
+    identifier (TOK_DOUBLE_COLON identifier)*
+    ;
+
+pyimport_elem_list:
+    identifier (TOK_COMMA identifier)*
+    ;
 
 extend_stmt:
 		(
@@ -196,9 +218,14 @@ resource_ref_field_declaration:
 	;
 
 flow_object_type:
+/* Note: refactored. All flow-object type identifiers
+   are syntactically type_identifiers. Removing
+   ambiguity increases performance.
 	buffer_type_identifier
 	| state_type_identifier
 	| stream_type_identifier
+ */
+    type_identifier
 	;
 
 resource_object_type:
@@ -294,7 +321,11 @@ exec_block:
 	TOK_RCBRACE 
 	;
 
-exec_kind:
+exec_kind: 
+    identifier
+    ;
+    /* Make exec-block kinds local instead
+       of global keywords
 	TOK_PRE_SOLVE 
 	| TOK_POST_SOLVE 
 	| TOK_BODY
@@ -306,6 +337,7 @@ exec_kind:
 	| TOK_INIT_DOWN
 	| TOK_INIT
 	;	
+     */
 
 exec_stmt:
 	procedural_stmt
@@ -612,10 +644,16 @@ labeled_activity_stmt:
 	| symbol_call
 	;
 
+// PSS Extension: inline value initialization
 activity_action_traversal_stmt:
-	(identifier ( TOK_LSBRACE expression TOK_RSBRACE )? inline_constraints_or_empty)
-	| (is_do=TOK_DO type_identifier inline_constraints_or_empty)
+	(identifier action_traversal_value_init? ( TOK_LSBRACE expression TOK_RSBRACE )? inline_constraints_or_empty)
+	| (is_do=TOK_DO type_identifier action_traversal_value_init? inline_constraints_or_empty)
 	;
+
+// PSS Extension: inline value initialization
+action_traversal_value_init: 
+    TOK_LPAREN (identifier TOK_SINGLE_EQ expression (TOK_COMMA identifier TOK_SINGLE_EQ expression)*)? TOK_RPAREN
+    ;
 
 inline_constraints_or_empty:
 	(TOK_WITH constraint_set)
@@ -881,6 +919,7 @@ scalar_data_type:
 	| string_type  	
 	| bool_type
 	| enum_type
+    | pyobj_type // zuspec extension
 	;
 
 casting_type:
@@ -945,6 +984,10 @@ enum_type:
 //	enum_type_identifier (TOK_IN TOK_LSBRACE open_range_list TOK_RSBRACE)?
 	enum_type_identifier TOK_IN TOK_LSBRACE open_range_list TOK_RSBRACE
 	;
+
+pyobj_type: // zuspec extension
+    TOK_PYOBJ
+    ;
 
 // Note: this parser treats collection types as parameterized classes
 // collection_type:
@@ -1243,6 +1286,7 @@ expression:
     lhs=expression binary_or_op rhs=expression			|
     lhs=expression logical_and_op rhs=expression		|
     lhs=expression logical_or_op rhs=expression			|
+//    lhs=expression TOK_SINGLE_EQ rhs=expression  { notify
     lhs=expression conditional_expr
 	;
 
@@ -1529,7 +1573,7 @@ map_literal_item:
 	;
 
 struct_literal:
-	TOK_LCBRACE struct_literal_item (TOK_COMMA struct_literal_item) TOK_RCBRACE
+	TOK_LCBRACE struct_literal_item (TOK_COMMA struct_literal_item)* TOK_RCBRACE
 	;
 
 struct_literal_item:
