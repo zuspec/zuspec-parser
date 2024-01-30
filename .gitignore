@@ -51,3 +51,7 @@ python/zsp_parser/*.so*
 python/*.cpp
 
 __pycache__/
+
+.eggs/
+*.egg-info/
+
