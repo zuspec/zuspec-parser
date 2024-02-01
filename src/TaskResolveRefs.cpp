@@ -244,9 +244,9 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
 
         DEBUG("Search for elem=%s target_s=%s", 
             elem->getId()->getId().c_str(),
-            target_s->getName().c_str());
+            (target_s)?target_s->getName().c_str():"null");
 
-        if (target_s->getOpaque()) {
+        if (target_s && target_s->getOpaque()) {
             DEBUG("Note: scope is opaque ; ending hierarchical search");
             break;
         }
@@ -285,6 +285,10 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
                     m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(
                         target_c
                     );
+                if (!target_s) {
+                    ERROR("target_s is null");
+                    break;
+                }
                 DEBUG("Next target_s: %s", target_s->getName().c_str());
             }
         }
