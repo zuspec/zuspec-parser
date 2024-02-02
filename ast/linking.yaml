@@ -120,7 +120,7 @@ classes:
         - type: list<P<FunctionPrototype>>
         - is_ctor: false
       - import_specs:
-        - type: list<P<FunctionImport>>
+        - type: list<UP<FunctionImport>>
         - is_ctor: false
       - definition:
         - type: P<FunctionDefinition>
