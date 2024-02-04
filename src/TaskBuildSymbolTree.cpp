@@ -373,6 +373,10 @@ void TaskBuildSymbolTree::visitFunctionImportProto(ast::IFunctionImportProto *i)
         i->getProto()->setIs_target(true);
     }
 
+    func_sym->getImport_specs().push_back(ast::IFunctionImportUP(
+        m_factory->mkFunctionImport(i->getPlat(), "")
+    ));
+
     DEBUG_LEAVE("visitFunctionImportProto %s", i->getProto()->getName()->getId().c_str());
 }
 
