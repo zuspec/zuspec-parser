@@ -26,20 +26,25 @@ compilation_unit :
 	;
 
 portable_stimulus_description : 
-	package_body_item 
+	package_body_item_ann
 //	| package_declaration // Note: package_declaration is a package_body_item
 //	| component_declaration // Note: ambiguous, since 'component' is also a package body item
 	;
 
 package_declaration:
 	TOK_PACKAGE package_id_path TOK_LCBRACE
-		package_body_item*
+		package_body_item_ann*
 	TOK_RCBRACE
 ;
 
 package_id_path:
 	package_identifier ( TOK_DOUBLE_COLON package_identifier )*
 	;
+
+
+package_body_item_ann:
+    annotation* package_body_item
+    ;
 
 package_body_item:
 	abstract_action_declaration
@@ -110,11 +115,11 @@ pyimport_elem_list:
 extend_stmt:
 		(
 			(TOK_EXTEND is_action=TOK_ACTION type_identifier TOK_LCBRACE
-				action_body_item*
+				action_body_item_ann*
 				TOK_RCBRACE
 			) | 
 			(TOK_EXTEND is_component=TOK_COMPONENT type_identifier TOK_LCBRACE
-				component_body_item*
+				component_body_item_ann*
 				TOK_RCBRACE
 			) |
 			(TOK_EXTEND struct_kind type_identifier TOK_LCBRACE
@@ -153,7 +158,7 @@ static_const_field_declaration :
 action_declaration:
 	TOK_ACTION action_identifier template_param_decl_list? action_super_spec? 
 	TOK_LCBRACE
-		action_body_item*
+		action_body_item_ann*
 	TOK_RCBRACE 
 ;
 
@@ -161,7 +166,7 @@ action_declaration:
 abstract_action_declaration :
 	TOK_ABSTRACT TOK_ACTION action_identifier template_param_decl_list? action_super_spec?
 	TOK_LCBRACE
-		action_body_item*
+		action_body_item_ann*
 	TOK_RCBRACE 
 ;
  */
@@ -172,6 +177,10 @@ abstract_action_declaration:
 action_super_spec:
 	TOK_COLON type_identifier
 ;
+
+action_body_item_ann:
+    annotation* action_body_item
+    ;
 
 action_body_item:
 	activity_declaration
@@ -192,7 +201,7 @@ action_body_item:
 activity_declaration: 
 	TOK_ACTIVITY 
 	TOK_LCBRACE 
-		activity_stmt* 
+		activity_stmt_ann* 
 	TOK_RCBRACE 
 	;
 
@@ -543,13 +552,17 @@ procedural_continue_stmt:
 component_declaration:
 	TOK_PURE? TOK_COMPONENT component_identifier template_param_decl_list?  (component_super_spec)?
 	TOK_LCBRACE
-		component_body_item*
+		component_body_item_ann*
 	TOK_RCBRACE 
 	;
 
 component_super_spec :
 	TOK_COLON type_identifier
 	;
+
+component_body_item_ann:
+    annotation* component_body_item
+    ;
 
 component_body_item:
 	override_declaration
@@ -613,6 +626,10 @@ object_bind_item:
  * B.9 Activity statements
  ********************************************************************/
 
+activity_stmt_ann:
+    annotation* activity_stmt
+    ;
+
 activity_stmt: 
 	activity_labeled_stmt
 	| activity_data_field
@@ -663,21 +680,21 @@ inline_constraints_or_empty:
 activity_sequence_block_stmt:
 	(TOK_SEQUENCE)? 
 	TOK_LCBRACE  
-		activity_stmt* 
+		activity_stmt_ann* 
 	TOK_RCBRACE 
 	;
 
 activity_parallel_stmt:
 	TOK_PARALLEL activity_join_spec? 
 	TOK_LCBRACE
-		activity_stmt*
+		activity_stmt_ann*
 	TOK_RCBRACE 
 	;
 
 activity_schedule_stmt:
 	TOK_SCHEDULE activity_join_spec? 
 	TOK_LCBRACE
-		activity_stmt*
+		activity_stmt_ann*
 	TOK_RCBRACE 
 	;
 
@@ -706,8 +723,8 @@ activity_join_first_spec:
 
 activity_repeat_stmt:
 	(
-		(is_repeat=TOK_REPEAT TOK_LPAREN (loop_var=identifier TOK_COLON)? expression TOK_RPAREN activity_stmt) 
-		| (is_do_while=TOK_REPEAT activity_stmt is_do_while=TOK_WHILE TOK_LPAREN expression TOK_RPAREN TOK_SEMICOLON)
+		(is_repeat=TOK_REPEAT TOK_LPAREN (loop_var=identifier TOK_COLON)? expression TOK_RPAREN activity_stmt_ann) 
+		| (is_do_while=TOK_REPEAT activity_stmt_ann is_do_while=TOK_WHILE TOK_LPAREN expression TOK_RPAREN TOK_SEMICOLON)
 	)
 	;	
 
@@ -716,7 +733,7 @@ activity_foreach_stmt:
 		TOK_LPAREN 
 			(it_id=iterator_identifier)? expression (TOK_LSBRACE idx_id=index_identifier TOK_RSBRACE)? 
 		TOK_RPAREN
-		activity_stmt
+		activity_stmt_ann
 	;
 
 // TODO: Select should accept 1+ user-specified
@@ -733,12 +750,12 @@ select_branch:
 	(
 		(TOK_LPAREN guard=expression TOK_RPAREN (TOK_LSBRACE weight=expression TOK_RSBRACE)? TOK_COLON) 
 		| (TOK_LSBRACE weight=expression TOK_RSBRACE TOK_COLON)
-	)? activity_stmt
+	)? activity_stmt_ann
 	;
 
 activity_if_else_stmt:
-	TOK_IF TOK_LPAREN expression TOK_RPAREN activity_stmt 
-	(TOK_ELSE activity_stmt)?
+	TOK_IF TOK_LPAREN expression TOK_RPAREN activity_stmt_ann 
+	(TOK_ELSE activity_stmt_ann)?
 	;
 
 activity_match_stmt:
@@ -750,8 +767,8 @@ activity_match_stmt:
 	;
 
 match_choice:
-	(TOK_LSBRACE open_range_list TOK_RSBRACE TOK_COLON activity_stmt)
-	| (is_default=TOK_DEFAULT TOK_COLON activity_stmt)
+	(TOK_LSBRACE open_range_list TOK_RSBRACE TOK_COLON activity_stmt_ann)
+	| (is_default=TOK_DEFAULT TOK_COLON activity_stmt_ann)
 	;
 
 activity_replicate_stmt:
@@ -778,7 +795,7 @@ activity_constraint_stmt:
 	;
 
 symbol_declaration:
-	TOK_SYMBOL identifier (TOK_LPAREN symbol_paramlist TOK_RPAREN)? TOK_LCBRACE activity_stmt* TOK_RCBRACE
+	TOK_SYMBOL identifier (TOK_LPAREN symbol_paramlist TOK_RPAREN)? TOK_LCBRACE activity_stmt_ann* TOK_RCBRACE
 	;
 
 symbol_paramlist:
@@ -1228,8 +1245,8 @@ action_body_compile_if:
 	;
 
 action_body_compile_if_item:
-	action_body_item
-	| (TOK_LCBRACE action_body_item* TOK_RCBRACE)
+	action_body_item_ann
+	| (TOK_LCBRACE action_body_item_ann* TOK_RCBRACE)
 	;
 
 component_body_compile_if:
@@ -1238,8 +1255,8 @@ component_body_compile_if:
 	;
 
 component_body_compile_if_item:
-	component_body_item
-	| (TOK_LCBRACE component_body_item* TOK_RCBRACE)
+	component_body_item_ann
+	| (TOK_LCBRACE component_body_item_ann* TOK_RCBRACE)
 	;
 	
 struct_body_compile_if:
@@ -1607,16 +1624,10 @@ filename_string: DOUBLE_QUOTED_STRING;
  * annotate <path> <type_identifier>();
  */	
 annotation:
-	TOK_AT type_identifier (TOK_LPAREN
-		annotation_values?
-	TOK_RPAREN)?
-	;
-	
-annotation_values:
-	annotation_value (TOK_COMMA annotation_value)*
-	;
-	
-annotation_value:
-	identifier TOK_SINGLE_EQ expression
-	;
+    TOK_AT type_identifier annotation_parameter_list?
+    ;
 
+annotation_parameter_list:
+	TOK_LPAREN ( expression ( TOK_COMMA expression )* )? TOK_RPAREN
+    ;
+	

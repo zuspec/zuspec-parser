@@ -40,7 +40,11 @@ public:
         ast::ISymbolScope               *plist,
         ast::ITemplateParamValueList    *pvals);
 
+    virtual void visitDataTypeEnum(ast::IDataTypeEnum *i) override;
+
     virtual void visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) override;
+
+    virtual void visitEnumItem(ast::IEnumItem *i) override;
 
     virtual void visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) override;
     
@@ -52,11 +56,16 @@ public:
     
     virtual void visitTemplateValueParamDecl(ast::ITemplateValueParamDecl *i) override;
 
+
 private:
     static dmgr::IDebug                 *m_dbg; 
     ResolveContext                      *m_ctxt;
     ast::ITemplateParamDeclList         *m_ret;
+    // Handle to a static-reference parameter value
     ast::ITemplateParamTypeValue        *m_pval_type;
+    // Handle to the expr in case the ref is a value ref
+    ast::IExpr                          *m_pval_type_valref_expr;
+    bool                                m_pval_type_isval;
     ast::ITemplateParamExprValue        *m_pval_expr;
     ast::ITemplateGenericTypeParamDecl  *m_ptype_generic_type;
     ast::ITemplateCategoryTypeParamDecl *m_ptype_category_type;

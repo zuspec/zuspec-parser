@@ -268,9 +268,9 @@ private:
 
     void addActivityStmt(
         ast::IScope                         *scope,
-        PSSParser::Activity_stmtContext     *ctx);
+        PSSParser::Activity_stmt_annContext *ctx);
 
-	ast::IScopeChild *mkActivityStmt(PSSParser::Activity_stmtContext *ctx);
+	ast::IScopeChild *mkActivityStmt(PSSParser::Activity_stmt_annContext *ctx);
 
 	ast::IConstraintStmt *mkConstraintSet(PSSParser::Constraint_setContext *ctx);
 

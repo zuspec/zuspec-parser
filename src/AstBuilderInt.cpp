@@ -102,8 +102,8 @@ antlrcpp::Any AstBuilderInt::visitPackage_declaration(
 
 	addChild(pkg, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 	push_scope(pkg);
-	std::vector<PSSParser::Package_body_itemContext *> items = ctx->package_body_item();
-	for (std::vector<PSSParser::Package_body_itemContext *>::const_iterator
+	std::vector<PSSParser::Package_body_item_annContext *> items = ctx->package_body_item_ann();
+	for (std::vector<PSSParser::Package_body_item_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
 		(*it)->accept(this);
@@ -226,20 +226,20 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 		push_scope(ext);
 		switch (kind) {
 			case ast::ExtendTargetE::Action: {
-				std::vector<PSSParser::Action_body_itemContext *> items =
-					ctx->action_body_item();
+				std::vector<PSSParser::Action_body_item_annContext *> items =
+					ctx->action_body_item_ann();
                 DEBUG("Extend Action: %d items", items.size());
-				for (std::vector<PSSParser::Action_body_itemContext *>::const_iterator
+				for (std::vector<PSSParser::Action_body_item_annContext *>::const_iterator
 					it=items.begin();
 					it!=items.end(); it++) {
 					(*it)->accept(this);
 				}
 			} break;
 			case ast::ExtendTargetE::Component: {
-				std::vector<PSSParser::Component_body_itemContext *> items =
-					ctx->component_body_item();
+				std::vector<PSSParser::Component_body_item_annContext *> items =
+					ctx->component_body_item_ann();
                 DEBUG("Extend Component: %d items", items.size());
-				for (std::vector<PSSParser::Component_body_itemContext *>::const_iterator
+				for (std::vector<PSSParser::Component_body_item_annContext *>::const_iterator
 					it=items.begin();
 					it!=items.end(); it++) {
 					(*it)->accept(this);
@@ -324,9 +324,9 @@ antlrcpp::Any AstBuilderInt::visitAction_declaration(PSSParser::Action_declarati
 	addChild(action, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 	push_scope(action);
 
-	std::vector<PSSParser::Action_body_itemContext *> items = ctx->action_body_item();
+	std::vector<PSSParser::Action_body_item_annContext *> items = ctx->action_body_item_ann();
 
-	for (std::vector<PSSParser::Action_body_itemContext *>::const_iterator
+	for (std::vector<PSSParser::Action_body_item_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
 		(*it)->accept(this);
@@ -353,8 +353,8 @@ antlrcpp::Any AstBuilderInt::visitActivity_declaration(PSSParser::Activity_decla
     ast::IActivityDecl *activity = m_factory->mkActivityDecl();
     setLoc(activity, ctx->start);
 
-	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
-	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+	std::vector<PSSParser::Activity_stmt_annContext *> items = ctx->activity_stmt_ann();
+	for (std::vector<PSSParser::Activity_stmt_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
         addActivityStmt(activity, *it);
@@ -942,8 +942,8 @@ antlrcpp::Any AstBuilderInt::visitComponent_declaration(PSSParser::Component_dec
 
 	addChild(comp, ctx->start, ctx->TOK_LCBRACE()->getSymbol());
 	push_scope(comp);
-	std::vector<PSSParser::Component_body_itemContext *> body = ctx->component_body_item();
-	for (std::vector<PSSParser::Component_body_itemContext *>::const_iterator
+	std::vector<PSSParser::Component_body_item_annContext *> body = ctx->component_body_item_ann();
+	for (std::vector<PSSParser::Component_body_item_annContext *>::const_iterator
 		it=body.begin();
 		it!=body.end(); it++) {
 		(*it)->accept(this);
@@ -1020,8 +1020,8 @@ antlrcpp::Any AstBuilderInt::visitActivity_sequence_block_stmt(PSSParser::Activi
 		m_labeled_activity_id = 0;
 	}
 
-	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
-	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+	std::vector<PSSParser::Activity_stmt_annContext *> items = ctx->activity_stmt_ann();
+	for (std::vector<PSSParser::Activity_stmt_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
         addActivityStmt(seq, *it);
@@ -1049,8 +1049,8 @@ antlrcpp::Any AstBuilderInt::visitActivity_parallel_stmt(PSSParser::Activity_par
 	}
 
 
-	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
-	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+	std::vector<PSSParser::Activity_stmt_annContext *> items = ctx->activity_stmt_ann();
+	for (std::vector<PSSParser::Activity_stmt_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
         addActivityStmt(par, *it);
@@ -1077,8 +1077,8 @@ antlrcpp::Any AstBuilderInt::visitActivity_schedule_stmt(PSSParser::Activity_sch
 		m_labeled_activity_id = 0;
 	}
 
-	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
-	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+	std::vector<PSSParser::Activity_stmt_annContext *> items = ctx->activity_stmt_ann();
+	for (std::vector<PSSParser::Activity_stmt_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
         addActivityStmt(sched, *it);
@@ -1097,7 +1097,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_repeat_stmt(PSSParser::Activity_repea
 
 	if (ctx->is_repeat) {
 		ast::IExprId *label = m_labeled_activity_id;
-        ast::IScopeChild *body = mkActivityStmt(ctx->activity_stmt());
+        ast::IScopeChild *body = mkActivityStmt(ctx->activity_stmt_ann());
         if (!body) {
             body = m_factory->mkActivitySequence();
         }
@@ -2186,7 +2186,7 @@ ast::IActivityJoinSpec *AstBuilderInt::mkActivityJoinSpec(PSSParser::Activity_jo
 	return spec;
 }
 
-ast::IScopeChild *AstBuilderInt::mkActivityStmt(PSSParser::Activity_stmtContext *ctx) {
+ast::IScopeChild *AstBuilderInt::mkActivityStmt(PSSParser::Activity_stmt_annContext *ctx) {
 	DEBUG_ENTER("mkActivityStmt");
 	m_activity_stmt = 0;
 	ctx->accept(this);
@@ -2196,7 +2196,7 @@ ast::IScopeChild *AstBuilderInt::mkActivityStmt(PSSParser::Activity_stmtContext 
 
 void AstBuilderInt::addActivityStmt(
         ast::IScope                         *scope,
-        PSSParser::Activity_stmtContext     *ctx) {
+        PSSParser::Activity_stmt_annContext *ctx) {
     ast::IScopeChild *a_stmt = mkActivityStmt(ctx);
     if (a_stmt) {
         a_stmt->setIndex(scope->getChildren().size());

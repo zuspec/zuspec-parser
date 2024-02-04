@@ -198,7 +198,7 @@ public:
         return ret;
     }
 
-parser::ISymbolTableIterator *mkIterator(
+    parser::ISymbolTableIterator *mkIterator(
             parser::ISymbolTableIterator    *ret,
             ast::ISymbolScope               *target) {
         DEBUG_ENTER("mkIterator root=%p", m_root);
