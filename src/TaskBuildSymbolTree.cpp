@@ -424,7 +424,34 @@ void TaskBuildSymbolTree::visitPackageImportStmt(ast::IPackageImportStmt *i) {
 
     DEBUG("Add import to scope %s", scope->getName().c_str());
 
-    scope->getImports()->getImports().push_back(i);
+    // See if this import already exists
+    bool exists = false;
+    for (std::vector<ast::IPackageImportStmt *>::const_iterator
+        it=scope->getImports()->getImports().begin();
+        it!=scope->getImports()->getImports().end(); it++) {
+        if (i->getWildcard() == (*it)->getWildcard()) {
+            // Compare the paths
+            if (i->getPath()->getElems().size() == (*it)->getPath()->getElems().size()) {
+                uint32_t ii;
+                for (ii=0; ii<i->getPath()->getElems().size(); ii++) {
+                    if (i->getPath()->getElems().at(ii)->getId()->getId() !=
+                        (*it)->getPath()->getElems().at(ii)->getId()->getId()) {
+                        break;
+                    }
+                }
+                exists = (ii == i->getPath()->getElems().size());
+            }
+        }
+        if (exists) {
+            break;
+        }
+    }
+
+    if (!exists) {
+        scope->getImports()->getImports().push_back(i);
+    } else {
+        DEBUG("Skip duplicate import");
+    }
 
     DEBUG_LEAVE("visitPackageImportStmt");
 }
