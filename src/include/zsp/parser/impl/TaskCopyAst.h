@@ -587,7 +587,6 @@ public:
             copyT<ast::IExprId>(i->getName()),
             copy(i->getType()),
             i->getAttr(),
-            (i->getArray_dim())?copy(i->getArray_dim()):0,
             (i->getInit())?copy(i->getInit()):0
         );
     }

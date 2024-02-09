@@ -15,7 +15,6 @@ classes:
       data:
       - type : UP<DataType>
       - attr : FieldAttr
-      - array_dim : UP<Expr>
       - init : UP<Expr>
   - FieldCompRef:
       super: NamedScopeChild
@@ -25,12 +24,10 @@ classes:
       super: NamedScopeChild
       data:
       - type: UP<DataTypeUserDefined>
-      - array_dim: UP<Expr>
       - is_input: bool
 
   - FieldClaim:
       super: NamedScopeChild
       data:
       - type: UP<DataTypeUserDefined>
-      - array_dim: UP<Expr>
       - is_lock: bool

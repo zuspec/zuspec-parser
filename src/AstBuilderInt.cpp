@@ -375,19 +375,19 @@ antlrcpp::Any AstBuilderInt::visitFlow_ref_field_declaration(PSSParser::Flow_ref
 	for (std::vector<PSSParser::Object_ref_fieldContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-		ast::IExpr *array_dim = 0;
 		ast::IDataTypeUserDefined *type = 0;
 
 		type = mkDataTypeUserDefined(ctx->flow_object_type()->type_identifier());
 
 		if ((*it)->array_dim()) {
+		    ast::IExpr *array_dim = 0;
 			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+            type = mkDataTypeArray(type, array_dim);
 		}
 
 		ast::IFieldRef *field = m_factory->mkFieldRef(
 			mkId((*it)->identifier()),
 			type,
-			array_dim,
 			ctx->is_input);
         setLoc(field, (*it)->identifier()->start);
 		addChild(field, ctx->start);
@@ -404,18 +404,18 @@ antlrcpp::Any AstBuilderInt::visitResource_ref_field_declaration(PSSParser::Reso
 	for (std::vector<PSSParser::Object_ref_fieldContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-		ast::IExpr *array_dim = 0;
 		ast::IDataTypeUserDefined *type = mkDataTypeUserDefined(
 			ctx->resource_object_type()->resource_type_identifier()->type_identifier());
 
 		if ((*it)->array_dim()) {
+		    ast::IExpr *array_dim = 0;
 			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+            type = mkDataTypeArray(type, array_dim);
 		}
 
 		ast::IFieldClaim *field = m_factory->mkFieldClaim(
 			mkId((*it)->identifier()),
 			type,
-			array_dim,
 			ctx->lock);
         setLoc(field, (*it)->identifier()->start);
 		addChild(field, ctx->start);
@@ -902,13 +902,16 @@ antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedu
         it!=items.end(); it++) {
         ast::IDataType *type = mkDataType(ctx->data_type());
         ast::IExprId *name = mkId((*it)->identifier());
-        ast::IExpr *array_dim = ((*it)->array_dim())?mkExpr(
-            (*it)->array_dim()->constant_expression()->expression()):0;
         ast::IExpr *init = ((*it)->expression())?mkExpr((*it)->expression()):0;
+
+        if ((*it)->array_dim()) {
+            ast::IExpr *array_dim = 0;
+            array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+            type = mkDataTypeArray(type, array_dim);
+        }
         ast::IProceduralStmtDataDeclaration *decl = m_factory->mkProceduralStmtDataDeclaration(
             name,
             type,
-            array_dim,
             init);
         decl->setIndex(m_exec_scope_s.back()->getChildren().size());
         m_exec_scope_s.back()->getChildren().push_back(ast::IScopeChildUP(decl));
@@ -1133,11 +1136,13 @@ antlrcpp::Any AstBuilderInt::visitData_declaration(PSSParser::Data_declarationCo
 		it!=items.end(); it++) {
         DEBUG("Name: %s", (*it)->identifier()->getText().c_str());
 		ast::IDataType *type = mkDataType(ctx->data_type());
-		ast::IExpr *array_dim = 0;
 		ast::IExpr *init = 0;
 
 		if ((*it)->array_dim()) {
+		    ast::IExpr *array_dim = 0;
+            // Convert the type to array<type,expr>
 			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+            type = mkDataTypeArray(type, array_dim);
 		}
 
 		if ((*it)->constant_expression()) {
@@ -1148,7 +1153,6 @@ antlrcpp::Any AstBuilderInt::visitData_declaration(PSSParser::Data_declarationCo
 			mkId((*it)->identifier()),
 			type,
 			FieldAttr::NoFlags,
-			array_dim,
 			init);
 
 		addChild(field, ctx->start);
@@ -2237,6 +2241,31 @@ ast::IDataTypeUserDefined *AstBuilderInt::mkDataTypeUserDefined(PSSParser::Type_
 	DEBUG_LEAVE("mkDataTypeUserDefined");
 
 	return ret;
+}
+
+ast::IDataTypeUserDefined *AstBuilderInt::mkDataTypeArray(
+        ast::IDataType          *elem_t,
+        ast::IExpr              *size) {
+    DEBUG_ENTER("mkDataTypeArray");
+    ast::ITemplateParamValueList *params = m_factory->mkTemplateParamValueList();
+    params->getValues().push_back(ast::ITemplateParamValueUP(
+        m_factory->mkTemplateParamTypeValue(elem_t)
+    ));
+    params->getValues().push_back(ast::ITemplateParamValueUP(
+        m_factory->mkTemplateParamExprValue(size)
+    ));
+    ast::ITypeIdentifierElem *array_e = m_factory->mkTypeIdentifierElem(
+        m_factory->mkExprId("array", false),
+        params);
+    ast::ITypeIdentifier *array_t = m_factory->mkTypeIdentifier();
+    array_t->getElems().push_back(ast::ITypeIdentifierElemUP(array_e));
+    
+	ast::IDataTypeUserDefined *ret = m_factory->mkDataTypeUserDefined(
+		false,
+        array_t);
+
+    DEBUG_LEAVE("mkDataTypeArray");
+    return ret;
 }
 
 ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::Domain_open_range_listContext *ctx) {

@@ -278,6 +278,10 @@ private:
 
 	ast::IDataTypeUserDefined *mkDataTypeUserDefined(PSSParser::Type_identifierContext *ctx);
 
+    ast::IDataTypeUserDefined *mkDataTypeArray(
+        ast::IDataType          *elem_t,
+        ast::IExpr              *size);
+
 	template <class T> T *mkDataTypeT(PSSParser::Data_typeContext *ctx) {
 		return dynamic_cast<T *>(mkDataType(ctx));
 	}
