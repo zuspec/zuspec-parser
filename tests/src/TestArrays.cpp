@@ -59,9 +59,41 @@ TEST_F(TestArrays, explicit) {
 
 TEST_F(TestArrays, implied) {
     const char *text = R"(
+        component my_c {
+
+        }
         component pss_top {
             int          arr_10[10];
             int          arr_20[10];
+            my_c         arr_30[30];
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "explicit.pss",
+        files,
+        root,
+        false);
+}
+
+TEST_F(TestArrays, parameterized) {
+    const char *text = R"(
+        component T_c<int i=1> { }
+
+        component my_c {
+            T_c<>       a;
+        }
+        component pss_top {
+            my_c         arr_30[30];
         }
     )";
 

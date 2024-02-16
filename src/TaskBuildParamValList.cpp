@@ -105,18 +105,23 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
             }
         } else { // Type value
             DEBUG("Type parameter");
+            DEBUG("ptype_value=%p ptype_category_type=%p ptype_generic_type=%p",
+                m_ptype_value, m_ptype_category_type, m_ptype_generic_type);
 
             // Type value. We always specialize as a generic type parameter
             ast::IExprId *name = 0;
             ast::IDataType *type = 0;
-            if (m_ptype_value) {
-                DEBUG("TODO: attempting to specify type for value parameter");
-            } else if (m_ptype_category_type) {
+            if (m_ptype_category_type) {
                 name = m_ptype_category_type->getName();
                 type = m_pval_type->getValue();
             } else if (m_ptype_generic_type) {
                 name = m_ptype_generic_type->getName();
                 type = m_pval_type->getValue();
+            } else if (m_ptype_value) {
+                // Note: it is possible to receive both a generic and a value
+                // parameter, but we don't expect to only receive a value
+                // parameter.
+                ERROR("TODO: attempting to specify type for value parameter");
             } else {
                 ERROR("TODO: no ptype_decl captured\n");
             }
