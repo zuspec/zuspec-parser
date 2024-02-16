@@ -122,6 +122,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
             }
 
             DEBUG("Add parameter %s", (name)?name->getId().c_str():"<unknown>");
+            DEBUG("  value=%p %p", m_pval_type->getValue(), copier.copy(m_pval_type->getValue()));
             ast::ITemplateGenericTypeParamDecl *p = m_ctxt->getFactory()->getAstFactory()->mkTemplateGenericTypeParamDecl(
                 (name)?copier.copyT<ast::IExprId>(name):0,
                 copier.copy(m_pval_type->getValue())
@@ -206,14 +207,21 @@ void TaskBuildParamValList::visitDataTypeEnum(ast::IDataTypeEnum *i) {
 
 void TaskBuildParamValList::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
     DEBUG_ENTER("visitDataTypeUserDefined");
-    ast::IScopeChild *target = TaskResolveSymbolPathRef(
-        m_ctxt->getDebugMgr(),
-        m_ctxt->root()).resolve(i->getType_id()->getTarget());
-    m_pval_type_isval = false;
-    target->accept(m_this);
-    if (m_pval_type_isval) {
-        // Save the reference
-        m_pval_type_valref_expr = i->getType_id();
+
+    // If this is an external resolved reference, 
+    // follow it and check its source
+    if (i->getType_id()->getTarget()) {
+        ast::IScopeChild *target = TaskResolveSymbolPathRef(
+            m_ctxt->getDebugMgr(),
+            m_ctxt->root()).resolve(i->getType_id()->getTarget());
+        m_pval_type_isval = false;
+        if (target) {
+            target->accept(m_this);
+        }
+        if (m_pval_type_isval) {
+            // Save the reference
+            m_pval_type_valref_expr = i->getType_id();
+        }
     }
     DEBUG_LEAVE("visitDataTypeUserDefined");
 }

@@ -530,8 +530,6 @@ public:
         DEBUG_LEAVE("visitFunctionImportProto");
     }
     
-    virtual void visitDataTypeArray(ast::IDataTypeArray *i) { }
-    
     virtual void visitDataTypeBool(ast::IDataTypeBool *i) { 
         m_dt = m_factory->mkDataTypeBool();
     }
