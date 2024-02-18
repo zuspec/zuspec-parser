@@ -27,6 +27,7 @@
 #include "TaskSpecializeParameterizedRef.h"
 #include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
 #include "zsp/parser/impl/TaskGetElemSymbolScope.h"
+#include "zsp/parser/impl/TaskGetSubscriptSymbolScope.h"
 #include "zsp/parser/impl/TaskIsPyRef.h"
 
 namespace zsp {
@@ -239,6 +240,12 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
         }
 
         if (!ii) {
+            if (ii+1 < i->getHier_id()->getElems().size() && elem->getSubscript()) {
+                target_s = TaskGetSubscriptSymbolScope(
+                    m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(
+                        target_c
+                    );
+            }
             continue;
         }
 
@@ -267,7 +274,9 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
                 "Failed to find elem %s", 
                 elem->getId()->getId().c_str());
 
-            DEBUG("ERROR: Failed to find elem %s", elem->getId()->getId().c_str());
+            DEBUG("ERROR: Failed to find elem %s (ii=%d)", 
+                elem->getId()->getId().c_str(),
+                ii);
             break;
         } else {
             DEBUG("NOTE: Found sub-element %s", elem->getId()->getId().c_str());
@@ -288,6 +297,13 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
                 if (!target_s) {
                     ERROR("target_s is null");
                     break;
+                }
+
+                if (elem->getSubscript()) {
+                    target_s = TaskGetSubscriptSymbolScope(
+                        m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(
+                            target_s
+                        );
                 }
                 DEBUG("Next target_s: %s", target_s->getName().c_str());
             }

@@ -113,5 +113,75 @@ TEST_F(TestArrays, parameterized) {
         false);
 }
 
+TEST_F(TestArrays, parameterized_subelem_ref) {
+    const char *text = R"(
+        component T_c<int i=1> { 
+            int         f1;
+        }
+
+        component my_c {
+            T_c<>       a;
+        }
+        component pss_top {
+            my_c         arr_30[30];
+
+            exec init_down {
+                arr_30[0].a.f1 = 2;
+            }
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "explicit.pss",
+        files,
+        root,
+        false);
+}
+
+TEST_F(TestArrays, parameterized_nested_subelem_ref) {
+    const char *text = R"(
+        component T_c<int i=1> { 
+            int         f1;
+        }
+
+        component my_c {
+            T_c<>       a;
+        }
+        component pss_top {
+            my_c         arr_30[30];
+
+            action Entry {
+                exec post_solve {
+                    int i = comp.arr_30[0].a.f1;
+                }
+            }
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "explicit.pss",
+        files,
+        root,
+        false);
+}
+
 }
 }
