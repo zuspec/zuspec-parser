@@ -43,6 +43,27 @@ ast::IGlobalScope *BuiltinsFactory::build() {
     pyobj->setParent(m_builtins.get());
     m_builtins->getChildren().push_back(ast::IScopeChildUP(pyobj));
 
+    ast::IStruct *array = m_ast_f->mkStruct(
+        m_ast_f->mkExprId("array", false),
+        0,
+        ast::StructKind::Struct);
+    ast::ITemplateParamDeclList *params = m_ast_f->mkTemplateParamDeclList();
+    params->getParams().push_back(ast::ITemplateParamDeclUP(
+        m_ast_f->mkTemplateGenericTypeParamDecl(
+            m_ast_f->mkExprId("T", false),
+            0)));
+    params->getParams().push_back(ast::ITemplateParamDeclUP(
+        m_ast_f->mkTemplateValueParamDecl(
+            m_ast_f->mkExprId("SZ", false),
+            m_ast_f->mkDataTypeInt(
+                false,
+                m_ast_f->mkExprUnsignedNumber("32", 32, 32),
+                0),
+                0)));
+    array->setParams(params);
+    array->setParent(m_builtins.get());
+    m_builtins->getChildren().push_back(ast::IScopeChildUP(array));
+
     return m_builtins.release();
 }
 

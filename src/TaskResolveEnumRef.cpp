@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "zsp/parser/impl/TaskGetSymbolRefPath.h"
 #include "TaskResolveEnumRef.h"
 
 
@@ -57,24 +58,23 @@ void TaskResolveEnumRef::visitSymbolEnumScope(ast::ISymbolEnumScope *i) {
         i->getSymtab().find(m_id->getId());
     if (it != i->getSymtab().end()) {
         DEBUG("Found symbol %s", m_id->getId().c_str());
-        m_ref = m_ctxt->symtab()->getScopeSymbolPath();
-
-        m_ref->getPath().push_back({
-            ast::SymbolRefPathElemKind::ElemKind_ChildIdx, 
-            i->getId()
-        });
+        m_ref = TaskGetSymbolRefPath(
+            m_ctxt->getDebugMgr(),
+            m_ctxt->root(),
+            m_ctxt->getFactory()->getAstFactory()).mk(i);
 
         m_ref->getPath().push_back({
             ast::SymbolRefPathElemKind::ElemKind_ChildIdx, 
             it->second
         });
-        DEBUG("Path");
-        for (std::vector<ast::SymbolRefPathElem>::const_iterator
-            it=m_ref->getPath().begin();
-            it!=m_ref->getPath().end(); it++) {
-            DEBUG("  Elem: %d", it->idx);
+        if (DEBUG_EN) {
+            DEBUG("Enum-item Path");
+            for (std::vector<ast::SymbolRefPathElem>::const_iterator
+                it=m_ref->getPath().begin();
+                it!=m_ref->getPath().end(); it++) {
+                DEBUG("  Elem: %d::%d", it->kind, it->idx);
+            }
         }
-        fflush(stdout);
     }
     for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();

@@ -102,8 +102,8 @@ antlrcpp::Any AstBuilderInt::visitPackage_declaration(
 
 	addChild(pkg, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 	push_scope(pkg);
-	std::vector<PSSParser::Package_body_itemContext *> items = ctx->package_body_item();
-	for (std::vector<PSSParser::Package_body_itemContext *>::const_iterator
+	std::vector<PSSParser::Package_body_item_annContext *> items = ctx->package_body_item_ann();
+	for (std::vector<PSSParser::Package_body_item_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
 		(*it)->accept(this);
@@ -226,20 +226,20 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 		push_scope(ext);
 		switch (kind) {
 			case ast::ExtendTargetE::Action: {
-				std::vector<PSSParser::Action_body_itemContext *> items =
-					ctx->action_body_item();
+				std::vector<PSSParser::Action_body_item_annContext *> items =
+					ctx->action_body_item_ann();
                 DEBUG("Extend Action: %d items", items.size());
-				for (std::vector<PSSParser::Action_body_itemContext *>::const_iterator
+				for (std::vector<PSSParser::Action_body_item_annContext *>::const_iterator
 					it=items.begin();
 					it!=items.end(); it++) {
 					(*it)->accept(this);
 				}
 			} break;
 			case ast::ExtendTargetE::Component: {
-				std::vector<PSSParser::Component_body_itemContext *> items =
-					ctx->component_body_item();
+				std::vector<PSSParser::Component_body_item_annContext *> items =
+					ctx->component_body_item_ann();
                 DEBUG("Extend Component: %d items", items.size());
-				for (std::vector<PSSParser::Component_body_itemContext *>::const_iterator
+				for (std::vector<PSSParser::Component_body_item_annContext *>::const_iterator
 					it=items.begin();
 					it!=items.end(); it++) {
 					(*it)->accept(this);
@@ -324,9 +324,9 @@ antlrcpp::Any AstBuilderInt::visitAction_declaration(PSSParser::Action_declarati
 	addChild(action, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 	push_scope(action);
 
-	std::vector<PSSParser::Action_body_itemContext *> items = ctx->action_body_item();
+	std::vector<PSSParser::Action_body_item_annContext *> items = ctx->action_body_item_ann();
 
-	for (std::vector<PSSParser::Action_body_itemContext *>::const_iterator
+	for (std::vector<PSSParser::Action_body_item_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
 		(*it)->accept(this);
@@ -353,8 +353,8 @@ antlrcpp::Any AstBuilderInt::visitActivity_declaration(PSSParser::Activity_decla
     ast::IActivityDecl *activity = m_factory->mkActivityDecl();
     setLoc(activity, ctx->start);
 
-	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
-	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+	std::vector<PSSParser::Activity_stmt_annContext *> items = ctx->activity_stmt_ann();
+	for (std::vector<PSSParser::Activity_stmt_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
         addActivityStmt(activity, *it);
@@ -375,19 +375,19 @@ antlrcpp::Any AstBuilderInt::visitFlow_ref_field_declaration(PSSParser::Flow_ref
 	for (std::vector<PSSParser::Object_ref_fieldContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-		ast::IExpr *array_dim = 0;
 		ast::IDataTypeUserDefined *type = 0;
 
 		type = mkDataTypeUserDefined(ctx->flow_object_type()->type_identifier());
 
 		if ((*it)->array_dim()) {
+		    ast::IExpr *array_dim = 0;
 			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+            type = mkDataTypeArray(type, array_dim);
 		}
 
 		ast::IFieldRef *field = m_factory->mkFieldRef(
 			mkId((*it)->identifier()),
 			type,
-			array_dim,
 			ctx->is_input);
         setLoc(field, (*it)->identifier()->start);
 		addChild(field, ctx->start);
@@ -404,18 +404,18 @@ antlrcpp::Any AstBuilderInt::visitResource_ref_field_declaration(PSSParser::Reso
 	for (std::vector<PSSParser::Object_ref_fieldContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
-		ast::IExpr *array_dim = 0;
 		ast::IDataTypeUserDefined *type = mkDataTypeUserDefined(
 			ctx->resource_object_type()->resource_type_identifier()->type_identifier());
 
 		if ((*it)->array_dim()) {
+		    ast::IExpr *array_dim = 0;
 			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+            type = mkDataTypeArray(type, array_dim);
 		}
 
 		ast::IFieldClaim *field = m_factory->mkFieldClaim(
 			mkId((*it)->identifier()),
 			type,
-			array_dim,
 			ctx->lock);
         setLoc(field, (*it)->identifier()->start);
 		addChild(field, ctx->start);
@@ -902,13 +902,16 @@ antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedu
         it!=items.end(); it++) {
         ast::IDataType *type = mkDataType(ctx->data_type());
         ast::IExprId *name = mkId((*it)->identifier());
-        ast::IExpr *array_dim = ((*it)->array_dim())?mkExpr(
-            (*it)->array_dim()->constant_expression()->expression()):0;
         ast::IExpr *init = ((*it)->expression())?mkExpr((*it)->expression()):0;
+
+        if ((*it)->array_dim()) {
+            ast::IExpr *array_dim = 0;
+            array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+            type = mkDataTypeArray(type, array_dim);
+        }
         ast::IProceduralStmtDataDeclaration *decl = m_factory->mkProceduralStmtDataDeclaration(
             name,
             type,
-            array_dim,
             init);
         decl->setIndex(m_exec_scope_s.back()->getChildren().size());
         m_exec_scope_s.back()->getChildren().push_back(ast::IScopeChildUP(decl));
@@ -942,8 +945,8 @@ antlrcpp::Any AstBuilderInt::visitComponent_declaration(PSSParser::Component_dec
 
 	addChild(comp, ctx->start, ctx->TOK_LCBRACE()->getSymbol());
 	push_scope(comp);
-	std::vector<PSSParser::Component_body_itemContext *> body = ctx->component_body_item();
-	for (std::vector<PSSParser::Component_body_itemContext *>::const_iterator
+	std::vector<PSSParser::Component_body_item_annContext *> body = ctx->component_body_item_ann();
+	for (std::vector<PSSParser::Component_body_item_annContext *>::const_iterator
 		it=body.begin();
 		it!=body.end(); it++) {
 		(*it)->accept(this);
@@ -1020,8 +1023,8 @@ antlrcpp::Any AstBuilderInt::visitActivity_sequence_block_stmt(PSSParser::Activi
 		m_labeled_activity_id = 0;
 	}
 
-	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
-	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+	std::vector<PSSParser::Activity_stmt_annContext *> items = ctx->activity_stmt_ann();
+	for (std::vector<PSSParser::Activity_stmt_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
         addActivityStmt(seq, *it);
@@ -1049,8 +1052,8 @@ antlrcpp::Any AstBuilderInt::visitActivity_parallel_stmt(PSSParser::Activity_par
 	}
 
 
-	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
-	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+	std::vector<PSSParser::Activity_stmt_annContext *> items = ctx->activity_stmt_ann();
+	for (std::vector<PSSParser::Activity_stmt_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
         addActivityStmt(par, *it);
@@ -1077,8 +1080,8 @@ antlrcpp::Any AstBuilderInt::visitActivity_schedule_stmt(PSSParser::Activity_sch
 		m_labeled_activity_id = 0;
 	}
 
-	std::vector<PSSParser::Activity_stmtContext *> items = ctx->activity_stmt();
-	for (std::vector<PSSParser::Activity_stmtContext *>::const_iterator
+	std::vector<PSSParser::Activity_stmt_annContext *> items = ctx->activity_stmt_ann();
+	for (std::vector<PSSParser::Activity_stmt_annContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
         addActivityStmt(sched, *it);
@@ -1097,7 +1100,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_repeat_stmt(PSSParser::Activity_repea
 
 	if (ctx->is_repeat) {
 		ast::IExprId *label = m_labeled_activity_id;
-        ast::IScopeChild *body = mkActivityStmt(ctx->activity_stmt());
+        ast::IScopeChild *body = mkActivityStmt(ctx->activity_stmt_ann());
         if (!body) {
             body = m_factory->mkActivitySequence();
         }
@@ -1133,11 +1136,13 @@ antlrcpp::Any AstBuilderInt::visitData_declaration(PSSParser::Data_declarationCo
 		it!=items.end(); it++) {
         DEBUG("Name: %s", (*it)->identifier()->getText().c_str());
 		ast::IDataType *type = mkDataType(ctx->data_type());
-		ast::IExpr *array_dim = 0;
 		ast::IExpr *init = 0;
 
 		if ((*it)->array_dim()) {
+		    ast::IExpr *array_dim = 0;
+            // Convert the type to array<type,expr>
 			array_dim = mkExpr((*it)->array_dim()->constant_expression()->expression());
+            type = mkDataTypeArray(type, array_dim);
 		}
 
 		if ((*it)->constant_expression()) {
@@ -1148,7 +1153,6 @@ antlrcpp::Any AstBuilderInt::visitData_declaration(PSSParser::Data_declarationCo
 			mkId((*it)->identifier()),
 			type,
 			FieldAttr::NoFlags,
-			array_dim,
 			init);
 
 		addChild(field, ctx->start);
@@ -2184,7 +2188,7 @@ ast::IActivityJoinSpec *AstBuilderInt::mkActivityJoinSpec(PSSParser::Activity_jo
 	return spec;
 }
 
-ast::IScopeChild *AstBuilderInt::mkActivityStmt(PSSParser::Activity_stmtContext *ctx) {
+ast::IScopeChild *AstBuilderInt::mkActivityStmt(PSSParser::Activity_stmt_annContext *ctx) {
 	DEBUG_ENTER("mkActivityStmt");
 	m_activity_stmt = 0;
 	ctx->accept(this);
@@ -2194,7 +2198,7 @@ ast::IScopeChild *AstBuilderInt::mkActivityStmt(PSSParser::Activity_stmtContext 
 
 void AstBuilderInt::addActivityStmt(
         ast::IScope                         *scope,
-        PSSParser::Activity_stmtContext     *ctx) {
+        PSSParser::Activity_stmt_annContext *ctx) {
     ast::IScopeChild *a_stmt = mkActivityStmt(ctx);
     if (a_stmt) {
         a_stmt->setIndex(scope->getChildren().size());
@@ -2235,6 +2239,31 @@ ast::IDataTypeUserDefined *AstBuilderInt::mkDataTypeUserDefined(PSSParser::Type_
 	DEBUG_LEAVE("mkDataTypeUserDefined");
 
 	return ret;
+}
+
+ast::IDataTypeUserDefined *AstBuilderInt::mkDataTypeArray(
+        ast::IDataType          *elem_t,
+        ast::IExpr              *size) {
+    DEBUG_ENTER("mkDataTypeArray");
+    ast::ITemplateParamValueList *params = m_factory->mkTemplateParamValueList();
+    params->getValues().push_back(ast::ITemplateParamValueUP(
+        m_factory->mkTemplateParamTypeValue(elem_t)
+    ));
+    params->getValues().push_back(ast::ITemplateParamValueUP(
+        m_factory->mkTemplateParamExprValue(size)
+    ));
+    ast::ITypeIdentifierElem *array_e = m_factory->mkTypeIdentifierElem(
+        m_factory->mkExprId("array", false),
+        params);
+    ast::ITypeIdentifier *array_t = m_factory->mkTypeIdentifier();
+    array_t->getElems().push_back(ast::ITypeIdentifierElemUP(array_e));
+    
+	ast::IDataTypeUserDefined *ret = m_factory->mkDataTypeUserDefined(
+		false,
+        array_t);
+
+    DEBUG_LEAVE("mkDataTypeArray");
+    return ret;
 }
 
 ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::Domain_open_range_listContext *ctx) {

@@ -268,15 +268,19 @@ private:
 
     void addActivityStmt(
         ast::IScope                         *scope,
-        PSSParser::Activity_stmtContext     *ctx);
+        PSSParser::Activity_stmt_annContext *ctx);
 
-	ast::IScopeChild *mkActivityStmt(PSSParser::Activity_stmtContext *ctx);
+	ast::IScopeChild *mkActivityStmt(PSSParser::Activity_stmt_annContext *ctx);
 
 	ast::IConstraintStmt *mkConstraintSet(PSSParser::Constraint_setContext *ctx);
 
 	ast::IDataType *mkDataType(PSSParser::Data_typeContext *ctx);
 
 	ast::IDataTypeUserDefined *mkDataTypeUserDefined(PSSParser::Type_identifierContext *ctx);
+
+    ast::IDataTypeUserDefined *mkDataTypeArray(
+        ast::IDataType          *elem_t,
+        ast::IExpr              *size);
 
 	template <class T> T *mkDataTypeT(PSSParser::Data_typeContext *ctx) {
 		return dynamic_cast<T *>(mkDataType(ctx));

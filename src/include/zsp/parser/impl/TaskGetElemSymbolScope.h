@@ -22,7 +22,7 @@
 #include "dmgr/IDebugMgr.h"
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/ast/impl/VisitorBase.h"
-#include "TaskResolveSymbolPathRef.h"
+#include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
 
 namespace zsp {
 namespace parser {
@@ -31,9 +31,10 @@ class TaskGetElemSymbolScope : public virtual ast::VisitorBase {
 public:
     TaskGetElemSymbolScope(
         dmgr::IDebugMgr         *dmgr,
-        ast::ISymbolScope       *root) : 
+        ast::ISymbolScope       *root,
+        const std::string       &logid="zsp::parse::TaskGetElemSymbolScope") : 
         m_dbg(0), m_path_resolver(dmgr, root) {
-        DEBUG_INIT("zsp::parser::TaskGetElemSymbolScope", dmgr);
+        DEBUG_INIT(logid, dmgr);
     }
 
     virtual ~TaskGetElemSymbolScope() { }
@@ -73,21 +74,21 @@ public:
     }
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override {
-        DEBUG_ENTER("vistiSymbolScope \"%s\"", i->getName().c_str());
+        DEBUG_ENTER("visitSymbolScope \"%s\"", i->getName().c_str());
         m_ret = i;
-        DEBUG_LEAVE("vistiSymbolScope");
+        DEBUG_LEAVE("visitSymbolScope");
     }
 
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
-        DEBUG_ENTER("vistiSymbolTypeScope \"%s\"", i->getName().c_str());
+        DEBUG_ENTER("visitSymbolTypeScope \"%s\"", i->getName().c_str());
         m_ret = i;
-        DEBUG_LEAVE("vistiSymbolTypeScope");
+        DEBUG_LEAVE("visitSymbolTypeScope");
     }
 
     virtual void visitTemplateGenericTypeParamDecl(ast::ITemplateGenericTypeParamDecl *i) override {
-        DEBUG_ENTER("vistiTemplateGenericTypeParamDecl");
+        DEBUG_ENTER("visitTemplateGenericTypeParamDecl");
         i->getDflt()->accept(m_this);
-        DEBUG_LEAVE("vistiTemplateGenericTypeParamDecl");
+        DEBUG_LEAVE("visitTemplateGenericTypeParamDecl");
     }
 
     virtual void visitTemplateCategoryTypeParamDecl(ast::ITemplateCategoryTypeParamDecl *i) override {

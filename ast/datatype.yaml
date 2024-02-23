@@ -2,11 +2,6 @@
 classes: 
 - DataType:
     super: ScopeChild
-- DataTypeArray:
-    super: DataType
-    data: 
-    - type: "UP<DataType>"
-    - size: "UP<Expr>"
     
 - DataTypeBool:
     super: DataType

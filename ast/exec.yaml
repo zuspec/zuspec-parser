@@ -134,7 +134,6 @@ classes:
     - data:
       - name: UP<ExprId>
       - datatype: UP<DataType>
-      - array_dim: UP<Expr>
       - init: UP<Expr>
 
 

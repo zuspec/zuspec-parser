@@ -94,7 +94,6 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
     ast::ISymbolTypeScope *type_up = TaskResolveSymbolPathRef(
         m_ctxt->getDebugMgr(), m_ctxt->root()).resolveT<ast::ISymbolTypeScope>(type);
     DEBUG("type_up=%s", type_up->getName().c_str());
-    fflush(stdout);
 
     TaskCopyAst copier(m_ctxt->getFactory());
 

@@ -19,9 +19,10 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "zsp/parser/impl/TaskCopyAst.h"
+#include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
 #include "TaskBuildParamValList.h"
 #include "TaskExpr2DataType.h"
-#include "zsp/parser/impl/TaskCopyAst.h"
 
 
 namespace zsp {
@@ -46,6 +47,10 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
     TaskCopyAst copier(m_ctxt->getFactory());
     m_ret = 0;
 
+    m_pval_type = 0;
+    m_pval_type_valref_expr = 0;
+    m_pval_expr = 0;
+
     if (pvals->getValues().size() > plist->getChildren().size()) {
         fprintf(stdout, "TODO: Flag error \"Type accepts %d parameters ; %d supplied\"\n",
             plist->getChildren().size(),
@@ -68,20 +73,22 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
         pvals->getValues().at(plist_idx)->accept(m_this);
         plist->getChildren().at(plist_idx)->accept(m_this);
 
-        if (m_pval_expr) {
+        ast::IExpr *pval_expr = (m_pval_expr)?m_pval_expr->getValue():m_pval_type_valref_expr;
+
+        if (pval_expr) {
             if (m_ptype_value) {
                 DEBUG("Value parameter");
                 ast::ITemplateValueParamDecl *p = m_ctxt->getFactory()->getAstFactory()->mkTemplateValueParamDecl(
                     copier.copyT<ast::IExprId>(m_ptype_value->getName()),
                     copier.copyT<ast::IDataType>(m_ptype_value->getType()),
-                    copier.copyT<ast::IExpr>(m_pval_expr->getValue()));
+                    copier.copyT<ast::IExpr>(pval_expr));
 
                 m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
             } else if (m_ptype_generic_type) {
                 DEBUG("Generic type parameter");
                 ast::IDataType *dt = 0;
 
-                dt = TaskExpr2DataType(m_ctxt).expr2dt(m_pval_expr->getValue());
+                dt = TaskExpr2DataType(m_ctxt).expr2dt(pval_expr);
 
                 ast::ITemplateGenericTypeParamDecl *p = 
                     m_ctxt->getFactory()->getAstFactory()->mkTemplateGenericTypeParamDecl(
@@ -98,25 +105,31 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
             }
         } else { // Type value
             DEBUG("Type parameter");
+            DEBUG("ptype_value=%p ptype_category_type=%p ptype_generic_type=%p",
+                m_ptype_value, m_ptype_category_type, m_ptype_generic_type);
 
             // Type value. We always specialize as a generic type parameter
             ast::IExprId *name = 0;
             ast::IDataType *type = 0;
-            if (m_ptype_value) {
-                DEBUG("TODO: attempting to specify type for value parameter");
-            } else if (m_ptype_category_type) {
+            if (m_ptype_category_type) {
                 name = m_ptype_category_type->getName();
                 type = m_pval_type->getValue();
             } else if (m_ptype_generic_type) {
                 name = m_ptype_generic_type->getName();
                 type = m_pval_type->getValue();
+            } else if (m_ptype_value) {
+                // Note: it is possible to receive both a generic and a value
+                // parameter, but we don't expect to only receive a value
+                // parameter.
+                ERROR("TODO: attempting to specify type for value parameter");
             } else {
-                fprintf(stdout, "TODO: no ptype_decl captured\n");
+                ERROR("TODO: no ptype_decl captured\n");
             }
 
             DEBUG("Add parameter %s", (name)?name->getId().c_str():"<unknown>");
+            DEBUG("  value=%p %p", m_pval_type->getValue(), copier.copy(m_pval_type->getValue()));
             ast::ITemplateGenericTypeParamDecl *p = m_ctxt->getFactory()->getAstFactory()->mkTemplateGenericTypeParamDecl(
-                copier.copyT<ast::IExprId>(name),
+                (name)?copier.copyT<ast::IExprId>(name):0,
                 copier.copy(m_pval_type->getValue())
             );
             m_ret->getParams().push_back(ast::ITemplateParamDeclUP(p));
@@ -191,20 +204,51 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
     return m_ret;
 }
 
+void TaskBuildParamValList::visitDataTypeEnum(ast::IDataTypeEnum *i) {
+    DEBUG_ENTER("visitDataTypeEnum");
+    DEBUG("TODO: visitDataTypeEnum");
+    DEBUG_LEAVE("visitDataTypeEnum");
+}
+
 void TaskBuildParamValList::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
     DEBUG_ENTER("visitDataTypeUserDefined");
 
+    // If this is an external resolved reference, 
+    // follow it and check its source
+    if (i->getType_id()->getTarget()) {
+        ast::IScopeChild *target = TaskResolveSymbolPathRef(
+            m_ctxt->getDebugMgr(),
+            m_ctxt->root()).resolve(i->getType_id()->getTarget());
+        m_pval_type_isval = false;
+        if (target) {
+            target->accept(m_this);
+        }
+        if (m_pval_type_isval) {
+            // Save the reference
+            m_pval_type_valref_expr = i->getType_id();
+        }
+    }
     DEBUG_LEAVE("visitDataTypeUserDefined");
+}
+
+void TaskBuildParamValList::visitEnumItem(ast::IEnumItem *i) {
+    DEBUG_ENTER("visitEnumItem");
+    m_pval_type_isval = true;
+    DEBUG_LEAVE("visitEnumItem");
 }
 
 void TaskBuildParamValList::visitTemplateParamTypeValue(ast::ITemplateParamTypeValue *i) {
     DEBUG_ENTER("visitTemplateParamTypeValue");
+    m_pval_type_valref_expr = 0;
     if (i->getValue()) {
         DEBUG_ENTER("Visit type-value");
         i->getValue()->accept(m_this);
         DEBUG_LEAVE("Visit type-value");
     }
     m_pval_type = i;
+    if (m_pval_type_valref_expr) {
+        DEBUG("Actually a value");
+    }
     DEBUG_LEAVE("visitTemplateParamTypeValue");
 }
     
@@ -227,7 +271,7 @@ void TaskBuildParamValList::visitTemplateCategoryTypeParamDecl(ast::ITemplateCat
 }
     
 void TaskBuildParamValList::visitTemplateValueParamDecl(ast::ITemplateValueParamDecl *i) { 
-    DEBUG_ENTER("visitTemplateValueParamDecl");
+    DEBUG_ENTER("visitTemplateValueParamDecl %s", i->getName()->getId().c_str());
     m_ptype_value = i;
     DEBUG_LEAVE("visitTemplateValueParamDecl");
 }

@@ -1,5 +1,5 @@
 /*
- * TestRegModel.cpp
+ * TestAnnotations.cpp
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -18,64 +18,33 @@
  * Created on:
  *     Author:
  */
-#include "MarkerCollector.h"
-#include "TestRegModel.h"
+#include "TestAnnotations.h"
 
 
 namespace zsp {
 namespace parser {
 
 
-TestRegModel::TestRegModel() {
+TestAnnotations::TestAnnotations() {
 
 }
 
-TestRegModel::~TestRegModel() {
+TestAnnotations::~TestAnnotations() {
 
 }
 
-TEST_F(TestRegModel, reg_c_field) {
+TEST_F(TestAnnotations, smoke) {
     const char *text = R"(
-        import addr_reg_pkg::*;
+        struct my_annotation { }
 
-        component my_regs : reg_group_c {
-            reg_c<bit[32]>      r1;
-        }
-    )";
-
-    enableDebug(true);
-    MarkerCollector marker_c; 
-
-
-    std::vector<ast::IGlobalScopeUP> files;
-    ast::ISymbolScopeUP root;
-
-    parseLink(
-        marker_c,
-        text,
-        "reg_c_field.pss",
-        files,
-        root,
-        true);
-}
-
-TEST_F(TestRegModel, reg_group_c_field) {
-    const char *text = R"(
-        import addr_reg_pkg::*;
-
-        component my_regs : reg_group_c {
-            reg_c<bit[32]>      r1;
-            reg_c<bit[32]>      r2;
-        }
-
+        @my_annotation
         component pss_top {
-            my_regs regs;
+
         }
     )";
 
     enableDebug(true);
     MarkerCollector marker_c; 
-
 
     std::vector<ast::IGlobalScopeUP> files;
     ast::ISymbolScopeUP root;
@@ -83,29 +52,27 @@ TEST_F(TestRegModel, reg_group_c_field) {
     parseLink(
         marker_c,
         text,
-        "reg_c_field.pss",
+        "smoke.pss",
         files,
         root,
-        true);
+        false);
 }
 
-TEST_F(TestRegModel, reg_rw_parameterized) {
+TEST_F(TestAnnotations, params) {
     const char *text = R"(
-        import std_pkg::*;
-        import addr_reg_pkg::*;
-
-        struct fwperiph_dma_channel_csr : packed_s<> {
-            bit[1] en;
+        struct my_annotation { 
+            string key;
+            string value;
         }
 
-        component fwperiph_dma_channel : reg_group_c {
-            reg_c<fwperiph_dma_channel_csr,READWRITE,32> CSR;
+        @my_annotation("abc", "def")
+        component pss_top {
+
         }
     )";
 
     enableDebug(true);
     MarkerCollector marker_c; 
-
 
     std::vector<ast::IGlobalScopeUP> files;
     ast::ISymbolScopeUP root;
@@ -113,10 +80,39 @@ TEST_F(TestRegModel, reg_rw_parameterized) {
     parseLink(
         marker_c,
         text,
-        "reg_rw_parameterized.pss",
+        "smoke.pss",
         files,
         root,
-        true);
+        false);
+}
+
+TEST_F(TestAnnotations, params_mult) {
+    const char *text = R"(
+        struct my_annotation { 
+            string key;
+            string value;
+        }
+
+        @my_annotation("abc", "def")
+        @my_annotation("efg", "def")
+        component pss_top {
+
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        marker_c,
+        text,
+        "smoke.pss",
+        files,
+        root,
+        false);
 }
 
 }

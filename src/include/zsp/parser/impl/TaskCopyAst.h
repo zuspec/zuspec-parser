@@ -530,8 +530,6 @@ public:
         DEBUG_LEAVE("visitFunctionImportProto");
     }
     
-    virtual void visitDataTypeArray(ast::IDataTypeArray *i) { }
-    
     virtual void visitDataTypeBool(ast::IDataTypeBool *i) { 
         m_dt = m_factory->mkDataTypeBool();
     }
@@ -587,7 +585,6 @@ public:
             copyT<ast::IExprId>(i->getName()),
             copy(i->getType()),
             i->getAttr(),
-            (i->getArray_dim())?copy(i->getArray_dim()):0,
             (i->getInit())?copy(i->getInit()):0
         );
     }
