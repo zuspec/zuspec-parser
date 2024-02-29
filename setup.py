@@ -46,6 +46,8 @@ else:
     else:
         raise Exception("Unexpected source layout")
 
+sys.path.insert(0, os.path.join(packages_dir, "pyastbuilder", "src"))
+
 cwd = os.getcwd()
 if not os.path.isdir(os.path.join(cwd, "build")):
     os.makedirs(os.path.join(cwd, "build"))
