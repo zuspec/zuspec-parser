@@ -20,7 +20,7 @@ jobs:
           done
       - name: Fetch source dependencies
         run: |
-          export IVPM_PYTHON=/opt/python/cp38-cp38m/bin/python
+          export IVPM_PYTHON=/opt/python/cp38-cp38/bin/python
           ${IVPM_PYTHON} -m pip install ivpm twine auditwheel
           ${IVPM_PYTHON} -m ivpm update -a
       - name: Build packages
@@ -32,7 +32,7 @@ jobs:
       - name: Audit Wheels
         run: |
           for whl in dist/*.whl; do
-              /opt/python/cp38-cp38m/bin/auditwheel repair $whl
+              /opt/python/cp38-cp38/bin/auditwheel repair $whl
               rm $whl
           done
           cp wheelhouse/*.whl dist
