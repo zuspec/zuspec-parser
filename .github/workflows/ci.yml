@@ -109,7 +109,7 @@ jobs:
         python -m ivpm update -a
         ./packages/python/Scripts/python -m pip install ninja cython setuptools wheel build twine
         echo "BUILD_NUM=$env:BUILD_NUM" > python/zsp_parser/__build_num__.py
-        $env:PYTHONPATH = $PWD.Path/packages/pyastbuilder/src
+        $env:PYTHONPATH = "$PWD.Path/packages/pyastbuilder/src"
         ./packages/python/Scripts/python setup.py build bdist_wheel
             
 
