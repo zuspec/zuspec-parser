@@ -95,6 +95,17 @@ setup_args = dict(
 )
 
 if isSrcBuild:
+    import shutil
+    # Copy generated 'AST' extension files over before
+    # attempting to build
+    for file in ('ast_decl.pxd', 'ast.pxd'):
+        shutil.copyfile(
+            os.path.join(proj_dir, "build", "zsp_ast", "ext", file),
+            os.path.join(proj_dir, "python", "zsp_parser", file))
+    shutil.copyfile(
+        os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pyx'),
+        os.path.join(proj_dir, "python", 'ast.pyx'))
+
     setup_args["ivpm_extdep_pkgs"] = ["debug-mgr", "ciostream"]
     setup_args["ivpm_extra_data"] = {
         "zsp_parser": [
