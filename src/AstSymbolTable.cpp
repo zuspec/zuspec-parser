@@ -86,7 +86,6 @@ ast::IScopeChild *AstSymbolTable::defineSymbolScope(
         m_scope_s.push_back(ns);
         return 0;
     }
-
 }
 
 void AstSymbolTable::leaveSymbolScope() {

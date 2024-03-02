@@ -85,10 +85,12 @@ setup_args = dict(
         }
     },
     install_requires=[
-        'debug_mgr',
+        'debug-mgr',
         'ciostream'
     ],
     setup_requires=[
+        'debug-mgr',
+        'ciostream',
         'pyastbuilder',
         'cython'
     ]

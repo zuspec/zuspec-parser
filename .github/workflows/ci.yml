@@ -38,8 +38,8 @@ jobs:
       - name: Audit Wheels
         run: |
           for whl in dist/*.whl; do
-              ./packages/python/bin/auditwheel show $whl
-              ./packages/python/bin/auditwheel repair $whl
+              ./packages/python/bin/auditwheel -v show $whl
+              ./packages/python/bin/auditwheel -v repair $whl
               rm $whl
           done
           cp wheelhouse/*.whl dist
