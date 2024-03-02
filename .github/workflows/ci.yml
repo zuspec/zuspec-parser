@@ -37,10 +37,10 @@ jobs:
           ./packages/python/bin/python setup.py bdist_wheel
       - name: Audit Wheels
         run: |
-          export LD_LIBRARY_PATH=`pwd`/build/lib:`pwd`/build/lib64
+          #export LD_LIBRARY_PATH=`pwd`/build/lib:`pwd`/build/lib64
           for whl in dist/*.whl; do
               ./packages/python/bin/auditwheel -v show $whl
-              ./packages/python/bin/auditwheel -v repair $whl
+              ./packages/python/bin/auditwheel -v repair --exclude libantlr4-runtime.so.4.8 $whl
               rm $whl
           done
           cp wheelhouse/*.whl dist
