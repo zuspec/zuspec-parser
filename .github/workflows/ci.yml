@@ -37,7 +37,7 @@ jobs:
           ./packages/python/bin/python setup.py bdist_wheel
       - name: Audit Wheels
         run: |
-          for whl in dist/*.whl
+          for whl in dist/*.whl; do
               ./packages/python/bin/auditwheel show $whl
               ./packages/python/bin/auditwheel repair $whl
               rm $whl
