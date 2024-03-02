@@ -34,6 +34,7 @@ jobs:
       - name: Audit Wheels
         run: |
           for whl in dist/*.whl; do
+              /opt/python/cp38-cp38/bin/auditwheel show $whl
               /opt/python/cp38-cp38/bin/auditwheel repair $whl
               rm $whl
           done
