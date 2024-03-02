@@ -107,16 +107,14 @@ if isSrcBuild:
     #     os.path.join(proj_dir, "python", 'ast.pyx'))
 
     setup_args["ivpm_extdep_pkgs"] = ["debug-mgr", "ciostream"]
-    setup_args["ivpm_extdep_data"] = {
-        "zsp_parser": [
-            (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast_decl.pxd'),
-                os.path.join(proj_dir, "python", "zsp_parser", 'ast_decl.pxd')),
-            (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pxd'),
-                os.path.join(proj_dir, "python", "zsp_parser", 'ast.pxd')),
-            (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pyx'),
-                os.path.join(proj_dir, "python", 'ast.pyx'))
-        ]
-    }
+    setup_args["ivpm_extdep_data"] = [
+        (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast_decl.pxd'),
+            os.path.join(proj_dir, "python", "zsp_parser", 'ast_decl.pxd')),
+        (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pxd'),
+            os.path.join(proj_dir, "python", "zsp_parser", 'ast.pxd')),
+        (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pyx'),
+            os.path.join(proj_dir, "python", 'ast.pyx'))
+    ]
     setup_args["ivpm_extra_data"] = {
         "zsp_parser": [
             ("build/include", "share"),
