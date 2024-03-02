@@ -113,7 +113,11 @@ if isSrcBuild:
         (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pxd'),
             os.path.join(proj_dir, "python", "zsp_parser", 'ast.pxd')),
         (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pyx'),
-            os.path.join(proj_dir, "python", 'ast.pyx'))
+            os.path.join(proj_dir, "python", 'ast.pyx')),
+        (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'PyBaseVisitor.cpp'),
+            os.path.join(proj_dir, "python", 'PyBaseVisitor.cpp')),
+        (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'PyBaseVisitor.h'),
+            os.path.join(proj_dir, "python", 'PyBaseVisitor.h')),
     ]
     setup_args["ivpm_extra_data"] = {
         "zsp_parser": [
