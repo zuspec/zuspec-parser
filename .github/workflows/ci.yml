@@ -30,7 +30,7 @@ jobs:
         run: |
           py=${{ matrix.pyversion }}
           /opt/python/$py/bin/python -m ivpm update -a
-          ./packages/python/bin/python -m pip install ninja whell cython ivpm twine auditwheel
+          ./packages/python/bin/python -m pip install ninja wheel cython ivpm twine auditwheel
       - name: Build packages
         run: |
           echo "BUILD_NUM=$GITHUB_RUN_ID" >> python/zsp_parser/__build_num__.py
