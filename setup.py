@@ -86,7 +86,8 @@ setup_args = dict(
     },
     install_requires=[
         'debug-mgr',
-        'ciostream'
+        'ciostream',
+        'pyast-api_if'
     ],
     setup_requires=[
         'debug-mgr',

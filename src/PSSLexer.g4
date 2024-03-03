@@ -5,7 +5,7 @@
 lexer grammar PSSLexer;
 
 TOK_AT: '@';
-TOK_HASH: '#';
+TOK_AT_HASH: '@#';
 TOK_LPAREN: '(';
 TOK_RPAREN: ')';
 TOK_COMMA: ',';

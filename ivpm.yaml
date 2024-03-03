@@ -63,6 +63,8 @@ package:
       src: pypi
     - name: ivpm
       url: https://github.com/fvutils/ivpm.git
+    - name: pyapi-compat-if
+      url: https://github.com/mballance-utils/pyapi-compat-if.git
 
   - name: default
     deps:

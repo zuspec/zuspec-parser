@@ -1,8 +1,22 @@
 /*
  * AstBuilderInt.cpp
  *
- *  Created on: Sep 13, 2020
- *      Author: ballance
+ * Copyright 2022 Matthew Ballance and Contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may 
+ * not use this file except in compliance with the License.  
+ * You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+ *
+ * Created on:
+ *     Author:
  */
 
 #include <vector>
@@ -17,8 +31,9 @@
 #include "zsp/ast/INamedScope.h"
 #include "zsp/ast/IPackageImportStmt.h"
 #include "zsp/ast/Location.h"
-#include "ScopeUtil.h"
 #include "Marker.h"
+#include "PMacroProcLexer.h"
+#include "ScopeUtil.h"
 
 namespace zsp {
 namespace parser {
@@ -50,7 +65,7 @@ void AstBuilderInt::build(
     m_fileid = global->getFileid();
 
 	ANTLRInputStream input(*in);
-	PSSLexer lexer(&input);
+    PMacroProcLexer lexer(&input, m_fileid, m_marker_l);
 	m_tokens = std::unique_ptr<CommonTokenStream>(new CommonTokenStream(&lexer));
 	PSSParser parser(m_tokens.get());
 

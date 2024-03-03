@@ -70,6 +70,8 @@ package_body_item:
 //	| static_const_field_declaration	
 	;
 
+// import <pss_item> ;
+// import [kind] 
 import_stmt:
 	TOK_IMPORT package_import_pattern TOK_SEMICOLON
 ;
