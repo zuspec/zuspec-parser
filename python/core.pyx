@@ -52,7 +52,19 @@ cdef class Factory(object):
         global _inst
         if _inst is None:
             ext_dir = os.path.dirname(os.path.abspath(__file__))
-            core_lib = os.path.join(ext_dir, "libzsp-parser.so")
+            build_dir = os.path.abspath(os.path.join(ext_dir, "../../build"))
+
+            libname = "libzsp-parser.so"
+            core_lib = None
+
+            for libdir in ("lib", "lib64"):
+                if os.path.isfile(os.path.join(build_dir, libdir, libname)):
+                    core_lib = os.path.join(build_dir, libdir, libname)
+                    break
+
+            if core_lib is None:
+                core_lib = os.path.join(ext_dir, "libzsp-parser.so")
+
             if not os.path.isfile(core_lib):
                 raise Exception("Extension library core \"%s\" doesn't exist" % core_lib)
 
