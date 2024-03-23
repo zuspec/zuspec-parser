@@ -42,6 +42,8 @@ if isSrcBuild:
     pyastbuilder_dir = os.path.join(packages_dir, "pyastbuilder/src")
     ciostream_dir = os.path.join(packages_dir, "ciostream/src")
 
+    sys.path.append(ciostream_dir)
+
     if "PYTHONPATH" in os.environ:
         os.environ["PYTHONPATH"] = pyastbuilder_dir + ps + ciostream_dir + ps + os.environ["PYTHONPATH"]
     else:
