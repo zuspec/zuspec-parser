@@ -3,7 +3,6 @@
 #*
 #* zuspec-parser Python extension setup file
 #*****************************************************************************
-
 import os
 import sys
 
@@ -27,10 +26,27 @@ isSrcBuild = False
 try:
     from ivpm.setup import setup
     isSrcBuild = os.path.isdir(os.path.join(proj_dir, "src"))
+    print("zuspec-parser: isSrcBuild: %s" % str(isSrcBuild))
 except ImportError as e:
     from setuptools import setup
-    print("Falling back: %s" % str(e))
+    print("zuspec-parser: not IVPM build (Falling back): %s" % str(e))
 
+if isSrcBuild:
+    import platform
+    ps = ";" if platform.system() == "Windows" else ":"
+
+    if os.path.isdir(os.path.join(proj_dir, "packages")):
+        packages_dir = os.path.join(proj_dir, "packages")
+    else:
+        packages_dir = os.path.abspath(os.path.join(proj_dir, ".."))
+    pyastbuilder_dir = os.path.join(packages_dir, "pyastbuilder/src")
+    ciostream_dir = os.path.join(packages_dir, "ciostream/src")
+
+    if "PYTHONPATH" in os.environ:
+        os.environ["PYTHONPATH"] = pyastbuilder_dir + ps + ciostream_dir + ps + os.environ["PYTHONPATH"]
+    else:
+        os.environ["PYTHONPATH"] = pyastbuilder_dir + ps + ciostream_dir
+    print("PYTHONPATH: %s" % str(os.environ["PYTHONPATH"]))
 
 include_dirs = []
 
@@ -67,6 +83,11 @@ ext = Extension(
 
 extensions=[ast_ext, ext]
 
+setup_requires=['cython', 'ciostream']
+
+if isSrcBuild:
+    setup_requires.append('pyastbuilder')
+
 setup_args = dict(
     name="zuspec-parser",
     packages=find_namespace_packages(where='python'),
@@ -88,12 +109,7 @@ setup_args = dict(
         'debug-mgr',
         'ciostream'
     ],
-    setup_requires=[
-        'debug-mgr',
-        'ciostream',
-        'pyastbuilder',
-        'cython'
-    ]
+    setup_requires=setup_requires,
 )
 
 if isSrcBuild:
