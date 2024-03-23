@@ -104,7 +104,7 @@ setup_args = dict(
     ext_modules=extensions,
     entry_points={
         "ivpm.pkginfo": {
-            'zsp_parser = zsp_parser.pkginfo:PkgInfo'
+            'zuspec-parser = zsp_parser.pkginfo:PkgInfo'
         }
     },
     install_requires=[
