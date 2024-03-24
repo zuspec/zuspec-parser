@@ -5,8 +5,13 @@
 #*****************************************************************************
 import os
 import sys
-
+import platform
 from setuptools import Extension, setup, find_namespace_packages
+
+if "IVPM_PYTHONPATH" in os.environ.keys():
+    ps = ";" if platform.system() == "Windows" else ":"
+    for i,p in enumerate(os.environ["IVPM_PYTHONPATH"].split(ps)):
+        sys.path.insert(i, p)
 
 version="0.0.1"
 
