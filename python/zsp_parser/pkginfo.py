@@ -17,7 +17,7 @@ class PkgInfo(ivpm.PkgInfo):
             self._incdirs = [os.path.join(pkgdir, "share", "include")]
             self._libdirs = [os.path.join(pkgdir)]
 
-        self._deps = ["debug-mgr"]
+        self._deps = ["ciostream", "debug-mgr"]
         self._libs = [
             'zsp-parser',
             'ast',
