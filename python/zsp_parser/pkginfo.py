@@ -9,7 +9,10 @@ class PkgInfo(ivpm.PkgInfo):
         super().__init__("zuspec-parser", os.path.dirname(pkgdir))
 
         if os.path.isdir(os.path.join(projdir, "src")):
-            self._incdirs = [os.path.join(projdir, "build", "include")]
+            self._incdirs = [
+                os.path.join(projdir, "python"),
+                os.path.join(projdir, "build", "include")
+            ]
             self._libdirs = [
                 os.path.join(projdir, "build", "lib"),
                 os.path.join(projdir, "build", "lib64")]
