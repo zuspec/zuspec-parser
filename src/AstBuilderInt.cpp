@@ -2864,20 +2864,18 @@ ast::ITemplateParamValueList *AstBuilderInt::mkTemplateParamValueList(
 }
 
 void AstBuilderInt::setLoc(ast::IScopeChild *c, Token *start) {
-    Location loc = {
-        .fileid = m_fileid,
-        .lineno = (int32_t)start->getLine(),
-        .linepos = (int32_t)start->getCharPositionInLine()+1
-    };
+    Location loc;
+    loc.fileid = m_fileid;
+    loc.lineno = (int32_t)start->getLine();
+    loc.linepos = (int32_t)start->getCharPositionInLine()+1;
 	c->setLocation(loc);
 }
 
 void AstBuilderInt::setLoc(ast::IExprId *c, Token *start) {
-    Location loc = {
-        .fileid = m_fileid,
-        .lineno = (int32_t)start->getLine(),
-        .linepos = (int32_t)start->getCharPositionInLine()+1
-    };
+    Location loc;
+    loc.fileid = m_fileid;
+    loc.lineno = (int32_t)start->getLine();
+    loc.linepos = (int32_t)start->getCharPositionInLine()+1;
 	c->setLocation(loc);
 }
 

@@ -61,6 +61,9 @@ package:
       src: pypi
     - name: jinja2
       src: pypi
+    - name: ivpm
+      src: pypi
+    #  url: https://github.com/fvutils/ivpm.git
 
   - name: default
     deps:

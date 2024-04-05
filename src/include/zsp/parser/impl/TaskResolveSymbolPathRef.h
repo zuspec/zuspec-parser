@@ -272,7 +272,7 @@ public:
                     DEBUG("Elem: TypeSpec %d", it->idx);
 //                    ast::ISymbolTypeScope *c = scope_ts->getSpec_types().at(it->idx).get();
 //                    ret->pushScope(c);
-                    DEBUG("  scope %p => %p", scope_ts, ret);
+                    DEBUG("  scope %p => %p", scope_ts, ret.c_str());
                 } break;
                 default:
                     fprintf(stdout, "TODO: handle ElemKind %d\n", it->kind);
@@ -329,7 +329,7 @@ public:
                     DEBUG("Elem: TypeSpec %d", it->idx);
 //                    ast::ISymbolTypeScope *c = scope_ts->getSpec_types().at(it->idx).get();
 //                    ret->pushScope(c);
-                    DEBUG("  scope %p => %p", scope_ts, ret);
+                    DEBUG("  scope %p => %p", scope_ts, ret.c_str());
                 } break;
                 default:
                     fprintf(stdout, "TODO: handle ElemKind %d\n", it->kind);

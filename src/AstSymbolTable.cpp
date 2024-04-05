@@ -86,7 +86,6 @@ ast::IScopeChild *AstSymbolTable::defineSymbolScope(
         m_scope_s.push_back(ns);
         return 0;
     }
-
 }
 
 void AstSymbolTable::leaveSymbolScope() {
@@ -111,7 +110,7 @@ void AstSymbolTable::leaveParamsScope() {
      * @return ast::IField* if a duplicate field exists
      */
 ast::IField *AstSymbolTable::declareField(ast::IField *f) {
-
+    return 0;
 }
 
 void AstSymbolTable::enterTypeScope(ast::ITypeScope *s) {

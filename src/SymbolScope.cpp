@@ -55,10 +55,9 @@ void SymbolScope::addDeclScope(zsp::ast::IScopeChild *scope) {
 
 bool SymbolScope::addSubscope(ISymbolScope *scope) {
     if (m_symtab.find(scope->getName()) != m_symtab.end()) {
-        ResolveResult res = {
-            .is_terminal=false,
-            {.scope=scope}
-        };
+        ResolveResult res;
+        res.is_terminal=false;
+        res.scope = scope;
         m_subscopes.push_back(ISymbolScopeUP(scope));
         m_symtab.insert({scope->getName(), res});
         return true;
@@ -69,10 +68,9 @@ bool SymbolScope::addSubscope(ISymbolScope *scope) {
 
 bool SymbolScope::addTerminal(ast::INamedScopeChild *terminal) {
     if (m_symtab.find(terminal->getName()->getId()) != m_symtab.end()) {
-        ResolveResult res = {
-            .is_terminal=true,
-            {.terminal=terminal}
-        };
+        ResolveResult res;
+        res.is_terminal=true;
+        res.terminal = terminal;
 
         m_symtab.insert({terminal->getName()->getId(), res});
         m_terminals.push_back(terminal);
