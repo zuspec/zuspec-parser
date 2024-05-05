@@ -52,28 +52,28 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
 
-  ci-linux-docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2.3.1
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install python3
-          python3 -m pip install ivpm
-          python3 -m ivpm update --anonymous-git
-          ./packages/python/bin/pip install packaging jinja2
-      - name: Build Docs
-        run: |
-          ./packages/python/bin/python -m sphinx.cmd.build -M html \
-            ./doc/source doc/build
-          touch doc/build/html/.nojekyll
-      - name: Deploy Docs
-        if: startsWith(github.ref, 'refs/heads/main')
-        uses: JamesIves/github-pages-deploy-action@4.1.7
-        with:
-          branch: gh-pages
-          folder: doc/build/html
+#  ci-linux-docs:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2.3.1
+#      - name: Install Dependencies
+#        run: |
+#          sudo apt-get update
+#          sudo apt-get install python3
+#          python3 -m pip install ivpm
+#          python3 -m ivpm update --anonymous-git
+#          ./packages/python/bin/pip install packaging jinja2
+#      - name: Build Docs
+#        run: |
+#          ./packages/python/bin/python -m sphinx.cmd.build -M html \
+#            ./doc/source doc/build
+#          touch doc/build/html/.nojekyll
+#      - name: Deploy Docs
+#        if: startsWith(github.ref, 'refs/heads/main')
+#        uses: JamesIves/github-pages-deploy-action@4.1.7
+#        with:
+#          branch: gh-pages
+#          folder: doc/build/html
 
   ci-windows:
     runs-on: ${{ matrix.platform }}
