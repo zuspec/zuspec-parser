@@ -15,6 +15,9 @@ structs:
     - linepos: 
         type: int32_t
         init: -1
+    - extent:
+        type: int32_t
+        init: -1
 
 classes:
     - AssocData:

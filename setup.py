@@ -8,11 +8,6 @@ import sys
 import platform
 from setuptools import Extension, setup, find_namespace_packages
 
-if "IVPM_PYTHONPATH" in os.environ.keys():
-    ps = ";" if platform.system() == "Windows" else ":"
-    for i,p in enumerate(os.environ["IVPM_PYTHONPATH"].split(ps)):
-        sys.path.insert(i, p)
-
 version="0.0.1"
 
 proj_dir = os.path.dirname(os.path.abspath(__file__))
@@ -35,25 +30,6 @@ try:
 except ImportError as e:
     from setuptools import setup
     print("zuspec-parser: not IVPM build (Falling back): %s" % str(e))
-
-if isSrcBuild:
-    import platform
-    ps = ";" if platform.system() == "Windows" else ":"
-
-    if os.path.isdir(os.path.join(proj_dir, "packages")):
-        packages_dir = os.path.join(proj_dir, "packages")
-    else:
-        packages_dir = os.path.abspath(os.path.join(proj_dir, ".."))
-    pyastbuilder_dir = os.path.join(packages_dir, "pyastbuilder/src")
-    ciostream_dir = os.path.join(packages_dir, "ciostream/src")
-
-    sys.path.append(ciostream_dir)
-
-    if "PYTHONPATH" in os.environ:
-        os.environ["PYTHONPATH"] = pyastbuilder_dir + ps + ciostream_dir + ps + os.environ["PYTHONPATH"]
-    else:
-        os.environ["PYTHONPATH"] = pyastbuilder_dir + ps + ciostream_dir
-    print("PYTHONPATH: %s" % str(os.environ["PYTHONPATH"]))
 
 include_dirs = []
 

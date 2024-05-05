@@ -1874,12 +1874,14 @@ void AstBuilderInt::syntaxError(
 			size_t charPositionInLine,
 			const std::string &msg,
 			std::exception_ptr e) {
-	fprintf(stdout, "Error: Syntax error\n");
+	fprintf(stdout, "Error: Syntax error: line=%d pos=%d sym=%s\n",
+        line, charPositionInLine, offendingSymbol->getText().c_str());
 	if (m_marker_l) {
 		ast::Location loc;
 		loc.fileid = 0;
 		loc.lineno = line;
 		loc.linepos = charPositionInLine;
+        loc.extent = offendingSymbol->getText().size();
 
 		Marker m(
 				msg,

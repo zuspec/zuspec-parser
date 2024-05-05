@@ -6,7 +6,7 @@ cimport debug_mgr.core as dm_core
 cimport zsp_parser.ast as ast
 cimport zsp_parser.ast_decl as ast_decl
 cimport zsp_parser.decl as decl
-cimport ciostream
+from ciostream.core cimport cistream
 from libc.stdint cimport intptr_t
 from libcpp.vector cimport vector as std_vector
 from libcpp.cast cimport dynamic_cast
@@ -90,9 +90,9 @@ cdef class AstBuilder(object):
     cpdef build(self,
         ast.GlobalScope         root,
                                 in_s):
-        cdef ciostream.cistream c_in_s
+        cdef cistream c_in_s
         
-        c_in_s = ciostream.cistream(in_s)
+        c_in_s = cistream(in_s)
 
         self._hndl.build(
             root.asGlobalScope(),

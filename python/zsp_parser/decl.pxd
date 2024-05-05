@@ -14,7 +14,7 @@ from libc.stdint cimport int64_t
 from libcpp cimport bool
 cimport cpython.ref as cpy_ref
 from zsp_parser cimport ast_decl as ast
-cimport ciostream
+from ciostream.core cimport istream
 
 ctypedef IFactory *IFactoryP
 ctypedef IMarker *IMarkerP
@@ -50,7 +50,7 @@ cdef extern from "zsp/parser/IAstBuilder.h" namespace "zsp::parser":
 
         void build(
             ast.IGlobalScope        *scope,
-            ciostream.istream       *in_s)
+            istream                 *in_s)
 
 cdef extern from "zsp/parser/ILinker.h" namespace "zsp::parser":
     cdef cppclass ILinker:
