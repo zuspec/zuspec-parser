@@ -62,7 +62,7 @@ jobs:
           sudo apt-get install python3
           python3 -m pip install ivpm
           python3 -m ivpm update --anonymous-git
-          ./packages/python/bin/pip install packaging
+          ./packages/python/bin/pip install packaging jinja2
       - name: Build Docs
         run: |
           ./packages/python/bin/python -m sphinx.cmd.build -M html \
