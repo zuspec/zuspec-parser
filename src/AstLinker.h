@@ -37,7 +37,7 @@ public:
 
     virtual ~AstLinker();
 
-    virtual ast::ISymbolScope *link(
+    virtual ast::IRootSymbolScope *link(
         IMarkerListener                         *marker_l,
         const std::vector<ast::IGlobalScope *>  &scopes) override;
 

@@ -943,7 +943,7 @@ antlrcpp::Any AstBuilderInt::visitComponent_declaration(PSSParser::Component_dec
         comp->setParams(mkTypeParamDecl(ctx->template_param_decl_list()));
     }
 
-	addChild(comp, ctx->start, ctx->TOK_LCBRACE()->getSymbol());
+	addChild(comp, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
 	push_scope(comp);
 	std::vector<PSSParser::Component_body_item_annContext *> body = ctx->component_body_item_ann();
 	for (std::vector<PSSParser::Component_body_item_annContext *>::const_iterator
@@ -1155,7 +1155,11 @@ antlrcpp::Any AstBuilderInt::visitData_declaration(PSSParser::Data_declarationCo
 			FieldAttr::NoFlags,
 			init);
 
-		addChild(field, ctx->start);
+        // Give the field a location that matches the field identifier
+		addChild(
+            field, 
+            (*it)->identifier()->start,
+            &field->getName()->getLocation());
 
 		if (m_field_depth > 0) {
 			m_fields.push_back(field);
@@ -1716,6 +1720,7 @@ antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) 
 	Location loc = id->getLocation();
 	loc.lineno = ctx->start->getLine();
 	loc.linepos = ctx->start->getCharPositionInLine()+1;
+    loc.extent = id->getId().size();
 	id->setLocation(loc);
 
 	m_expr = id;
@@ -1891,15 +1896,19 @@ void AstBuilderInt::syntaxError(
 	}
 }
 
-void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t) {
+void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t, const ast::Location *loc) {
     c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 	c->setParent(scope());
-    c->setLocation({
-        m_file_id,
-        (int32_t)t->getLine(),
-        (int32_t)t->getCharPositionInLine()+1
-    });
+    if (loc) {
+        c->setLocation(*loc);
+    } else if (t) {
+        c->setLocation({
+            m_file_id,
+            (int32_t)t->getLine(),
+            (int32_t)t->getCharPositionInLine()+1
+        });
+    }
 
 	if (m_collectDocStrings && t) {
 		addDocstring(c, t);
@@ -2238,6 +2247,9 @@ ast::IDataTypeUserDefined *AstBuilderInt::mkDataTypeUserDefined(PSSParser::Type_
 		ctx->is_global,
 		mkTypeId(ctx));
 
+    // Type-identifier location is the same as the first identifier element
+    ret->setLocation(ret->getType_id()->getElems().front()->getId()->getLocation());
+
 	DEBUG_LEAVE("mkDataTypeUserDefined");
 
 	return ret;
@@ -2464,7 +2476,11 @@ IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
-    setLoc(id, ctx->start);
+	Location loc = id->getLocation();
+	loc.lineno = ctx->start->getLine();
+	loc.linepos = ctx->start->getCharPositionInLine()+1;
+    loc.extent = id->getId().size();
+	id->setLocation(loc);
 
 	return id;
 }

@@ -35,6 +35,13 @@ cdef extern from "zsp/parser/IFactory.h" namespace "zsp::parser":
             IAstBuilder             *ast_builder,
             ast.IGlobalScope        *glbl_scope)
 
+        ILookupLocationResult *lookupLocation(
+            ast.IRootSymbolScope    *root,
+            ast.IScope              *scope,
+            int                     lineno,
+            int                     linepos
+        )
+
         IAstBuilder *mkAstBuilder(IMarkerListener *)
 
         ILinker *mkAstLinker()
@@ -52,13 +59,21 @@ cdef extern from "zsp/parser/IAstBuilder.h" namespace "zsp::parser":
             ast.IGlobalScope        *scope,
             istream                 *in_s)
 
+        void setCollectDocStrings(bool)
+
+        bool getCollectDocStrings()
+
 cdef extern from "zsp/parser/ILinker.h" namespace "zsp::parser":
     cdef cppclass ILinker:
 
-        ast.ISymbolScope *link(
+        ast.IRootSymbolScope *link(
             IMarkerListener         *marker_l,
             const cpp_vector[ast.IGlobalScopeP] &scopes)
 
+        pass
+
+cdef extern from "zsp/parser/ILookupLocationResult.h" namespace "zsp::parser":
+    cdef cppclass ILookupLocationResult:
         pass
 
 cdef extern from "zsp/parser/IMarker.h" namespace "zsp::parser":

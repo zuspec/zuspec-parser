@@ -1,7 +1,7 @@
-/**
- * ILinker.h
+/*
+ * TaskLookupLocationResult.cpp
  *
- * Copyright 2022 Matthew Ballance and Contributors
+ * Copyright 2023 Matthew Ballance and Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may 
  * not use this file except in compliance with the License.  
@@ -16,30 +16,22 @@
  * limitations under the License.
  *
  * Created on:
- *     Author: 
+ *     Author:
  */
-#pragma once
-#include <memory>
-#include "zsp/parser/IMarkerListener.h"
-#include "zsp/ast/ISymbolScope.h"
+#include "TaskLookupLocationResult.h"
+
 
 namespace zsp {
 namespace parser {
 
-class ILinker;
-using ILinkerUP=std::unique_ptr<ILinker>;
-class ILinker {
-public:
 
-    virtual ~ILinker() { }
-
-    virtual ast::IRootSymbolScope *link(
-        IMarkerListener                         *marker_l,
-        const std::vector<ast::IGlobalScope *>  &scopes) = 0;
-
-};
+TaskLookupLocationResult::TaskLookupLocationResult() {
 
 }
-} /* namespace zsp */
 
+TaskLookupLocationResult::~TaskLookupLocationResult() {
 
+}
+
+}
+}

@@ -234,7 +234,8 @@ public:
 
 
 private:
-    void addChild(ast::IScopeChild *c, Token *t);
+
+    void addChild(ast::IScopeChild *c, Token *t, const ast::Location *loc=0);
 
     void addChild(ast::INamedScopeChild *c, Token *t);
 

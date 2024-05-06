@@ -18,6 +18,13 @@ cdef class Factory(object):
         AstBuilder          ast_builder,
         ast.GlobalScope     glbl_scope)
 
+    cpdef LookupLocationResult lookupLocation(
+        self,
+        ast.RootSymbolScope     root,
+        ast.Scope               scope,
+        int                     lineno,
+        int                     linepos)
+
     cpdef AstBuilder mkAstBuilder(self, MarkerListener marker_l)
 
     cpdef Linker mkAstLinker(self)
@@ -39,6 +46,10 @@ cdef class AstBuilder(object):
         ast.GlobalScope         root,
                                 in_s)
 
+    cpdef void setCollectDocStrings(self, bool collect)
+
+    cpdef bool getCollectDocStrings(self)
+
     @staticmethod
     cdef AstBuilder mk(decl.IAstBuilder *hndl)
 
@@ -46,7 +57,7 @@ cdef class Linker(object):
     cdef decl.ILinker           *_hndl
     cdef bool                   _owned
 
-    cpdef ast.SymbolScope link(self,
+    cpdef ast.RootSymbolScope link(self,
         MarkerListener         marker_l,
         scopes)
 
@@ -57,6 +68,13 @@ cdef class Location(object):
     cdef int32_t        _file
     cdef int32_t        _line
     cdef int32_t        _pos
+
+cdef class LookupLocationResult(object):
+    cdef decl.ILookupLocationResult     *_hndl
+    cdef bool                           _owned
+
+    @staticmethod
+    cdef LookupLocationResult mk(decl.ILookupLocationResult *hndl, bool owned=*)
 
 cdef class Marker(object):
     cdef decl.IMarker               *_hndl

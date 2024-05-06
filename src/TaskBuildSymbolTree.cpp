@@ -40,10 +40,10 @@ TaskBuildSymbolTree::~TaskBuildSymbolTree() {
 
 }
 
-ast::ISymbolScope *TaskBuildSymbolTree::build(
+ast::IRootSymbolScope *TaskBuildSymbolTree::build(
         const std::vector<ast::IGlobalScope *>  &roots) {
     DEBUG_ENTER("build");
-    ast::ISymbolScope *root = m_factory->mkSymbolScope("");
+    ast::IRootSymbolScope *root = m_factory->mkRootSymbolScope("");
     root->setSynthetic(true);
     pushSymbolScope(root);
 
@@ -62,6 +62,7 @@ ast::ISymbolScope *TaskBuildSymbolTree::build(
         for (std::vector<ast::IScopeChildUP>::const_iterator
             c_it=(*it)->getChildren().begin();
             c_it!=(*it)->getChildren().end(); c_it++) {
+//            root->getUnits().push_back(ast::IGlobalScopeUP(*it));
             (*c_it)->accept(this);
         }
     }

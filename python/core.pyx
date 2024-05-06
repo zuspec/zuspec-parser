@@ -30,6 +30,24 @@ cdef class Factory(object):
             ast_builder._hndl,
             glbl_scope.asGlobalScope())
 
+    cpdef LookupLocationResult lookupLocation(
+        self,
+        ast.RootSymbolScope     root,
+        ast.Scope               scope,
+        int                     lineno,
+        int                     linepos):
+        cdef decl.ILookupLocationResult *res
+        res = self._hndl.lookupLocation(
+            root.asRootSymbolScope(),
+            scope.asScope(),
+            lineno,
+            linepos)
+        
+        if res != NULL:
+            return LookupLocationResult.mk(res, True)
+        else:
+            return None
+
     cpdef AstBuilder mkAstBuilder(self, MarkerListener marker_l):
         return AstBuilder.mk(self._hndl.mkAstBuilder(marker_l._hndl))
 
@@ -98,6 +116,12 @@ cdef class AstBuilder(object):
             root.asGlobalScope(),
             c_in_s.stream())
 
+    cpdef void setCollectDocStrings(self, bool collect):
+        self._hndl.setCollectDocStrings(collect)
+
+    cpdef bool getCollectDocStrings(self):
+        return self._hndl.getCollectDocStrings()
+
     @staticmethod
     cdef AstBuilder mk(decl.IAstBuilder *hndl):
         ret = AstBuilder()
@@ -109,14 +133,15 @@ cdef class Linker(object):
         if self._owned:
             del self._hndl
 
-    cpdef ast.SymbolScope link(self,
+    cpdef ast.RootSymbolScope link(self,
         MarkerListener          marker_l,
         scopes):
         cdef std_vector[ast_decl.IGlobalScopeP] scopes_n
-        cdef ast_decl.ISymbolScope *ret_h
+        cdef ast_decl.IRootSymbolScope *ret_h
 
         for s in scopes:
             scope = <ast.GlobalScope>(s)
+            scope._owned = False
             scopes_n.push_back(scope.asGlobalScope())
 
         ret_h = self._hndl.link(marker_l._hndl, scopes_n)
@@ -124,7 +149,7 @@ cdef class Linker(object):
         if ret_h == NULL:
             return None
         else:
-            return ast.SymbolScope.mk(ret_h, True)
+            return ast.RootSymbolScope.mk(ret_h, True)
 
     @staticmethod
     cdef Linker mk(decl.ILinker *hndl, bool owned=True):
@@ -150,6 +175,15 @@ cdef class Location(object):
     @property
     def file(self):
         return self._file
+
+cdef class LookupLocationResult(object):
+
+    @staticmethod
+    cdef LookupLocationResult mk(decl.ILookupLocationResult *hndl, bool owned=True):
+        ret = LookupLocationResult()
+        ret._hndl = hndl
+        ret._owned = owned
+        return ret
 
 cdef class Marker(object):
 

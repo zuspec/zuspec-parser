@@ -37,7 +37,7 @@ public:
 
     virtual ~TaskBuildSymbolTree();
 
-    ast::ISymbolScope *build(
+    ast::IRootSymbolScope *build(
         const std::vector<ast::IGlobalScope *>  &roots);
 
     ast::ISymbolTypeScope *build(ast::ITypeScope *ts);

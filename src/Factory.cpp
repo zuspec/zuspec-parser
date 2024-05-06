@@ -28,6 +28,7 @@
 #include "NameResolver.h"
 #include "TaskFindElementByLocation.h"
 #include "TaskLoadStandardLibrary.h"
+#include "TaskLookupLocation.h"
 #include "ValInt.h"
 
 
@@ -62,6 +63,14 @@ void Factory::loadStandardLibrary(
     IAstBuilder             *ast_builder,
     ast::IGlobalScope       *global) {
     TaskLoadStandardLibrary(m_dmgr).load(ast_builder, global);
+}
+
+ILookupLocationResult *Factory::lookupLocation(
+        ast::IRootSymbolScope   *root,
+        ast::IScope             *scope,
+        int32_t                 lineno,
+        int32_t                 linepos) {
+    return TaskLookupLocation(m_dmgr).lookup(root, scope, lineno, linepos);
 }
 
 IAstBuilder *Factory::mkAstBuilder(IMarkerListener *marker_l) {

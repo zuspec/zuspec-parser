@@ -45,6 +45,12 @@ classes:
       - init: 0
       - visit: true
 
+- SymbolScopeRef:
+    super: ScopeChild
+    data:
+    - name: string
+      
+
 - SymbolScope:
     super: SymbolChildrenScope
     data:
@@ -62,6 +68,13 @@ classes:
       - type: bool
       - is_ctor: false
       - init: false
+
+- RootSymbolScope:
+    super: SymbolScope
+    data:
+      - units:
+        - type: list<UP<GlobalScope>>
+        - is_ctor: false
 
 - SymbolEnumScope:
     super: SymbolScope

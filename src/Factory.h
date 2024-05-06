@@ -52,6 +52,12 @@ public:
         IAstBuilder             *ast_builder,
         ast::IGlobalScope       *global) override;
 
+    virtual ILookupLocationResult *lookupLocation(
+        ast::IRootSymbolScope   *root,
+        ast::IScope             *scope,
+        int32_t                 lineno,
+        int32_t                 linepos) override;
+
     virtual IAstBuilder *mkAstBuilder(IMarkerListener *marker_l) override;
 
     virtual ILinker *mkAstLinker() override;

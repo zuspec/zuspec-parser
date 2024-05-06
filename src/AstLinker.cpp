@@ -42,10 +42,10 @@ AstLinker::~AstLinker() {
 
 }
 
-ast::ISymbolScope *AstLinker::link(
+ast::IRootSymbolScope *AstLinker::link(
         IMarkerListener                         *marker_l,
         const std::vector<ast::IGlobalScope *>  &scopes) {
-    ast::ISymbolScope *symtree = TaskBuildSymbolTree(
+    ast::IRootSymbolScope *symtree = TaskBuildSymbolTree(
         m_dmgr,
         m_ast_factory,
         marker_l).build(scopes);

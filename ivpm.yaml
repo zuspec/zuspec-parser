@@ -22,6 +22,8 @@ package:
       url: https://github.com/mballance/pyastbuilder.git
     - name: debug-mgr
       url: https://github.com/mballance/debug-mgr.git
+    - name: pytest
+      src: pypi
     - name: toposort
       src: pypi
     - name: ciostream
@@ -61,8 +63,8 @@ package:
       src: pypi
     - name: jinja2
       src: pypi
-    - name: ivpm
-      src: pypi
+      #- name: ivpm
+      #src: pypi
     #  url: https://github.com/fvutils/ivpm.git
 
   - name: default
