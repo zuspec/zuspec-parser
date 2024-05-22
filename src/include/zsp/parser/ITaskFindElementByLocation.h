@@ -32,11 +32,31 @@ class ITaskFindElementByLocation;
 using ITaskFindElementByLocationUP=std::unique_ptr<ITaskFindElementByLocation>;
 class ITaskFindElementByLocation {
 public:
+    enum class ElemKind {
+        Expr,
+        Type
+    };
+    struct Position {
+        int32_t         lineno;
+        int32_t         linepos;
+    };
+    struct Range {
+        Position        start;
+        Position        end;
+    };
     struct Result {
-        bool                isValid;
-        bool                isType;
-        ast::IScopeChild    *target;
-        std::string         docComment;
+        bool                    isValid;
+        union {
+            struct {
+                ast::IExpr      *ctxt;
+                ast::IExpr      *elem;
+            } e;
+            ast::IScopeChild    *c;
+        } source;
+        ElemKind                sourceKind;
+        Range                   sourceRange;
+        ast::IScopeChild        *target;
+        ElemKind                targetKind;
     };
 public:
 
