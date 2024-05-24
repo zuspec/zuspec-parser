@@ -66,7 +66,8 @@ public:
         ast::ISymbolScope                   *root,
         ast::IGlobalScope                   *file,
         int32_t                             lineno,
-        int32_t                             linepos) = 0;
+        int32_t                             linepos,
+        int32_t                             fuzz=0) = 0;
 
 };
 

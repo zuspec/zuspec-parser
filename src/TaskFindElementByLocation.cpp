@@ -46,12 +46,14 @@ ITaskFindElementByLocation::Result TaskFindElementByLocation::find(
         ast::ISymbolScope                   *root,
         ast::IGlobalScope                   *file,
         int32_t                             lineno,
-        int32_t                             linepos) {
+        int32_t                             linepos,
+        int32_t                             fuzz) {
     DEBUG_ENTER("find");
     m_root = root;
     m_file = file;
     m_lineno = lineno;
     m_linepos = linepos;
+    m_fuzz = fuzz;
 
     ::memset(&m_result, 0, sizeof(m_result));
 
@@ -67,9 +69,9 @@ void TaskFindElementByLocation::visitExprId(ast::IExprId *i) {
         i->getLocation().lineno, 
         i->getLocation().linepos,
         i->getLocation().linepos+i->getId().size()-1);
-    if (i->getLocation().lineno == m_lineno &&
-        m_linepos >= i->getLocation().linepos &&
-        m_linepos < i->getLocation().linepos+i->getId().size()) {
+    if (hit(i->getLocation().lineno, 
+            i->getLocation().linepos,
+            i->getLocation().linepos+i->getId().size())) {
         DEBUG("Found");
 
         // Now, must determine what we're looking at
@@ -178,6 +180,19 @@ void TaskFindElementByLocation::visitTypeScope(ast::ITypeScope *i) {
     }
 
     DEBUG_LEAVE("visitTypeScope");
+}
+
+bool TaskFindElementByLocation::hit(int32_t lineno, int32_t start, int32_t end) {
+    bool is_hit = false;
+    if (lineno == m_lineno) {
+        is_hit = (m_linepos >= start && m_linepos <= end);
+        for (int32_t i=0; (i<m_fuzz && !is_hit); i++) {
+            is_hit = (
+                ((m_linepos+i) >= start && (m_linepos+i) <= end)
+                || ((m_linepos-i) >= start && (m_linepos-i) <= end));
+        }
+    }
+    return is_hit;
 }
 
 dmgr::IDebug *TaskFindElementByLocation::m_dbg = 0;
