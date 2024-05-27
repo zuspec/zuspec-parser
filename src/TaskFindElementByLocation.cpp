@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include <string.h>
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
 #include "TaskFindElementByLocation.h"
@@ -45,14 +46,16 @@ ITaskFindElementByLocation::Result TaskFindElementByLocation::find(
         ast::ISymbolScope                   *root,
         ast::IGlobalScope                   *file,
         int32_t                             lineno,
-        int32_t                             linepos) {
+        int32_t                             linepos,
+        int32_t                             fuzz) {
     DEBUG_ENTER("find");
     m_root = root;
     m_file = file;
     m_lineno = lineno;
     m_linepos = linepos;
+    m_fuzz = fuzz;
 
-    m_result = {false, false, 0, ""};
+    ::memset(&m_result, 0, sizeof(m_result));
 
     root->accept(m_this);
 
@@ -66,13 +69,16 @@ void TaskFindElementByLocation::visitExprId(ast::IExprId *i) {
         i->getLocation().lineno, 
         i->getLocation().linepos,
         i->getLocation().linepos+i->getId().size()-1);
-    if (i->getLocation().lineno == m_lineno &&
-        m_linepos >= i->getLocation().linepos &&
-        m_linepos < i->getLocation().linepos+i->getId().size()) {
+    if (hit(i->getLocation().lineno, 
+            i->getLocation().linepos,
+            i->getLocation().linepos+i->getId().size())) {
         DEBUG("Found");
 
         // Now, must determine what we're looking at
         if (m_ctxt_s.back().expr) {
+            m_result.sourceKind = ElemKind::Expr;
+            m_result.source.e.ctxt = m_ctxt_s.back().expr;
+            m_result.source.e.elem = i;
             DEBUG("Upper is an expression");
             if (dynamic_cast<ast::ITypeIdentifier *>(m_ctxt_s.back().expr)) {
                 ast::ITypeIdentifier *t = dynamic_cast<ast::ITypeIdentifier *>(m_ctxt_s.back().expr);
@@ -80,6 +86,12 @@ void TaskFindElementByLocation::visitExprId(ast::IExprId *i) {
                     // We're pointing at the last element of a path
                     DEBUG("Last Element");
                     m_result.isValid = true;
+
+                    m_result.sourceRange.start.lineno = t->getElems().front().get()->getId()->getLocation().lineno;
+                    m_result.sourceRange.start.linepos = t->getElems().front().get()->getId()->getLocation().linepos;
+                    m_result.sourceRange.end.lineno = t->getElems().back().get()->getId()->getLocation().lineno;
+                    m_result.sourceRange.end.linepos = t->getElems().back().get()->getId()->getLocation().linepos;
+
                     ast::IScopeChild *target = TaskResolveSymbolPathRef(
                         m_dmgr, m_root).resolve(t->getTarget());
                     if (dynamic_cast<ast::ISymbolScope *>(target)) {
@@ -87,8 +99,7 @@ void TaskFindElementByLocation::visitExprId(ast::IExprId *i) {
                     } else {
                         m_result.target = target;
                     }
-                    m_result.isType = true;
-                    m_result.docComment = m_result.target->getDocstring();
+                    m_result.targetKind = ElemKind::Type;
                 } else {
                     DEBUG("Not-last Element");
                 }
@@ -96,15 +107,14 @@ void TaskFindElementByLocation::visitExprId(ast::IExprId *i) {
         } else {
             if (dynamic_cast<ast::ITypeScope *>(m_ctxt_s.back().child)) {
                 ast::ITypeScope *t = dynamic_cast<ast::ITypeScope *>(m_ctxt_s.back().child);
-                DEBUG("Upper is a type declaration (%s)", t->getName()->getId().c_str());
-                m_result.isType = true;
-                m_result.docComment = t->getDocstring();
+                DEBUG("Upper is a type declaration (%s)", t->getName()->getId().c_str()); 
+                m_result.sourceKind = ElemKind::Expr;
+                m_result.targetKind = ElemKind::Type;
                 m_result.target = t;
             } else if (dynamic_cast<ast::IField *>(m_ctxt_s.back().child)) {
                 ast::IField *t = dynamic_cast<ast::IField *>(m_ctxt_s.back().child);
                 DEBUG("Upper is a field (%s)", t->getName()->getId().c_str());
-                m_result.isType = false;
-                m_result.docComment = t->getDocstring();
+                m_result.sourceKind = ElemKind::Expr;
                 m_result.target = t;
             }
             m_result.isValid = true;
@@ -170,6 +180,19 @@ void TaskFindElementByLocation::visitTypeScope(ast::ITypeScope *i) {
     }
 
     DEBUG_LEAVE("visitTypeScope");
+}
+
+bool TaskFindElementByLocation::hit(int32_t lineno, int32_t start, int32_t end) {
+    bool is_hit = false;
+    if (lineno == m_lineno) {
+        is_hit = (m_linepos >= start && m_linepos <= end);
+        for (int32_t i=0; (i<m_fuzz && !is_hit); i++) {
+            is_hit = (
+                ((m_linepos+i) >= start && (m_linepos+i) <= end)
+                || ((m_linepos-i) >= start && (m_linepos-i) <= end));
+        }
+    }
+    return is_hit;
 }
 
 dmgr::IDebug *TaskFindElementByLocation::m_dbg = 0;

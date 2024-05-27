@@ -351,7 +351,6 @@ private:
     int32_t                                     m_file_id;
 	bool										m_collectDocStrings;
     bool                                        m_enableProfile;
-    int32_t                                     m_fileid;
     IMarkerListener								*m_marker_l;
 	ast::IFactory								*m_factory;
 	ast::IExpr									*m_expr;

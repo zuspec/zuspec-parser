@@ -59,7 +59,8 @@ public:
         ast::ISymbolScope                   *root,
         ast::IGlobalScope                   *file,
         int32_t                             lineno,
-        int32_t                             linepos) override;
+        int32_t                             linepos,
+        int32_t                             fuzz=0) override;
 
     virtual void visitExprId(ast::IExprId *i) override;
 
@@ -80,12 +81,16 @@ private:
     };
 
 private:
+    bool hit(int32_t lineno, int32_t start, int32_t end);
+
+private:
     static dmgr::IDebug                     *m_dbg;
     dmgr::IDebugMgr                         *m_dmgr;
     ast::ISymbolScope                       *m_root;
     ast::IGlobalScope                       *m_file;
     int32_t                                 m_lineno;
     int32_t                                 m_linepos;
+    int32_t                                 m_fuzz;
     std::vector<CtxtElem>                   m_ctxt_s;
     Result                                  m_result;
 

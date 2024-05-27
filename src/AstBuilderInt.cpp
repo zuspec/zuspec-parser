@@ -47,7 +47,7 @@ void AstBuilderInt::build(
 			ast::IGlobalScope		*global,
 			std::istream 			*in) {
 
-    m_fileid = global->getFileid();
+    m_file_id = global->getFileid();
 
 	ANTLRInputStream input(*in);
 	PSSLexer lexer(&input);
@@ -515,7 +515,7 @@ antlrcpp::Any AstBuilderInt::visitExec_block(PSSParser::Exec_blockContext *ctx) 
             char tmp[1024];
             std::string msg;
 		    ast::Location loc;
-		    loc.fileid = 0;
+		    loc.fileid = m_file_id;
 		    loc.lineno = (int32_t)ctx->exec_kind()->identifier()->start->getLine();
 		    loc.linepos = (int32_t)ctx->exec_kind()->identifier()->start->getCharPositionInLine()+1;
 
@@ -1717,11 +1717,15 @@ antlrcpp::Any AstBuilderInt::visitIdentifier(PSSParser::IdentifierContext *ctx) 
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
-	Location loc = id->getLocation();
+	Location loc;
 	loc.lineno = ctx->start->getLine();
 	loc.linepos = ctx->start->getCharPositionInLine()+1;
     loc.extent = id->getId().size();
 	id->setLocation(loc);
+    DEBUG("Set Location: %d:%d:%d", 
+        id->getLocation().fileid,
+        id->getLocation().lineno,
+        id->getLocation().linepos);
 
 	m_expr = id;
 
@@ -1883,7 +1887,7 @@ void AstBuilderInt::syntaxError(
         line, charPositionInLine, offendingSymbol->getText().c_str());
 	if (m_marker_l) {
 		ast::Location loc;
-		loc.fileid = 0;
+		loc.fileid = m_file_id;
 		loc.lineno = line;
 		loc.linepos = charPositionInLine;
         loc.extent = offendingSymbol->getText().size();
@@ -2476,11 +2480,17 @@ IExprId *AstBuilderInt::mkId(PSSParser::IdentifierContext *ctx) {
 		id = m_factory->mkExprId(ctx->ID()->getText(), false);
 	}
 
-	Location loc = id->getLocation();
+    Location loc;
+    loc.fileid = m_file_id;
 	loc.lineno = ctx->start->getLine();
 	loc.linepos = ctx->start->getCharPositionInLine()+1;
     loc.extent = id->getId().size();
 	id->setLocation(loc);
+
+    DEBUG("ID Loc: %d:%d:%d",
+        id->getLocation().fileid,
+        id->getLocation().lineno,
+        id->getLocation().linepos);
 
 	return id;
 }
@@ -2883,7 +2893,7 @@ ast::ITemplateParamValueList *AstBuilderInt::mkTemplateParamValueList(
 
 void AstBuilderInt::setLoc(ast::IScopeChild *c, Token *start) {
     Location loc;
-    loc.fileid = m_fileid;
+    loc.fileid = m_file_id;
     loc.lineno = (int32_t)start->getLine();
     loc.linepos = (int32_t)start->getCharPositionInLine()+1;
 	c->setLocation(loc);
@@ -2891,7 +2901,7 @@ void AstBuilderInt::setLoc(ast::IScopeChild *c, Token *start) {
 
 void AstBuilderInt::setLoc(ast::IExprId *c, Token *start) {
     Location loc;
-    loc.fileid = m_fileid;
+    loc.fileid = m_file_id;
     loc.lineno = (int32_t)start->getLine();
     loc.linepos = (int32_t)start->getCharPositionInLine()+1;
 	c->setLocation(loc);
