@@ -41,6 +41,11 @@ public:
         IMarkerListener                         *marker_l,
         const std::vector<ast::IGlobalScope *>  &scopes) override;
 
+    virtual ast::IRootSymbolScope *linkOverlay(
+        IMarkerListener                         *marker_l,
+        ast::IRootSymbolScope                   *base_symtab,
+        ast::IGlobalScope                       *overlay) override;
+
 private:
     static dmgr::IDebug         *m_dbg;
     dmgr::IDebugMgr             *m_dmgr;

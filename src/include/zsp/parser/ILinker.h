@@ -37,6 +37,11 @@ public:
         IMarkerListener                         *marker_l,
         const std::vector<ast::IGlobalScope *>  &scopes) = 0;
 
+    virtual ast::IRootSymbolScope *linkOverlay(
+        IMarkerListener                         *marker_l,
+        ast::IRootSymbolScope                   *base_symtab,
+        ast::IGlobalScope                       *overlay) = 0;
+
 };
 
 }

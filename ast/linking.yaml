@@ -45,11 +45,11 @@ classes:
       - init: 0
       - visit: true
 
+# Used to reference
 - SymbolScopeRef:
     super: ScopeChild
     data:
     - name: string
-      
 
 - SymbolScope:
     super: SymbolChildrenScope

@@ -19,10 +19,13 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "zsp/parser/impl/TaskCloneSymbolScope.h"
 #include "AstLinker.h"
 #include "ResolveContext.h"
+#include "TaskApplyOverlay.h"
 #include "TaskApplyTypeExtensions.h"
 #include "TaskBuildSymbolTree.h"
+#include "TaskResolveRefsOverlay.h"
 #include "TaskResolveRefs.h"
 
 
@@ -59,6 +62,35 @@ ast::IRootSymbolScope *AstLinker::link(
     TaskResolveRefs(&ctxt).resolve(symtree);
 
     return symtree;
+}
+
+ast::IRootSymbolScope *AstLinker::linkOverlay(
+        IMarkerListener                         *marker_l,
+        ast::IRootSymbolScope                   *base_symtab,
+        ast::IGlobalScope                       *overlay) {
+    DEBUG_ENTER("linkOverlay");
+    // First, clone the base symbol table
+    ast::IRootSymbolScope *root = TaskCloneSymbolScope(
+        m_dmgr, m_ast_factory).clone(base_symtab);
+
+    ResolveContext ctxt(m_factory, marker_l, root);
+
+    TaskApplyOverlay(m_dmgr).apply(
+        root,
+        overlay);
+
+    TaskResolveRefsOverlay(&ctxt).resolve(overlay);
+
+    // Match overlay with original files base fileId
+
+    // Apply the overlay files to the newly-cloned root,
+    // replacing symbol-table references to files whose
+    // content will be overlaid
+
+    // Now, resolve symbols just in the overlay files
+
+    DEBUG_LEAVE("linkOverlay");
+    return root;
 }
 
 dmgr::IDebug *AstLinker::m_dbg = 0;

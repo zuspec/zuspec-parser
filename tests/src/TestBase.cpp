@@ -20,6 +20,7 @@
  */
 #include "TestBase.h"
 #include <sstream>
+#include "dmgr/impl/DebugMacros.h"
 #include "AstBuilder.h"
 #include "AstSymbolTable.h"
 #include "MarkerCollector.h"
@@ -53,6 +54,12 @@ void TestBase::SetUp() {
 	m_factory = zsp_parser_getFactory();
     m_factory->init(dmgr, m_ast_factory);
     m_factory->getDebugMgr()->enable(false);
+
+    m_dbg = 0;
+    char tmp[1024];
+    snprintf(tmp, sizeof(tmp), "zsp::parser::Test::%s",
+        ::testing::UnitTest::GetInstance()->current_test_info()->name());
+    DEBUG_INIT(tmp, m_factory->getDebugMgr());
 }
 
 void TestBase::TearDown() {
@@ -257,6 +264,15 @@ ast::IScopeChild *TestBase::findItem(
     }
 
     return ret;
+}
+
+bool TestBase::checkErrors(MarkerCollector &marker_c) {
+    for (std::vector<IMarkerUP>::const_iterator
+        it=marker_c.markers().begin();
+        it!=marker_c.markers().end(); it++) {
+        fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
+    }
+    return marker_c.hasSeverity(MarkerSeverityE::Error);
 }
 
 void TestBase::enableDebug(bool en) {

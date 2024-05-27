@@ -20,6 +20,7 @@
  */
 #pragma once
 #include <vector>
+#include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/ast/IFactory.h"
 #include "gtest/gtest.h"
@@ -91,10 +92,13 @@ protected:
         ast::ISymbolScope                   *root,
         const std::vector<std::string>      &path);
 
+    bool checkErrors(MarkerCollector &marker_c);
+
     void enableDebug(bool en);
 
 
 protected:
+    dmgr::IDebug                        *m_dbg;
 	ast::IFactory				        *m_ast_factory;
 	parser::IFactory				    *m_factory;
 
