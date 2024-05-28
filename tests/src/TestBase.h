@@ -51,6 +51,7 @@ protected:
 		parser::IMarkerListener		        *marker_l,
 		const std::string 			        &content,
 		const std::string 			        &name,
+        int32_t                             fileid=0,
         bool                                process_doc_comments=false);
 
 	ast::ISymbolScope *link(
@@ -80,7 +81,8 @@ protected:
         const std::string              &content,
         const std::string              &name,
         ast::IGlobalScopeUP            &global,
-        ast::ISymbolScopeUP            &root);
+        ast::ISymbolScopeUP            &root,
+        int32_t                        fileid=0);
 
     std::pair<ast::IGlobalScope *, ast::ISymbolScope *> parseLink(
         parser::IMarkerListener        *marker_l,

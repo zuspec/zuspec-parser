@@ -19,6 +19,9 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "zsp/parser/impl/TaskGetAstRoot.h"
+#include "zsp/parser/impl/TaskResolveSymbolPathRef.h"
+#include "TaskResolveRef.h"
 #include "TaskResolveRefsOverlay.h"
 
 
@@ -38,24 +41,25 @@ TaskResolveRefsOverlay::~TaskResolveRefsOverlay() {
 void TaskResolveRefsOverlay::resolve(ast::IGlobalScope * overlay) {
     DEBUG_ENTER("resolve");
 
-    m_scope_s.clear();
+    m_overlay = overlay;
+
     m_ctxt->pushSymtab(m_ctxt->getFactory()->mkAstSymbolTableIterator(
         m_ctxt->root()));
-    m_scope_s.push_back(m_ctxt->root());
     for (std::vector<ast::IScopeChildUP>::const_iterator
         it=overlay->getChildren().begin();
         it!=overlay->getChildren().end(); it++) {
         (*it)->accept(m_this);
     }
-    m_scope_s.pop_back();
 
     DEBUG_LEAVE("resolve");
 }
 
 void TaskResolveRefsOverlay::visitTypeIdentifier(ast::ITypeIdentifier *i) {
-    DEBUG_ENTER("visitTypeIdentifier");
+    DEBUG_ENTER("visitTypeIdentifier %s", i->getElems().at(0)->getId()->getId().c_str());
 
-    // TODO: 
+    ast::ISymbolRefPath *target = TaskResolveRef(m_ctxt).resolve(i);
+    i->setTarget(target);
+
     DEBUG_LEAVE("visitTypeIdentifier");
 }
 
@@ -63,21 +67,82 @@ void TaskResolveRefsOverlay::visitPackageScope(ast::IPackageScope *i) {
     DEBUG_ENTER("visitPackageScope");
     // TODO: push symbol scopes
 
+    ast::ISymbolScope *scope = m_ctxt->symtab()->getScope();
+    for (std::vector<ast::IExprIdUP>::const_iterator
+        it=i->getId().begin();
+        it!=i->getId().end(); it++) {
+        std::map<std::string,int32_t>::const_iterator sym_it;
+        sym_it = scope->getSymtab().find((*it)->getId());
+        scope = dynamic_cast<ast::ISymbolScope *>(
+            scope->getChildren().at(sym_it->second).get());
+        m_ctxt->symtab()->pushScope(scope);
+    }
+
     for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
         (*it)->accept(m_this);
     }
 
-    // TODO: pop symbol scopes
+    // pop symbol scopes
+    for (std::vector<ast::IExprIdUP>::const_iterator
+        it=i->getId().begin();
+        it!=i->getId().end(); it++) {
+        m_ctxt->symtab()->popScope();
+    }
 
     DEBUG_LEAVE("visitPackageScope");
 }
 
 void TaskResolveRefsOverlay::visitTypeScope(ast::ITypeScope *i) {
-    DEBUG_ENTER("visitTypeScope");
+    DEBUG_ENTER("visitTypeScope %s", i->getName()->getId().c_str());
     // TODO: push symbol scope
+    ast::ISymbolScope *scope = m_ctxt->symtab()->getScope();
 
+    std::map<std::string,int32_t>::const_iterator sym_it;
+    sym_it = scope->getSymtab().find(i->getName()->getId());
+    ast::ISymbolScope *i_s = dynamic_cast<ast::ISymbolScope *>(
+        scope->getChildren().at(sym_it->second).get());
+    m_ctxt->symtab()->pushScope(i_s);
+
+    if (i->getSuper_t()) {
+        i->getSuper_t()->accept(m_this);
+
+        DEBUG("Have super");
+        if (i->getSuper_t()->getTarget()) {
+            DEBUG("Super has a target");
+            ast::IScopeChild *super_t = TaskResolveSymbolPathRef(
+                m_ctxt->getDebugMgr(),
+                m_ctxt->root()).resolve(
+                i->getSuper_t()->getTarget());
+
+            if (super_t) {
+                ast::IGlobalScope *super_t_root = TaskGetAstRoot(
+                    m_ctxt->getDebugMgr()).root(super_t);
+                DEBUG("File with root: %d", super_t_root->getFileid());
+
+                if (super_t_root->getFileid() == m_overlay->getFileid()
+                    && super_t_root != m_overlay) {
+                    DEBUG("Required ref went away");
+                    m_ctxt->addErrorMarker(
+                        i->getSuper_t()->getElems().at(0)->getId()->getLocation(),
+                        "Failed to resolve id %s",
+                        i->getSuper_t()->getElems().at(0)->getId()->getId().c_str()
+                    );
+                }
+            }
+        } else {
+            DEBUG("Super does not have a target");
+        }
+    }
+
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+
+    m_ctxt->symtab()->popScope();
 
     DEBUG_LEAVE("visitTypeScope");
 }

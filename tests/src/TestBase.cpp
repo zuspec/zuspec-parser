@@ -112,10 +112,11 @@ ast::IGlobalScope *TestBase::parse(
 		IMarkerListener		        *marker_l,
 		const std::string 			&content,
 		const std::string 			&name,
+        int32_t                     fileid,
         bool                        process_doc_comments) {
 	std::stringstream s(content);
 
-	ast::IGlobalScopeUP global(m_ast_factory->mkGlobalScope(0));
+	ast::IGlobalScopeUP global(m_ast_factory->mkGlobalScope(fileid));
 
 	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(marker_l));
     ast_builder->setCollectDocStrings(process_doc_comments);
@@ -162,9 +163,10 @@ void TestBase::parseLink(
         const std::string           &content,
         const std::string           &name,
         ast::IGlobalScopeUP         &global,
-        ast::ISymbolScopeUP         &root) {
+        ast::ISymbolScopeUP         &root,
+        int32_t                     fileid) {
     std::vector<ast::IGlobalScope *> files;
-    global = ast::IGlobalScopeUP(parse(marker_l, content, name));
+    global = ast::IGlobalScopeUP(parse(marker_l, content, name, fileid));
     files.push_back(global.get());
     root = ast::ISymbolScopeUP(link(marker_l, files));
 }

@@ -46,6 +46,7 @@ private:
     static dmgr::IDebug                         *m_dbg;
     ResolveContext                              *m_ctxt;
     std::vector<ast::ISymbolScope *>            m_scope_s;
+    ast::IGlobalScope                           *m_overlay;
 
 
 };

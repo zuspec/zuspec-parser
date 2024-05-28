@@ -58,6 +58,7 @@ TEST_F(TestLinkOverlay, single_file_overlay_add_type) {
         "file1.pss",
         file,
         root);
+    ASSERT_EQ(file->getFileid(), 0);
     
     ASSERT_FALSE(checkErrors(marker_c));
 
@@ -67,6 +68,7 @@ TEST_F(TestLinkOverlay, single_file_overlay_add_type) {
         &marker_c,
         file1_p,
         "file1.pss"));
+    ASSERT_EQ(file_p->getFileid(), 0);
 
     ASSERT_FALSE(checkErrors(marker_c));
 
@@ -79,6 +81,63 @@ TEST_F(TestLinkOverlay, single_file_overlay_add_type) {
         dynamic_cast<ast::IRootSymbolScope *>(root.get()),
         file_p.get()
     ));
+
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
+}
+
+
+TEST_F(TestLinkOverlay, single_file_overlay_remove_type) {
+    std::string file1 = R"(
+        struct A { }
+
+        struct B : A { }
+
+        struct C : B { }
+    )";
+
+    std::string file1_p = R"(
+        struct A { }
+
+        struct C : B { }
+    )";
+
+    MarkerCollector marker_c;
+
+    enableDebug(true);
+
+    ast::IGlobalScopeUP file;
+    ast::ISymbolScopeUP root;
+    parseLink(
+        &marker_c,
+        file1,
+        "file1.pss",
+        file,
+        root);
+    ASSERT_EQ(file->getFileid(), 0);
+    
+    ASSERT_FALSE(checkErrors(marker_c));
+
+    DEBUG("Finished linking base SymTree");
+
+    ast::IGlobalScopeUP file_p(parse(
+        &marker_c,
+        file1_p,
+        "file1.pss"));
+    ASSERT_EQ(file_p->getFileid(), 0);
+
+    ASSERT_FALSE(checkErrors(marker_c));
+
+    // Now, need to overlay content on the original
+    // linked AST
+    ILinkerUP linker(m_factory->mkAstLinker());
+    
+    ast::IRootSymbolScopeUP root_p(linker->linkOverlay(
+        &marker_c,
+        dynamic_cast<ast::IRootSymbolScope *>(root.get()),
+        file_p.get()
+    ));
+
+    ASSERT_TRUE(marker_c.hasSeverity(MarkerSeverityE::Error));
 }
 
 }
