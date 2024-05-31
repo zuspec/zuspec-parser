@@ -33,23 +33,28 @@ class TaskCloneSymbolScope :
 public:
     TaskCloneSymbolScope(
         dmgr::IDebugMgr     *dmgr,
-        ast::IFactory       *factory) : m_factory(factory) {
-        
+        ast::IFactory       *factory) : m_dbg(0), m_factory(factory) {
+        DEBUG_INIT("zsp::parser::TaskCloneSymbolScope", dmgr);
     }
 
     virtual ~TaskCloneSymbolScope() { }
 
     virtual ast::IRootSymbolScope *clone(ast::IRootSymbolScope *scope) {
+        DEBUG_ENTER("clone");
         m_scope_s.clear();
         m_depth = 1;
         scope->accept(m_this);
+        DEBUG_LEAVE("clone %p", dynamic_cast<ast::IRootSymbolScope *>(m_ret));
+
         return dynamic_cast<ast::IRootSymbolScope *>(m_ret);
     }
 
     virtual void visitRootSymbolScope(ast::IRootSymbolScope *i) override {
+        DEBUG_ENTER("visitRootSymbolScope (%d %d)", m_scope_s.size(), m_depth);
         ast::IRootSymbolScope *ic;
         if (m_scope_s.size() < m_depth) {
             ic = m_factory->mkRootSymbolScope(i->getName());
+            ic->setTarget(i->getTarget());
             m_scope_s.push_back(ic);
         } else {
             ic = dynamic_cast<ast::IRootSymbolScope *>(m_scope_s.back());
@@ -60,11 +65,15 @@ public:
             m_ret = m_scope_s.back();
             m_scope_s.pop_back();
         }
+        DEBUG_LEAVE("visitRootSymbolScope (%d %d)", m_scope_s.size(), m_depth);
     }
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override {
+        DEBUG_ENTER("visitSymbolScope %s (%d %d)", i->getName().c_str(),
+            m_scope_s.size(), m_depth);
         ast::ISymbolScope *ic;
         if (m_scope_s.size() < m_depth) {
+            DEBUG("Clone scope (%d %d)", m_scope_s.size(), m_depth);
             ic = m_factory->mkSymbolScope(i->getName());
             m_scope_s.push_back(ic);
         } else {
@@ -106,15 +115,28 @@ public:
         for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
-            ic->getChildren().push_back(ast::IScopeChildUP(it->get(), false));
+            m_ret = 0;
+            m_depth++;
+            (*it)->accept(m_this);
+            if (m_ret) {
+                ic->getChildren().push_back(ast::IScopeChildUP(m_ret, true));
+            } else {
+                ic->getChildren().push_back(ast::IScopeChildUP(it->get(), false));
+            }
+            m_depth--;
+            m_ret = 0;
         }
+
         if (m_scope_s.size() == m_depth) {
             m_ret = m_scope_s.back();
             m_scope_s.pop_back();
         }
+        DEBUG_LEAVE("visitSymbolScope %s (%d %d)", i->getName().c_str(),
+            m_scope_s.size(), m_depth);
     }
 
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override {
+        DEBUG_ENTER("visitSymbolFunctionScope %s", i->getName().c_str());
         ast::ISymbolFunctionScope *ic;
         if (m_scope_s.size() < m_depth) {
             ic = m_factory->mkSymbolFunctionScope(i->getName());
@@ -151,9 +173,12 @@ public:
             m_ret = m_scope_s.back();
             m_scope_s.pop_back();
         }
+        DEBUG_LEAVE("visitSymbolFunctionScope %s", i->getName().c_str());
     }
 
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
+        DEBUG_ENTER("visitSymbolTypeScope %s (%d %d)", i->getName().c_str(),
+            m_scope_s.size(), m_depth);
         ast::ISymbolTypeScope *ic;
         if (m_scope_s.size() < m_depth) {
             ast::ISymbolScope *plistc = 0;
@@ -163,12 +188,15 @@ public:
             }
 
             ic = m_factory->mkSymbolTypeScope(i->getName(), plistc);
+            ic->setTarget(i->getTarget());
             m_scope_s.push_back(ic);
         } else {
             ic = dynamic_cast<ast::ISymbolTypeScope *>(m_scope_s.back());
         }
 
+        DEBUG_ENTER("call visitSymbolScope(%d %d)", m_scope_s.size(), m_depth);
         visitSymbolScope(i);
+        DEBUG_LEAVE("call visitSymbolScope(%d %d)", m_scope_s.size(), m_depth);
         
         for (std::vector<ast::ISymbolTypeScopeUP>::const_iterator
             it=i->getSpec_types().begin();
@@ -181,6 +209,9 @@ public:
             m_ret = m_scope_s.back();
             m_scope_s.pop_back();
         }
+        
+        DEBUG_LEAVE("visitSymbolTypeScope %s (%d %d)", i->getName().c_str(),
+            m_scope_s.size(), m_depth);
     }
 
     ast::ISymbolRefPath *clone(ast::ISymbolRefPath *i) {
@@ -198,8 +229,14 @@ public:
 private:
 
     ast::ISymbolScope *clone(ast::ISymbolScope *i) {
-        m_depth++;
+        int32_t depth = m_depth;
+        m_depth = m_scope_s.size()+1;
         i->accept(m_this);
+
+        if (!m_ret) {
+            fprintf(stdout, "failed to clone\n");
+        }
+        m_depth = depth;
         return m_ret;
     }
 
@@ -208,6 +245,7 @@ private:
     }
 
 private:
+    dmgr::IDebug                            *m_dbg;
     ast::IFactory                           *m_factory;
     int32_t                                 m_depth;
     std::vector<ast::ISymbolScope *>        m_scope_s;

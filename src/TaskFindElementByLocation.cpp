@@ -85,21 +85,23 @@ void TaskFindElementByLocation::visitExprId(ast::IExprId *i) {
                 if (i == t->getElems().back().get()->getId()) {
                     // We're pointing at the last element of a path
                     DEBUG("Last Element");
-                    m_result.isValid = true;
 
                     m_result.sourceRange.start.lineno = t->getElems().front().get()->getId()->getLocation().lineno;
                     m_result.sourceRange.start.linepos = t->getElems().front().get()->getId()->getLocation().linepos;
                     m_result.sourceRange.end.lineno = t->getElems().back().get()->getId()->getLocation().lineno;
                     m_result.sourceRange.end.linepos = t->getElems().back().get()->getId()->getLocation().linepos;
 
-                    ast::IScopeChild *target = TaskResolveSymbolPathRef(
-                        m_dmgr, m_root).resolve(t->getTarget());
-                    if (dynamic_cast<ast::ISymbolScope *>(target)) {
-                        m_result.target = dynamic_cast<ast::ISymbolScope *>(target)->getTarget();
-                    } else {
-                        m_result.target = target;
+                    if (t->getTarget()) {
+                        ast::IScopeChild *target = TaskResolveSymbolPathRef(
+                            m_dmgr, m_root).resolve(t->getTarget());
+                        if (dynamic_cast<ast::ISymbolScope *>(target)) {
+                            m_result.target = dynamic_cast<ast::ISymbolScope *>(target)->getTarget();
+                        } else {
+                            m_result.target = target;
+                        }
                     }
                     m_result.targetKind = ElemKind::Type;
+                    m_result.isValid = m_result.target;
                 } else {
                     DEBUG("Not-last Element");
                 }

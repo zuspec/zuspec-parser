@@ -62,18 +62,30 @@ public:
             switch (it->kind) {
                 case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
                     DEBUG("Elem: ChildIdx %d", it->idx);
-                    ret = scope->getChildren().at(it->idx).get();
+                    if (it->idx < scope->getChildren().size()) {
+                        ret = scope->getChildren().at(it->idx).get();
+                    } else {
+                        DEBUG("Index %d out-of-range (%d)", it->idx, scope->getChildren().size());
+                    }
                     DEBUG("  scope %p => %p", scope, ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ArgIdx: {
                     DEBUG("Elem: ArgIdx %d", it->idx);
                     ast::ISymbolFunctionScope *fs = dynamic_cast<ast::ISymbolFunctionScope *>(scope);
-                    ret = fs->getPlist()->getChildren().at(it->idx).get();
+                    if (fs && it->idx < fs->getPlist()->getChildren().size()) {
+                        ret = fs->getPlist()->getChildren().at(it->idx).get();
+                    } else {
+                        DEBUG("Out-of-range");
+                    }
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ParamIdx: {
                     DEBUG("Elem: ParamIdx %d", it->idx);
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    ret = scope_ts->getPlist()->getChildren().at(it->idx).get();
+                    if (scope_ts && it->idx < scope_ts->getPlist()->getChildren().size()) {
+                        ret = scope_ts->getPlist()->getChildren().at(it->idx).get();
+                    } else {
+                        DEBUG("Out-of-range");
+                    }
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
@@ -87,7 +99,11 @@ public:
                     DEBUG("Scope: %s (%d specializations)",
                         scope_ts->getName().c_str(),
                         scope_ts->getSpec_types().size());
-                    ret = scope_ts->getSpec_types().at(it->idx).get();
+                    if (it->idx < scope_ts->getSpec_types().size()) {
+                        ret = scope_ts->getSpec_types().at(it->idx).get();
+                    } else {
+                        DEBUG("Out-of-range");
+                    }
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 default:

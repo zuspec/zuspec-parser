@@ -193,7 +193,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
         if (it != ExtendKind_m.end()) {
             kind = it->second;
         } else {
-            fprintf(stdout, "Error: No match for extend kind\n");
+            ERROR("Error: No match for extend kind");
         }
     }
 
@@ -261,7 +261,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 				
 			} break;
             default:
-                fprintf(stdout, "Error: unhandled extension-type target: %d\n", kind);
+                ERROR("Error: unhandled extension-type target: %d\n", kind);
                 break;
 		}
 
@@ -1883,7 +1883,7 @@ void AstBuilderInt::syntaxError(
 			size_t charPositionInLine,
 			const std::string &msg,
 			std::exception_ptr e) {
-	fprintf(stdout, "Error: Syntax error: line=%d pos=%d sym=%s\n",
+	ERROR("Error: Syntax error: line=%d pos=%d sym=%s\n",
         line, charPositionInLine, offendingSymbol->getText().c_str());
 	if (m_marker_l) {
 		ast::Location loc;
@@ -2043,7 +2043,7 @@ void AstBuilderInt::addDocstring(ast::IScopeChild *c, Token *t) {
 	std::vector<Token *> mlc_tokens = m_tokens->getHiddenTokensToLeft(
 			t->getTokenIndex(), 12);
 
-	fprintf(stdout, "ws_tokens=%d slc_tokens=%d mlc_tokens=%d\n",
+	DEBUG("ws_tokens=%d slc_tokens=%d mlc_tokens=%d",
 			ws_tokens.size(), slc_tokens.size(), mlc_tokens.size());
 
 	if (slc_tokens.size() == 0 && mlc_tokens.size() == 0) {
@@ -2231,7 +2231,7 @@ ast::IDataType *AstBuilderInt::mkDataType(PSSParser::Data_typeContext *ctx) {
 	m_type = 0;
 	ctx->accept(this);
     if (!m_type) {
-        fprintf(stdout, "Internal Error: mkDataType returning null\n");
+        ERROR("Internal Error: mkDataType returning null");
     }
 	return m_type;
 }
@@ -2599,7 +2599,7 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 	std::vector<PSSParser::Type_identifier_elemContext *> elems = ctx->type_identifier_elem();
 
 	if (elems.size() == 0) {
-		fprintf(stdout, "Error: elems.size==0\n");
+		ERROR("Error: elems.size==0");
 	}
 
 	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
@@ -2677,7 +2677,7 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
                 ctx->static_ref_path(),
                 ctx->hierarchical_id());
 
-            fprintf(stdout, "mkExprRefPath: static_ref=%p context_ref=%p\n", static_ref, context_ref);
+            DEBUG("mkExprRefPath: static_ref=%p context_ref=%p\n", static_ref, context_ref);
             ast::IExprRefPathStaticRooted *ref = m_factory->mkExprRefPathStaticRooted(
                 static_ref,
                 context_ref);
