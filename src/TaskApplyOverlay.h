@@ -29,7 +29,9 @@ namespace parser {
 
 class TaskApplyOverlay : ast::VisitorBase {
 public:
-    TaskApplyOverlay(dmgr::IDebugMgr *dmgr);
+    TaskApplyOverlay(
+        dmgr::IDebugMgr     *dmgr,
+        ast::IFactory       *factory);
 
     virtual ~TaskApplyOverlay();
 
@@ -46,6 +48,7 @@ public:
 
 private:
     static dmgr::IDebug                         *m_dbg;
+    ast::IFactory                               *m_factory;
     std::vector<ast::ISymbolScope *>            m_scope_s;
 
 };

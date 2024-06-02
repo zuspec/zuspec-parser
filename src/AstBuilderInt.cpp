@@ -209,7 +209,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
         if (it != ExtendKind_m.end()) {
             kind = it->second;
         } else {
-            fprintf(stdout, "Error: No match for extend kind\n");
+            ERROR("Error: No match for extend kind");
         }
     }
 
@@ -277,7 +277,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 				
 			} break;
             default:
-                fprintf(stdout, "Error: unhandled extension-type target: %d\n", kind);
+                ERROR("Error: unhandled extension-type target: %d\n", kind);
                 break;
 		}
 
@@ -2247,7 +2247,7 @@ ast::IDataType *AstBuilderInt::mkDataType(PSSParser::Data_typeContext *ctx) {
 	m_type = 0;
 	ctx->accept(this);
     if (!m_type) {
-        fprintf(stdout, "Internal Error: mkDataType returning null\n");
+        ERROR("Internal Error: mkDataType returning null");
     }
 	return m_type;
 }
@@ -2615,7 +2615,7 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 	std::vector<PSSParser::Type_identifier_elemContext *> elems = ctx->type_identifier_elem();
 
 	if (elems.size() == 0) {
-		fprintf(stdout, "Error: elems.size==0\n");
+		ERROR("Error: elems.size==0");
 	}
 
 	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
@@ -2693,7 +2693,7 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
                 ctx->static_ref_path(),
                 ctx->hierarchical_id());
 
-            fprintf(stdout, "mkExprRefPath: static_ref=%p context_ref=%p\n", static_ref, context_ref);
+            DEBUG("mkExprRefPath: static_ref=%p context_ref=%p\n", static_ref, context_ref);
             ast::IExprRefPathStaticRooted *ref = m_factory->mkExprRefPathStaticRooted(
                 static_ref,
                 context_ref);

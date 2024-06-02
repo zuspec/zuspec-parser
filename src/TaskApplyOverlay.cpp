@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "zsp/ast/IFactory.h"
 #include "zsp/ast/ISymbolScope.h"
 #include "TaskApplyOverlay.h"
 
@@ -27,7 +28,9 @@ namespace zsp {
 namespace parser {
 
 
-TaskApplyOverlay::TaskApplyOverlay(dmgr::IDebugMgr *dmgr) {
+TaskApplyOverlay::TaskApplyOverlay(
+    dmgr::IDebugMgr     *dmgr,
+    ast::IFactory       *factory) : m_factory(factory) {
     DEBUG_INIT("zsp::parser::TaskApplyOverlay", dmgr);
 }
 
@@ -105,15 +108,59 @@ void TaskApplyOverlay::visitPackageScope(ast::IPackageScope *i) {
 }
 
 void TaskApplyOverlay::visitTypeScope(ast::ITypeScope *i) {
-    DEBUG_ENTER("visitTypeScope");
+    DEBUG_ENTER("visitTypeScope %s", i->getName()->getId().c_str());
     ast::ISymbolScope *scope = m_scope_s.back();
 
     std::unordered_map<std::string,int32_t>::const_iterator it_i;
     it_i = scope->getSymtab().find(i->getName()->getId());
 
-    ast::ISymbolScope *scope_i = dynamic_cast<ast::ISymbolScope *>(
-        scope->getChildren().at(it_i->second).get());
-    
+    ast::ISymbolScope *scope_i = 0;
+    if (it_i == scope->getSymtab().end()) {
+        int32_t id = scope->getChildren().size();
+        ast::ISymbolScope *plist = 0;
+        if (i->getParams()) {
+            DEBUG("Build out plist %d", i->getParams()->getParams().size());
+            plist = m_factory->mkSymbolScope("");
+            for (std::vector<ast::ITemplateParamDeclUP>::const_iterator
+                it=i->getParams()->getParams().begin();
+                it!=i->getParams()->getParams().end(); it++) {
+                int32_t id = plist->getChildren().size();
+                std::map<std::string, int32_t>::const_iterator s_it;
+                DEBUG("  Param: %", (*it)->getName()->getId().c_str());
+            
+                s_it = plist->getSymtab().find((*it)->getName()->getId());
+                if (s_it == plist->getSymtab().end()) {
+                    plist->getChildren().push_back(ast::IScopeChildUP(it->get(), false));
+                    plist->getSymtab().insert({(*it)->getName()->getId(), id});
+                } else {
+                    // TODO: Find a proper way to report
+                    fprintf(stdout, "Error: duplicate parameter name\n");
+                }
+            }
+        } else {
+            DEBUG("No plist");
+        }
+
+        DEBUG("Failed to find symbol %s in type %s", 
+            i->getName()->getId().c_str(), scope->getName().c_str());
+
+        ast::ISymbolTypeScope *si = m_factory->mkSymbolTypeScope(
+            i->getName()->getId(),
+            plist);
+        scope->getSymtab().insert({si->getName(), id});
+        scope->getChildren().push_back(ast::IScopeChildUP(si, true));
+        scope_i = si;
+    } else {
+        DEBUG("Found type %s in type %s", 
+            i->getName()->getId().c_str(), scope->getName().c_str());
+        scope_i = dynamic_cast<ast::ISymbolScope *>(
+            scope->getChildren().at(it_i->second).get());
+        if (!scope_i) {
+            DEBUG("Not a symbol scope");
+        }
+    }
+
+    if (scope_i) {
     // Update the target this the symbol scope points to
     scope_i->setTarget(i);
 
@@ -124,6 +171,7 @@ void TaskApplyOverlay::visitTypeScope(ast::ITypeScope *i) {
         (*it)->accept(m_this);
     }
     m_scope_s.pop_back();
+    }
 
     DEBUG_LEAVE("visitTypeScope");
 }

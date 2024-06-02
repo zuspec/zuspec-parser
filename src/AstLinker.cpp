@@ -93,11 +93,13 @@ ast::IRootSymbolScope *AstLinker::linkOverlay(
 
     ResolveContext ctxt(m_factory, marker_l, root);
 
-    TaskApplyOverlay(m_dmgr).apply(
+    TaskApplyOverlay(m_dmgr, m_ast_factory).apply(
         root,
         overlay);
 
     TaskResolveRefsOverlay(&ctxt).resolve(overlay);
+    /*
+     */
 
     // Match overlay with original files base fileId
 
