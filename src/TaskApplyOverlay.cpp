@@ -125,7 +125,7 @@ void TaskApplyOverlay::visitTypeScope(ast::ITypeScope *i) {
                 it=i->getParams()->getParams().begin();
                 it!=i->getParams()->getParams().end(); it++) {
                 int32_t id = plist->getChildren().size();
-                std::map<std::string, int32_t>::const_iterator s_it;
+                std::unordered_map<std::string, int32_t>::const_iterator s_it;
                 DEBUG("  Param: %", (*it)->getName()->getId().c_str());
             
                 s_it = plist->getSymtab().find((*it)->getName()->getId());
