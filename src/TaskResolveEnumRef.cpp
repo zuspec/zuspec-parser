@@ -54,7 +54,7 @@ void TaskResolveEnumRef::visitSymbolEnumScope(ast::ISymbolEnumScope *i) {
     DEBUG_ENTER("visitSymbolEnumScope %s (looking for %s)", 
         i->getName().c_str(),
         m_id->getId().c_str());
-    std::map<std::string, int32_t>::const_iterator it = 
+    std::unordered_map<std::string, int32_t>::const_iterator it = 
         i->getSymtab().find(m_id->getId());
     if (it != i->getSymtab().end()) {
         DEBUG("Found symbol %s", m_id->getId().c_str());

@@ -50,7 +50,7 @@ TEST_F(TestAnnotations, smoke) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,
@@ -78,7 +78,7 @@ TEST_F(TestAnnotations, params) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,
@@ -107,7 +107,7 @@ TEST_F(TestAnnotations, params_mult) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,

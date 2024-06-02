@@ -52,7 +52,7 @@ AstSymbolTableIterator::~AstSymbolTableIterator() {
 
 int32_t AstSymbolTableIterator::findLocalSymbol(const std::string &name) {
     DEBUG_ENTER("findLocalSymbol %s", name.c_str());
-    std::map<std::string,int32_t>::const_iterator it =
+    std::unordered_map<std::string,int32_t>::const_iterator it =
         m_scope_s.back()->getSymtab().find(name);
 
     if (it != m_scope_s.back()->getSymtab().end()) {
@@ -134,7 +134,7 @@ ast::IScopeChild *AstSymbolTableIterator::resolveAbsPath(const ast::ISymbolRefPa
 
 int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
     DEBUG_ENTER("pushNamedScope %s", name.c_str());
-    std::map<std::string,int32_t>::const_iterator it =
+    std::unordered_map<std::string,int32_t>::const_iterator it =
         m_scope_s.back()->getSymtab().find(name);
 
     if (it != m_scope_s.back()->getSymtab().end()) {

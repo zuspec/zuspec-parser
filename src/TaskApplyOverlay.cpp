@@ -59,7 +59,7 @@ void TaskApplyOverlay::visitNamedScopeChild(ast::INamedScopeChild *i) {
     DEBUG_ENTER("visitNamedScopeChild %s", i->getName()->getId().c_str());
     ast::ISymbolScope *scope = m_scope_s.back();
 
-    std::map<std::string,int32_t>::iterator ex_it;
+    std::unordered_map<std::string,int32_t>::iterator ex_it;
     ex_it = scope->getSymtab().find(i->getName()->getId());
 
     int32_t i_id = scope->getChildren().size();
@@ -82,7 +82,7 @@ void TaskApplyOverlay::visitPackageScope(ast::IPackageScope *i) {
     for (std::vector<ast::IExprIdUP>::const_iterator
         it=i->getId().begin();
         it!=i->getId().end(); it++) {
-        std::map<std::string,int32_t>::const_iterator s_it;
+        std::unordered_map<std::string,int32_t>::const_iterator s_it;
         s_it = scope->getSymtab().find((*it)->getId());
 
         if (s_it == scope->getSymtab().end()) {
@@ -108,7 +108,7 @@ void TaskApplyOverlay::visitTypeScope(ast::ITypeScope *i) {
     DEBUG_ENTER("visitTypeScope");
     ast::ISymbolScope *scope = m_scope_s.back();
 
-    std::map<std::string,int32_t>::const_iterator it_i;
+    std::unordered_map<std::string,int32_t>::const_iterator it_i;
     it_i = scope->getSymtab().find(i->getName()->getId());
 
     ast::ISymbolScope *scope_i = dynamic_cast<ast::ISymbolScope *>(

@@ -72,7 +72,7 @@ public:
         }
 
         // Copy the symbol table
-        for (std::map<std::string,int32_t>::const_iterator
+        for (std::unordered_map<std::string,int32_t>::const_iterator
             it=i->getSymtab().begin();
             it!=i->getSymtab().end(); it++) {
             ic->getSymtab().insert({it->first, it->second});
@@ -87,7 +87,7 @@ public:
                 impc->getImports().push_back(*it);
             }
 
-            for (std::map<std::string,ast::ISymbolRefPathUP>::const_iterator
+            for (std::unordered_map<std::string,ast::ISymbolRefPathUP>::const_iterator
                 it=i->getImports()->getSymtab().begin();
                 it!=i->getImports()->getSymtab().end(); it++) {
                 impc->getSymtab().insert({

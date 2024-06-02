@@ -56,7 +56,7 @@ TaskFindPathElem::Result TaskFindPathElem::find(
 
 void TaskFindPathElem::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
-    std::map<std::string,int32_t>::const_iterator it;
+    std::unordered_map<std::string,int32_t>::const_iterator it;
     it = i->getSymtab().find(m_id->getId());
 
     if (it != i->getSymtab().end()) {

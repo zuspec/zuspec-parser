@@ -53,6 +53,9 @@ else()
   set(ANTLR_CXXFLAGS -DANTLR4CPP_STATIC)
 endif()
 
+#add_compile_options(-pg)
+#add_link_options(-pg)
+
 set(CompilerFlags
         CMAKE_CXX_FLAGS
         CMAKE_CXX_FLAGS_DEBUG

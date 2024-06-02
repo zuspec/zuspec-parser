@@ -63,7 +63,7 @@ TEST_F(TestInheritance, comp_base_method) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,

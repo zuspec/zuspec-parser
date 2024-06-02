@@ -109,19 +109,27 @@ void TestBase::runTest(
 }
 
 ast::IGlobalScope *TestBase::parse(
-		IMarkerListener		        *marker_l,
+		MarkerCollector		        *marker_l,
 		const std::string 			&content,
 		const std::string 			&name,
         int32_t                     fileid,
         bool                        process_doc_comments) {
 	std::stringstream s(content);
+    return parse(marker_l, &s, name, fileid, process_doc_comments);
+}
 
+ast::IGlobalScope *TestBase::parse(
+		MarkerCollector		        *marker_l,
+        std::istream                *content,
+		const std::string 			&name,
+        int32_t                     fileid,
+        bool                        process_doc_comments) {
 	ast::IGlobalScopeUP global(m_ast_factory->mkGlobalScope(fileid));
 
 	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(marker_l));
     ast_builder->setCollectDocStrings(process_doc_comments);
 
-	ast_builder->build(global.get(), &s);
+	ast_builder->build(global.get(), content);
 
 	return global.release();
 }
@@ -150,6 +158,7 @@ ast::ISymbolScope *TestBase::link(
 		IMarkerListener						        *marker_l,
 		const std::vector<ast::IGlobalScope *>	&files) {
 	ILinkerUP linker(m_factory->mkAstLinker());
+
 	ast::ISymbolScopeUP root(linker->link(
 		marker_l,
 		files
@@ -159,36 +168,89 @@ ast::ISymbolScope *TestBase::link(
 }
 
 void TestBase::parseLink(
-        IMarkerListener             *marker_l,
+        IMarkerCollector            *marker_l,
         const std::string           &content,
         const std::string           &name,
         ast::IGlobalScopeUP         &global,
         ast::ISymbolScopeUP         &root,
         int32_t                     fileid) {
-    std::vector<ast::IGlobalScope *> files;
-    global = ast::IGlobalScopeUP(parse(marker_l, content, name, fileid));
-    files.push_back(global.get());
-    root = ast::ISymbolScopeUP(link(marker_l, files));
-}
-
-std::pair<ast::IGlobalScope *, ast::ISymbolScope *> TestBase::parseLink(
-        parser::IMarkerListener        *marker_l,
-        const std::string              &content,
-        const std::string              &name,
-        bool                           process_doc_comments) {
-    ast::IGlobalScope *global = parse(marker_l, content, name, process_doc_comments); 
-    ast::ISymbolScope *root = 0;
-    if (!marker_l->hasSeverity(MarkerSeverityE::Error)) {
-        std::vector<ast::IGlobalScope *> files;
-        files.push_back(global);
-        root = link(marker_l, files);
-    }
-
-    return {global, root};
+	std::stringstream s(content);
+    std::vector<ast::IGlobalScopeUP> files;
+    parseLink(marker_l, &s, name, files, root, fileid, false);
+    global = std::move(files.back());
 }
 
 void TestBase::parseLink(
-        MarkerCollector                     &marker_c,
+        IMarkerCollector                    *marker_c,
+        std::istream                        *content,
+        const std::string                   &name,
+        std::vector<ast::IGlobalScopeUP>    &global,
+        ast::ISymbolScopeUP                 &root,
+        int32_t                             fileid,
+        bool                                load_stdlib) {
+    std::vector<ast::IGlobalScope *> files_p;
+	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(marker_c));
+
+    if (load_stdlib) {
+	    ast::IGlobalScope *stdlib = m_ast_factory->mkGlobalScope(global.size());
+        m_factory->loadStandardLibrary(ast_builder.get(), stdlib);
+        global.push_back(ast::IGlobalScopeUP(stdlib));
+        files_p.push_back(stdlib);
+    }
+
+    ast::IGlobalScope *file = m_ast_factory->mkGlobalScope(global.size());
+	ast_builder->build(file, content);
+
+    global.push_back(ast::IGlobalScopeUP(file));
+    files_p.push_back(file);
+
+	for (std::vector<IMarkerUP>::const_iterator
+			it=marker_c->markers().begin();
+			it!=marker_c->markers().end(); it++) {
+		fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
+	}
+
+	ASSERT_FALSE(marker_c->hasSeverity(parser::MarkerSeverityE::Error));
+	if (marker_c->hasSeverity(parser::MarkerSeverityE::Error)) {
+        return;
+    }
+
+	ILinkerUP linker(m_factory->mkAstLinker());
+
+	ast::ISymbolScopeUP root(linker->link(
+		marker_c,
+        files_p
+	));
+
+	for (std::vector<IMarkerUP>::const_iterator
+			it=marker_c->markers().begin();
+			it!=marker_c->markers().end(); it++) {
+		fprintf(stdout, "Link Error: %s\n", (*it)->msg().c_str());
+	}
+
+	ASSERT_FALSE(marker_c->hasSeverity(MarkerSeverityE::Error));
+	if (marker_c->hasSeverity(parser::MarkerSeverityE::Error)) {
+        return;
+    }
+}
+
+std::pair<ast::IGlobalScope *, ast::ISymbolScope *> TestBase::parseLink(
+        IMarkerCollector               *marker_l,
+        const std::string              &content,
+        const std::string              &name,
+        bool                           process_doc_comments) {
+	std::stringstream s(content);
+
+    std::vector<ast::IGlobalScopeUP> global;
+    ast::ISymbolScopeUP root;
+
+    parseLink(marker_l, &s, name, global, root, 0, false);
+
+    return {global.back().release(), root.release()};
+}
+
+void TestBase::parseLink(
+        IMarkerCollector                    *marker_c,
         const std::string                   &content,
         const std::string                   &name,
         std::vector<ast::IGlobalScopeUP>    &files,
@@ -196,7 +258,7 @@ void TestBase::parseLink(
         bool                                load_stdlib) {
     std::vector<ast::IGlobalScope *> files_p;
 	std::stringstream s(content);
-	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(&marker_c));
+	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(marker_c));
 
     if (load_stdlib) {
 	    ast::IGlobalScope *stdlib = m_ast_factory->mkGlobalScope(files.size());
@@ -212,31 +274,31 @@ void TestBase::parseLink(
     files_p.push_back(file);
 
 	for (std::vector<IMarkerUP>::const_iterator
-			it=marker_c.markers().begin();
-			it!=marker_c.markers().end(); it++) {
+			it=marker_c->markers().begin();
+			it!=marker_c->markers().end(); it++) {
 		fprintf(stdout, "Parse Error: %s\n", (*it)->msg().c_str());
 	}
 
-	ASSERT_FALSE(marker_c.hasSeverity(parser::MarkerSeverityE::Error));
-	if (marker_c.hasSeverity(parser::MarkerSeverityE::Error)) {
+	ASSERT_FALSE(marker_c->hasSeverity(parser::MarkerSeverityE::Error));
+	if (marker_c->hasSeverity(parser::MarkerSeverityE::Error)) {
         return;
     }
 
 	ILinkerUP linker(m_factory->mkAstLinker());
 
 	ast::ISymbolScopeUP root(linker->link(
-		&marker_c,
+		marker_c,
         files_p
 	));
 
 	for (std::vector<IMarkerUP>::const_iterator
-			it=marker_c.markers().begin();
-			it!=marker_c.markers().end(); it++) {
+			it=marker_c->markers().begin();
+			it!=marker_c->markers().end(); it++) {
 		fprintf(stdout, "Link Error: %s\n", (*it)->msg().c_str());
 	}
 
-	ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
-	if (marker_c.hasSeverity(parser::MarkerSeverityE::Error)) {
+	ASSERT_FALSE(marker_c->hasSeverity(MarkerSeverityE::Error));
+	if (marker_c->hasSeverity(parser::MarkerSeverityE::Error)) {
         return;
     }
 }
@@ -250,7 +312,7 @@ ast::IScopeChild *TestBase::findItem(
     for (std::vector<std::string>::const_iterator
         it=path.begin();
         it!=path.end(); it++) {
-        std::map<std::string,int32_t>::const_iterator s_it =
+        std::unordered_map<std::string,int32_t>::const_iterator s_it =
             scope->getSymtab().find(*it);
         if (s_it != scope->getSymtab().end()) {
             if (it+1 != path.end()) {

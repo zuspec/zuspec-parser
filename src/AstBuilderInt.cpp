@@ -5,6 +5,7 @@
  *      Author: ballance
  */
 
+#include <sys/time.h>
 #include <vector>
 #include "dmgr/impl/DebugMacros.h"
 #include "AstBuilderInt.h"
@@ -43,12 +44,22 @@ AstBuilderInt::~AstBuilderInt() {
 	// TODO Auto-generated destructor stub
 }
 
+static uint64_t time_ms() {
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    uint64_t ret = tv.tv_sec*1000;
+    ret += tv.tv_usec/1000;
+    return ret;
+}
+
+
 void AstBuilderInt::build(
 			ast::IGlobalScope		*global,
 			std::istream 			*in) {
 
     m_file_id = global->getFileid();
 
+    uint64_t parse_s = time_ms();
 	ANTLRInputStream input(*in);
 	PSSLexer lexer(&input);
 	m_tokens = std::unique_ptr<CommonTokenStream>(new CommonTokenStream(&lexer));
@@ -60,12 +71,17 @@ void AstBuilderInt::build(
     parser.setProfile(m_enableProfile);
 
 	PSSParser::Compilation_unitContext *ctx = parser.compilation_unit();
+    uint64_t parse_e = time_ms();
+    DEBUG("Parse time: %lld", (parse_e-parse_s));
 
 	// Only proceed to build out the AST if there are no syntax errors
 	if (!m_marker_l->hasSeverity(MarkerSeverityE::Error)) {
+        uint64_t build_ast_s = time_ms();
 		push_scope(global);
 		ctx->accept(this);
 		pop_scope();
+        uint64_t build_ast_e = time_ms();
+        DEBUG("Build AST: %lld", (build_ast_e-build_ast_s));
 	}
 
     if (m_enableProfile) {
@@ -78,7 +94,7 @@ void AstBuilderInt::build(
             it=decision_info.begin();
             it!=decision_info.end(); it++) {
             if (it->ambiguities.size()) {
-                fprintf(stdout, "Info: %s\n", it->toString().c_str());
+                DEBUG("Info: %s", it->toString().c_str());
             }
         }
     }
@@ -1883,7 +1899,7 @@ void AstBuilderInt::syntaxError(
 			size_t charPositionInLine,
 			const std::string &msg,
 			std::exception_ptr e) {
-	fprintf(stdout, "Error: Syntax error: line=%d pos=%d sym=%s\n",
+	ERROR("Error: Syntax error: line=%d pos=%d sym=%s",
         line, charPositionInLine, offendingSymbol->getText().c_str());
 	if (m_marker_l) {
 		ast::Location loc;
@@ -2043,7 +2059,7 @@ void AstBuilderInt::addDocstring(ast::IScopeChild *c, Token *t) {
 	std::vector<Token *> mlc_tokens = m_tokens->getHiddenTokensToLeft(
 			t->getTokenIndex(), 12);
 
-	fprintf(stdout, "ws_tokens=%d slc_tokens=%d mlc_tokens=%d\n",
+	DEBUG("ws_tokens=%d slc_tokens=%d mlc_tokens=%d",
 			ws_tokens.size(), slc_tokens.size(), mlc_tokens.size());
 
 	if (slc_tokens.size() == 0 && mlc_tokens.size() == 0) {

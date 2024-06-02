@@ -118,7 +118,7 @@ void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
         id_it!=i->getId().end(); id_it++) {
         DEBUG("  process name-elem %s", (*id_it)->getId().c_str());
         ast::ISymbolScope *scope = dynamic_cast<ast::ISymbolScope *>(symbolScope());
-        std::map<std::string,int32_t>::const_iterator p_it;
+        std::unordered_map<std::string,int32_t>::const_iterator p_it;
         p_it = scope->getSymtab().find((*id_it)->getId());
 
         if (p_it == scope->getSymtab().end()) {
@@ -273,7 +273,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
             it=i->getProto()->getParameters().begin();
             it!=i->getProto()->getParameters().end(); it++) {
             int32_t id = func_sym->getPlist()->getChildren().size();
-            std::map<std::string, int32_t>::const_iterator sym_it =
+            std::unordered_map<std::string, int32_t>::const_iterator sym_it =
                 func_sym->getPlist()->getSymtab().find((*it)->getName()->getId());
             
             if (sym_it != func_sym->getPlist()->getSymtab().end()) {
@@ -345,7 +345,7 @@ void TaskBuildSymbolTree::visitFunctionImportProto(ast::IFunctionImportProto *i)
             it=i->getProto()->getParameters().begin();
             it!=i->getProto()->getParameters().end(); it++) {
             int32_t id = func_sym->getPlist()->getChildren().size();
-            std::map<std::string, int32_t>::const_iterator sym_it =
+            std::unordered_map<std::string, int32_t>::const_iterator sym_it =
                 func_sym->getPlist()->getSymtab().find((*it)->getName()->getId());
             
             if (sym_it != func_sym->getPlist()->getSymtab().end()) {
@@ -460,7 +460,7 @@ void TaskBuildSymbolTree::visitPackageImportStmt(ast::IPackageImportStmt *i) {
 void TaskBuildSymbolTree::visitPyImportStmt(ast::IPyImportStmt *i) {
     DEBUG_ENTER("visitPyImportStmt");
     ast::ISymbolScope *scope = symbolScope();
-    std::map<std::string, int32_t>::const_iterator it;
+    std::unordered_map<std::string, int32_t>::const_iterator it;
 
     if (i->getAlias()) {
         // Register the alias name
@@ -502,7 +502,7 @@ void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStm
     DEBUG_ENTER("visitProceduralStmtDataDeclaration %s", i->getName()->getId().c_str());
     ast::ISymbolScope *scope = symbolScope();
 
-    std::map<std::string, int32_t>::const_iterator it =
+    std::unordered_map<std::string, int32_t>::const_iterator it =
         scope->getSymtab().find(i->getName()->getId());
     
     if (it != scope->getSymtab().end()) {
@@ -630,7 +630,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
             it=i->getParams()->getParams().begin();
             it!=i->getParams()->getParams().end(); it++) {
             int32_t id = plist->getChildren().size();
-            std::map<std::string, int32_t>::const_iterator s_it;
+            std::unordered_map<std::string, int32_t>::const_iterator s_it;
             DEBUG("  Param: %", (*it)->getName()->getId().c_str());
             
             s_it = plist->getSymtab().find((*it)->getName()->getId());
@@ -679,7 +679,7 @@ void TaskBuildSymbolTree::reportDuplicateSymbol(
 ast::IScopeChild *TaskBuildSymbolTree::findSymbol(const std::string &name) {
     ast::ISymbolScope *scope = symbolScope();
     if (scope) {
-        std::map<std::string, int32_t>::const_iterator it =
+        std::unordered_map<std::string, int32_t>::const_iterator it =
             scope->getSymtab().find(name);
         if (it != scope->getSymtab().end()) {
             return scope->getChildren().at(it->second).get();
@@ -753,7 +753,7 @@ bool TaskBuildSymbolTree::addChild(
     if (c == scope) {
         ERROR("recursive");
     }
-    std::map<std::string, int32_t>::const_iterator it =
+    std::unordered_map<std::string, int32_t>::const_iterator it =
         scope->getSymtab().find(name);
     
     if (it == scope->getSymtab().end()) {
@@ -787,7 +787,7 @@ bool TaskBuildSymbolTree::addChild(
         ERROR("recursive");
     }
     if (name != "") {
-        std::map<std::string, int32_t>::const_iterator it =
+        std::unordered_map<std::string, int32_t>::const_iterator it =
             scope->getSymtab().find(name);
         
         if (it != scope->getSymtab().end()) {

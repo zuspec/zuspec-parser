@@ -51,7 +51,7 @@ TEST_F(TestRegModel, reg_c_field) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "reg_c_field.pss",
         files,
@@ -81,7 +81,7 @@ TEST_F(TestRegModel, reg_group_c_field) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "reg_c_field.pss",
         files,
@@ -111,7 +111,7 @@ TEST_F(TestRegModel, reg_rw_parameterized) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "reg_rw_parameterized.pss",
         files,

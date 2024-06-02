@@ -44,7 +44,7 @@ ISymbolTableIterator *AstSymbolTable::mkIterator() {
 }
 
 void AstSymbolTable::enterPackage(const std::string &name) {
-    std::map<std::string,NameScopeUP>::iterator it = m_scope_s.back()->m_syms.find(name);
+    std::unordered_map<std::string,NameScopeUP>::iterator it = m_scope_s.back()->m_syms.find(name);
 
     if (it == m_scope_s.back()->m_syms.end()) {
         it = m_scope_s.back()->m_syms.insert({name, NameScopeUP(new NameScope(0))}).first;
@@ -61,7 +61,7 @@ void AstSymbolTable::enterPackage(const std::string &name) {
 ast::IScopeChild *AstSymbolTable::defineSymbol(
         const std::string           &name,
         ast::IScopeChild            *sym) {
-    std::map<std::string,NameScopeUP>::const_iterator it =
+    std::unordered_map<std::string,NameScopeUP>::const_iterator it =
         m_scope_s.back()->m_syms.find(name);
 
     if (it != m_scope_s.back()->m_syms.end()) {
@@ -75,7 +75,7 @@ ast::IScopeChild *AstSymbolTable::defineSymbol(
 ast::IScopeChild *AstSymbolTable::defineSymbolScope(
         const std::string       &name, 
         ast::IScopeChild        *t) {
-    std::map<std::string,NameScopeUP>::const_iterator it =
+    std::unordered_map<std::string,NameScopeUP>::const_iterator it =
         m_scope_s.back()->m_syms.find(name);
 
     if (it != m_scope_s.back()->m_syms.end()) {
@@ -127,7 +127,7 @@ void AstSymbolTable::leavePackage(const std::string &name) {
 
 AstSymbolTable::NameScope *AstSymbolTable::findRootSymbol(
     const std::string &name) {
-    std::map<std::string,NameScopeUP>::const_iterator it = m_root->m_syms.find(name);
+    std::unordered_map<std::string,NameScopeUP>::const_iterator it = m_root->m_syms.find(name);
     if (it != m_root->m_syms.end()) {
         return it->second.get();
     } else {

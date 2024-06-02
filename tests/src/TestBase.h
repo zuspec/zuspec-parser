@@ -48,8 +48,15 @@ protected:
         bool                load_stdlib=true);
 
 	ast::IGlobalScope *parse(
-		parser::IMarkerListener		        *marker_l,
+        MarkerCollector                     *marker_c,
 		const std::string 			        &content,
+		const std::string 			        &name,
+        int32_t                             fileid=0,
+        bool                                process_doc_comments=false);
+
+	ast::IGlobalScope *parse(
+        MarkerCollector                     *marker_c,
+        std::istream                        *content,
 		const std::string 			        &name,
         int32_t                             fileid=0,
         bool                                process_doc_comments=false);
@@ -69,7 +76,7 @@ protected:
         ast::ISymbolScope *>;
 
     void parseLink(
-        MarkerCollector                     &marker_c,
+        IMarkerCollector                    *marker_c,
         const std::string                   &content,
         const std::string                   &name,
         std::vector<ast::IGlobalScopeUP>    &files,
@@ -77,15 +84,24 @@ protected:
         bool                                load_stdlib=true);
 
     void parseLink(
-        parser::IMarkerListener        *marker_l,
+        IMarkerCollector               *marker_l,
         const std::string              &content,
         const std::string              &name,
         ast::IGlobalScopeUP            &global,
         ast::ISymbolScopeUP            &root,
         int32_t                        fileid=0);
 
+    void parseLink(
+        IMarkerCollector                    *marker_c,
+        std::istream                        *content,
+        const std::string                   &name,
+        std::vector<ast::IGlobalScopeUP>    &global,
+        ast::ISymbolScopeUP                 &root,
+        int32_t                             fileid,
+        bool                                load_stdlib);
+
     std::pair<ast::IGlobalScope *, ast::ISymbolScope *> parseLink(
-        parser::IMarkerListener        *marker_l,
+        IMarkerCollector               *marker_l,
         const std::string              &content,
         const std::string              &name,
         bool                           process_doc_comments=false);

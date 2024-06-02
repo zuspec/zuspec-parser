@@ -192,7 +192,7 @@ TEST_F(TestTemplateTypes, sizeof_s) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,
@@ -224,7 +224,7 @@ TEST_F(TestTemplateTypes, sizeof_s_2) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,
@@ -253,7 +253,7 @@ TEST_F(TestTemplateTypes, reg_c_1) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,
@@ -289,7 +289,7 @@ TEST_F(TestTemplateTypes, dflt_param_vals) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,
@@ -337,7 +337,7 @@ TEST_F(TestTemplateTypes, nested_template_specializations) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,
@@ -373,7 +373,7 @@ TEST_F(TestTemplateTypes, reg_c_templated) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "smoke.pss",
         files,

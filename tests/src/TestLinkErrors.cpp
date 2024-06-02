@@ -54,7 +54,7 @@ TEST_F(TestLinkErrors, inst_field_static_ref) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "inst_field_static_ref.pss",
         files,

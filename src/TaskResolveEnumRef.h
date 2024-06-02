@@ -38,6 +38,12 @@ public:
 
     void visitSymbolEnumScope(ast::ISymbolEnumScope *i);
 
+    virtual void visitSymbolScope(ast::ISymbolScope *i) override { }
+
+    virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override { }
+
+    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override { }
+
 private:
     static dmgr::IDebug                 *m_dbg;
     const ast::IExprId                  *m_id;

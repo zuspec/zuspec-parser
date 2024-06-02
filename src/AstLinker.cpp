@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include <sys/time.h>
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/parser/impl/TaskCloneSymbolScope.h"
 #include "AstLinker.h"
@@ -45,21 +46,38 @@ AstLinker::~AstLinker() {
 
 }
 
+static uint64_t time_ms() {
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    uint64_t ret = tv.tv_sec*1000;
+    ret += tv.tv_usec/1000;
+    return ret;
+}
+
 ast::IRootSymbolScope *AstLinker::link(
         IMarkerListener                         *marker_l,
         const std::vector<ast::IGlobalScope *>  &scopes) {
+    uint64_t build_symtree_s = time_ms();
     ast::IRootSymbolScope *symtree = TaskBuildSymbolTree(
         m_dmgr,
         m_ast_factory,
         marker_l).build(scopes);
+    uint64_t build_symtree_e = time_ms();
+    DEBUG("Build symtree: %lldms", (build_symtree_e-build_symtree_s));
 
     // Now, apply type extension
+    uint64_t apply_ext_s = time_ms();
     TaskApplyTypeExtensions(m_dmgr, m_factory, marker_l).apply(symtree);
+    uint64_t apply_ext_e = time_ms();
+    DEBUG("Apply extensions: %lldms", (apply_ext_e-apply_ext_s));
 
     // Finally, resolve remaining names
 
+    uint64_t resolve_s = time_ms();
     ResolveContext ctxt(m_factory, marker_l, symtree);
     TaskResolveRefs(&ctxt).resolve(symtree);
+    uint64_t resolve_e = time_ms();
+    DEBUG("Resolve: %lldms", (resolve_e-resolve_s));
 
     return symtree;
 }

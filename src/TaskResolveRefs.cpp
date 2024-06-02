@@ -185,7 +185,6 @@ void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeT
 
 void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     DEBUG_ENTER("visitExprRefPathContext %s", i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
-    fflush(stdout);
     // Find the first path element
     ast::ISymbolRefPath *target = TaskResolveRef(m_ctxt).resolve(
         i->getHier_id()->getElems().at(0)->getId());
@@ -203,8 +202,6 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
 
     // Set root reference
     i->setTarget(target);
-
-    fflush(stdout);
 
     ast::IScopeChild *target_c = TaskResolveSymbolPathRef(
         m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target);
@@ -265,7 +262,7 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
                 elem->getId()
             );
 
-        std::map<std::string, int32_t>::const_iterator it = 
+        std::unordered_map<std::string, int32_t>::const_iterator it = 
             target_s->getSymtab().find(elem->getId()->getId());
         
         if (!res.sym) {

@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include <unordered_map>
 #include "dmgr/IDebugMgr.h"
 #include "zsp/parser/ISymbolTable.h"
 
@@ -35,13 +36,13 @@ public:
         NameScope(ast::IScopeChild *item) : m_item(item) { }
 
         NameScope *find(const std::string &name) {
-            std::map<std::string, NameScopeUP>::const_iterator it = m_syms.find(name);
+            std::unordered_map<std::string, NameScopeUP>::const_iterator it = m_syms.find(name);
             return (it != m_syms.end())?it->second.get():0;
         }
 
-        ast::IScopeChild                         *m_item;
-        std::map<std::string, NameScopeUP>       m_syms;
-        NameScopeUP                              m_params_s;
+        ast::IScopeChild                                *m_item;
+        std::unordered_map<std::string, NameScopeUP>    m_syms;
+        NameScopeUP                                     m_params_s;
     };
 
 public:

@@ -78,8 +78,7 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    fprintf(stdout, "TODO: handle super ref\n");
-                    fflush(stdout);
+                    ERROR("TODO: handle super ref");
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
@@ -91,8 +90,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 default:
-                    fprintf(stdout, "TODO: handle ElemKind %d\n", it->kind);
-                    fflush(stdout);
+                    ERROR("TODO: handle ElemKind %d", it->kind);
                     break;
             }
             
@@ -171,8 +169,7 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    fprintf(stdout, "TODO: handle super ref\n");
-                    fflush(stdout);
+                    ERROR("TODO: handle super ref");
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
@@ -183,8 +180,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 default:
-                    fprintf(stdout, "TODO: handle ElemKind %d\n", it->kind);
-                    fflush(stdout);
+                    ERROR("TODO: handle ElemKind %d", it->kind);
                     break;
             }
             
@@ -264,8 +260,7 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    fprintf(stdout, "TODO: handle super ref\n");
-                    fflush(stdout);
+                    ERROR("TODO: handle super ref");
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
@@ -275,8 +270,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret.c_str());
                 } break;
                 default:
-                    fprintf(stdout, "TODO: handle ElemKind %d\n", it->kind);
-                    fflush(stdout);
+                    ERROR("TODO: handle ElemKind %d", it->kind);
                     break;
             }
             
@@ -321,8 +315,7 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    fprintf(stdout, "TODO: handle super ref\n");
-                    fflush(stdout);
+                    ERROR("TODO: handle super ref");
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
@@ -332,8 +325,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret.c_str());
                 } break;
                 default:
-                    fprintf(stdout, "TODO: handle ElemKind %d\n", it->kind);
-                    fflush(stdout);
+                    ERROR("TODO: handle ElemKind %d", it->kind);
                     break;
             }
             

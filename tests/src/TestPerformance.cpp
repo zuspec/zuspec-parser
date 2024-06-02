@@ -1,5 +1,5 @@
 /*
- * TestPythonInteg.cpp
+ * TestPerformance.cpp
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -18,50 +18,55 @@
  * Created on:
  *     Author:
  */
-#include "TestPythonInteg.h"
+#include <fstream>
+#include <iostream>
+#include "MarkerCollector.h"
+#include "TestPerformance.h"
 
 
 namespace zsp {
 namespace parser {
 
 
-TestPythonInteg::TestPythonInteg() {
+TestPerformance::TestPerformance() {
 
 }
 
-TestPythonInteg::~TestPythonInteg() {
+TestPerformance::~TestPerformance() {
 
 }
 
-TEST_F(TestPythonInteg, smoke) {
-    const char *text = R"(
-        pyimport mymod;
-        pyimport mymod::foo::submod as sm;
-        from mymod::foo::submod pyimport a, b, c, d;
+TEST_F(TestPerformance, file) {
+    std::string fname = "regs.pss";
+    std::fstream fs(fname.c_str(), std::ios_base::in);
 
-        component pss_top {
-            pyobj d;
-            exec init_down {
-                sm::abc(1, 2, 3, 4);
-                d.foo(); // No error at link time, since d is an opaque scope
-            }
-        }
-    )";
+    MarkerCollector marker_c;
 
-    enableDebug(true);
-    MarkerCollector marker_c; 
-
-
-    std::vector<ast::IGlobalScopeUP> files;
+    std::vector<ast::IGlobalScopeUP> global;
     ast::ISymbolScopeUP root;
-
+    bool parse_link = true;
+    if (parse_link) {
     parseLink(
         &marker_c,
-        text,
-        "smoke.pss",
-        files,
+        &fs,
+        fname,
+        global,
         root,
+        0,
         true);
+    } else {
+    parse(
+        &marker_c,
+        &fs,
+        fname,
+        0,
+        false
+    );
+    }
+
+    fs.close();
+
+    ASSERT_FALSE(marker_c.hasSeverity(MarkerSeverityE::Error));
 }
 
 }

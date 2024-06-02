@@ -21,7 +21,7 @@ ScopeUtil::~ScopeUtil() {
 }
 
 ast::INamedScopeChild *ScopeUtil::findChild(ast::IScope *s, const std::string &name) {
-	std::map<std::string,ast::INamedScopeChild *>::iterator it;
+	std::unordered_map<std::string,ast::INamedScopeChild *>::iterator it;
 
 	if ((it=s->getSymtab().find(name)) != s->getSymtab().end()) {
 		return it->second;
@@ -31,7 +31,7 @@ ast::INamedScopeChild *ScopeUtil::findChild(ast::IScope *s, const std::string &n
 }
 
 bool ScopeUtil::addChild(ast::IScope *s, ast::INamedScopeChild *c) {
-	std::map<std::string,ast::INamedScopeChild*>::iterator it;
+	std::unordered_map<std::string,ast::INamedScopeChild*>::iterator it;
 
 	if ((it=s->getSymtab().find(c->getName()->getId())) == s->getSymtab().end()) {
 		s->getChildren().push_back(ast::IScopeChildUP(c));

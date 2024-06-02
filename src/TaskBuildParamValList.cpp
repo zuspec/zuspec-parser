@@ -99,8 +99,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
             } else if (m_ptype_category_type) {
                 DEBUG("Category type parameter");
             } else {
-                fprintf(stdout, "TODO: expression supplied for value %d, and ptype not set\n", plist_idx);
-                fflush(stdout);
+                ERROR("TODO: expression supplied for value %d, and ptype not set", plist_idx);
                 return 0;
             }
         } else { // Type value

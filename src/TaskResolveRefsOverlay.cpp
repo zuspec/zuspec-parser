@@ -71,7 +71,7 @@ void TaskResolveRefsOverlay::visitPackageScope(ast::IPackageScope *i) {
     for (std::vector<ast::IExprIdUP>::const_iterator
         it=i->getId().begin();
         it!=i->getId().end(); it++) {
-        std::map<std::string,int32_t>::const_iterator sym_it;
+        std::unordered_map<std::string,int32_t>::const_iterator sym_it;
         sym_it = scope->getSymtab().find((*it)->getId());
         scope = dynamic_cast<ast::ISymbolScope *>(
             scope->getChildren().at(sym_it->second).get());
@@ -99,7 +99,7 @@ void TaskResolveRefsOverlay::visitTypeScope(ast::ITypeScope *i) {
     // TODO: push symbol scope
     ast::ISymbolScope *scope = m_ctxt->symtab()->getScope();
 
-    std::map<std::string,int32_t>::const_iterator sym_it;
+    std::unordered_map<std::string,int32_t>::const_iterator sym_it;
     sym_it = scope->getSymtab().find(i->getName()->getId());
     ast::ISymbolScope *i_s = dynamic_cast<ast::ISymbolScope *>(
         scope->getChildren().at(sym_it->second).get());

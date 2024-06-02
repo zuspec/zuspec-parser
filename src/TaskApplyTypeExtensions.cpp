@@ -70,7 +70,7 @@ void TaskApplyTypeExtensions::visitExtendEnum(ast::IExtendEnum *i) {
     for (std::vector<ast::IEnumItemUP>::const_iterator
         it=i->getItems().begin();
         it!=i->getItems().end(); it++) {
-        std::map<std::string,int32_t>::const_iterator s_it 
+        std::unordered_map<std::string,int32_t>::const_iterator s_it 
             = target_s->getSymtab().find((*it)->getName()->getId());
         
         if (s_it == target_s->getSymtab().end()) {
@@ -232,7 +232,7 @@ void TaskApplyTypeExtensions::visitEnumItem(ast::IEnumItem *i) {
 void TaskApplyTypeExtensions::visitTypeScope(ast::ITypeScope *i) {
     DEBUG_ENTER("visitTypeScope");
     if (m_target_s) {
-        std::map<std::string,int32_t>::const_iterator it =
+        std::unordered_map<std::string,int32_t>::const_iterator it =
             m_target_s->getSymtab().find(i->getName()->getId());
 
         if (it == m_target_s->getSymtab().end()) {
@@ -251,7 +251,7 @@ void TaskApplyTypeExtensions::addChild(
         ast::IScopeChild        *child,
         const std::string       &name) {
     DEBUG_ENTER("addChild %s to %s", name.c_str(), target->getName().c_str());
-    std::map<std::string,int32_t>::const_iterator it;
+    std::unordered_map<std::string,int32_t>::const_iterator it;
 
     if ((it=target->getSymtab().find(name)) == target->getSymtab().end()) {
         int32_t id = target->getChildren().size();

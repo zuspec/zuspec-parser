@@ -43,7 +43,7 @@ package_id_path:
 
 
 package_body_item_ann:
-    annotation* package_body_item
+    /*annotation* */ package_body_item
     ;
 
 package_body_item:

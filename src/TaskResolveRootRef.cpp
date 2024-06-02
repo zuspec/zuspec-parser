@@ -48,6 +48,7 @@ ast::ISymbolRefPath *TaskResolveRootRef::resolve(const ast::IExprId *id) {
     m_ctxt->pushCloneSymtab();
     m_id    = id;
 
+    int32_t count = 0;
     while (!m_ref && m_ctxt->symtab()->hasScopes()) {
         DEBUG_ENTER("processing scope %s", m_ctxt->symtab()->getScope()->getName().c_str());
         m_ctxt->symtab()->getScope()->accept(m_this);
@@ -67,7 +68,7 @@ ast::ISymbolRefPath *TaskResolveRootRef::resolve(const ast::IExprId *id) {
 void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope id=%s (%s)", 
         m_id->getId().c_str(), i->getName().c_str());
-    std::map<std::string,int32_t>::const_iterator it = i->getSymtab().find(m_id->getId());
+    std::unordered_map<std::string,int32_t>::const_iterator it = i->getSymtab().find(m_id->getId());
 
     DEBUG("imports: %p", i->getImports());
     if (it != i->getSymtab().end()) {
@@ -86,6 +87,8 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
         m_ref->getPath().push_back({
             TaskGetSymbolRefPathKind(m_ctxt->getDebugMgr()).get(c),
             it->second});
+    // If we're inside a typed context, and the type is Enum,
+    // then search that enum
     } else if ((m_ref=TaskResolveEnumRef(m_ctxt).resolve(m_id))) {
         // Found in this scope
         DEBUG("Found symbol as an enumerator");
@@ -112,12 +115,14 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 
     DEBUG("TypeScope: m_ref=%p plist=%p", m_ref, i->getPlist());
     if (!m_ref && i->getPlist()) {
-        std::map<std::string,int32_t>::const_iterator it;
+        std::unordered_map<std::string,int32_t>::const_iterator it;
 
-        for (std::map<std::string,int32_t>::const_iterator
+        if (DEBUG_EN) {
+        for (std::unordered_map<std::string,int32_t>::const_iterator
             it=i->getPlist()->getSymtab().begin();
             it!=i->getPlist()->getSymtab().end(); it++) {
             DEBUG("Sym: %s", it->first.c_str());
+        }
         }
 
         if ((it=i->getPlist()->getSymtab().find(m_id->getId())) != i->getPlist()->getSymtab().end()) {
@@ -135,7 +140,6 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
             for (uint32_t i=0; i<m_ref->getPath().size(); i++) {
                 DEBUG("  [%d] %d %d", i, m_ref->getPath().at(i).kind, m_ref->getPath().at(i).idx);
             }
-            fflush(stdout);
         }
     }
 
@@ -152,7 +156,7 @@ void TaskResolveRootRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {
 void TaskResolveRootRef::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
     DEBUG_ENTER("visitSymbolFunctionScope %s (searching for %s)", i->getName().c_str(), m_id->getId().c_str());
 
-    std::map<std::string,int32_t>::const_iterator it = i->getPlist()->getSymtab().find(m_id->getId());
+    std::unordered_map<std::string,int32_t>::const_iterator it = i->getPlist()->getSymtab().find(m_id->getId());
 
     if (it != i->getPlist()->getSymtab().end()) {
         ast::IScopeChild *c = i->getPlist()->getChildren().at(it->second).get();
@@ -218,7 +222,7 @@ ast::ISymbolRefPath *TaskResolveRootRef::searchImport(
 
 	if (target_s) {
 		DEBUG("Have a symbol scope (%s)", target_s->getName().c_str());
-		std::map<std::string, int32_t>::const_iterator it;
+		std::unordered_map<std::string, int32_t>::const_iterator it;
 		it = target_s->getSymtab().find(id->getId());
 
 		if (it != target_s->getSymtab().end()) {

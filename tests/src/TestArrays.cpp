@@ -49,7 +49,7 @@ TEST_F(TestArrays, explicit) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "explicit.pss",
         files,
@@ -77,7 +77,7 @@ TEST_F(TestArrays, implied) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "explicit.pss",
         files,
@@ -105,7 +105,7 @@ TEST_F(TestArrays, parameterized) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "explicit.pss",
         files,
@@ -139,7 +139,7 @@ TEST_F(TestArrays, parameterized_subelem_ref) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "explicit.pss",
         files,
@@ -175,7 +175,7 @@ TEST_F(TestArrays, parameterized_nested_subelem_ref) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "explicit.pss",
         files,

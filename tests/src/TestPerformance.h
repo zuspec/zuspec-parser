@@ -1,5 +1,5 @@
-/*
- * TestProceduralMacros.cpp
+/**
+ * TestPerformance.h
  *
  * Copyright 2023 Matthew Ballance and Contributors
  *
@@ -16,47 +16,25 @@
  * limitations under the License.
  *
  * Created on:
- *     Author:
+ *     Author: 
  */
-#include "TestProceduralMacros.h"
-
+#pragma once
+#include "TestBase.h"
 
 namespace zsp {
 namespace parser {
 
 
-TestProceduralMacros::TestProceduralMacros() {
 
-}
+class TestPerformance : public TestBase {
+public:
+    TestPerformance();
 
-TestProceduralMacros::~TestProceduralMacros() {
+    virtual ~TestPerformance();
 
-}
-
-TEST_F(TestProceduralMacros, smoke) {
-    const char *text = R"(
-        pyimport expand;
-
-        @#expand("abc", "def")
-        component pss_top {
-
-        }
-    )";
-
-    enableDebug(true);
-    MarkerCollector marker_c; 
-
-    std::vector<ast::IGlobalScopeUP> files;
-    ast::ISymbolScopeUP root;
-
-    parseLink(
-        &marker_c,
-        text,
-        "smoke.pss",
-        files,
-        root,
-        false);
-}
+};
 
 }
 }
+
+

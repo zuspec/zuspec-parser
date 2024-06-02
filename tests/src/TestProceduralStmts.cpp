@@ -62,7 +62,7 @@ TEST_F(TestProceduralStmts, nested_if_else_vars) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "nested_if_else_vars.pss",
         files,
@@ -88,7 +88,7 @@ TEST_F(TestProceduralStmts, iteration_var) {
     ast::ISymbolScopeUP root;
 
     parseLink(
-        marker_c,
+        &marker_c,
         text,
         "nested_if_else_vars.pss",
         files,
