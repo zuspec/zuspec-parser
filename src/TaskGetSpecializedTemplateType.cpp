@@ -99,6 +99,7 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
 
     ast::ITypeScope *type_s = 
         copier.copyT<ast::ITypeScope>(type_up->getTarget());
+    type_s->setParent(type_up->getTarget()->getParent());
 
     for (std::vector<ast::ITemplateParamDeclUP>::const_iterator
         it=params->getParams().begin();

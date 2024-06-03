@@ -246,6 +246,7 @@ public:
             (i->getDflt())?copy(i->getDflt()):0
         );
         ic->setIs_varargs(i->getIs_varargs());
+        ic->setDocstring(i->getDocstring());
         m_sc = ic;
     }
     
@@ -506,6 +507,7 @@ public:
                 ast::IFunctionParamDeclUP(copyT<ast::IFunctionParamDecl>(it->get())));
         }
 
+        ic->setDocstring(i->getDocstring());
         m_sc = ic;
         DEBUG_ENTER("visitFunctionPrototype");
     }
@@ -732,6 +734,7 @@ public:
             ic->setAssocData(i->getAssocData(), false);
         }
 
+        ic->setDocstring(i->getDocstring());
         m_sc = ic;
     }
     
@@ -748,6 +751,7 @@ public:
             ic->getChildren().push_back(ast::IScopeChildUP(copy(it->get())));
         }
 
+        ic->setDocstring(i->getDocstring());
         m_sc = ic;
     }
     
@@ -767,6 +771,7 @@ public:
             ic->setAssocData(i->getAssocData(), false);
         }
 
+        ic->setDocstring(i->getDocstring());
         m_sc = ic;
     }
 

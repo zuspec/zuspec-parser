@@ -144,7 +144,9 @@ void TaskFindElementByLocation::visitSymbolScope(ast::ISymbolScope *i) {
     for (std::vector<ast::IScopeChildUP>::const_iterator
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
-        it->get()->accept(this);
+        if (it->get()) {
+            it->get()->accept(this);
+        }
     }
     if (i->getTarget()) {
         i->getTarget()->accept(this);

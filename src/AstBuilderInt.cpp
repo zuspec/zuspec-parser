@@ -75,7 +75,7 @@ void AstBuilderInt::build(
     DEBUG("Parse time: %lld", (parse_e-parse_s));
 
 	// Only proceed to build out the AST if there are no syntax errors
-	if (!m_marker_l->hasSeverity(MarkerSeverityE::Error)) {
+	if (!m_marker_l || !m_marker_l->hasSeverity(MarkerSeverityE::Error)) {
         uint64_t build_ast_s = time_ms();
 		push_scope(global);
 		ctx->accept(this);

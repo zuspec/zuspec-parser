@@ -110,7 +110,7 @@ void TaskResolveRefsOverlay::visitTypeScope(ast::ITypeScope *i) {
 
         DEBUG("Have super");
         if (i->getSuper_t()->getTarget()) {
-            DEBUG("Super has a target");
+            DEBUG("Super %s has a target", i->getSuper_t()->getElems().front()->getId()->getId().c_str());
             ast::IScopeChild *super_t = TaskResolveSymbolPathRef(
                 m_ctxt->getDebugMgr(),
                 m_ctxt->root()).resolve(

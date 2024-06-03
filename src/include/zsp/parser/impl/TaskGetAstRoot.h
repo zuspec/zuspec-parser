@@ -55,11 +55,23 @@ public:
 
         DEBUG_LEAVE("visitScopeChild");
     }
+
+    virtual void visitTypeScope(ast::ITypeScope *i) override {
+        visitScopeChild(i);
+    }
     
     virtual void visitSymbolScope(ast::ISymbolScope *i) override {
-        DEBUG_ENTER("visitSymbolScope");
-        i->getTarget()->accept(m_this);
+        DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
+        if (i->getTarget()) {
+            i->getTarget()->accept(m_this);
+        } else {
+            DEBUG("No target specified");
+        }
         DEBUG_LEAVE("visitSymbolScope");
+    }
+
+    virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
+        visitSymbolScope(i);
     }
 
 private:
