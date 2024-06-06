@@ -248,3 +248,25 @@ cdef class SymbolTableIterator(object):
         ret._hndl = hndl
         ret._owned = owned
         return ret
+
+cpdef ast.ScopeChild resolveSymbolPathRef(
+    ast.SymbolChildrenScope         root,
+    ast.SymbolRefPath               ref):
+    cdef dm_core.DebugMgr dmgr = Factory.inst().getDebugMgr()
+    cdef ast_decl.IScopeChild *ret
+    cdef ast.ObjFactory of
+
+    if ref is None:
+        raise Exception("Cannot resolve a None ref")
+    else:
+        ret = decl.resolveSymbolPathRef(
+            dmgr._hndl,
+            root.asSymbolChildrenScope(),
+            ref.asSymbolRefPath())
+
+        if ret == NULL:
+            return None
+        else:
+            of = ast.ObjFactory()
+            ret.accept(of._hndl)
+            return of._obj

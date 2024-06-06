@@ -103,4 +103,10 @@ cdef extern from "zsp/parser/ISymbolTableIterator.h" namespace "zsp::parser":
     cdef cppclass ISymbolTableIterator:
         int32_t findLocalSymbol(const cpp_string &name)
 
+cdef extern from "PyParserUtils.h" namespace "zsp::parser":
+    ast.IScopeChild *resolveSymbolPathRef "zsp::parser::PyParserUtils::resolveSymbolPathRef" (
+        dm.IDebugMgr                *dmgr,
+        ast.ISymbolChildrenScope    *root,
+        const ast.ISymbolRefPath    *ref)
+
 

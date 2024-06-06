@@ -48,7 +48,7 @@ ast_ext = Extension(
     "zsp_parser.ast", 
     [
         os.path.join(pythondir, "ast.pyx"),
-        os.path.join(pythondir, "PyBaseVisitor.cpp")
+        os.path.join(pythondir, "PyBaseVisitor.cpp"),
     ],
     include_dirs=include_dirs,
     library_dirs=library_dirs,
@@ -57,7 +57,9 @@ ast_ext = Extension(
     language="c++")
 ext = Extension(
     "zsp_parser.core", 
-    [ os.path.join(pythondir, "core.pyx") ],
+    [ os.path.join(pythondir, "core.pyx"),
+        os.path.join(pythondir, "PyParserUtils.cpp"),
+    ],
     include_dirs=include_dirs,
     library_dirs=library_dirs,
     libraries=libraries,
