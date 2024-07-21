@@ -52,6 +52,7 @@ TOK_STREAM: 'stream';
 TOK_STATE: 'state';
 TOK_REF: 'ref';
 TOK_RESOURCE: 'resource';
+TOK_YIELD: 'yield';
 
 /* Make exec-block kinds local instead
    of global keywords

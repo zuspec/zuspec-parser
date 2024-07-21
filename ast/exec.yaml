@@ -135,6 +135,9 @@ classes:
       - name: UP<ExprId>
       - datatype: UP<DataType>
       - init: UP<Expr>
+  - ProceduralStmtYield:
+    - super: ExecStmt
+    - data: []
 
 
 

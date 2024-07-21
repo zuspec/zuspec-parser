@@ -941,6 +941,16 @@ antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedu
     return 0;
 }
 
+antlrcpp::Any AstBuilderInt::visitProcedural_yield_stmt(PSSParser::Procedural_yield_stmtContext *ctx) {
+    DEBUG_ENTER("visitProcedural_yield_stmt");
+
+    m_exec_stmt = m_factory->mkProceduralStmtYield();
+    m_exec_stmt_cnt++;
+
+    DEBUG_LEAVE("visitProcedural_yield_stmt");
+    return 0;
+}
+
 // B.8 Component declarations
 
 antlrcpp::Any AstBuilderInt::visitComponent_declaration(PSSParser::Component_declarationContext *ctx) {

@@ -134,6 +134,8 @@ public:
 
     virtual antlrcpp::Any visitProcedural_data_declaration(PSSParser::Procedural_data_declarationContext *ctx) override;
 
+    virtual antlrcpp::Any visitProcedural_yield_stmt(PSSParser::Procedural_yield_stmtContext *ctx) override;
+
 	// B.8 Component declarations
 
 	virtual antlrcpp::Any visitComponent_declaration(PSSParser::Component_declarationContext *ctx) override;

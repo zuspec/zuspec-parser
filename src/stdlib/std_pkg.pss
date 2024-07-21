@@ -10,4 +10,8 @@ package std_pkg {
 
     function void print(string fmt/*, type ... args*/);
 
+    function bit[32] urandom();
+
+    function bit[32] urandom_range(bit[32] min, bit[32] max);
+
 }

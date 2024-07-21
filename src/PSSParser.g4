@@ -480,8 +480,13 @@ procedural_stmt:
 	| procedural_break_stmt
 	| procedural_continue_stmt
 	| procedural_data_declaration // TODO: positioning this first causes assign to be incorrectly recognized as data_declaration
+    | procedural_yield_stmt
 	| TOK_SEMICOLON
 	;
+
+procedural_yield_stmt:
+    TOK_YIELD TOK_SEMICOLON
+    ;
 	
 procedural_sequence_block_stmt:
 	TOK_SEQUENCE? 
