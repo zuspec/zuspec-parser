@@ -122,10 +122,16 @@ if isSrcBuild:
         (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'PyBaseVisitor.h'),
             os.path.join(proj_dir, "python", 'PyBaseVisitor.h')),
     ]
+
+    if platform.system() == "Linux":
+        antlr4_rt_lib = "build/{libdir}/{libpref}antlr4-runtime{dllext}.4.8"
+    else:
+        antlr4_rt_lib = "build/{libdir}/{libpref}antlr4-runtime{dllext}"
+
     setup_args["ivpm_extra_data"] = {
         "zsp_parser": [
             ("build/include", "share"),
-            ("build/{libdir}/{libpref}antlr4-runtime{dllext}", ""),
+            (antlr4_rt_lib, ""),
             ("build/{libdir}/{libpref}ast{dllext}", ""),
             ("build/{libdir}/{libpref}zsp-parser{dllext}", ""),
         ]
