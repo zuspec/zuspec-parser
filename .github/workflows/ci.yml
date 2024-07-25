@@ -108,6 +108,13 @@ jobs:
         $env:PYTHONPATH = '$PWD.Path/packages/pyastbuilder/src'
         echo "PYTHONPATH: $env:PYTHONPATH"
         ./packages/python/Scripts/python setup.py build bdist_wheel
+    - name: Publish to PyPi
+      if: startsWith(github.ref, 'refs/heads/main')
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        ./packages/python/Scripts/python -m twine  upload dist/*.whl      
             
 
   macos:
