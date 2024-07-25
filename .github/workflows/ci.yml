@@ -10,7 +10,6 @@ jobs:
     strategy:
         matrix:
             include:
-            - pyversion: 'cp37-cp37m'
             - pyversion: 'cp38-cp38'
             - pyversion: 'cp39-cp39'
             - pyversion: 'cp310-cp310'
@@ -89,9 +88,9 @@ jobs:
               spec: '3.12'
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Install Python ${{ matrix.spec }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         architecture: ${{ matrix.python_arch }}
         python-version: ${{ matrix.spec }}
@@ -113,8 +112,20 @@ jobs:
 
   macos:
     runs-on: macos-latest
+    strategy:
+        matrix:
+            include:
+            - pyversion: '3.8'
+            - pyversion: '3.9'
+            - pyversion: '3.10'
+            - pyversion: '3.11'
+            - pyversion: '3.12'
     steps:
       - uses: actions/checkout@v2
+      - name: Install Python ${{ matrix.pyversion }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.pyversion }}
       - name: Fetch dependencies
         run: |
           python3 --version
