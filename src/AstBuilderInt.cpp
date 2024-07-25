@@ -5,7 +5,11 @@
  *      Author: ballance
  */
 
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <sys/time.h>
+#endif
 #include <vector>
 #include "dmgr/impl/DebugMacros.h"
 #include "AstBuilderInt.h"
@@ -45,10 +49,28 @@ AstBuilderInt::~AstBuilderInt() {
 }
 
 static uint64_t time_ms() {
+    uint64_t ret;
+#ifndef _WIN32
     struct timeval tv;
     gettimeofday(&tv, 0);
-    uint64_t ret = tv.tv_sec*1000;
+    ret = tv.tv_sec*1000;
     ret += tv.tv_usec/1000;
+#else
+    static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
+
+    SYSTEMTIME  system_time;
+    FILETIME    file_time;
+    uint64_t    time;
+
+    GetSystemTime( &system_time );
+    SystemTimeToFileTime( &system_time, &file_time );
+    time =  ((uint64_t)file_time.dwLowDateTime )      ;
+    time += ((uint64_t)file_time.dwHighDateTime) << 32;
+
+    ret = ((time - EPOCH) / 10000000L);
+    ret *= 1000;
+    ret += system_time.wMilliseconds;
+#endif
     return ret;
 }
 
