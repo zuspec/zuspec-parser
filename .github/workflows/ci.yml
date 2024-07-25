@@ -18,39 +18,27 @@ jobs:
             - pyversion: 'cp311-cp311'
             - pyversion: 'cp312-cp312'
     steps:
-      - uses: actions/checkout@v1
-      - name: Fetch python build dependencies
-        run: |
-          yum update -y
-          yum install -y glibc-static 
-          yum install -y java-11-openjdk-devel uuid-devel libuuid-devel
-          py=${{ matrix.pyversion }}
-          /opt/python/${py}/bin/python -m pip install ivpm
-      - name: Fetch source dependencies
-        run: |
-          py=${{ matrix.pyversion }}
-          /opt/python/$py/bin/python -m ivpm update -a
-          ./packages/python/bin/python -m pip install ninja wheel cython ivpm twine auditwheel
+      - uses: actions/checkout@v4
       - name: Build packages
-        run: |
-          echo "BUILD_NUM=$GITHUB_RUN_ID" >> python/zsp_parser/__build_num__.py
-          ./packages/python/bin/python setup.py bdist_wheel
-      - name: Audit Wheels
-        run: |
-          export LD_LIBRARY_PATH=`pwd`/build/lib:`pwd`/build/lib64
-          for whl in dist/*.whl; do
-              ./packages/python/bin/auditwheel -v show $whl
-              #./packages/python/bin/auditwheel -v repair --exclude libantlr4-runtime.so.4.8 $whl
-              ./packages/python/bin/auditwheel -v repair $whl
-              rm $whl
-          done
-          cp wheelhouse/*.whl dist
+        env:
+          IVPM_PYTHON: /opt/python/${{ matrix.pyversion }}/bin/python
+          BUILD_NUM: ${{ github.run_id }}
+        run: >
+          docker run --rm
+          --volume "$(pwd):/io"
+          --env IVPM_PYTHON
+          --env BUILD_NUM
+          --workdir /io
+          quay.io/pypa/manylinux2014_x86_64
+          /io/scripts/build_linux.sh
       - name: Publish to PyPi
         if: startsWith(github.ref, 'refs/heads/main')
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+            python3 -m pip install twine
+            python3 -m twine upload wheelhouse/*.whl
 
 #  ci-linux-docs:
 #    runs-on: ubuntu-latest
