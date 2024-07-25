@@ -7,7 +7,6 @@ on:
 jobs:
   ci-linux:
     runs-on: 'ubuntu-latest'
-    container: quay.io/pypa/manylinux2014_x86_64
     strategy:
         matrix:
             include:
