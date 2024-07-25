@@ -174,7 +174,7 @@ void AstSymbolTableIterator::popScope() {
         }
          */
     } else {
-        FATAL("attempt to pop an empty stack");
+        DEBUG_FATAL("attempt to pop an empty stack");
     }
     DEBUG_LEAVE("popScope - sz=%d", m_scope_s.size());
 }

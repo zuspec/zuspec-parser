@@ -466,7 +466,7 @@ void TaskBuildSymbolTree::visitPyImportStmt(ast::IPyImportStmt *i) {
         // Register the alias name
         if ((it=scope->getSymtab().find(i->getAlias()->getId())) != scope->getSymtab().end()) {
             // Error: 
-            ERROR("TODO: symbol collision with pyimport %s", i->getAlias()->getId().c_str());
+            DEBUG_ERROR("TODO: symbol collision with pyimport %s", i->getAlias()->getId().c_str());
         } else {
             int32_t id = scope->getChildren().size();
             scope->getChildren().push_back(ast::IScopeChildUP(i, false));
@@ -479,7 +479,7 @@ void TaskBuildSymbolTree::visitPyImportStmt(ast::IPyImportStmt *i) {
         // Register the basename
         if ((it=scope->getSymtab().find(i->getPath().front()->getId())) != scope->getSymtab().end()) {
             // Error: 
-            ERROR("TODO: symbol collision with pyimport %s", i->getPath().front()->getId().c_str());
+            DEBUG_ERROR("TODO: symbol collision with pyimport %s", i->getPath().front()->getId().c_str());
         } else {
             int32_t id = scope->getChildren().size();
             scope->getChildren().push_back(ast::IScopeChildUP(i, false));
@@ -751,7 +751,7 @@ bool TaskBuildSymbolTree::addChild(
     ast::ISymbolScope *scope = symbolScope();
     owned = false;
     if (c == scope) {
-        ERROR("recursive");
+        DEBUG_ERROR("recursive");
     }
     std::unordered_map<std::string, int32_t>::const_iterator it =
         scope->getSymtab().find(name);
@@ -784,7 +784,7 @@ bool TaskBuildSymbolTree::addChild(
     owned = false;
 
     if (c == scope) {
-        ERROR("recursive");
+        DEBUG_ERROR("recursive");
     }
     if (name != "") {
         std::unordered_map<std::string, int32_t>::const_iterator it =

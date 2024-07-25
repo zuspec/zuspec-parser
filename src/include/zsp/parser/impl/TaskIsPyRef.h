@@ -62,7 +62,7 @@ public:
         if (target) {
             target->accept(m_this);
         } else {
-            ERROR("Failed to resolve user-defined data type target");
+            DEBUG_ERROR("Failed to resolve user-defined data type target");
         }
         DEBUG_LEAVE("visitDataTypeUserDefined");
     }

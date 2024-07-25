@@ -47,7 +47,7 @@ public:
         i->accept(m_this);
 
         if (!m_constraint) {
-            ERROR("Error: copy(constraint) failed");
+            DEBUG_ERROR("Error: copy(constraint) failed");
         }
         DEBUG_LEAVE("copy(IConstraintStmt)");
         return m_constraint;
@@ -59,7 +59,7 @@ public:
         i->accept(m_this);
 
         if (!m_param_val) {
-            ERROR("copy(paramvalue) failed");
+            DEBUG_ERROR("copy(paramvalue) failed");
         }
         DEBUG_LEAVE("copy(ITemplateParamValue)");
         return m_param_val;
@@ -68,7 +68,7 @@ public:
     template <class T> T *copyT(ast::IConstraintStmt *i) {
         T *ret = dynamic_cast<T *>(copy(i));
         if (!ret) {
-            ERROR("Error: copyT(constraint) failed");
+            DEBUG_ERROR("Error: copyT(constraint) failed");
         }
         return ret;
     }
@@ -78,7 +78,7 @@ public:
         m_sc = 0;
         i->accept(m_this);
         if (!m_sc) {
-            ERROR("Error: copy(ScopeChild) failed");
+            DEBUG_ERROR("Error: copy(ScopeChild) failed");
         }
         DEBUG_LEAVE("copy(IScopeChild)");
         return m_sc;
@@ -87,7 +87,7 @@ public:
     template <class T> T *copyT(ast::IScopeChild *i) {
         T *ret = dynamic_cast<T *>(copy(i));
         if (!ret) {
-            ERROR("Error: copyT(ScopeChild) failed");
+            DEBUG_ERROR("Error: copyT(ScopeChild) failed");
         }
         return ret;
     }
@@ -97,7 +97,7 @@ public:
         m_expr = 0;
         i->accept(m_this);
         if (!m_expr) {
-            ERROR("Error: copy(Expr) failed");
+            DEBUG_ERROR("Error: copy(Expr) failed");
         }
         DEBUG_LEAVE("copy(IExpr)");
         return m_expr;
@@ -106,7 +106,7 @@ public:
     template <class T> T *copyT(ast::IExpr *i) {
         T *ret = dynamic_cast<T *>(copy(i));
         if (!ret) {
-            ERROR("Error: copyT(Expr) failed");
+            DEBUG_ERROR("Error: copyT(Expr) failed");
         }
         return ret;
     }
@@ -116,7 +116,7 @@ public:
         m_dt = 0;
         i->accept(m_this);
         if (!m_dt) {
-            ERROR("Error: copy(DataType) failed");
+            DEBUG_ERROR("Error: copy(DataType) failed");
         }
         DEBUG_LEAVE("copy(IDataType)");
         return m_dt;
@@ -125,7 +125,7 @@ public:
     template <class T> T *copyT(ast::IDataType *i) {
         T *ret = dynamic_cast<T *>(copy(i));
         if (!ret) {
-            ERROR("Error: copyT(Expr) failed");
+            DEBUG_ERROR("Error: copyT(Expr) failed");
         }
         return ret;
     }

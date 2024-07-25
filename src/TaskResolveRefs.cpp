@@ -292,7 +292,7 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
                         target_c
                     );
                 if (!target_s) {
-                    ERROR("target_s is null");
+                    DEBUG_ERROR("target_s is null");
                     break;
                 }
 

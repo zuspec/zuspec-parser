@@ -74,7 +74,7 @@ public:
         if (val) {
             m_bits += val->getValS();
         } else {
-            ERROR("Failed to compute width");
+            DEBUG_ERROR("Failed to compute width");
         }
         DEBUG_LEAVE("visitDataTypeInt");
     }

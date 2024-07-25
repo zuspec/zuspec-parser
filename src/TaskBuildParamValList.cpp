@@ -99,7 +99,7 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
             } else if (m_ptype_category_type) {
                 DEBUG("Category type parameter");
             } else {
-                ERROR("TODO: expression supplied for value %d, and ptype not set", plist_idx);
+                DEBUG_ERROR("TODO: expression supplied for value %d, and ptype not set", plist_idx);
                 return 0;
             }
         } else { // Type value
@@ -120,9 +120,9 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
                 // Note: it is possible to receive both a generic and a value
                 // parameter, but we don't expect to only receive a value
                 // parameter.
-                ERROR("TODO: attempting to specify type for value parameter");
+                DEBUG_ERROR("TODO: attempting to specify type for value parameter");
             } else {
-                ERROR("TODO: no ptype_decl captured\n");
+                DEBUG_ERROR("TODO: no ptype_decl captured\n");
             }
 
             DEBUG("Add parameter %s", (name)?name->getId().c_str():"<unknown>");

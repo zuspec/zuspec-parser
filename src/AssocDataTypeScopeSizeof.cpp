@@ -47,7 +47,7 @@ void AssocDataTypeScopeSizeof::postSpecialize(
             type->getParams()->getParams().at(0).get());
 
     if (!val.first) {
-        ERROR("sizeof_s parameter lacking default");
+        DEBUG_ERROR("sizeof_s parameter lacking default");
         return;
     }
 

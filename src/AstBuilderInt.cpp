@@ -232,7 +232,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
         if (it != ExtendKind_m.end()) {
             kind = it->second;
         } else {
-            ERROR("Error: No match for extend kind");
+            DEBUG_ERROR("Error: No match for extend kind");
         }
     }
 
@@ -300,7 +300,7 @@ antlrcpp::Any AstBuilderInt::visitExtend_stmt(PSSParser::Extend_stmtContext *ctx
 				
 			} break;
             default:
-                ERROR("Error: unhandled extension-type target: %d\n", kind);
+                DEBUG_ERROR("Error: unhandled extension-type target: %d\n", kind);
                 break;
 		}
 
@@ -1910,7 +1910,7 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
             value = 0;
         }
     } else {
-        FATAL("Unknown format");
+        DEBUG_FATAL("Unknown format");
     }
 
     if (is_signed) {
@@ -1932,7 +1932,7 @@ void AstBuilderInt::syntaxError(
 			size_t charPositionInLine,
 			const std::string &msg,
 			std::exception_ptr e) {
-	ERROR("Error: Syntax error: line=%d pos=%d sym=%s",
+	DEBUG_ERROR("Error: Syntax error: line=%d pos=%d sym=%s",
         line, charPositionInLine, offendingSymbol->getText().c_str());
 	if (m_marker_l) {
 		ast::Location loc;
@@ -2280,7 +2280,7 @@ ast::IDataType *AstBuilderInt::mkDataType(PSSParser::Data_typeContext *ctx) {
 	m_type = 0;
 	ctx->accept(this);
     if (!m_type) {
-        ERROR("Internal Error: mkDataType returning null");
+        DEBUG_ERROR("Internal Error: mkDataType returning null");
     }
 	return m_type;
 }
@@ -2372,7 +2372,7 @@ ast::IScopeChild *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *c
         ctx->accept(this);
 
         if (!m_exec_stmt_cnt) {
-            ERROR("No exec stmt produced");
+            DEBUG_ERROR("No exec stmt produced");
         }
     } else {
         // Null statement
@@ -2648,7 +2648,7 @@ ast::ITypeIdentifier *AstBuilderInt::mkTypeId(
 	std::vector<PSSParser::Type_identifier_elemContext *> elems = ctx->type_identifier_elem();
 
 	if (elems.size() == 0) {
-		ERROR("Error: elems.size==0");
+		DEBUG_ERROR("Error: elems.size==0");
 	}
 
 	for (std::vector<PSSParser::Type_identifier_elemContext *>::const_iterator
@@ -2809,7 +2809,7 @@ ast::IExprRefPath *AstBuilderInt::mkExprRefPath(
                 }
 
                 if (ctx->bit_slice()) {
-                    ERROR("Revisit handling of bit_slice");
+                    DEBUG_ERROR("Revisit handling of bit_slice");
                     ref->setSlice(mkExprBitSlice(ctx->bit_slice()));
                 }
             }

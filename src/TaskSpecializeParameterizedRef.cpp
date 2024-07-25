@@ -57,7 +57,7 @@ ast::ISymbolRefPath *TaskSpecializeParameterizedRef::specialize(
     }
 
     if (!target_c->getPlist()) {
-        ERROR("Type %s is not templated", target_c->getName().c_str());
+        DEBUG_ERROR("Type %s is not templated", target_c->getName().c_str());
         m_ctxt->addErrorMarker(
             ast::Location{-1, -1, -1},
             "Type %s is not templated",

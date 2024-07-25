@@ -63,10 +63,10 @@ public:
             if (res) {
                 res->accept(m_this);
             } else {
-                ERROR("Failed to resolve user-defined datatype target");
+                DEBUG_ERROR("Failed to resolve user-defined datatype target");
             }
         } else {
-            ERROR("Symbol not resolved");
+            DEBUG_ERROR("Symbol not resolved");
         }
         DEBUG_LEAVE("visitDataTypeUserDefined");
     }
@@ -82,7 +82,7 @@ public:
         if (i->getDflt()) {
             i->getDflt()->accept(m_this);
         } else {
-            ERROR("Expecting template parameter to have a default");
+            DEBUG_ERROR("Expecting template parameter to have a default");
         }
         DEBUG_LEAVE("visitTemplateGenericTypeParamDecl");
     }
@@ -92,7 +92,7 @@ public:
         if (i->getDflt()) {
             i->getDflt()->accept(m_this);
         } else {
-            ERROR("Expecting template parameter to have a default");
+            DEBUG_ERROR("Expecting template parameter to have a default");
         }
         DEBUG_LEAVE("visitTemplateCategoryTypeParamDecl");
     }
@@ -102,7 +102,7 @@ public:
         if (i->getDflt()) {
             i->getDflt()->accept(m_this);
         } else {
-            ERROR("Expecting template parameter to have a default");
+            DEBUG_ERROR("Expecting template parameter to have a default");
         }
         DEBUG_LEAVE("visitTemplateValueParamDecl");
     }

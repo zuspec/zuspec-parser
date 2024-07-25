@@ -90,7 +90,7 @@ void TaskApplyOverlay::visitPackageScope(ast::IPackageScope *i) {
 
         if (s_it == scope->getSymtab().end()) {
             // This means that this package doesn't exist in the base AST
-            ERROR("TODO: handle new-package case");
+            DEBUG_ERROR("TODO: handle new-package case");
         } else {
             scope = dynamic_cast<ast::ISymbolScope *>(scope->getChildren().at(s_it->second).get());
         }

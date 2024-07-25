@@ -90,7 +90,7 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    ERROR("TODO: handle super ref");
+                    DEBUG_ERROR("TODO: handle super ref");
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
@@ -106,7 +106,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 default:
-                    ERROR("TODO: handle ElemKind %d", it->kind);
+                    DEBUG_ERROR("TODO: handle ElemKind %d", it->kind);
                     break;
             }
             
@@ -115,7 +115,7 @@ public:
             }
 
             if (!scope) {
-                ERROR("Failed to get scope @ %d/%d",
+                DEBUG_ERROR("Failed to get scope @ %d/%d",
                     (it-ref->getPath().begin()), ref->getPath().size());
                 ret = 0;
                 break;
@@ -150,7 +150,7 @@ public:
             ret.kind = TaskResolveSymbolPathRefResult::DataType;
             ret.val.dt = m_dt;
         } else {
-            fprintf(stdout, "ERROR: unhandled resolveFull case\n");
+            fprintf(stdout, "DEBUG_ERROR: unhandled resolveFull case\n");
             *((uint32_t *)0) = 1;
         }
         return ret;
@@ -185,7 +185,7 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    ERROR("TODO: handle super ref");
+                    DEBUG_ERROR("TODO: handle super ref");
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
@@ -196,7 +196,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 default:
-                    ERROR("TODO: handle ElemKind %d", it->kind);
+                    DEBUG_ERROR("TODO: handle ElemKind %d", it->kind);
                     break;
             }
             
@@ -276,7 +276,7 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    ERROR("TODO: handle super ref");
+                    DEBUG_ERROR("TODO: handle super ref");
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
@@ -286,7 +286,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret.c_str());
                 } break;
                 default:
-                    ERROR("TODO: handle ElemKind %d", it->kind);
+                    DEBUG_ERROR("TODO: handle ElemKind %d", it->kind);
                     break;
             }
             
@@ -331,7 +331,7 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
-                    ERROR("TODO: handle super ref");
+                    DEBUG_ERROR("TODO: handle super ref");
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
                     ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
@@ -341,7 +341,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret.c_str());
                 } break;
                 default:
-                    ERROR("TODO: handle ElemKind %d", it->kind);
+                    DEBUG_ERROR("TODO: handle ElemKind %d", it->kind);
                     break;
             }
             
