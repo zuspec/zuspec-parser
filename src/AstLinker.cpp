@@ -19,8 +19,10 @@
  *     Author:
  */
 #ifdef _WIN32
+#ifdef UNDEFINED
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#endif
 #else
 #include <sys/time.h>
 #endif
@@ -52,13 +54,14 @@ AstLinker::~AstLinker() {
 }
 
 static uint64_t time_ms() {
-    uint64_t ret;
+    uint64_t ret = 0;
 #ifndef _WIN32
     struct timeval tv;
     gettimeofday(&tv, 0);
     ret = tv.tv_sec*1000;
     ret += tv.tv_usec/1000;
 #else
+#ifdef UNDEFINED
     static const uint64_t EPOCH = ((uint64_t) 116444736000000000ULL);
 
     SYSTEMTIME  system_time;
@@ -73,6 +76,7 @@ static uint64_t time_ms() {
     ret = ((time - EPOCH) / 10000000L);
     ret *= 1000;
     ret += system_time.wMilliseconds;
+#endif
 #endif
     return ret;
 }
