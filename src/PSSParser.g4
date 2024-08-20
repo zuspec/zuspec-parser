@@ -1499,7 +1499,7 @@ hierarchical_id:
 	;
 
 member_path_elem:
-	identifier function_parameter_list? ( TOK_LSBRACE expression TOK_RSBRACE )?
+	identifier function_parameter_list? ( TOK_LSBRACE expression TOK_RSBRACE )*
 	;
 
 

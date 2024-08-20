@@ -555,49 +555,17 @@ void TaskBuildSymbolTree::visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *
     DEBUG_LEAVE("visitProceduralStmtIfElse");
 }
 
-// void TaskBuildSymbolTree::visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) {
-//     DEBUG_ENTER("visitProceduralStmtRepeat");
-//     ast::ISymbolStmtScope *repeat_s = m_factory->mkSymbolStmtScope("<repeat>");
-//     addChild(repeat_s, true);
-//     repeat_s->setLocation(i->getLocation());
-//     repeat_s->setTarget(i);
+void TaskBuildSymbolTree::visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) {
+    DEBUG_ENTER("visitProceduralStmtRepeat");
 
+    DEBUG_LEAVE("visitProceduralStmtRepeat");
+}
 
-//     // Create an index variable if the statement has one
-//     if (i->getIt_id()) {
-//         DEBUG("Add data declaration");
-//         ast::IProceduralStmtDataDeclaration *it_var = 
-//             m_factory->mkProceduralStmtDataDeclaration(
-//                 m_factory->mkExprId(i->getIt_id()->getId(), false),
-//                 m_factory->mkDataTypeInt(false, 
-//                     m_factory->mkExprUnsignedNumber("32", 32, 32),
-//                     0),
-//                     0, 0);
-//             repeat_s->getSymtab().insert({
-//                 i->getIt_id()->getId(),
-//                 0
-//             });
-//             repeat_s->getChildren().push_back(it_var);
-//     }
+void TaskBuildSymbolTree::visitProceduralStmtWhile(ast::IProceduralStmtWhile *i) {
+    DEBUG_ENTER("visitProceduralStmtWhile");
 
-//     pushSymbolScope(repeat_s);
-//     i->getBody()->accept(m_this);
-//     popSymbolScope();
-//     DEBUG_LEAVE("visitProceduralStmtRepeat");
-// }
-
-// void TaskBuildSymbolTree::visitProceduralStmtWhile(ast::IProceduralStmtWhile *i) {
-//     DEBUG_ENTER("visitProceduralStmtWhile");
-//     ast::ISymbolStmtScope *while_s = m_factory->mkSymbolStmtScope("<while>");
-//     addChild(while_s, true);
-//     while_s->setLocation(i->getLocation());
-//     while_s->setTarget(i);
-
-//     pushSymbolScope(while_s);
-//     i->getBody()->accept(m_this);
-//     popSymbolScope();
-//     DEBUG_LEAVE("visitProceduralStmtWhile");
-// }
+    DEBUG_LEAVE("visitProceduralStmtWhile");
+}
 
 /*
 void TaskBuildSymbolTree::visitProceduralStmtIfClause(ast::IProceduralStmtIfClause *i) {

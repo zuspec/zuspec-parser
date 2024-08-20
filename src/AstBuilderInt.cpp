@@ -724,7 +724,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_sequence_block_stmt(PSSParser::Proc
 
     m_exec_stmt = block;
     m_exec_stmt_cnt++;
-    DEBUG_LEAVE("visitProcedural_sequence_block_stmt");
+    DEBUG_LEAVE("visitProcedural_sequence_block_stmt (%d)", block->getChildren().size());
     return 0;
 }
 
@@ -854,6 +854,10 @@ antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_r
         m_exec_stmt = stmt;
         m_exec_stmt_cnt++;
     }
+
+//    m_exec_stmt = 0;
+//    m_exec_stmt_cnt--;
+
 
     DEBUG_LEAVE("visitProcedural_repeat_stmt");
     return 0;
@@ -2369,6 +2373,7 @@ ast::IExprDomainOpenRangeList *AstBuilderInt::mkDomainOpenRangeList(PSSParser::D
 }
 
 ast::IScopeChild *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *ctx) {
+    DEBUG_ENTER("mkExecStmt");
     m_exec_stmt = 0;
     m_exec_stmt_cnt = 0;
 
@@ -2382,6 +2387,7 @@ ast::IScopeChild *AstBuilderInt::mkExecStmt(PSSParser::Procedural_stmtContext *c
         // Null statement
         m_exec_stmt_cnt++;
     }
+    DEBUG_LEAVE("mkExecStmt %p", m_exec_stmt);
     return m_exec_stmt;
 }
 
@@ -2624,8 +2630,9 @@ ast::IExprMemberPathElem *AstBuilderInt::mkMemberPathElem(
         }
     }
 
-    if (ctx->expression()) {
-        subscript = mkExpr(ctx->expression());
+    if (ctx->expression().size()) {
+        // TODO: handle subscripts
+//        subscript = mkExpr(ctx->expression());
     }
 
     return m_factory->mkExprMemberPathElem(
