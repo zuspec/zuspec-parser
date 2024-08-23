@@ -9,6 +9,7 @@ TOK_HASH: '#';
 TOK_LPAREN: '(';
 TOK_RPAREN: ')';
 TOK_COMMA: ',';
+TOK_COVER: 'cover';
 TOK_DOUBLE_EQ: '==';
 TOK_SINGLE_EQ: '=';
 TOK_NE: '!=';
@@ -122,6 +123,8 @@ TOK_GTE: '>=';
 TOK_IN: 'in';
 TOK_INT: 'int';
 TOK_BIT: 'bit';
+TOK_FLOAT32: 'float32';
+TOK_FLOAT64: 'float64';
 TOK_ELIPSIS: '..';
 TOK_TRIPLE_ELIPSIS: '...';
 TOK_STRING: 'string';
@@ -129,6 +132,9 @@ TOK_BOOL: 'bool';
 TOK_TYPEDEF: 'typedef';
 TOK_DYNAMIC: 'dynamic';
 TOK_DISABLE: 'disable';
+TOK_DIST: 'dist';
+TOK_COLON_EQ: ':=';
+TOK_COLON_DIV: ':/';
 TOK_FORALL: 'forall';
 TOK_IMPLIES: '->';
 TOK_UNIQUE: 'unique';
@@ -139,6 +145,10 @@ TOK_ILLEGAL_BINS: 'illegal_bins';
 TOK_IGNORE_BINS: 'ignore_bins';
 TOK_CROSS: 'cross';
 TOK_IFF: 'iff';
+TOK_MONITOR: 'monitor';
+TOK_CONCAT: 'concat';
+TOK_EVENTUALLY: 'eventually';
+TOK_OVERLAP: 'overlap';
 TOK_COMPILE: 'compile';
 TOK_ASSERT: 'assert';
 TOK_HAS: 'has';
@@ -210,6 +220,30 @@ TRIPLE_DOUBLE_QUOTED_STRING:
 fragment TripleQuotedStringPart : EscapedTripleQuote | SourceCharacter;
 fragment EscapedTripleQuote: '\\"""';
 fragment SourceCharacter :[\u0009\u000A\u000D\u0020-\uFFFF];
+
+// fragment FloatingPointLiteral:
+//     FractionalConstant ExponentPart?
+//     | DigitSequence ExponentPart
+//     ;
+
+// fragment FractionalConstant
+//     : DigitSequence? '.' DigitSequence
+//     | DigitSequence '.'
+//     ;
+
+// fragment ExponentPart
+//     : [eE] Sign? DigitSequence
+//     ;
+
+// fragment Sign
+//     : [+-]
+//     ;
+
+// DigitSequence
+//     : Digit+
+//     ;
+
+// fragment Digit: [0-9];
 		
 // TODO: move to LexicalRules
 ID : [a-zA-Z_] [a-zA-Z0-9_]* ;

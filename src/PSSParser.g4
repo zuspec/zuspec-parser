@@ -254,6 +254,7 @@ object_ref_field:
 //	action_identifier array_dim? (TOK_COMMA action_identifier array_dim?)* 
 //	;
 
+// Note: grammar refactor for efficiency
 action_handle_declaration:
 	action_type_identifier action_instantiation (TOK_COMMA action_instantiation)* TOK_SEMICOLON
 	;
@@ -370,15 +371,19 @@ target_file_exec_block:
  ********************************************************************/
 
 procedural_function:
-	platform_qualifier? TOK_PURE? TOK_FUNCTION function_prototype
+	platform_qualifier? TOK_PURE? TOK_STATIC? TOK_FUNCTION function_prototype
 	TOK_LCBRACE
 	procedural_stmt*
-//EMTPTYSTR		procedural_stmt*
 	TOK_RCBRACE
 	;
 
 function_decl:
-	TOK_PURE? TOK_FUNCTION function_prototype TOK_SEMICOLON
+	TOK_PURE? TOK_STATIC? TOK_FUNCTION function_prototype TOK_SEMICOLON
+	;
+
+platform_qualifier: 
+	TOK_TARGET
+	| TOK_SOLVE
 	;
 
 function_prototype:
@@ -404,9 +409,9 @@ function_parameter_list_prototype:
 
 function_parameter:
 	(
-		function_parameter_dir? data_type identifier (TOK_SINGLE_EQ constant_expression)?
+		function_parameter_dir? TOK_CONST? data_type identifier (TOK_SINGLE_EQ constant_expression)?
 	) | (
-		(is_type=TOK_TYPE | is_ref=TOK_REF type_category | is_struct=TOK_STRUCT) identifier
+		TOK_CONST? (is_type=TOK_TYPE | is_ref=TOK_REF type_category | is_struct=TOK_STRUCT) identifier
 	)
 	;
 
@@ -430,18 +435,14 @@ import_function:
 		(
 			TOK_IMPORT platform_qualifier? language_identifier? TOK_FUNCTION type_identifier TOK_SEMICOLON
 		) | (
-			TOK_IMPORT platform_qualifier? language_identifier? TOK_FUNCTION function_prototype TOK_SEMICOLON
+			TOK_IMPORT platform_qualifier? language_identifier? TOK_STATIC? TOK_FUNCTION function_prototype TOK_SEMICOLON
 		)
 	)
 	;
 
-platform_qualifier: 
-	TOK_TARGET
-	| TOK_SOLVE
-	;
 
 target_template_function:
-	TOK_TARGET language_identifier TOK_FUNCTION function_prototype TOK_SINGLE_EQ string_literal TOK_SEMICOLON
+	TOK_TARGET language_identifier TOK_STATIC? TOK_FUNCTION function_prototype TOK_SINGLE_EQ string_literal TOK_SEMICOLON
 	;
 
 import_class_decl:
@@ -484,9 +485,6 @@ procedural_stmt:
 	| TOK_SEMICOLON
 	;
 
-procedural_yield_stmt:
-    TOK_YIELD TOK_SEMICOLON
-    ;
 	
 procedural_sequence_block_stmt:
 	TOK_SEQUENCE? 
@@ -550,6 +548,10 @@ procedural_break_stmt:
 procedural_continue_stmt:
 	TOK_CONTINUE TOK_SEMICOLON
 	;
+
+procedural_yield_stmt:
+    TOK_YIELD TOK_SEMICOLON
+    ;
 	
 /********************************************************************
  * B.8 Component declarations
@@ -592,6 +594,8 @@ component_body_item:
 	| compile_assert_stmt
 	| attr_group
 	| component_body_compile_if
+    | monitor_declaration
+    | cover_stmt
  	| TOK_SEMICOLON
 	;
 
@@ -619,11 +623,11 @@ object_bind_item_path:
 	;
 
 component_path_elem:
-	component_identifier ( TOK_LSBRACE constant_expression TOK_RSBRACE )?
+	component_identifier ( TOK_LSBRACE domain_open_range_list TOK_RSBRACE )?
 	;
 
 object_bind_item:
-	(action_type_identifier TOK_DOT identifier ( TOK_LSBRACE constant_expression TOK_RSBRACE )?)
+	(action_type_identifier TOK_DOT identifier ( TOK_LSBRACE domain_open_range_list TOK_RSBRACE )?)
 	| TOK_ASTERISK
 	;
 
@@ -822,6 +826,7 @@ override_declaration:
 override_stmt:
 	type_override 
 	| instance_override
+    | override_compile_if
 	| TOK_SEMICOLON
 	;
 
@@ -865,7 +870,141 @@ attr_group:
 	;
 
 /********************************************************************
- * B.12 Template types (AST)
+ * B.12 Behavioral coverage specification
+ ********************************************************************/
+cover_stmt:
+ (label_identifier TOK_COLON)? TOK_COVER type_identifier TOK_SEMICOLON
+| (label_identifier TOK_COLON)? TOK_COVER TOK_LCBRACE monitor_body_item* TOK_RCBRACE
+;
+
+monitor_declaration:
+    TOK_MONITOR monitor_identifier template_param_decl_list? monitor_super_spec? 
+        TOK_LCBRACE monitor_body_item* TOK_RCBRACE
+    ;
+
+abstract_monitor_declaration:
+    TOK_ABSTRACT monitor_declaration
+    ;
+
+monitor_super_spec: 
+    TOK_COLON type_identifier
+    ;
+
+monitor_body_item:
+    monitor_activity_declaration
+    | override_declaration
+    | monitor_constraint_declaration
+    | monitor_field_declaration
+    | covergroup_declaration
+    | attr_group
+    | compile_assert_stmt
+    | covergroup_instantiation
+    | monitor_body_compile_if
+    | TOK_SEMICOLON
+    ;
+
+monitor_field_declaration:
+    const_field_declaration
+    | action_handle_declaration
+    | monitor_handle_declaration
+    ;
+
+monitor_activity_declaration:
+    TOK_ACTIVITY TOK_LCBRACE monitor_activity_stmt* TOK_RCBRACE
+    ;
+
+monitor_activity_stmt:
+    (label_identifier TOK_COLON)? labeled_monitor_activity_stmt
+    | activity_action_traversal_stmt
+    | monitor_activity_monitor_traversal_stmt
+    | action_handle_declaration
+    | monitor_handle_declaration
+    | monitor_activity_constraint_stmt
+    | TOK_SEMICOLON
+    ;
+
+labeled_monitor_activity_stmt:
+    monitor_activity_sequence_block_stmt
+    | monitor_activity_concat_stmt
+    | monitor_activity_eventually_stmt
+    | monitor_activity_overlap_stmt
+    | monitor_activity_schedule_stmt
+    ;
+
+monitor_handle_declaration: 
+    monitor_type_identifier monitor_instantiation TOK_SEMICOLON
+    ;
+
+monitor_instantiation:
+    monitor_identifier array_dim?  (TOK_COMMA monitor_identifier array_dim?)*
+    ;
+
+monitor_activity_sequence_block_stmt: 
+    TOK_SEQUENCE?  TOK_LCBRACE monitor_activity_stmt* TOK_RCBRACE
+    ;
+
+monitor_activity_concat_stmt: 
+    TOK_CONCAT TOK_LCBRACE monitor_activity_stmt* TOK_RCBRACE
+    ;
+
+monitor_activity_eventually_stmt: 
+    TOK_EVENTUALLY monitor_activity_stmt TOK_SEMICOLON
+    ;
+
+monitor_activity_overlap_stmt: 
+    TOK_OVERLAP TOK_LCBRACE monitor_activity_stmt* TOK_RCBRACE
+    ;
+
+monitor_activity_select_stmt: 
+    TOK_SELECT TOK_LCBRACE monitor_activity_stmt monitor_activity_stmt ( monitor_activity_stmt )* TOK_RCBRACE
+    ;
+
+monitor_activity_schedule_stmt: 
+    TOK_SCHEDULE TOK_LCBRACE monitor_activity_stmt* TOK_RCBRACE
+    ;
+
+monitor_activity_monitor_traversal_stmt:
+   monitor_identifier (TOK_LSBRACE expression? TOK_RSBRACE)? inline_constraints_or_empty
+   | ( label_identifier TOK_COLON )? TOK_DO monitor_type_identifier
+        inline_constraints_or_empty
+    ;
+
+monitor_inline_constraints_or_empty:
+    TOK_WITH monitor_constraint_set
+    | TOK_SEMICOLON
+    ;
+
+monitor_activity_constraint_stmt: 
+    TOK_CONSTRAINT monitor_constraint_set
+    ;
+
+monitor_constraint_declaration:
+    TOK_CONSTRAINT monitor_constraint_set
+    | TOK_CONSTRAINT identifier monitor_constraint_block
+    ;
+
+monitor_constraint_set:
+    monitor_constraint_body_item
+    | monitor_constraint_block
+    ;
+
+monitor_constraint_block: 
+    TOK_LCBRACE monitor_constraint_body_item* TOK_RCBRACE
+    ;
+
+monitor_constraint_body_item:
+    expression_constraint_item
+    | foreach_constraint_item
+    | forall_constraint_item
+    | if_constraint_item
+    | implication_constraint_item
+    | unique_constraint_item
+    | constraint_body_compile_if
+    | TOK_SEMICOLON
+    ;
+
+/********************************************************************
+ * B.13 Template types
  ********************************************************************/
 
 template_param_decl_list: 
@@ -941,6 +1080,7 @@ scalar_data_type:
 	| string_type  	
 	| bool_type
 	| enum_type
+    | float_type
     | pyobj_type // zuspec extension
 	;
 
@@ -948,6 +1088,8 @@ casting_type:
 	integer_type
 	| bool_type
 	| enum_type
+    | float_type
+    | reference_type
 	| type_identifier
 	;
 
@@ -1007,6 +1149,11 @@ enum_type:
 	enum_type_identifier TOK_IN TOK_LSBRACE open_range_list TOK_RSBRACE
 	;
 
+float_type:
+    TOK_FLOAT32
+    | TOK_FLOAT64
+    ;
+
 pyobj_type: // zuspec extension
     TOK_PYOBJ
     ;
@@ -1060,6 +1207,8 @@ constraint_body_item:
 	| implication_constraint_item
 	| unique_constraint_item
 	| default_constraint_item
+    | dist_directive
+    | constraint_body_compile_if
 	| TOK_SEMICOLON
 ;
 
@@ -1104,6 +1253,23 @@ unique_constraint_item:
 	TOK_UNIQUE TOK_LCBRACE hierarchical_id_list TOK_RCBRACE TOK_SEMICOLON
 	;
 
+dist_directive: 
+    TOK_DIST expression TOK_IN TOK_LSBRACE dist_list TOK_RSBRACE TOK_SEMICOLON
+    ;
+
+dist_list: 
+    dist_item ( TOK_COMMA dist_item )*
+    ;
+
+dist_item: 
+    open_range_value TOK_LSBRACE dist_weight TOK_RSBRACE
+    ;
+
+dist_weight:
+    TOK_COLON_EQ expression
+    | TOK_COLON_DIV expression
+    ;
+
 /********************************************************************
  * B.15 Coverage specification
  ********************************************************************/
@@ -1123,6 +1289,7 @@ covergroup_body_item:
 	covergroup_option
 	| covergroup_coverpoint
 	| covergroup_cross
+    | covergroup_body_compile_if
 	| TOK_SEMICOLON
 	;
 
@@ -1239,19 +1406,14 @@ package_body_compile_if:
 	(TOK_ELSE false_body=package_body_compile_if_item)?
 	;
 
-package_body_compile_if_item:
-	package_body_item
-	| (TOK_LCBRACE package_body_item* TOK_RCBRACE)
-	;
+monitor_body_compile_if:
+    TOK_COMPILE TOK_IF TOK_LPAREN constant_expression TOK_RPAREN monitor_body_compile_if_item 
+    (TOK_ELSE monitor_body_compile_if_item )?
+    ;
 
 action_body_compile_if:
 	TOK_COMPILE TOK_IF TOK_LPAREN cond=constant_expression TOK_RPAREN true_body=action_body_compile_if_item
 	(TOK_ELSE false_body=action_body_compile_if_item)?
-	;
-
-action_body_compile_if_item:
-	action_body_item_ann
-	| (TOK_LCBRACE action_body_item_ann* TOK_RCBRACE)
 	;
 
 component_body_compile_if:
@@ -1259,20 +1421,70 @@ component_body_compile_if:
 	(TOK_ELSE false_body=component_body_compile_if_item)?
 	;
 
-component_body_compile_if_item:
-	component_body_item_ann
-	| (TOK_LCBRACE component_body_item_ann* TOK_RCBRACE)
-	;
-	
 struct_body_compile_if:
 	TOK_COMPILE TOK_IF TOK_LPAREN cond=constant_expression TOK_RPAREN true_body=struct_body_compile_if_item
 	(TOK_ELSE false_body=struct_body_compile_if_item)?
+	;
+
+procedural_compile_if: 
+    TOK_COMPILE TOK_IF TOK_LPAREN constant_expression TOK_RPAREN procedural_compile_if_stmt 
+    ( TOK_ELSE procedural_compile_if_stmt )?
+    ;
+
+constraint_body_compile_if: 
+    TOK_COMPILE TOK_IF TOK_LPAREN constant_expression TOK_RPAREN constraint_body_compile_if_item 
+    ( TOK_ELSE constraint_body_compile_if_item )?
+    ;
+
+covergroup_body_compile_if: 
+    TOK_COMPILE TOK_IF TOK_LPAREN constant_expression TOK_RPAREN covergroup_body_compile_if_item 
+    ( TOK_ELSE covergroup_body_compile_if_item )?
+    ;
+
+override_compile_if: 
+    TOK_COMPILE TOK_IF TOK_LPAREN constant_expression TOK_RPAREN override_compile_if_stmt 
+    ( TOK_ELSE override_compile_if_stmt )?
+    ;
+
+package_body_compile_if_item:
+	package_body_item
+	| (TOK_LCBRACE package_body_item* TOK_RCBRACE)
+	;
+
+action_body_compile_if_item:
+	action_body_item_ann
+	| (TOK_LCBRACE action_body_item_ann* TOK_RCBRACE)
+	;
+
+monitor_body_compile_if_item: 
+    TOK_LSBRACE monitor_body_item* TOK_RSBRACE
+    ;
+
+component_body_compile_if_item:
+	component_body_item_ann
+	| (TOK_LCBRACE component_body_item_ann* TOK_RCBRACE)
 	;
 
 struct_body_compile_if_item:
 	struct_body_item
 	| (TOK_LCBRACE struct_body_item* TOK_RCBRACE)
 	;
+
+procedural_compile_if_stmt: 
+    TOK_LSBRACE procedural_stmt* TOK_RSBRACE
+    ;
+
+constraint_body_compile_if_item: 
+    TOK_LSBRACE constraint_body_item TOK_RSBRACE
+    ;
+
+covergroup_body_compile_if_item: 
+    TOK_LSBRACE covergroup_body_item TOK_RSBRACE
+    ;
+
+override_compile_if_stmt: 
+    TOK_LSBRACE override_stmt TOK_RSBRACE
+    ;
 
 compile_has_expr:
     // Note: replace static_ref_path with ref_path
@@ -1308,7 +1520,6 @@ expression:
     lhs=expression binary_or_op rhs=expression			|
     lhs=expression logical_and_op rhs=expression		|
     lhs=expression logical_or_op rhs=expression			|
-//    lhs=expression TOK_SINGLE_EQ rhs=expression  { notify
     lhs=expression conditional_expr
 	;
 
@@ -1515,6 +1726,7 @@ index_identifier: identifier;
 iterator_identifier: identifier;
 label_identifier: identifier;
 language_identifier: identifier;
+monitor_identifier: identifier;
 package_identifier: identifier;
 struct_identifier: identifier;
 symbol_identifier: identifier;
@@ -1532,6 +1744,7 @@ buffer_type_identifier: type_identifier;
 component_type_identifier: type_identifier; // Note: unused
 covergroup_type_identifier: type_identifier;
 enum_type_identifier: type_identifier;
+monitor_type_identifier: type_identifier;
 resource_type_identifier: type_identifier;
 state_type_identifier: type_identifier;
 stream_type_identifier: type_identifier;
@@ -1548,6 +1761,11 @@ entity_type_identifier:
  ********************************************************************/
 
 number:
+    integer_number
+    | floating_point_number
+    ;
+
+integer_number:
 	based_hex_number
 	| based_dec_number
 	| based_bin_number
@@ -1570,6 +1788,11 @@ based_oct_number: DEC_LITERAL? BASED_OCT_LITERAL;
 based_dec_number: DEC_LITERAL? BASED_DEC_LITERAL;
 
 based_hex_number: DEC_LITERAL? BASED_HEX_LITERAL;
+
+floating_point_number:
+    TOK_ACTION
+//    FloatingPointLiteral
+    ;
 
 aggregate_literal:
 	empty_aggregate_literal

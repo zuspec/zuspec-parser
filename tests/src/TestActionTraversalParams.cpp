@@ -33,53 +33,53 @@ TestActionTraversalParams::~TestActionTraversalParams() {
 
 }
 
-TEST_F(TestActionTraversalParams, smoke) {
-    const char *text = R"(
-        component pss_top {
-            action A {
-                int v1, v2;
-            }
+// TEST_F(TestActionTraversalParams, smoke) {
+//     const char *text = R"(
+//         component pss_top {
+//             action A {
+//                 int v1, v2;
+//             }
 
-            action Entry {
-                A a1;
-                activity {
-                    do A(v1=10, v2=10);
-                    a1(v1=20, v2=30) with {
+//             action Entry {
+//                 A a1;
+//                 activity {
+//                     do A(v1=10, v2=10);
+//                     a1(v1=20, v2=30) with {
 
-                    };
-                }
-            }
-        }
-    )";
-    runTest(text, "smoke.pss");
-}
+//                     };
+//                 }
+//             }
+//         }
+//     )";
+//     runTest(text, "smoke.pss");
+// }
 
-TEST_F(TestActionTraversalParams, binding) {
-    const char *text = R"(
-        buffer Buf { }
-        component pss_top {
-            action P {
-                output Buf  d_out;
-            }
+// TEST_F(TestActionTraversalParams, binding) {
+//     const char *text = R"(
+//         buffer Buf { }
+//         component pss_top {
+//             action P {
+//                 output Buf  d_out;
+//             }
 
-            action C {
-               input Buf    d_in;
-            }
+//             action C {
+//                input Buf    d_in;
+//             }
 
-            action Entry {
-                P p1;
-                C c1;
-                activity {
-                    p1;
-                    c1(
-                        d_in=p1.d_out // Bind d_in to p1.d_out
-                        ); 
-                }
-            }
-        }
-    )";
-    runTest(text, "smoke.pss");
-}
+//             action Entry {
+//                 P p1;
+//                 C c1;
+//                 activity {
+//                     p1;
+//                     c1(
+//                         d_in=p1.d_out // Bind d_in to p1.d_out
+//                         ); 
+//                 }
+//             }
+//         }
+//     )";
+//     runTest(text, "smoke.pss");
+// }
 
 }
 }

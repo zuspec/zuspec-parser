@@ -1799,132 +1799,139 @@ antlrcpp::Any AstBuilderInt::visitType_identifier(PSSParser::Type_identifierCont
 
 // B.19 Numbers
 
-antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx) {
-	DEBUG_ENTER("visitNumber %s", ctx->getText().c_str());
-    uint64_t value;
-    bool is_signed = false;
-    int32_t width = 32;
-    std::string img;
-    if (ctx->based_hex_number()) {
-        DEBUG("Based hex number");
-        if (ctx->based_hex_number()->DEC_LITERAL()) {
-            // Explicit width
-            width = strtoul(
-                ctx->based_hex_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
-        }
-        img = ctx->based_hex_number()->BASED_HEX_LITERAL()->getSymbol()->getText();
-        std::string val_t;
-        is_signed = (img[1] == 's' || img[1] == 'S');
-
-        for (uint32_t i=2+is_signed; i<img.size(); i++) {
-            if (img.at(i) != '_') {
-                val_t.push_back(img.at(i));
+antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx_t) {
+	DEBUG_ENTER("visitNumber %s", ctx_t->getText().c_str());
+    if (ctx_t->integer_number()) {
+        PSSParser::Integer_numberContext *ctx = ctx_t->integer_number();
+        uint64_t value;
+        bool is_signed = false;
+        int32_t width = 32;
+        std::string img;
+        if (ctx->based_hex_number()) {
+            DEBUG("Based hex number");
+            if (ctx->based_hex_number()->DEC_LITERAL()) {
+                // Explicit width
+                width = strtoul(
+                    ctx->based_hex_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
             }
-        }
+            img = ctx->based_hex_number()->BASED_HEX_LITERAL()->getSymbol()->getText();
+            std::string val_t;
+            is_signed = (img[1] == 's' || img[1] == 'S');
 
-        value = strtoull(val_t.c_str(), 0, 16);
-    } else if (ctx->based_oct_number()) {
-        DEBUG("Based oct number");
-        if (ctx->based_oct_number()->DEC_LITERAL()) {
-            // Explicit width
-            width = strtoul(
-                ctx->based_oct_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
-        }
-        img = ctx->based_oct_number()->BASED_OCT_LITERAL()->getSymbol()->getText();
-        std::string val_t;
-        is_signed = (img[1] == 's' || img[1] == 'S');
-
-        for (uint32_t i=2+is_signed; i<img.size(); i++) {
-            if (img.at(i) != '_') {
-                val_t.push_back(img.at(i));
+            for (uint32_t i=2+is_signed; i<img.size(); i++) {
+                if (img.at(i) != '_') {
+                    val_t.push_back(img.at(i));
+                }
             }
-        }
 
-        value = strtoull(val_t.c_str(), 0, 8);
-    } else if (ctx->based_dec_number()) {
-        DEBUG("Based dec number");
-        if (ctx->based_dec_number()->DEC_LITERAL()) {
-            // Explicit width
-            width = strtoul(
-                ctx->based_dec_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
-        }
-        img = ctx->based_dec_number()->BASED_DEC_LITERAL()->getSymbol()->getText();
-        std::string val_t;
-        is_signed = (img[1] == 's' || img[1] == 'S');
-
-        for (uint32_t i=2+is_signed; i<img.size(); i++) {
-            if (img.at(i) != '_') {
-                val_t.push_back(img.at(i));
+            value = strtoull(val_t.c_str(), 0, 16);
+        } else if (ctx->based_oct_number()) {
+            DEBUG("Based oct number");
+            if (ctx->based_oct_number()->DEC_LITERAL()) {
+                // Explicit width
+                width = strtoul(
+                    ctx->based_oct_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
             }
-        }
+            img = ctx->based_oct_number()->BASED_OCT_LITERAL()->getSymbol()->getText();
+            std::string val_t;
+            is_signed = (img[1] == 's' || img[1] == 'S');
 
-        value = strtoull(val_t.c_str(), 0, 10);
-    } else if (ctx->based_bin_number()) {
-        DEBUG("Based bin number");
-        if (ctx->based_bin_number()->DEC_LITERAL()) {
-            // Explicit width
-            width = strtoul(
-                ctx->based_bin_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
-        }
-        img = ctx->based_bin_number()->BASED_BIN_LITERAL()->getSymbol()->getText();
-        std::string val_t;
-        is_signed = (img[1] == 's' || img[1] == 'S');
-
-        for (uint32_t i=2+is_signed; i<img.size(); i++) {
-            if (img.at(i) != '_') {
-                val_t.push_back(img.at(i));
-            }
-        }
-
-        value = strtoull(val_t.c_str(), 0, 2);
-    } else if (ctx->hex_number()) {
-        DEBUG("Unbased hex number");
-        img = ctx->hex_number()->HEX_LITERAL()->getSymbol()->getText();
-        std::string val_t;
-
-        for (uint32_t i=2; i<img.size(); i++) {
-            if (img.at(i) != '_') {
-                val_t.push_back(img.at(i));
-            }
-        }
-
-        value = strtoull(val_t.c_str(), 0, 16);
-    } else if (ctx->dec_number()) {
-        DEBUG("Unbased dec number");
-        img = ctx->dec_number()->DEC_LITERAL()->getSymbol()->getText();
-        std::string val_t;
-
-        for (uint32_t i=0; i<img.size(); i++) {
-            if (img.at(i) != '_') {
-                val_t.push_back(img.at(i));
-            }
-        }
-
-        value = strtoull(val_t.c_str(), 0, 10);
-    } else if (ctx->oct_number()) {
-        DEBUG("Unbased oct number");
-        img = ctx->oct_number()->OCT_LITERAL()->getSymbol()->getText();
-        std::string val_t;
-
-        if (img.size() > 1) {
-            for (uint32_t i=1; i<img.size(); i++) {
+            for (uint32_t i=2+is_signed; i<img.size(); i++) {
                 if (img.at(i) != '_') {
                     val_t.push_back(img.at(i));
                 }
             }
 
             value = strtoull(val_t.c_str(), 0, 8);
-        } else {
-            value = 0;
-        }
-    } else {
-        DEBUG_FATAL("Unknown format");
-    }
+        } else if (ctx->based_dec_number()) {
+            DEBUG("Based dec number");
+            if (ctx->based_dec_number()->DEC_LITERAL()) {
+                // Explicit width
+                width = strtoul(
+                    ctx->based_dec_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+            }
+            img = ctx->based_dec_number()->BASED_DEC_LITERAL()->getSymbol()->getText();
+            std::string val_t;
+            is_signed = (img[1] == 's' || img[1] == 'S');
 
-    if (is_signed) {
-    	m_expr = m_factory->mkExprSignedNumber(img, width, value);
-    } else {
-    	m_expr = m_factory->mkExprUnsignedNumber(img, width, value);
+            for (uint32_t i=2+is_signed; i<img.size(); i++) {
+                if (img.at(i) != '_') {
+                    val_t.push_back(img.at(i));
+                }
+            }
+
+            value = strtoull(val_t.c_str(), 0, 10);
+        } else if (ctx->based_bin_number()) {
+            DEBUG("Based bin number");
+            if (ctx->based_bin_number()->DEC_LITERAL()) {
+                // Explicit width
+                width = strtoul(
+                    ctx->based_bin_number()->DEC_LITERAL()->getSymbol()->getText().c_str(), 0, 10);
+            }
+            img = ctx->based_bin_number()->BASED_BIN_LITERAL()->getSymbol()->getText();
+            std::string val_t;
+            is_signed = (img[1] == 's' || img[1] == 'S');
+
+            for (uint32_t i=2+is_signed; i<img.size(); i++) {
+                if (img.at(i) != '_') {
+                    val_t.push_back(img.at(i));
+                }
+            }
+
+            value = strtoull(val_t.c_str(), 0, 2);
+        } else if (ctx->hex_number()) {
+            DEBUG("Unbased hex number");
+            img = ctx->hex_number()->HEX_LITERAL()->getSymbol()->getText();
+            std::string val_t;
+
+            for (uint32_t i=2; i<img.size(); i++) {
+                if (img.at(i) != '_') {
+                    val_t.push_back(img.at(i));
+                }
+            }
+
+            value = strtoull(val_t.c_str(), 0, 16);
+        } else if (ctx->dec_number()) {
+            DEBUG("Unbased dec number");
+            img = ctx->dec_number()->DEC_LITERAL()->getSymbol()->getText();
+            std::string val_t;
+
+            for (uint32_t i=0; i<img.size(); i++) {
+                if (img.at(i) != '_') {
+                    val_t.push_back(img.at(i));
+                }
+            }
+
+            value = strtoull(val_t.c_str(), 0, 10);
+        } else if (ctx->oct_number()) {
+            DEBUG("Unbased oct number");
+            img = ctx->oct_number()->OCT_LITERAL()->getSymbol()->getText();
+            std::string val_t;
+
+            if (img.size() > 1) {
+                for (uint32_t i=1; i<img.size(); i++) {
+                    if (img.at(i) != '_') {
+                        val_t.push_back(img.at(i));
+                    }
+                }
+
+                value = strtoull(val_t.c_str(), 0, 8);
+            } else {
+                value = 0;
+            }
+        } else {
+            DEBUG_FATAL("Unknown format");
+        }
+
+        if (is_signed) {
+    	    m_expr = m_factory->mkExprSignedNumber(img, width, value);
+        } else {
+    	    m_expr = m_factory->mkExprUnsignedNumber(img, width, value);
+        }
+
+    } else { // floating-point number
+        PSSParser::Floating_point_numberContext *ctx = ctx_t->floating_point_number();
+        DEBUG_ERROR("handle floating-point number");
     }
 
 	DEBUG_LEAVE("visitNumber");
