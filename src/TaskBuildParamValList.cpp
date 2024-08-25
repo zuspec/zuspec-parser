@@ -70,10 +70,22 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
         m_ptype_generic_type = 0;
         m_ptype_category_type = 0;
 
-        pvals->getValues().at(plist_idx)->accept(m_this);
+        // Visit the declaration
+        DEBUG_ENTER("-- plist");
         plist->getChildren().at(plist_idx)->accept(m_this);
+        DEBUG_LEAVE("-- plist");
+
+        DEBUG_ENTER("-- pvals");
+        pvals->getValues().at(plist_idx)->accept(m_this);
+        DEBUG_LEAVE("-- pvals");
+
+        if (m_ptype_value && m_pval_type) {
+            DEBUG("TODO: convert type ref to expression");
+        }
 
         ast::IExpr *pval_expr = (m_pval_expr)?m_pval_expr->getValue():m_pval_type_valref_expr;
+        DEBUG("pval_expr: %p (m_pval_expr=%p m_pval_type_valref_expr=%p)",
+            pval_expr, m_pval_expr, m_pval_type_valref_expr);
 
         if (pval_expr) {
             if (m_ptype_value) {
@@ -120,13 +132,19 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
                 // Note: it is possible to receive both a generic and a value
                 // parameter, but we don't expect to only receive a value
                 // parameter.
-                DEBUG_ERROR("TODO: attempting to specify type for value parameter");
+                DEBUG_ERROR("Value parameter used as a type parameter");
+                name = m_ptype_value->getName();
+                type = m_ptype_value->getType();
             } else {
                 DEBUG_ERROR("TODO: no ptype_decl captured\n");
             }
 
             DEBUG("Add parameter %s", (name)?name->getId().c_str():"<unknown>");
-            DEBUG("  value=%p %p", m_pval_type->getValue(), copier.copy(m_pval_type->getValue()));
+            DEBUG("  value=%p type=%p %p", 
+                m_pval_type->getValue(), 
+                type,
+                copier.copy(m_pval_type->getValue()));
+
             ast::ITemplateGenericTypeParamDecl *p = m_ctxt->getFactory()->getAstFactory()->mkTemplateGenericTypeParamDecl(
                 (name)?copier.copyT<ast::IExprId>(name):0,
                 copier.copy(m_pval_type->getValue())
@@ -210,7 +228,8 @@ void TaskBuildParamValList::visitDataTypeEnum(ast::IDataTypeEnum *i) {
 }
 
 void TaskBuildParamValList::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
-    DEBUG_ENTER("visitDataTypeUserDefined");
+    DEBUG_ENTER("visitDataTypeUserDefined %s", 
+        i->getType_id()->getElems().back()->getId()->getId().c_str());
 
     // If this is an external resolved reference, 
     // follow it and check its source
@@ -222,7 +241,7 @@ void TaskBuildParamValList::visitDataTypeUserDefined(ast::IDataTypeUserDefined *
         if (target) {
             target->accept(m_this);
         }
-        if (m_pval_type_isval) {
+        if (m_pval_type_isval || m_ptype_value) {
             // Save the reference
             m_pval_type_valref_expr = i->getType_id();
         }

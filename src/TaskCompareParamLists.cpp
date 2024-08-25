@@ -74,6 +74,9 @@ bool TaskCompareParamLists::equal(
 
         // How do we compare?
         if (type_value[0]) {
+            DEBUG("type_value[0].dflt=%p type_value[1].dflt=%p", 
+                type_value[0]->getDflt(),
+                type_value[1]->getDflt());
             ret &= m_tref_comp.equal(
                 type_value[0]->getDflt(),
                 type_value[1]->getDflt());

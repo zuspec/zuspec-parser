@@ -54,6 +54,8 @@ public:
 
     virtual void visitExprStaticRefPath(ast::IExprStaticRefPath *i) override;
 
+    virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) override;
+
 private:
     static dmgr::IDebug             *m_dbg;
     ResolveContext                  *m_ctxt;

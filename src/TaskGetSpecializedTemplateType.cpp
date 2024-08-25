@@ -101,10 +101,12 @@ ast::ISymbolRefPath *TaskGetSpecializedTemplateType::mk(
         copier.copyT<ast::ITypeScope>(type_up->getTarget());
     type_s->setParent(type_up->getTarget()->getParent());
 
-    for (std::vector<ast::ITemplateParamDeclUP>::const_iterator
-        it=params->getParams().begin();
-        it!=params->getParams().end(); it++) {
-        DEBUG("Param: %s", (*it)->getName()->getId().c_str());
+    if (DEBUG_EN) {
+        for (std::vector<ast::ITemplateParamDeclUP>::const_iterator
+            it=params->getParams().begin();
+            it!=params->getParams().end(); it++) {
+            DEBUG("Param: %s", ((*it)->getName())?(*it)->getName()->getId().c_str():"<unnamed>");
+        }
     }
 
     params->setSpecialized(true);

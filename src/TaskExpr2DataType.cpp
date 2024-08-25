@@ -116,6 +116,15 @@ void TaskExpr2DataType::visitExprStaticRefPath(ast::IExprStaticRefPath *i) {
     DEBUG_LEAVE("visitExprStaticRefPath");
 }
 
+void TaskExpr2DataType::visitTypeIdentifier(ast::ITypeIdentifier *i) {
+    DEBUG_ENTER("visitTypeIdentifier");
+    m_ret = m_ctxt->getFactory()->getAstFactory()->mkDataTypeUserDefined(
+        false,
+        TaskCopyAst(m_ctxt->getFactory()).copyT<ast::ITypeIdentifier>(i)
+    );
+    DEBUG_LEAVE("visitTypeIdentifier");
+}
+
 dmgr::IDebug *TaskExpr2DataType::m_dbg = 0;
 
 }

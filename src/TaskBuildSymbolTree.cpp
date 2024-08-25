@@ -599,7 +599,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
             it!=i->getParams()->getParams().end(); it++) {
             int32_t id = plist->getChildren().size();
             std::unordered_map<std::string, int32_t>::const_iterator s_it;
-            DEBUG("  Param: %", (*it)->getName()->getId().c_str());
+            DEBUG("  Param: %", ((*it)->getName())?(*it)->getName()->getId().c_str():"<unknown>");
             
             s_it = plist->getSymtab().find((*it)->getName()->getId());
             if (s_it == plist->getSymtab().end()) {
