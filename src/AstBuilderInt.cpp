@@ -1407,10 +1407,12 @@ antlrcpp::Any AstBuilderInt::visitConstraint_declaration(PSSParser::Constraint_d
 	m_constraint_s.push_back(constraint);
 
 	if (ctx->constraint_set()) {
+        DEBUG("constraint_set");
 		ctx->constraint_set()->accept(this);
 	} else {
 		std::vector<PSSParser::Constraint_body_itemContext *> items = 
 			ctx->constraint_block()->constraint_body_item();
+        DEBUG("constraint_body: %d", items.size());
 		for (std::vector<PSSParser::Constraint_body_itemContext *>::const_iterator
 			it=items.begin();
 			it!=items.end(); it++) {
@@ -1438,12 +1440,13 @@ antlrcpp::Any AstBuilderInt::visitConstraint_declaration(PSSParser::Constraint_d
 // }
 
 antlrcpp::Any AstBuilderInt::visitConstraint_block(PSSParser::Constraint_blockContext *ctx) {
-	DEBUG_ENTER("visitConstraint_block");
+	DEBUG_ENTER("visitConstraint_block (%d)", m_constraint_s.size());
 
 	ast::IConstraintScope *scope = m_factory->mkConstraintScope();
 //	scope->setParent(m_constraint_s.back());
 	m_constraint_s.push_back(scope);
 	std::vector<PSSParser::Constraint_body_itemContext *> items = ctx->constraint_body_item();
+    DEBUG("items: %d", items.size());
 	for (std::vector<PSSParser::Constraint_body_itemContext *>::const_iterator
 		it=items.begin();
 		it!=items.end(); it++) {
@@ -1451,13 +1454,15 @@ antlrcpp::Any AstBuilderInt::visitConstraint_block(PSSParser::Constraint_blockCo
 	}
 	m_constraint_s.pop_back();
 
+    DEBUG("scope: %d", scope->getConstraints().size());
+
 	m_constraint = scope;
 	if (m_constraint_s.size() > 0) {
         DEBUG("Add constraint to exiting parent");
 		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(scope));
 	}
 
-	DEBUG_LEAVE("visitConstraint_block");
+	DEBUG_LEAVE("visitConstraint_block (%d)", m_constraint_s.size());
 	return 0;
 }
 

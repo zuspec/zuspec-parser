@@ -132,7 +132,20 @@ void TaskResolveRef::visitExprRefPathId(ast::IExprRefPathId *i) {
 
 void TaskResolveRef::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     DEBUG_ENTER("visitExprRefPathContext");
-    DEBUG("TODO: visitExprRefPathContext");
+    DEBUG("Searching for root element (%s)", 
+        i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
+    ast::ISymbolRefPath *root = findRoot(i->getHier_id()->getElems().at(0)->getId());
+    if (root) {
+        if (i->getHier_id()->getElems().size() > 1) {
+            DEBUG_ERROR("Handle paths greater than 1 length");
+        }
+        m_ref = root;
+    } else {
+        DEBUG_ERROR("Failed to find root element (%s)",
+            i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
+        return;
+    }
+
     DEBUG_LEAVE("visitExprRefPathContext");
 }
 

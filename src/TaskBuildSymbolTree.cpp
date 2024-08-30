@@ -244,6 +244,12 @@ void TaskBuildSymbolTree::visitFieldCompRef(ast::IFieldCompRef *i) {
     DEBUG_LEAVE("visitFieldCompRef %s", i->getName()->getId().c_str());
 }
 
+void TaskBuildSymbolTree::visitFieldRef(ast::IFieldRef *i) {
+    DEBUG_ENTER("visitFieldRef %s", i->getName()->getId().c_str());
+    addChild(i, i->getName()->getId(), false);
+    DEBUG_LEAVE("visitFieldRef %s", i->getName()->getId().c_str());
+}
+
 void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) { 
     DEBUG_ENTER("visitFunctionDefinition %s", i->getProto()->getName()->getId().c_str());
 

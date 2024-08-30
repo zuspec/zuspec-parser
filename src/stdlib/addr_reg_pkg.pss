@@ -119,12 +119,18 @@ enum reg_access {READWRITE, READONLY, WRITEONLY};
 pure component reg_c < type R, reg_access ACC = READWRITE, int SZ2 = (8*sizeof_s<R>::nbytes)> {
     function R read();
     import target function read;
+
     function void write(R r);
     import target function write;
+
     function bit[SZ2] read_val();
     import target function read_val;
+
     function void write_val(bit[SZ2] r);
     import target function write_val;
+
+    // Zuspec extenion, as of PSS 3.0
+    function addr_handle_t get_handle();
 };
 
 /*
