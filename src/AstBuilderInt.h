@@ -239,6 +239,8 @@ private:
 
     void addChild(ast::IScopeChild *c, Token *t, const ast::Location *loc=0);
 
+    void addChild(ast::ISymbolScope *c, Token *t, Token *end);
+
     void addChild(ast::INamedScopeChild *c, Token *t);
 
     void addChild(ast::IConstraintScope *c, Token *start, Token *end);
@@ -270,7 +272,7 @@ private:
 	ast::IActivityJoinSpec *mkActivityJoinSpec(PSSParser::Activity_join_specContext *ctx);
 
     void addActivityStmt(
-        ast::IScope                         *scope,
+        ast::ISymbolScope                   *scope,
         PSSParser::Activity_stmt_annContext *ctx);
 
 	ast::IScopeChild *mkActivityStmt(PSSParser::Activity_stmt_annContext *ctx);

@@ -44,6 +44,18 @@ public:
 
     ast::ISymbolScope *root() const { return m_root; }
 
+    void pushInlineCtxt(ast::ISymbolScope *s) {
+        m_inline_ctxt_s.push_back(s);
+    }
+
+    ast::ISymbolScope *inlineCtxt() const { 
+        return (m_inline_ctxt_s.size())?m_inline_ctxt_s.back():0;
+    }
+
+    void popInlineCtxt() {
+        m_inline_ctxt_s.pop_back();
+    }
+
     IFactory *getFactory() const { return m_factory; }
 
     dmgr::IDebugMgr *getDebugMgr() const { return m_factory->getDebugMgr(); }
@@ -99,6 +111,7 @@ public:
 
 private:
     ast::ISymbolScope                       *m_root;
+    std::vector<ast::ISymbolScope *>        m_inline_ctxt_s;
     IFactory                                *m_factory;
     IMarkerListener                         *m_marker_l;
     int32_t                                 m_specialization_depth;

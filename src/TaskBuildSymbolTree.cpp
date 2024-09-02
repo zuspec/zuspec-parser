@@ -76,6 +76,17 @@ ast::IRootSymbolScope *TaskBuildSymbolTree::build(
 void TaskBuildSymbolTree::visitActivityDecl(ast::IActivityDecl *i) {
     DEBUG_ENTER("visitActivityDecl");
     addChild(i, false);
+
+    pushSymbolScope(i);
+    DEBUG("Children: %d", i->getChildren().size());
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        DEBUG("Child: %p", it->get());
+        it->get()->accept(m_this);
+    }
+    popSymbolScope();
+
     DEBUG_LEAVE("visitActivityDecl");
 }
 

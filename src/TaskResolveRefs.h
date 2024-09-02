@@ -47,6 +47,10 @@ public:
     
     virtual void visitActivityActionTypeTraversal(ast::IActivityActionTypeTraversal *i) override;
 
+    virtual void visitActivityDecl(ast::IActivityDecl *i) override;
+
+    virtual void visitActivitySequence(ast::IActivitySequence *i) override;
+
     virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) override;
 
     virtual void visitExprRefPathId(ast::IExprRefPathId *i) override;

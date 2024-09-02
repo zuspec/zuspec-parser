@@ -167,19 +167,33 @@ void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHan
     ast::IScopeChild *field_c = resolvePath(field_udt->getType_id()->getTarget());
     ast::ISymbolScope *field_scope = dynamic_cast<ast::ISymbolScope *>(field_c);
     DEBUG("field_c=%p field_scope=%s", field_c, field_scope->getName().c_str());
-    m_ctxt->symtab()->pushScope(field_scope);
     if (i->getWith_c()) {
+        m_ctxt->symtab()->pushScope(field_scope, ast::SymbolRefPathElemKind::ElemKind_Inline);
+        m_ctxt->pushInlineCtxt(field_scope);
         DEBUG_ENTER(" ::getWith()");
         i->getWith_c()->accept(m_this);
         DEBUG_LEAVE(" ::getWith()");
+        m_ctxt->popInlineCtxt();
+        m_ctxt->symtab()->popScope();
     }
-    m_ctxt->symtab()->popScope();
     DEBUG_LEAVE("visitActivityActionHandleTraversal");
 }
     
 void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeTraversal *i) {
     DEBUG_ENTER("visitActivityActionTypeTraversal");
     i->getTarget()->accept(m_this);
+    ast::IDataTypeUserDefined *field_udt = i->getTarget(); // <ast::IDataTypeUserDefined *>(i->getTarget());
+    ast::IScopeChild *field_c = resolvePath(field_udt->getType_id()->getTarget());
+    ast::ISymbolScope *field_scope = dynamic_cast<ast::ISymbolScope *>(field_c);
+    if (i->getWith_c()) {
+        m_ctxt->symtab()->pushScope(field_scope, ast::SymbolRefPathElemKind::ElemKind_Inline);
+        m_ctxt->pushInlineCtxt(field_scope);
+        DEBUG_ENTER(" ::getWith()");
+        i->getWith_c()->accept(m_this);
+        DEBUG_LEAVE(" ::getWith()");
+        m_ctxt->popInlineCtxt();
+        m_ctxt->symtab()->popScope();
+    }
     DEBUG_LEAVE("visitActivityActionTypeTraversal");
 }
 
@@ -204,9 +218,15 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     i->setTarget(target);
 
     ast::IScopeChild *target_c = TaskResolveSymbolPathRef(
-        m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target);
-    ast::ISymbolScope *target_s = TaskGetElemSymbolScope(
-        m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target_c);
+        m_ctxt->getDebugMgr(), 
+        m_ctxt->root(),
+        m_ctxt->inlineCtxt()).resolve(target);
+    ast::ISymbolScope *target_s = 0;
+    
+    if (target_c) {
+        target_s = TaskGetElemSymbolScope(
+            m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target_c);
+    }
 
     if (!target_s && i->getHier_id()->getElems().size() > 1) {
         m_ctxt->addMarker(
@@ -308,6 +328,18 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     }
 
     DEBUG_LEAVE("visitExprRefPathContext");
+}
+
+void TaskResolveRefs::visitActivityDecl(ast::IActivityDecl *i) {
+    DEBUG_ENTER("visitActivityDecl");
+    VisitorBase::visitActivityDecl(i);
+    DEBUG_LEAVE("visitActivityDecl");
+}
+
+void TaskResolveRefs::visitActivitySequence(ast::IActivitySequence *i) {
+    DEBUG_ENTER("visitActivitySequence");
+    VisitorBase::visitActivitySequence(i);
+    DEBUG_LEAVE("visitActivitySequence");
 }
 
 

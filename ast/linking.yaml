@@ -7,6 +7,7 @@ enums:
 - SymbolRefPathElemKind:
   - ElemKind_ChildIdx
   - ElemKind_ArgIdx
+  - ElemKind_Inline
   - ElemKind_ParamIdx
   - ElemKind_Super
   - ElemKind_TypeSpec

@@ -393,7 +393,7 @@ antlrcpp::Any AstBuilderInt::visitAbstract_action_declaration(PSSParser::Abstrac
 
 antlrcpp::Any AstBuilderInt::visitActivity_declaration(PSSParser::Activity_declarationContext *ctx) {
     DEBUG_ENTER("visitActivity_declaration");
-    ast::IActivityDecl *activity = m_factory->mkActivityDecl();
+    ast::IActivityDecl *activity = m_factory->mkActivityDecl("");
     setLoc(activity, ctx->start);
 
 	std::vector<PSSParser::Activity_stmt_annContext *> items = ctx->activity_stmt_ann();
@@ -1073,7 +1073,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_action_traversal_stmt(PSSParser::Acti
 
 antlrcpp::Any AstBuilderInt::visitActivity_sequence_block_stmt(PSSParser::Activity_sequence_block_stmtContext *ctx) {
 	DEBUG_ENTER("visitActivity_sequence_block_stmt");
-	ast::IActivitySequence *seq = m_factory->mkActivitySequence();
+	ast::IActivitySequence *seq = m_factory->mkActivitySequence("");
 
 	if (m_labeled_activity_id) {
 		seq->setLabel(m_labeled_activity_id);
@@ -1101,7 +1101,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_parallel_stmt(PSSParser::Activity_par
 		spec = mkActivityJoinSpec(ctx->activity_join_spec());
 	}
 
-	ast::IActivityParallel *par = m_factory->mkActivityParallel(spec);
+	ast::IActivityParallel *par = m_factory->mkActivityParallel("", spec);
 
 	if (m_labeled_activity_id) {
 		par->setLabel(m_labeled_activity_id);
@@ -1130,7 +1130,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_schedule_stmt(PSSParser::Activity_sch
 		spec = mkActivityJoinSpec(ctx->activity_join_spec());
 	}
 
-	ast::IActivitySchedule *sched = m_factory->mkActivitySchedule(spec);
+	ast::IActivitySchedule *sched = m_factory->mkActivitySchedule("", spec);
 
 	if (m_labeled_activity_id) {
 		sched->setLabel(m_labeled_activity_id);
@@ -1159,7 +1159,7 @@ antlrcpp::Any AstBuilderInt::visitActivity_repeat_stmt(PSSParser::Activity_repea
 		ast::IExprId *label = m_labeled_activity_id;
         ast::IScopeChild *body = mkActivityStmt(ctx->activity_stmt_ann());
         if (!body) {
-            body = m_factory->mkActivitySequence();
+            body = m_factory->mkActivitySequence("");
         }
 
 		ast::IActivityRepeatCount *stmt = m_factory->mkActivityRepeatCount(
@@ -1953,7 +1953,7 @@ void AstBuilderInt::syntaxError(
 			const std::string &msg,
 			std::exception_ptr e) {
 	DEBUG_ERROR("Error: Syntax error: line=%d pos=%d sym=%s",
-        line, charPositionInLine, offendingSymbol->getText().c_str());
+        (int)line, (int)charPositionInLine, offendingSymbol->getText().c_str());
 	if (m_marker_l) {
 		ast::Location loc;
 		loc.fileid = m_file_id;
@@ -1985,6 +1985,26 @@ void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t, const ast::Location 
 
 	if (m_collectDocStrings && t) {
 		addDocstring(c, t);
+	}
+}
+
+void AstBuilderInt::addChild(ast::ISymbolScope *c, Token *start, Token *end) {
+    c->setIndex(scope()->getChildren().size());
+	scope()->getChildren().push_back(ast::IScopeChildUP(c));
+	c->setParent(scope());
+    c->setLocation({
+        m_file_id,
+        (int32_t)start->getLine(),
+        (int32_t)start->getCharPositionInLine()+1
+    });
+    // c->setEndLocation({
+    //     m_file_id,
+    //     (int32_t)end->getLine(),
+    //     (int32_t)end->getCharPositionInLine()+1
+    // });
+
+	if (m_collectDocStrings && start) {
+		addDocstring(c, start);
 	}
 }
 
@@ -2281,7 +2301,7 @@ ast::IScopeChild *AstBuilderInt::mkActivityStmt(PSSParser::Activity_stmt_annCont
 }
 
 void AstBuilderInt::addActivityStmt(
-        ast::IScope                         *scope,
+        ast::ISymbolScope                   *scope,
         PSSParser::Activity_stmt_annContext *ctx) {
     ast::IScopeChild *a_stmt = mkActivityStmt(ctx);
     if (a_stmt) {

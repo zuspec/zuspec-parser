@@ -38,7 +38,9 @@ class TaskResolveSymbolPathRef : public ast::VisitorBase {
 public:
     TaskResolveSymbolPathRef(
         dmgr::IDebugMgr             *dmgr,
-        ast::ISymbolChildrenScope   *root) : m_dbg(0), m_root(root) { 
+        ast::ISymbolChildrenScope   *root,
+        ast::ISymbolChildrenScope   *inline_ctxt=0) : 
+        m_dbg(0), m_root(root), m_inline_ctxt(inline_ctxt) { 
         DEBUG_INIT("TaskResolveSymbolPathRef", dmgr);
     }
 
@@ -49,10 +51,12 @@ public:
         ast::IScopeChild *ret = 0;
         ast::ISymbolChildrenScope *scope = m_root;
 
-        for (std::vector<ast::SymbolRefPathElem>::const_iterator
-            it=ref->getPath().begin();
-            it!=ref->getPath().end(); it++) {
-            DEBUG("Path: %d %d", it->kind, it->idx);
+        if (DEBUG_EN) {
+            for (std::vector<ast::SymbolRefPathElem>::const_iterator
+                it=ref->getPath().begin();
+                it!=ref->getPath().end(); it++) {
+                DEBUG("Path: %d %d", it->kind, it->idx);
+            }
         }
 
         for (std::vector<ast::SymbolRefPathElem>::const_iterator
@@ -77,6 +81,10 @@ public:
                     } else {
                         DEBUG("Out-of-range");
                     }
+                } break;
+                case ast::SymbolRefPathElemKind::ElemKind_Inline: {
+                    DEBUG("Elem: Inline %d", it->idx);
+                    ret = m_inline_ctxt;
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ParamIdx: {
                     DEBUG("Elem: ParamIdx %d", it->idx);
@@ -286,7 +294,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret.c_str());
                 } break;
                 default:
-                    DEBUG_ERROR("TODO: handle ElemKind %d", it->kind);
+                    DEBUG_ERROR("TODO: handle ElemKind %d", (int)it->kind);
                     break;
             }
             
@@ -341,7 +349,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret.c_str());
                 } break;
                 default:
-                    DEBUG_ERROR("TODO: handle ElemKind %d", it->kind);
+                    DEBUG_ERROR("TODO: handle ElemKind %d", (int)it->kind);
                     break;
             }
             
@@ -411,6 +419,7 @@ public:
 private:
     dmgr::IDebug                         *m_dbg;
     ast::ISymbolChildrenScope            *m_root;
+    ast::ISymbolChildrenScope            *m_inline_ctxt;
     ast::ISymbolTypeScope                *m_ts;
     ast::ISymbolScope                    *m_ss;
     ast::IDataType                       *m_dt;

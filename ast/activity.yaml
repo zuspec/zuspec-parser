@@ -2,7 +2,7 @@
 classes:
 
 - ActivityDecl:
-    super: Scope
+    super: SymbolScope
 
 - ActivityStmt:
     super: ScopeChild
@@ -44,7 +44,7 @@ classes:
     - with_c: UP<ConstraintStmt>
 
 - ActivityLabeledScope:
-    super: Scope
+    super: SymbolScope
     data:
     - label: 
         - type: UP<ExprId>
