@@ -58,6 +58,8 @@ ast::ISymbolRefPath *TaskResolveRef::resolve(ast::ITypeIdentifier *type_id) {
             it!=m_ref->getPath().end(); it++) {
             DEBUG("  %d %d", it->kind, it->idx);
         }
+    } else {
+        DEBUG("Failed to resolve");
     }
 
     DEBUG_LEAVE("resolve %p (%d)", m_ref, (m_ref)?m_ref->getPath().size():-1);
@@ -186,7 +188,8 @@ void TaskResolveRef::visitTypeIdentifier(ast::ITypeIdentifier *i) {
 
     if (!root) {
         // resolution failure
-
+        DEBUG("Note: failed to resolve root symbol %s",
+            i->getElems().at(0)->getId()->getId().c_str());
         m_ctxt->addMarker(
             MarkerSeverityE::Error,
             i->getElems().at(0)->getId()->getLocation(),
@@ -231,6 +234,7 @@ void TaskResolveRef::visitTypeIdentifier(ast::ITypeIdentifier *i) {
             root);
 
         if (next) {
+            DEBUG("Resolve %s", (*it)->getId()->getId().c_str());
             if ((*it)->getParams()) {
                root = TaskSpecializeParameterizedRef(m_ctxt).specialize(
                         root, 
@@ -240,8 +244,10 @@ void TaskResolveRef::visitTypeIdentifier(ast::ITypeIdentifier *i) {
             } else {
                 root_t = next;
             }
+
         } else {
             // Assume 
+            DEBUG("Note: failed to resolve element %s", (*it)->getId()->getId().c_str());
             delete root;
             root = 0;
             break;
@@ -250,7 +256,7 @@ void TaskResolveRef::visitTypeIdentifier(ast::ITypeIdentifier *i) {
 
     m_ref = root;
     
-    DEBUG_LEAVE("visitTypeIdentifier");
+    DEBUG_LEAVE("visitTypeIdentifier %p", m_ref);
 }
 
 ast::ISymbolRefPath *TaskResolveRef::findRoot(

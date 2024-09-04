@@ -183,6 +183,10 @@ void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeT
     DEBUG_ENTER("visitActivityActionTypeTraversal");
     i->getTarget()->accept(m_this);
     ast::IDataTypeUserDefined *field_udt = i->getTarget(); // <ast::IDataTypeUserDefined *>(i->getTarget());
+//    DEBUG("--> resolve field_udt->getType_id()");
+//    field_udt->getType_id()->accept(m_this);
+//    DEBUG("<-- resolve field_udt->getType_id()");
+//    ast::IScopeChild *field_c = resolvePath(field_udt->getType_id()->getTarget());
     ast::IScopeChild *field_c = resolvePath(field_udt->getType_id()->getTarget());
     ast::ISymbolScope *field_scope = dynamic_cast<ast::ISymbolScope *>(field_c);
     if (i->getWith_c()) {

@@ -41,15 +41,19 @@ ast::IScopeChild *TaskResolveFieldRef::resolve(
         ast::IExprId            *id,
         ast::IScopeChild        *ctxt,
         ast::ISymbolRefPath     *path) {
+    DEBUG_ENTER("resolve");
     m_id = id;
     m_path = path;
     m_ret = 0;
     ctxt->accept(m_this);
+    DEBUG_LEAVE("resolve %p", m_ret);
     return m_ret;
 }
 
 void TaskResolveFieldRef::visitNamedScope(ast::INamedScope *i) { 
+    DEBUG_ENTER("visitNamedScope");
 
+    DEBUG_LEAVE("visitNamedScope");
 }
 
 void TaskResolveFieldRef::visitNamedScopeChild(ast::INamedScopeChild *i) { 
@@ -57,7 +61,9 @@ void TaskResolveFieldRef::visitNamedScopeChild(ast::INamedScopeChild *i) {
 }
 
 void TaskResolveFieldRef::visitSymbolScope(ast::ISymbolScope *i) { 
+    DEBUG_ENTER("visitSymbolScope");
 
+    DEBUG_LEAVE("visitSymbolScope");
 }
 
 //void TaskResolveFieldRef::visitSymbolExecScope(ast::ISymbolExecScope *i) { 
@@ -65,10 +71,21 @@ void TaskResolveFieldRef::visitSymbolScope(ast::ISymbolScope *i) {
 //}
 
 void TaskResolveFieldRef::visitSymbolTypeScope(ast::ISymbolTypeScope *i) { 
+    DEBUG_ENTER("visitSymbolTypeScope");
+    std::unordered_map<std::string,int32_t>::const_iterator it;
 
+    if ((it=i->getSymtab().find(m_id->getId())) != i->getSymtab().end()) {
+        m_ret = i->getChildren().at(it->second).get();
+        m_path->getPath().push_back({
+            ast::SymbolRefPathElemKind::ElemKind_ChildIdx,
+            it->second
+        });
+    }
+
+    DEBUG_LEAVE("visitSymbolTypeScope");
 }
 
-void TaskResolveFieldRef::visitScopeChild(ast::IScopeChild *i) { 
+void TaskResolveFieldRef::visitScopeChild(ast::IScopeChild *i) {
 
 }
 
