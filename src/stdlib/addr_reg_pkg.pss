@@ -81,15 +81,15 @@ function addr_handle_t make_handle_from_claim (addr_claim_base_s claim,
 function addr_handle_t make_handle_from_handle (addr_handle_t handle,
  bit[64] offset);
 
-import function bit[64] addr_value(addr_handle_t hndl);
-import function bit[8] read8(addr_handle_t hndl);
-import function bit[16] read16(addr_handle_t hndl);
-import function bit[32] read32(addr_handle_t hndl);
-import function bit[64] read64(addr_handle_t hndl);
-import function void write8 (addr_handle_t hndl, bit[8] data);
-import function void write16(addr_handle_t hndl, bit[16] data);
-import function void write32(addr_handle_t hndl, bit[32] data);
-import function void write64(addr_handle_t hndl, bit[64] data);
+import target function bit[64] addr_value(addr_handle_t hndl);
+import target function bit[8] read8(addr_handle_t hndl);
+import target function bit[16] read16(addr_handle_t hndl);
+import target function bit[32] read32(addr_handle_t hndl);
+import target function bit[64] read64(addr_handle_t hndl);
+import target function void write8 (addr_handle_t hndl, bit[8] data);
+import target function void write16(addr_handle_t hndl, bit[16] data);
+import target function void write32(addr_handle_t hndl, bit[32] data);
+import target function void write64(addr_handle_t hndl, bit[64] data);
 
 /* TODO: generic type
 function void read_bytes (addr_handle_t hndl, list<bit[8]> data,
