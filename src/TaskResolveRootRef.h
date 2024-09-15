@@ -39,6 +39,8 @@ public:
 
     ast::ISymbolRefPath *resolve(const ast::IExprId *id);
 
+    virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override;
+
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
 //    virtual void visitSymbolExecScope(ast::ISymbolExecScope *i) override;

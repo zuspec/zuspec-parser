@@ -67,6 +67,8 @@ public:
 
     virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override;
 
+    virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override;
+
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
     virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override;

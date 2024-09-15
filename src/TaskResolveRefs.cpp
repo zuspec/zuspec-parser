@@ -483,6 +483,14 @@ void TaskResolveRefs::visitFunctionPrototype(ast::IFunctionPrototype *i) {
     DEBUG_LEAVE("visitFunctionPrototype");
 } 
 
+void TaskResolveRefs::visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) {
+    DEBUG_ENTER("visitProceduralStmtRepeat %d", i->getSymtab().size());
+    m_ctxt->symtab()->pushScope(i);
+    i->getBody()->accept(m_this);
+    m_ctxt->symtab()->popScope();
+    DEBUG_LEAVE("visitProceduralStmtRepeat");
+}
+
 void TaskResolveRefs::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
     /*

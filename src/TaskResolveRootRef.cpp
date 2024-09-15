@@ -65,6 +65,12 @@ ast::ISymbolRefPath *TaskResolveRootRef::resolve(const ast::IExprId *id) {
     return m_ref;
 }
 
+void TaskResolveRootRef::visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) {
+    DEBUG_ENTER("visitProceduralStmtRepeat");
+    visitSymbolScope(i);
+    DEBUG_LEAVE("visitProceduralStmtRepeat");
+}
+
 void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
     DEBUG_ENTER("visitSymbolScope id=%s (%s)", 
         m_id->getId().c_str(), i->getName().c_str());
@@ -99,7 +105,7 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
         DEBUG("Failed to find symbol");
     }
 
-    DEBUG_LEAVE("visitSymbolScope");
+    DEBUG_LEAVE("visitSymbolScope m_ref=%p", m_ref);
 }
 
 //void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {

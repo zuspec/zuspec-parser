@@ -89,6 +89,8 @@ public:
 
     virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override;
 
+    virtual void visitProceduralStmtRepeatWhile(ast::IProceduralStmtRepeatWhile *i) override;
+
     virtual void visitProceduralStmtWhile(ast::IProceduralStmtWhile *i) override;
 
 //    virtual void visitProceduralStmtIfClause(ast::IProceduralStmtIfClause *i) override;
