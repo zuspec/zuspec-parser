@@ -89,6 +89,23 @@ classes:
         - data: 
             - lhs : "UP<Expr>"
             - rhs : "UP<ExprOpenRangeList>"
+
+    - ExprListLiteral:
+        - super: Expr
+        - data:
+            - value: "list<UP<Expr>>"
+
+    - ExprStructLiteral:
+        - super: Expr
+        - data:
+            - values: "list<UP<ExprStructLiteralItem>>"
+
+    - ExprStructLiteralItem:
+        - super: Expr
+        - data:
+            - id: "UP<ExprId>"
+            - value: "UP<Expr>"
+
     - ExprMemberPathElem:
         - super: Expr
         - data: 

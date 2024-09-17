@@ -226,6 +226,10 @@ public:
 	// B.19 Numbers
 	virtual antlrcpp::Any visitNumber(PSSParser::NumberContext *ctx) override;
 
+    virtual antlrcpp::Any visitAggregate_literal(PSSParser::Aggregate_literalContext *ctx) override;
+
+    virtual antlrcpp::Any visitStruct_literal(PSSParser::Struct_literalContext *ctx) override;
+
     virtual void syntaxError(
     		Recognizer *recognizer,
 			Token * offendingSymbol,

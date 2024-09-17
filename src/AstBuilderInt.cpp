@@ -1944,6 +1944,20 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx_t) {
 	return 0;
 }
 
+ antlrcpp::Any AstBuilderInt::visitAggregate_literal(PSSParser::Aggregate_literalContext *ctx) {
+    DEBUG_ENTER("visitAggregate_literal");
+    PSSParserBaseVisitor::visitAggregate_literal(ctx);
+    DEBUG_LEAVE("visitAggregate_literal");
+    return 0;
+ }
+
+
+antlrcpp::Any AstBuilderInt::visitStruct_literal(PSSParser::Struct_literalContext *ctx) {
+    DEBUG_ENTER("visitStruct_literal");
+
+    DEBUG_LEAVE("visitStruct_literal");
+    return 0;
+}
 
 void AstBuilderInt::syntaxError(
     		Recognizer *recognizer,
