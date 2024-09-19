@@ -259,8 +259,25 @@ action_handle_declaration:
 	;
 
 action_instantiation:
-	action_identifier array_dim?
+    action_handle_array_instance
+    | action_handle_single_instance
+    ;
+
+action_handle_array_instance:
+	action_identifier array_dim
 	;
+
+action_handle_single_instance:
+    action_identifier action_initializer_list?
+    ;
+
+action_initializer_list:
+    TOK_LCBRACE action_initializer (TOK_COMMA action_initializer )* TOK_RCBRACE
+    ;
+
+action_initializer:
+    TOK_DOT hierarchical_id TOK_SINGLE_EQ expression
+    ;
 
 activity_data_field:
 	TOK_ACTION data_declaration
@@ -663,14 +680,17 @@ labeled_activity_stmt:
 
 // PSS Extension: inline value initialization
 activity_action_traversal_stmt:
-	(identifier ( TOK_LSBRACE expression TOK_RSBRACE )? action_traversal_value_init? inline_constraints_or_empty)
-	| (is_do=TOK_DO type_identifier action_traversal_value_init? inline_constraints_or_empty)
-	;
-
-// PSS Extension: inline value initialization
-action_traversal_value_init: 
-    struct_literal
+    action_handle_traversal_stmt
+    | action_type_traversal_stmt
     ;
+
+action_handle_traversal_stmt:
+	identifier ( TOK_LSBRACE expression TOK_RSBRACE )? action_initializer_list? inline_constraints_or_empty
+    ;
+
+action_type_traversal_stmt:
+	is_do=TOK_DO type_identifier action_initializer_list? inline_constraints_or_empty
+	;
 
 inline_constraints_or_empty:
 	(TOK_WITH constraint_set)

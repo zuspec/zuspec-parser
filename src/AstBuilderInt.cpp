@@ -796,9 +796,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::
     hid->getElems().push_back(ast::IExprMemberPathElemUP(
         m_factory->mkExprMemberPathElem(
             mkId(ctx->function_call()->function_ref_path()->identifier()),
-            params,
-            0
-        )
+            params)
     ));
 
     if (prefix && hid) {
@@ -1050,8 +1048,10 @@ antlrcpp::Any AstBuilderInt::visitActivity_action_traversal_stmt(PSSParser::Acti
 		ast::IExprHierarchicalId *path = m_factory->mkExprHierarchicalId();
 		ast::IExprMemberPathElem *elem = m_factory->mkExprMemberPathElem(
 			mkId(ctx->identifier()),
-			0,
-			(ctx->expression())?mkExpr(ctx->expression()):0);
+			0);
+        if (ctx->expression()) {
+            elem->getSubscript().push_back(ast::IExprUP(mkExpr(ctx->expression())));
+        }
 		path->getElems().push_back(ast::IExprMemberPathElemUP(elem));
 		ast::IExprRefPathContext *target = m_factory->mkExprRefPathContext(path);
 
@@ -2676,15 +2676,18 @@ ast::IExprMemberPathElem *AstBuilderInt::mkMemberPathElem(
         }
     }
 
+    ast::IExprMemberPathElem *elem = m_factory->mkExprMemberPathElem(
+        id,
+        params);
+
     if (ctx->expression().size()) {
-        // TODO: handle subscripts
-//        subscript = mkExpr(ctx->expression());
+        for (uint32_t i=0; i<ctx->expression().size(); i++) {
+            subscript = mkExpr(ctx->expression(i));
+            elem->getSubscript().push_back(ast::IExprUP(subscript));
+        }
     }
 
-    return m_factory->mkExprMemberPathElem(
-        id,
-        params,
-        subscript);
+    return elem;
 }
 
 void AstBuilderInt::mkTypeId(

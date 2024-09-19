@@ -249,6 +249,12 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     for (uint32_t ii=0; ii<i->getHier_id()->getElems().size(); ii++) {
         ast::IExprMemberPathElem *elem = i->getHier_id()->getElems().at(ii).get();
 
+        DEBUG("ii=%0d %s: subscript=%d params=%p", 
+            ii, 
+            elem->getId()->getId().c_str(),
+            elem->getSubscript().size(), 
+            elem->getParams());
+
         // Ensure we resolve expression references in function parameters
         if (elem->getParams()) {
             DEBUG_ENTER("Resolve parameter references");
@@ -260,15 +266,20 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
             DEBUG_LEAVE("Resolve parameter references");
         }
 
-        if (!ii) {
-            if (ii+1 < i->getHier_id()->getElems().size() && elem->getSubscript()) {
+//        if (!ii) {
+            if (ii+1 < i->getHier_id()->getElems().size() && elem->getSubscript().size()) {
+                if (elem->getSubscript().size() > 1) {
+                    DEBUG_ERROR("Handle multi-dim array subscript");
+                }
                 target_s = TaskGetSubscriptSymbolScope(
                     m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(
                         target_c
                     );
             }
-            continue;
-        }
+            if (!ii) {
+                continue;
+            }
+//        }
 
         DEBUG("Search for elem=%s target_s=%s", 
             elem->getId()->getId().c_str(),
@@ -320,7 +331,10 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
                     break;
                 }
 
-                if (elem->getSubscript()) {
+                if (elem->getSubscript().size()) {
+                    if (elem->getSubscript().size() > 1) {
+                        DEBUG_ERROR("Handle multi-dim array subscript");
+                    }
                     target_s = TaskGetSubscriptSymbolScope(
                         m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(
                             target_s

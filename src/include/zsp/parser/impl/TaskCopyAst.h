@@ -376,11 +376,16 @@ public:
             }
         }
 
-        m_expr = m_factory->mkExprMemberPathElem(
+        ast::IExprMemberPathElem *elem = m_factory->mkExprMemberPathElem(
             copyT<ast::IExprId>(i->getId()),
-            plist,
-            (i->getSubscript())?copy(i->getSubscript()):0
-        );
+            plist);
+
+        for (std::vector<ast::IExprUP>::const_iterator
+            it=i->getSubscript().begin();
+            it!=i->getSubscript().end(); it++) {
+            elem->getSubscript().push_back(ast::IExprUP(copyT<ast::IExpr>(it->get())));
+        }
+        m_expr = elem;
     }
     
     virtual void visitExprNull(ast::IExprNull *i) { 

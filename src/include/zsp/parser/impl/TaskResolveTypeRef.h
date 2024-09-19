@@ -107,6 +107,23 @@ public:
         DEBUG_LEAVE("visitTemplateValueParamDecl");
     }
 
+    virtual void visitTypeIdentifier(ast::ITypeIdentifier *i) override {
+        DEBUG_ENTER("visitTypeIdentifier");
+        if (i->getTarget()) {
+            ast::IScopeChild *res = TaskResolveSymbolPathRef(
+                m_dmgr, m_root).resolve(
+                    i->getTarget());
+            if (res) {
+                res->accept(m_this);
+            } else {
+                DEBUG_ERROR("Failed to resolve user-defined datatype target");
+            }
+        } else {
+            DEBUG_ERROR("symbol not resolved");
+        }
+        DEBUG_LEAVE("visitTypeIdentifier");
+    }
+
     virtual void visitTypeScope(ast::ITypeScope *i) override {
         DEBUG_ENTER("visitTypeScope");
         m_ret = i;

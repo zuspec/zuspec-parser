@@ -111,7 +111,9 @@ classes:
         - data: 
             - id : "UP<ExprId>"
             - params: "UP<MethodParameterList>"
-            - subscript: "UP<Expr>"
+            - subscript: 
+                type: "list<UP<Expr>>"
+                is_ctor: false
             - target:
                 type: int32_t
                 init: -1
