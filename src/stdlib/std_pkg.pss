@@ -10,6 +10,10 @@ package std_pkg {
 
     function void print(string fmt/*, type ... args*/);
 
+    enum message_verbosity_e {NONE, LOW, MEDIUM, HIGH, FULL};
+
+    function void message(message_verbosity_e vrb_level, string format_str /*, type... args*/);
+
     function bit[32] urandom();
 
     function bit[32] urandom_range(bit[32] min, bit[32] max);

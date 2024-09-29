@@ -12,6 +12,13 @@ classes:
               type: Location
               is_ctor: false
           - constraints: list<UP<ConstraintStmt>>
+    - ConstraintSymbolScope:
+        - super: SymbolScope
+        - data: 
+          - constraint:
+              type: P<ConstraintStmt>
+              is_ctor: false
+              init: 0
     - ConstraintStmt:
         - super: ScopeChild
     - ConstraintStmtExpr:
@@ -30,6 +37,11 @@ classes:
                 - is_ctor: false
                 - init: 0;
             - expr: UP<Expr>
+            - symtab: 
+                 - type: UP<ConstraintSymbolScope>
+                 - is_ctor: false
+                 - visit: false
+                 
     - ConstraintStmtField:
         - super: ConstraintStmt
         - data:
@@ -41,6 +53,9 @@ classes:
             - iterator_id: UP<ExprId>
             - type_id: UP<DataTypeUserDefined>
             - ref_path: UP<ExprRefPath>
+            - symtab: 
+                 - type: UP<ConstraintSymbolScope>
+                 - is_ctor: false
     - ConstraintStmtIf:
         - super: ConstraintStmt
         - data:

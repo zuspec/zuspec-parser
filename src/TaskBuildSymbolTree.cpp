@@ -113,13 +113,59 @@ ast::ISymbolTypeScope *TaskBuildSymbolTree::build(ast::ITypeScope *ts) {
 void TaskBuildSymbolTree::visitConstraintBlock(ast::IConstraintBlock *i) {
     DEBUG_ENTER("visitConstraintBlock");
     addChild(i, false);
+    for (std::vector<ast::IConstraintStmtUP>::const_iterator
+        it=i->getConstraints().begin();
+        it!=i->getConstraints().end(); it++) {
+        (*it)->accept(m_this);
+    }
     DEBUG_LEAVE("visitConstraintBlock");
+}
+
+void TaskBuildSymbolTree::visitConstraintScope(ast::IConstraintScope *i) {
+    DEBUG_ENTER("visitConstraintScope");
+    for (std::vector<ast::IConstraintStmtUP>::const_iterator
+        it=i->getConstraints().begin();
+        it!=i->getConstraints().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    DEBUG_LEAVE("visitConstraintScope");
 }
     
 void TaskBuildSymbolTree::visitConstraintStmt(ast::IConstraintStmt *i) {
     DEBUG_ENTER("visitConstraintStmt");
-    addChild(i, false);
+//    addChild(i, false);
     DEBUG_LEAVE("visitConstraintStmt");
+}
+
+void TaskBuildSymbolTree::visitConstraintStmtForall(ast::IConstraintStmtForall *i) {
+    DEBUG_ENTER("visitConstraintStmtForall");
+    DEBUG_LEAVE("visitConstraintStmtForall");
+}
+
+void TaskBuildSymbolTree::visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) {
+    DEBUG_ENTER("visitConstraintStmtForeach");
+    ast::IConstraintSymbolScope *symtab = m_factory->mkConstraintSymbolScope("<foreach>");
+    symtab->setConstraint(i);
+
+    if (i->getIdx()) {
+        int32_t ii = symtab->getChildren().size();
+        symtab->getChildren().push_back(ast::IScopeChildUP(i->getIdx(), false));
+        symtab->getSymtab().insert({i->getIdx()->getName()->getId(), ii});
+    }
+
+    if (i->getIt()) {
+        int32_t ii = symtab->getChildren().size();
+        symtab->getChildren().push_back(ast::IScopeChildUP(i->getIt(), false));
+        symtab->getSymtab().insert({i->getIdx()->getName()->getId(), ii});
+    }
+
+    i->setSymtab(symtab);
+    for (std::vector<ast::IConstraintStmtUP>::const_iterator
+        it=i->getConstraints().begin();
+        it!=i->getConstraints().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    DEBUG_LEAVE("visitConstraintStmtForeach");
 }
 
 void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {

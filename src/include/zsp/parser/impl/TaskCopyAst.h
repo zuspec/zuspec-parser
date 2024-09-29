@@ -392,7 +392,7 @@ public:
         m_expr = m_factory->mkExprNull();
     }
     
-    virtual void visitExprAggregateLiteral(ast::IExprAggregateLiteral *i) { }
+//    virtual void visitExprAggregateLiteral(ast::IExprAggregateLiteral *i) { }
     
     virtual void visitExprOpenRangeList(ast::IExprOpenRangeList *i) { }
     

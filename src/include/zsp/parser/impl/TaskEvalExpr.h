@@ -54,11 +54,11 @@ public:
         return dynamic_cast<T *>(eval(expr));
     }
 
-    virtual void visitExprAggregateLiteral(ast::IExprAggregateLiteral *i) override {
-        DEBUG_ENTER("visitExprAggregateLiteral");
-        DEBUG("TODO: visitExprAggregateLiteral");
-        DEBUG_LEAVE("visitExprAggregateLiteral");
-    }
+    // virtual void visitExprAggregateLiteral(ast::IExprAggregateLiteral *i) override {
+    //     DEBUG_ENTER("visitExprAggregateLiteral");
+    //     DEBUG("TODO: visitExprAggregateLiteral");
+    //     DEBUG_LEAVE("visitExprAggregateLiteral");
+    // }
 
     virtual void visitExprBin(ast::IExprBin *i) override {
         DEBUG_ENTER("visitExprBin %d", i->getOp());

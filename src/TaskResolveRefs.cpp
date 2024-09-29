@@ -201,6 +201,18 @@ void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeT
     DEBUG_LEAVE("visitActivityActionTypeTraversal");
 }
 
+void TaskResolveRefs::visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) {
+    DEBUG_ENTER("visitConstraintStmtForeach");
+    m_ctxt->symtab()->pushScope(i->getSymtab());
+    for (std::vector<ast::IConstraintStmtUP>::const_iterator
+        it=i->getConstraints().begin();
+        it!=i->getConstraints().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    m_ctxt->symtab()->popScope();
+    DEBUG_LEAVE("visitConstraintStmtForeach");
+}
+
 void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     DEBUG_ENTER("visitExprRefPathContext %s", i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
     // Find the first path element

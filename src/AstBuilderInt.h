@@ -228,6 +228,12 @@ public:
 
     virtual antlrcpp::Any visitAggregate_literal(PSSParser::Aggregate_literalContext *ctx) override;
 
+    virtual antlrcpp::Any visitEmpty_aggregate_literal(PSSParser::Empty_aggregate_literalContext *ctx) override;
+
+    virtual antlrcpp::Any visitValue_list_literal(PSSParser::Value_list_literalContext *ctx) override;
+
+    virtual antlrcpp::Any visitMap_literal(PSSParser::Map_literalContext *ctx) override;
+
     virtual antlrcpp::Any visitStruct_literal(PSSParser::Struct_literalContext *ctx) override;
 
     virtual void syntaxError(

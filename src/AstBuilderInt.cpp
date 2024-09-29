@@ -1944,17 +1944,70 @@ antlrcpp::Any AstBuilderInt::visitNumber(PSSParser::NumberContext *ctx_t) {
 	return 0;
 }
 
- antlrcpp::Any AstBuilderInt::visitAggregate_literal(PSSParser::Aggregate_literalContext *ctx) {
+antlrcpp::Any AstBuilderInt::visitAggregate_literal(PSSParser::Aggregate_literalContext *ctx) {
     DEBUG_ENTER("visitAggregate_literal");
     PSSParserBaseVisitor::visitAggregate_literal(ctx);
     DEBUG_LEAVE("visitAggregate_literal");
     return 0;
- }
+}
 
+antlrcpp::Any AstBuilderInt::visitEmpty_aggregate_literal(PSSParser::Empty_aggregate_literalContext *ctx) {
+    DEBUG_ENTER("visitEmpty_aggregate_literal");
+    ast::IExprAggrEmpty *lval = m_factory->mkExprAggrEmpty();
+    m_expr = lval;
+    DEBUG_LEAVE("visitEmpty_aggregate_literal");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitValue_list_literal(PSSParser::Value_list_literalContext *ctx) {
+    DEBUG_ENTER("visitValue_list_literal");
+    ast::IExprAggrList *lval = m_factory->mkExprAggrList();
+
+    std::vector<PSSParser::ExpressionContext *> items = ctx->expression();
+    for (std::vector<PSSParser::ExpressionContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        lval->getElems().push_back(ast::IExprUP(mkExpr(*it)));
+    }
+
+    m_expr = lval;
+    DEBUG_LEAVE("visitValue_list_literal");
+    return 0;
+}
+
+antlrcpp::Any AstBuilderInt::visitMap_literal(PSSParser::Map_literalContext *ctx) {
+    DEBUG_ENTER("visitMap_literal");
+    ast::IExprAggrMap *lval = m_factory->mkExprAggrMap();
+
+    std::vector<PSSParser::Map_literal_itemContext *> items = ctx->map_literal_item();
+    for (std::vector<PSSParser::Map_literal_itemContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        ast::IExpr *key = mkExpr((*it)->expression(0));
+        ast::IExpr *val = mkExpr((*it)->expression(1));
+        lval->getElems().push_back(ast::IExprAggrMapElemUP(
+            m_factory->mkExprAggrMapElem(key, val)));
+    }
+    m_expr = lval;
+    DEBUG_LEAVE("visitMap_literal");
+    return 0;
+}
 
 antlrcpp::Any AstBuilderInt::visitStruct_literal(PSSParser::Struct_literalContext *ctx) {
     DEBUG_ENTER("visitStruct_literal");
+    ast::IExprAggrStruct *lval = m_factory->mkExprAggrStruct();
 
+    std::vector<PSSParser::Struct_literal_itemContext *> items = ctx->struct_literal_item();
+    for (std::vector<PSSParser::Struct_literal_itemContext *>::const_iterator
+        it=items.begin();
+        it!=items.end(); it++) {
+        ast::IExprId *id = mkId((*it)->identifier());
+        ast::IExpr *val = mkExpr((*it)->expression());
+        lval->getElems().push_back(ast::IExprAggrStructElemUP(
+            m_factory->mkExprAggrStructElem(id, val)));
+    }
+
+    m_expr = lval;
     DEBUG_LEAVE("visitStruct_literal");
     return 0;
 }

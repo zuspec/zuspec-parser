@@ -45,8 +45,14 @@ public:
     virtual void visitActivityDecl(ast::IActivityDecl *i) override;
 
     virtual void visitConstraintBlock(ast::IConstraintBlock *i) override;
+
+    virtual void visitConstraintScope(ast::IConstraintScope *i) override;
     
     virtual void visitConstraintStmt(ast::IConstraintStmt *i) override;
+
+    virtual void visitConstraintStmtForall(ast::IConstraintStmtForall *i) override;
+
+    virtual void visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) override;
 
     virtual void visitPackageScope(ast::IPackageScope *i) override;
 

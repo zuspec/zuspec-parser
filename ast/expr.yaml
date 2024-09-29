@@ -31,6 +31,43 @@ enums:
 classes: 
     - Expr: {}
 
+    - ExprAggrLiteral:
+        - super: Expr
+        - data: []
+#            - data_type: P<DataType>
+    - ExprAggrEmpty:
+        - super: ExprAggrLiteral
+        - data: []
+
+    - ExprAggrList:
+        - super: ExprAggrLiteral
+        - data:
+            - elems: "list<UP<Expr>>"
+
+    - ExprAggrMapElem:
+        - data:
+            - lhs: UP<Expr>
+            - rhs: UP<Expr>
+
+    - ExprAggrMap:
+        - super: ExprAggrLiteral
+        - data:
+            - elems: "list<UP<ExprAggrMapElem>>"
+
+    - ExprAggrStructElem:
+        - data:
+            - name: UP<ExprId>
+            - target:
+                type: int32_t
+                init: -1
+                is_ctor: false
+            - value: UP<Expr>
+
+    - ExprAggrStruct:
+        - super: ExprAggrLiteral
+        - data:
+            - elems: "list<UP<ExprAggrStructElem>>"
+
     - ExprBin:
         - super: Expr
         - data: 
@@ -132,8 +169,8 @@ classes:
 
     - ExprNumber:
         - super: Expr
-    - ExprAggregateLiteral:
-        - super: Expr
+#    - ExprAggregateLiteral:
+#        - super: Expr
 #        - data:
     - ExprOpenRangeList:
         - super: Expr

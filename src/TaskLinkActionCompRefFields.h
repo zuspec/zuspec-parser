@@ -38,6 +38,8 @@ public:
 
     virtual void visitAction(ast::IAction *i) override;
 
+    virtual void visitConstraintBlock(ast::IConstraintBlock *i) override { }
+
     virtual void visitComponent(ast::IComponent *i) override;
 
     virtual void visitPackageScope(ast::IPackageScope *i) override;
