@@ -202,7 +202,7 @@ void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeT
 }
 
 void TaskResolveRefs::visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) {
-    DEBUG_ENTER("visitConstraintStmtForeach");
+    DEBUG_ENTER("visitConstraintStmtForeach %d", i->getSymtab()->getSymtab().size());
     m_ctxt->symtab()->pushScope(i->getSymtab());
     for (std::vector<ast::IConstraintStmtUP>::const_iterator
         it=i->getConstraints().begin();
@@ -482,6 +482,17 @@ void TaskResolveRefs::visitExtendType(ast::IExtendType *i) {
     DEBUG_ENTER("visitExtendType");
     DEBUG("Note: Skip during core symbol resolution");
     DEBUG_LEAVE("visitExtendType");
+}
+
+void TaskResolveRefs::visitField(ast::IField *i) {
+    DEBUG_ENTER("visitField %s", i->getName()->getId().c_str());
+    if (i->getType()) {
+        i->getType()->accept(m_this);
+    }
+    if (i->getInit()) {
+        i->getInit()->accept(m_this);
+    }
+    DEBUG_LEAVE("visitField %s", i->getName()->getId().c_str());
 }
 
 void TaskResolveRefs::visitFieldCompRef(ast::IFieldCompRef *i) {

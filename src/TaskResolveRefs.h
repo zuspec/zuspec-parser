@@ -65,6 +65,8 @@ public:
 
     virtual void visitExtendType(ast::IExtendType *i) override;
 
+    virtual void visitField(ast::IField *i) override;
+
     virtual void visitFieldCompRef(ast::IFieldCompRef *i) override;
 
     virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override;

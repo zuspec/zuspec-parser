@@ -143,28 +143,14 @@ void TaskBuildSymbolTree::visitConstraintStmtForall(ast::IConstraintStmtForall *
 }
 
 void TaskBuildSymbolTree::visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) {
-    DEBUG_ENTER("visitConstraintStmtForeach");
-    ast::IConstraintSymbolScope *symtab = m_factory->mkConstraintSymbolScope("<foreach>");
-    symtab->setConstraint(i);
-
-    if (i->getIdx()) {
-        int32_t ii = symtab->getChildren().size();
-        symtab->getChildren().push_back(ast::IScopeChildUP(i->getIdx(), false));
-        symtab->getSymtab().insert({i->getIdx()->getName()->getId(), ii});
-    }
-
-    if (i->getIt()) {
-        int32_t ii = symtab->getChildren().size();
-        symtab->getChildren().push_back(ast::IScopeChildUP(i->getIt(), false));
-        symtab->getSymtab().insert({i->getIdx()->getName()->getId(), ii});
-    }
-
-    i->setSymtab(symtab);
+    DEBUG_ENTER("visitConstraintStmtForeach %p %p", i->getIdx(), i->getIt());
+    /*
     for (std::vector<ast::IConstraintStmtUP>::const_iterator
         it=i->getConstraints().begin();
         it!=i->getConstraints().end(); it++) {
         (*it)->accept(m_this);
     }
+     */
     DEBUG_LEAVE("visitConstraintStmtForeach");
 }
 

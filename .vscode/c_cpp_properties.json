@@ -6,9 +6,13 @@
                 "${default}",
                 "src",
                 "packages/debug-mgr/src/include",
+                "packages/gtest/googletest/include",
+                "packages/antlr4-cpp-runtime/runtime/src",
                 "src/include",
                 "tests/src",
-                "build/zsp_ast/src/include"
+                "build/zsp_ast/src/include",
+                "build/src/antlr4cpp_generated_src/PSSParser",
+                "build/src/antlr4cpp_generated_src/PSSLexer"
             ],
             "defines": [
                 "${default}"

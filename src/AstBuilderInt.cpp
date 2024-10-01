@@ -1494,8 +1494,13 @@ antlrcpp::Any AstBuilderInt::visitExpression_constraint_item(PSSParser::Expressi
 
 antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_constraint_itemContext *ctx) {
 	DEBUG_ENTER("visitForeach_constraint_item");
-	ast::IConstraintStmtForeach *c = m_factory->mkConstraintStmtForeach(
-		mkExpr(ctx->expression()));
+    ast::IExpr *expr = mkExpr(ctx->expression());
+	ast::IConstraintStmtForeach *c = m_factory->mkConstraintStmtForeach(expr);
+    ast::IConstraintSymbolScope *symtab = m_factory->mkConstraintSymbolScope("<foreach>");
+    ast::IExprRefPathContext *expr_c = dynamic_cast<ast::IExprRefPathContext *>(expr);
+
+    c->setSymtab(symtab);
+    symtab->setConstraint(c);
 	
 	if (ctx->it_id) {
 		ast::IConstraintStmtField *it = m_factory->mkConstraintStmtField(
@@ -1503,8 +1508,39 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
 			0 // TODO: what do we do about datatype here?
 		);
 		c->setIt(it);
-		c->getConstraints().push_back(ast::IConstraintStmtUP(it));
-	}
+        symtab->getSymtab().insert({
+            it->getName()->getId(),
+            symtab->getChildren().size()});
+        it->setIndex(symtab->getChildren().size());
+        symtab->getChildren().push_back(ast::IScopeChildUP(it, false));
+	} else if (expr_c) {
+        // Expressions are greedy, which means the index variable will end up
+        // being interpreted as an array subscript much of the time.
+        // Fix this up here...
+        if (expr_c->getHier_id()->getElems().back()->getSubscript().size()) {
+            std::vector<ast::IExprUP> &subscript = expr_c->getHier_id()->getElems().back()->getSubscript();
+            ast::IExprRefPathContext *idx_id = dynamic_cast<ast::IExprRefPathContext *>(subscript.back().get());
+            if (idx_id && idx_id->getHier_id()->getElems().size() == 1) {
+                ast::IExprId *idx = idx_id->getHier_id()->getElems().back()->getId();
+                ast::IExprId *idx_i = m_factory->mkExprId(
+                    idx->getId(),
+                    idx->getIs_escaped());
+                idx_i->setLocation(idx->getLocation());
+		        ast::IConstraintStmtField *it = m_factory->mkConstraintStmtField(idx_i, 0);
+        		c->setIt(it);
+                symtab->getSymtab().insert({
+                    it->getName()->getId(),
+                    symtab->getChildren().size()});
+                symtab->getChildren().push_back(ast::IScopeChildUP(it, false));
+
+                DEBUG("Have a subscript %p", idx);
+                subscript.pop_back();
+            }
+        } else {
+            // No index is a bit odd, but put a placeholder in anyway
+            symtab->getChildren().push_back(ast::IScopeChildUP(0));
+        }
+    }
 
 	if (ctx->idx_id) {
 		ast::IConstraintStmtField *idx = m_factory->mkConstraintStmtField(
@@ -1512,7 +1548,11 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
 			0 // TODO: 
 		);
 		c->setIdx(idx);
-		c->getConstraints().push_back(ast::IConstraintStmtUP(idx));
+        idx->setIndex(symtab->getChildren().size());
+        symtab->getSymtab().insert({
+            idx->getName()->getId(),
+            symtab->getChildren().size()});
+        symtab->getChildren().push_back(ast::IScopeChildUP(idx, false));
 	}
 
 	m_constraint_s.push_back(c);
