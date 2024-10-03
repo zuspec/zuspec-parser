@@ -608,27 +608,7 @@ void TaskBuildSymbolTree::visitProceduralStmtIfElse(ast::IProceduralStmtIfElse *
 }
 
 void TaskBuildSymbolTree::visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) {
-    DEBUG_ENTER("visitProceduralStmtRepeat symtab-sz: %d",
-        i->getSymtab().size());
-    if (i->getIt_id()) {
-        // Add a variable to the scope
-        ast::IExprId *id =m_factory->mkExprId(
-                i->getIt_id()->getId(),
-                i->getIt_id()->getIs_escaped());
-        id->setLocation(i->getIt_id()->getLocation());
-        ast::IProceduralStmtDataDeclaration *var = m_factory->mkProceduralStmtDataDeclaration(
-            id,
-            0,
-            0);
-        int32_t idx = i->getChildren().size();
-        i->getChildren().push_back(ast::IScopeChildUP(var));
-        i->getSymtab().insert({id->getId(), idx});
-    }
-    /*
-    pushSymbolScope(i);
-    i->getBody()->accept(m_this);
-    popSymbolScope();
-     */
+    DEBUG_ENTER("visitProceduralStmtRepeat symtab-sz: %d", i->getSymtab().size());
     DEBUG_LEAVE("visitProceduralStmtRepeat");
 }
 

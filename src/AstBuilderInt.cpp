@@ -837,6 +837,22 @@ antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_r
             (ctx->identifier())?mkId(ctx->identifier()):0,
             mkExpr(ctx->expression()),
             mkExecStmt(ctx->procedural_stmt()));
+
+        if (stmt->getId()) {
+            // Add a variable to the scope
+            ast::IExprId *id =m_factory->mkExprId(
+                    stmt->getIt_id()->getId(),
+                    stmt->getIt_id()->getIs_escaped());
+            id->setLocation(stmt->getIt_id()->getLocation());
+            ast::IProceduralStmtDataDeclaration *var = m_factory->mkProceduralStmtDataDeclaration(
+                id,
+                0,
+                0);
+            int32_t idx = stmt->getChildren().size();
+            stmt->getChildren().push_back(ast::IScopeChildUP(var));
+            stmt->getSymtab().insert({id->getId(), idx});
+        }
+
         m_exec_stmt = stmt;
         m_exec_stmt_cnt++;
     } else if (ctx->is_repeat_while) {
