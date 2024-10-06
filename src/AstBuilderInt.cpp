@@ -838,7 +838,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_r
             mkExpr(ctx->expression()),
             mkExecStmt(ctx->procedural_stmt()));
 
-        if (stmt->getId()) {
+        if (stmt->getIt_id()) {
             // Add a variable to the scope
             ast::IExprId *id =m_factory->mkExprId(
                     stmt->getIt_id()->getId(),
@@ -1475,6 +1475,7 @@ antlrcpp::Any AstBuilderInt::visitConstraint_block(PSSParser::Constraint_blockCo
 	m_constraint = scope;
 	if (m_constraint_s.size() > 0) {
         DEBUG("Add constraint to exiting parent");
+        scope->setIndex(m_constraint_s.back()->getConstraints().size());
 		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(scope));
 	}
 
@@ -1502,6 +1503,7 @@ antlrcpp::Any AstBuilderInt::visitExpression_constraint_item(PSSParser::Expressi
 		mkExpr(ctx->expression()));
 	m_constraint = c;
 	if (m_constraint_s.size() > 0) {
+        c->setIndex(m_constraint_s.back()->getConstraints().size());
 		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
 	}
 	DEBUG_LEAVE("visitExpression_constraint_item");
@@ -1518,15 +1520,16 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
     c->setSymtab(symtab);
     symtab->setConstraint(c);
 	
-	if (ctx->it_id) {
+	if (ctx->idx_id) {
 		ast::IConstraintStmtField *it = m_factory->mkConstraintStmtField(
-			mkId(ctx->it_id->identifier()),
+			mkId(ctx->idx_id->identifier()),
 			0 // TODO: what do we do about datatype here?
 		);
-		c->setIt(it);
+		c->setIdx(it);
         symtab->getSymtab().insert({
             it->getName()->getId(),
             symtab->getChildren().size()});
+        DEBUG("Set index of iteration variable: %d", symtab->getChildren().size());
         it->setIndex(symtab->getChildren().size());
         symtab->getChildren().push_back(ast::IScopeChildUP(it, false));
 	} else if (expr_c) {
@@ -1543,10 +1546,12 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
                     idx->getIs_escaped());
                 idx_i->setLocation(idx->getLocation());
 		        ast::IConstraintStmtField *it = m_factory->mkConstraintStmtField(idx_i, 0);
-        		c->setIt(it);
+        		c->setIdx(it);
                 symtab->getSymtab().insert({
                     it->getName()->getId(),
                     symtab->getChildren().size()});
+                DEBUG("Set index of iteration variable: %d", symtab->getChildren().size());
+                it->setIndex(symtab->getChildren().size());
                 symtab->getChildren().push_back(ast::IScopeChildUP(it, false));
 
                 DEBUG("Have a subscript %p", idx);
@@ -1558,12 +1563,13 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
         }
     }
 
-	if (ctx->idx_id) {
+	if (ctx->it_id) {
 		ast::IConstraintStmtField *idx = m_factory->mkConstraintStmtField(
-			mkId(ctx->idx_id->identifier()),
+			mkId(ctx->it_id->identifier()),
 			0 // TODO: 
 		);
-		c->setIdx(idx);
+	  	c->setIt(idx);
+        DEBUG("Set index of iteration variable (2): %d", symtab->getChildren().size());
         idx->setIndex(symtab->getChildren().size());
         symtab->getSymtab().insert({
             idx->getName()->getId(),
@@ -1577,6 +1583,7 @@ antlrcpp::Any AstBuilderInt::visitForeach_constraint_item(PSSParser::Foreach_con
 
 	m_constraint = c;
 	if (m_constraint_s.size() > 0) {
+        c->setIndex(m_constraint_s.back()->getConstraints().size());
 		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
 	}
 	DEBUG_LEAVE("visitForeach_constraint_item");
@@ -1615,6 +1622,7 @@ antlrcpp::Any AstBuilderInt::visitIf_constraint_item(PSSParser::If_constraint_it
 
 	m_constraint = c;
 	if (m_constraint_s.size() > 0) {
+        c->setIndex(m_constraint_s.back()->getConstraints().size());
 		m_constraint_s.back()->getConstraints().push_back(
 			IConstraintStmtUP(c));
 	}
@@ -1633,6 +1641,7 @@ antlrcpp::Any AstBuilderInt::visitImplication_constraint_item(PSSParser::Implica
 
 	m_constraint = c;
 	if (m_constraint_s.size()) {
+        c->setIndex(m_constraint_s.back()->getConstraints().size());
 		m_constraint_s.back()->getConstraints().push_back(ast::IConstraintStmtUP(c));
 	}
 

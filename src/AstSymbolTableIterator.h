@@ -59,7 +59,7 @@ public:
     virtual int32_t pushNamedScope(const std::string &name) override;
 
     virtual void pushScope(
-        ast::ISymbolScope           *s,
+        ast::IScopeChild           *s,
         ast::SymbolRefPathElemKind  kind=ast::SymbolRefPathElemKind::ElemKind_ChildIdx) override;
 
     virtual void popScope() override;
@@ -69,10 +69,17 @@ public:
     virtual ISymbolTableIterator *clone() const override;
 
 private:
+    ast::ISymbolScope *getSymScopeBack() const;
+
+    ast::ISymbolScope *getSymScopeBack(int32_t off) const;
+
+    ast::ISymbolScope *getSymScopeFront() const;
+
+private:
     static dmgr::IDebug                     *m_dbg;
     ast::IFactory                           *m_factory;
     std::vector<ast::SymbolRefPathElem>     m_path;
-    std::vector<ast::ISymbolScope *>        m_scope_s;
+    std::vector<ast::IScopeChild *>         m_scope_s;
 
 };
 

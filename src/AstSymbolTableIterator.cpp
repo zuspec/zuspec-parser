@@ -20,6 +20,8 @@
  */
 #include "dmgr/impl/DebugMacros.h"
 #include "AstSymbolTableIterator.h"
+#include "TaskGetItemIndex.h"
+#include "TaskGetSymbolScope.h"
 
 namespace zsp {
 namespace parser {
@@ -52,10 +54,11 @@ AstSymbolTableIterator::~AstSymbolTableIterator() {
 
 int32_t AstSymbolTableIterator::findLocalSymbol(const std::string &name) {
     DEBUG_ENTER("findLocalSymbol %s", name.c_str());
+    ast::ISymbolScope *ss = getSymScopeBack();
     std::unordered_map<std::string,int32_t>::const_iterator it =
-        m_scope_s.back()->getSymtab().find(name);
+        ss->getSymtab().find(name);
 
-    if (it != m_scope_s.back()->getSymtab().end()) {
+    if (it != ss->getSymtab().end()) {
         DEBUG_LEAVE("findLocalSymbol %s - success", name.c_str());
         return it->second;
     } else {
@@ -98,21 +101,21 @@ ast::ISymbolRefPath *AstSymbolTableIterator::getScopeSymbolPath(int32_t off) con
 }
 
 ast::ISymbolScope *AstSymbolTableIterator::getRootScope() const {
-    return m_scope_s.front();
+    return getSymScopeFront();
 }
 
 ast::ISymbolScope *AstSymbolTableIterator::getScope(int32_t off) const {
-    return m_scope_s.at(m_scope_s.size()-off-1);
+    return getSymScopeBack(off);
 }
 
 ast::IScopeChild *AstSymbolTableIterator::getScopeChild(int32_t idx) const {
-    return m_scope_s.back()->getChildren().at(idx).get();
+    return getSymScopeBack()->getChildren().at(idx).get();
 }
 
 ast::IScopeChild *AstSymbolTableIterator::resolveAbsPath(const ast::ISymbolRefPath *path) {
     ast::IScopeChild *ret = 0;
 
-    ast::ISymbolScope *scope = m_scope_s.at(0);
+    ast::ISymbolScope *scope = getSymScopeFront();
     for (uint32_t i=0; i<path->getPath().size(); i++) {
         DEBUG("Scope: %s @ %d", scope->getName().c_str(), path->getPath().at(i));
         const ast::SymbolRefPathElem &elem = path->getPath().at(i);
@@ -134,12 +137,13 @@ ast::IScopeChild *AstSymbolTableIterator::resolveAbsPath(const ast::ISymbolRefPa
 
 int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
     DEBUG_ENTER("pushNamedScope %s", name.c_str());
+    ast::ISymbolScope *ss = getSymScopeBack();
     std::unordered_map<std::string,int32_t>::const_iterator it =
-        m_scope_s.back()->getSymtab().find(name);
+        ss->getSymtab().find(name);
 
-    if (it != m_scope_s.back()->getSymtab().end()) {
+    if (it != ss->getSymtab().end()) {
         ast::ISymbolScope *scope = dynamic_cast<ast::ISymbolScope *>(
-            m_scope_s.back()->getChildren().at(it->second).get());
+            ss->getChildren().at(it->second).get());
         if (scope) {
             m_scope_s.push_back(scope);
             m_path.push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second});
@@ -157,10 +161,18 @@ int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
 }
 
 void AstSymbolTableIterator::pushScope(
-        ast::ISymbolScope           *s,
+        ast::IScopeChild            *s,
         ast::SymbolRefPathElemKind  kind) {
+    int32_t idx = (dynamic_cast<ast::ISymbolScope *>(s))?dynamic_cast<ast::ISymbolScope *>(s)->getId():-1;
+    int32_t idx1 = TaskGetItemIndex().get(s);
+    if (!dynamic_cast<ast::ISymbolScope *>(s)) {
+        DEBUG("Not a symbol scope");
+    }
+    if (idx != idx1) {
+        DEBUG("negative");
+    }
     m_scope_s.push_back(s);
-    m_path.push_back({kind, s->getId()});
+    m_path.push_back({kind, idx1});
 }
 
 void AstSymbolTableIterator::popScope() {
@@ -185,6 +197,60 @@ bool AstSymbolTableIterator::hasScopes() {
 
 ISymbolTableIterator *AstSymbolTableIterator::clone() const {
     return new AstSymbolTableIterator(*this);
+}
+
+ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack() const {
+    // Walk through the scope backwards and return the 
+    // first symbol scope
+    ast::ISymbolScope *ss = 0;
+
+    for (std::vector<ast::IScopeChild *>::const_reverse_iterator
+        it=m_scope_s.rbegin();
+        it!=m_scope_s.rend(); it++) {
+        if ((ss=TaskGetSymbolScope().get(*it))) {
+            break;
+        }
+    }
+
+    return ss;
+}
+
+ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack(int32_t off) const {
+    // Walk through the scope backwards and return the 
+    // first symbol scope
+    ast::ISymbolScope *ss = 0;
+
+    for (std::vector<ast::IScopeChild *>::const_reverse_iterator
+        it=m_scope_s.rbegin();
+        it!=m_scope_s.rend(); it++) {
+        if ((ss=TaskGetSymbolScope().get(*it))) {
+            if (!off) {
+                break;
+            } else {
+                off--;
+                ss = 0;
+            }
+        }
+    }
+
+    return ss;
+}
+
+
+ast::ISymbolScope *AstSymbolTableIterator::getSymScopeFront() const {
+    // Walk through the scope backwards and return the 
+    // first symbol scope
+    ast::ISymbolScope *ss = 0;
+
+    for (std::vector<ast::IScopeChild *>::const_iterator
+        it=m_scope_s.begin();
+        it!=m_scope_s.end(); it++) {
+        if ((ss=TaskGetSymbolScope().get(*it))) {
+            break;
+        }
+    }
+
+    return ss;
 }
 
 dmgr::IDebug *AstSymbolTableIterator::m_dbg = 0;

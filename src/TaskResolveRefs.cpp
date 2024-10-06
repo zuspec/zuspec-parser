@@ -201,8 +201,19 @@ void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeT
     DEBUG_LEAVE("visitActivityActionTypeTraversal");
 }
 
+void TaskResolveRefs::visitConstraintBlock(ast::IConstraintBlock *i) {
+    DEBUG_ENTER("visitConstraintBlock (idx=%d)", i->getIndex());
+    m_ctxt->symtab()->pushScope(i);
+    VisitorBase::visitConstraintBlock(i);
+    m_ctxt->symtab()->popScope();
+    DEBUG_LEAVE("visitConstraintBlock");
+}
+
 void TaskResolveRefs::visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) {
     DEBUG_ENTER("visitConstraintStmtForeach %d", i->getSymtab()->getSymtab().size());
+    // Resolve symbols in the array path
+    i->getExpr()->accept(m_this);
+
     m_ctxt->symtab()->pushScope(i->getSymtab());
     for (std::vector<ast::IConstraintStmtUP>::const_iterator
         it=i->getConstraints().begin();
@@ -276,6 +287,12 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
                 (*it)->accept(m_this);
             }
             DEBUG_LEAVE("Resolve parameter references");
+        }
+
+        for (std::vector<ast::IExprUP>::const_iterator
+            it=elem->getSubscript().begin();
+            it!=elem->getSubscript().end(); it++) {
+            (*it)->accept(m_this);
         }
 
 //        if (!ii) {

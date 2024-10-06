@@ -51,6 +51,8 @@ public:
 
     virtual void visitActivitySequence(ast::IActivitySequence *i) override;
 
+    virtual void visitConstraintBlock(ast::IConstraintBlock *i) override;
+
     virtual void visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) override;
 
     virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) override;

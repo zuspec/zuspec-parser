@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include "AstUtil.h"
 #include "BuiltinsFactory.h"
 
 
@@ -34,6 +35,9 @@ BuiltinsFactory::~BuiltinsFactory() {
 }
 
 ast::IGlobalScope *BuiltinsFactory::build() {
+    ast::ITemplateParamDeclList *params;
+    AstUtil util(m_ast_f);
+
     m_builtins = ast::IGlobalScopeUP(m_ast_f->mkGlobalScope(-1));
 
     ast::ITypeScope *pyobj = m_ast_f->mkTypeScope(
@@ -43,11 +47,14 @@ ast::IGlobalScope *BuiltinsFactory::build() {
     pyobj->setParent(m_builtins.get());
     m_builtins->getChildren().push_back(ast::IScopeChildUP(pyobj));
 
+    /****************************************************************
+     * array
+     ****************************************************************/
     ast::IStruct *array = m_ast_f->mkStruct(
         m_ast_f->mkExprId("array", false),
         0,
         ast::StructKind::Struct);
-    ast::ITemplateParamDeclList *params = m_ast_f->mkTemplateParamDeclList();
+    params = m_ast_f->mkTemplateParamDeclList();
     params->getParams().push_back(ast::ITemplateParamDeclUP(
         m_ast_f->mkTemplateGenericTypeParamDecl(
             m_ast_f->mkExprId("T", false),
@@ -63,6 +70,37 @@ ast::IGlobalScope *BuiltinsFactory::build() {
     array->setParams(params);
     array->setParent(m_builtins.get());
     m_builtins->getChildren().push_back(ast::IScopeChildUP(array));
+
+    /****************************************************************
+     * list
+     ****************************************************************/
+    ast::IStruct *list = m_ast_f->mkStruct(
+        m_ast_f->mkExprId("list", false),
+        0,
+        ast::StructKind::Struct);
+    params = m_ast_f->mkTemplateParamDeclList();
+    params->getParams().push_back(ast::ITemplateParamDeclUP(
+        m_ast_f->mkTemplateGenericTypeParamDecl(
+            m_ast_f->mkExprId("T", false),
+            0)));
+    list->setParams(params);
+    list->setParent(m_builtins.get());
+
+    // Add in methods
+    ast::IFunctionPrototype *push_back = m_ast_f->mkFunctionPrototype(
+        m_ast_f->mkExprId("push_back", false),
+        0,
+        false,
+        false);
+    push_back->getParameters().push_back(ast::IFunctionParamDeclUP(
+        m_ast_f->mkFunctionParamDecl(
+            ast::FunctionParamDeclKind::ParamKind_DataType,
+            m_ast_f->mkExprId("t", false),
+            util.mkDataTypeUserDefined("T"),
+            ast::ParamDir::ParamDir_In,
+            0)));
+    list->getChildren().push_back(ast::IScopeChildUP(push_back));
+    m_builtins->getChildren().push_back(ast::IScopeChildUP(list));
 
     return m_builtins.release();
 }

@@ -53,8 +53,8 @@ ast::ITemplateParamDeclList *TaskBuildParamValList::build(
 
     if (pvals->getValues().size() > plist->getChildren().size()) {
         fprintf(stdout, "TODO: Flag error \"Type accepts %d parameters ; %d supplied\"\n",
-            plist->getChildren().size(),
-            pvals->getValues().size());
+            (int)plist->getChildren().size(),
+            (int)pvals->getValues().size());
         return 0;
     }
 

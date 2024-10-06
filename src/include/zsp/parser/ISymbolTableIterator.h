@@ -57,7 +57,7 @@ public:
     virtual int32_t pushNamedScope(const std::string &name) = 0;
 
     virtual void pushScope(
-        ast::ISymbolScope           *s,
+        ast::IScopeChild            *s,
         ast::SymbolRefPathElemKind  kind=ast::SymbolRefPathElemKind::ElemKind_ChildIdx) = 0;
 
     virtual void popScope() = 0;

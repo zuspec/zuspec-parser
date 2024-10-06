@@ -27,6 +27,7 @@
 #include "zsp/ast/ISymbolTypeScope.h"
 #include "zsp/ast/impl/VisitorBase.h"
 #include "zsp/parser/ISymbolTableIterator.h"
+#include "zsp/parser/impl/ScopeUtil.h"
 #include "zsp/parser/impl/TaskGetName.h"
 #include "zsp/parser/impl/TaskResolveSymbolPathRefResult.h"
 
@@ -49,7 +50,7 @@ public:
     ast::IScopeChild *resolve(const ast::ISymbolRefPath *ref) {
         DEBUG_ENTER("resolve root=%p", m_root);
         ast::IScopeChild *ret = 0;
-        ast::ISymbolChildrenScope *scope = m_root;
+        ScopeUtil scope(m_root);
 
         if (DEBUG_EN) {
             for (std::vector<ast::SymbolRefPathElem>::const_iterator
@@ -66,16 +67,16 @@ public:
             switch (it->kind) {
                 case ast::SymbolRefPathElemKind::ElemKind_ChildIdx: {
                     DEBUG("Elem: ChildIdx %d", it->idx);
-                    if (it->idx < scope->getChildren().size()) {
-                        ret = scope->getChildren().at(it->idx).get();
+                    if (it->idx < scope.getNumChildren()) {
+                        ret = scope.getChild(it->idx);
                     } else {
-                        DEBUG("Index %d out-of-range (%d)", it->idx, scope->getChildren().size());
+                        DEBUG("Index %d out-of-range (%d)", it->idx, scope.getNumChildren());
                     }
                     DEBUG("  scope %p => %p", scope, ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ArgIdx: {
                     DEBUG("Elem: ArgIdx %d", it->idx);
-                    ast::ISymbolFunctionScope *fs = dynamic_cast<ast::ISymbolFunctionScope *>(scope);
+                    ast::ISymbolFunctionScope *fs = scope.getT<ast::ISymbolFunctionScope>();
                     if (fs && it->idx < fs->getPlist()->getChildren().size()) {
                         ret = fs->getPlist()->getChildren().at(it->idx).get();
                     } else {
@@ -88,7 +89,7 @@ public:
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ParamIdx: {
                     DEBUG("Elem: ParamIdx %d", it->idx);
-                    ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+                    ast::ISymbolTypeScope *scope_ts = scope.getT<ast::ISymbolTypeScope>();
                     if (scope_ts && it->idx < scope_ts->getPlist()->getChildren().size()) {
                         ret = scope_ts->getPlist()->getChildren().at(it->idx).get();
                     } else {
@@ -97,11 +98,11 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_Super: {
-                    ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+                    ast::ISymbolTypeScope *scope_ts = scope.getT<ast::ISymbolTypeScope>();
                     DEBUG_ERROR("TODO: handle super ref");
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_TypeSpec: {
-                    ast::ISymbolTypeScope *scope_ts = dynamic_cast<ast::ISymbolTypeScope *>(scope);
+                    ast::ISymbolTypeScope *scope_ts = scope.getT<ast::ISymbolTypeScope>();
                     DEBUG("Elem: TypeSpec %d", it->idx);
                     DEBUG("Scope: %s (%d specializations)",
                         scope_ts->getName().c_str(),
@@ -119,14 +120,12 @@ public:
             }
             
             if (it+1 != ref->getPath().end()) {
-                scope = dynamic_cast<ast::ISymbolScope *>(ret);
-            }
-
-            if (!scope) {
-                DEBUG_ERROR("Failed to get scope @ %d/%d",
-                    (it-ref->getPath().begin()), ref->getPath().size());
-                ret = 0;
-                break;
+                if (!scope.init(ret)) {
+                    DEBUG_ERROR("Failed to get scope @ %d/%d",
+                        (it-ref->getPath().begin()), ref->getPath().size());
+                    ret = 0;
+                    break;
+                }
             }
         }
 
@@ -395,6 +394,12 @@ public:
         DEBUG_ENTER("visitSymbolEnumScope %s", i->getName().c_str());
         m_ss = i;
         DEBUG_LEAVE("visitSymbolEnumScope");
+    }
+
+    virtual void visitSymbolScope(ast::ISymbolScope *i) override {
+        DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
+        DEBUG_ERROR("Should not hit symbol scope when resolving a ref");
+        DEBUG_LEAVE("visitSymbolScope");
     }
 
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
