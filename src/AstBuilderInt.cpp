@@ -25,7 +25,6 @@
 #include "zsp/ast/INamedScope.h"
 #include "zsp/ast/IPackageImportStmt.h"
 #include "zsp/ast/Location.h"
-#include "ScopeUtil.h"
 #include "Marker.h"
 
 namespace zsp {

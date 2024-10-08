@@ -7,7 +7,6 @@
 #include "dmgr/impl/DebugMacros.h"
 #include "NameResolver.h"
 #include "RefExprUtil.h"
-#include "ScopeUtil.h"
 #include "TaskCollectDeclarations.h"
 
 namespace zsp {
