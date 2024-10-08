@@ -72,7 +72,7 @@ public:
                     } else {
                         DEBUG("Index %d out-of-range (%d)", it->idx, scope.getNumChildren());
                     }
-                    DEBUG("  scope %p => %p", scope, ret);
+                    DEBUG("  scope %p => %p", scope.get(), ret);
                 } break;
                 case ast::SymbolRefPathElemKind::ElemKind_ArgIdx: {
                     DEBUG("Elem: ArgIdx %d", it->idx);
