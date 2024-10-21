@@ -831,11 +831,11 @@ antlrcpp::Any AstBuilderInt::visitProcedural_return_stmt(PSSParser::Procedural_r
 antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_repeat_stmtContext *ctx) { 
     DEBUG_ENTER("visitProcedural_repeat_stmt");
     if (ctx->is_repeat) {
+        ast::IScopeChild *body = mkExecStmt(ctx->procedural_stmt());
         ast::IProceduralStmtRepeat *stmt = m_factory->mkProceduralStmtRepeat(
             "<repeat>",
             (ctx->identifier())?mkId(ctx->identifier()):0,
-            mkExpr(ctx->expression()),
-            mkExecStmt(ctx->procedural_stmt()));
+            mkExpr(ctx->expression()), body);
 
         if (stmt->getIt_id()) {
             // Add a variable to the scope
@@ -851,6 +851,9 @@ antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_r
             stmt->getChildren().push_back(ast::IScopeChildUP(var));
             stmt->getSymtab().insert({id->getId(), idx});
         }
+
+        body->setIndex(stmt->getChildren().size());
+        stmt->getChildren().push_back(ast::IScopeChildUP(body));
 
         m_exec_stmt = stmt;
         m_exec_stmt_cnt++;

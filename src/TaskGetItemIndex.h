@@ -51,7 +51,11 @@ public:
     }
 
     virtual void visitExecScope(ast::IExecScope *i) override {
-        m_index = i->getId();
+        if (i->getId() != -1) {
+            m_index = i->getId();
+        } else {
+            m_index = i->getIndex();
+        }
     }
 
     virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override {
