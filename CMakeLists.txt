@@ -4,6 +4,8 @@ project(zuspec-parser)
 
 include(ExternalProject)
 
+set(CMAKE_INSTALL_RPATH $ORIGIN)
+
 if (NOT PACKAGES_DIR)
   set(PACKAGES_DIR ${CMAKE_SOURCE_DIR}/packages)
 

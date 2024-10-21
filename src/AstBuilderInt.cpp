@@ -975,6 +975,33 @@ antlrcpp::Any AstBuilderInt::visitProcedural_data_declaration(PSSParser::Procedu
             init);
         decl->setIndex(m_exec_scope_s.back()->getChildren().size());
         m_exec_scope_s.back()->getChildren().push_back(ast::IScopeChildUP(decl));
+
+        std::unordered_map<std::string,int32_t>::const_iterator var_it =
+            m_exec_scope_s.back()->getSymtab().find(decl->getName()->getId());
+        if (var_it != m_exec_scope_s.back()->getSymtab().end()) {
+            // TODO: duplicate
+	        if (m_marker_l) {
+                char tmp[1024];
+                std::string msg;
+		        ast::Location loc = decl->getLocation();
+
+                snprintf(tmp, sizeof(tmp), "duplicate variable declaration %s",  
+                    decl->getName()->getId().c_str());
+                msg = tmp;
+                msg += ", previously declared"; 
+
+		        Marker m(
+				    msg,
+				    MarkerSeverityE::Error,
+				    loc);
+    		    m_marker_l->marker(&m);
+            }
+        } else {
+            m_exec_scope_s.back()->getSymtab().insert({
+                decl->getName()->getId(),
+                decl->getIndex()
+            });
+        }
     }
 
     // We've already added to the super scope

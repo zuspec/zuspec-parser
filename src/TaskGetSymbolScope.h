@@ -38,6 +38,14 @@ public:
         return m_ret;
     }
 
+    virtual void visitExecScope(ast::IExecScope *i) override {
+        m_ret = i;
+    }
+
+    virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *s) override {
+        m_ret = s;
+    }
+
     virtual void visitSymbolScope(ast::ISymbolScope *s) override {
         m_ret = s;
     }

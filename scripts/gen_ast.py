@@ -27,6 +27,11 @@ def main():
         import astbuilder
     except ImportError as e:
         print("Failed to import astbuilder: %s" % str(e))
+    
+    if os.path.exists("zsp_ast.d"):
+        print("Checking timestamps")
+        for f in os.listdir(os.path.join(proj_dir, "ast")):
+            print("File: %s" % f)
 
     cmd = [sys.executable, "-m", "astbuilder", "gen-cpp", "-name", "ast"]
     cmd.extend(["-namespace", "zsp::ast", "-astdir", os.path.join(proj_dir, "ast")])
@@ -54,6 +59,10 @@ def main():
 
 #		${PYTHON} -m astbuilder gen-cpp -name ast -namespace zsp::ast -astdir ${CMAKE_CURRENT_SOURCE_DIR}/ast -license ${CMAKE_CURRENT_SOURCE_DIR}/etc/copyright.cpp &&
 #		${PYTHON} -m astbuilder gen-pyext -name ast -namespace zsp::ast -package zsp_parser.ast -astdir ${CMAKE_CURRENT_SOURCE_DIR}/ast -o ../ext
+
+    with open("zsp_ast.d", "w") as fp:
+        fp.write("\n")
+
     pass
 
 if __name__ == "__main__":

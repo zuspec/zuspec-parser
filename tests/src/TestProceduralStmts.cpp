@@ -76,6 +76,7 @@ TEST_F(TestProceduralStmts, iteration_var) {
         function void doit(int pval) {
             repeat (i : 20) {
                 i = i + 1;
+                x = i;
             }
         }
     )";
@@ -94,7 +95,97 @@ TEST_F(TestProceduralStmts, iteration_var) {
         files,
         root,
         false);
+}
 
+TEST_F(TestProceduralStmts, exec_iteration_var_1) {
+    const char *text = R"(
+        component pss_top {
+            action Entry {
+                exec body {
+                    int x;
+                    repeat (20) {
+                        x += 1;
+                    }
+                }
+            }
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        &marker_c,
+        text,
+        "nested_if_else_vars.pss",
+        files,
+        root,
+        false);
+}
+
+TEST_F(TestProceduralStmts, exec_iteration_var_2) {
+    const char *text = R"(
+        component pss_top {
+            action Entry {
+                exec body {
+                    int x;
+                    repeat (i : 20) {
+                        x = i+1;
+                    }
+                }
+            }
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        &marker_c,
+        text,
+        "nested_if_else_vars.pss",
+        files,
+        root,
+        false);
+}
+
+TEST_F(TestProceduralStmts, exec_iteration_var_3) {
+    const char *text = R"(
+        component pss_top {
+            action Entry {
+                exec body {
+                    int x;
+                    repeat (i : 20) {
+                        int y;
+                        y = x + 1;
+                    }
+                }
+            }
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        &marker_c,
+        text,
+        "nested_if_else_vars.pss",
+        files,
+        root,
+        false);
 }
 
 }

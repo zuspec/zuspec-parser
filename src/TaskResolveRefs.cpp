@@ -615,10 +615,10 @@ void TaskResolveRefs::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
 // }
 
 void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
-    DEBUG_ENTER("visitSymbolFunctionScope %s (%d)", 
+    DEBUG_ENTER("visitSymbolFunctionScope %s (%d %p) ", 
     i->getName().c_str(),
-    i->getPrototypes().size());
-
+    i->getPrototypes().size(),
+    i->getBody());
 
     for (std::vector<ast::IFunctionPrototype *>::const_iterator
         it=i->getPrototypes().begin();
