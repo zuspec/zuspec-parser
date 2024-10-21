@@ -50,6 +50,10 @@ public:
         m_index = i->getConstraint()->getIndex();
     }
 
+    virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override {
+        m_index = i->getId();
+    }
+
     virtual void visitScopeChild(ast::IScopeChild *i) override {
         m_index = i->getIndex();
     }
