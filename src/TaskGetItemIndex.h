@@ -50,6 +50,15 @@ public:
         m_index = i->getConstraint()->getIndex();
     }
 
+    virtual void visitExecScope(ast::IExecScope *i) override {
+        m_index = i->getId();
+    }
+
+    virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override {
+        fprintf(stdout, "Repeat: id=%d index=%d\n", i->getId(), i->getIndex());
+        m_index = i->getId();
+    }
+
     virtual void visitScopeChild(ast::IScopeChild *i) override {
         m_index = i->getIndex();
     }
