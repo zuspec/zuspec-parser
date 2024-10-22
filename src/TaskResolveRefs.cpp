@@ -255,6 +255,8 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
             m_ctxt->getDebugMgr(), m_ctxt->root()).resolve(target_c);
     }
 
+    DEBUG("target_c=%p target_s=%p", target_c, target_s);
+
     if (!target_s && i->getHier_id()->getElems().size() > 1) {
         m_ctxt->addMarker(
             MarkerSeverityE::Error,

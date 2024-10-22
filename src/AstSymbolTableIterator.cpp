@@ -84,7 +84,7 @@ ast::ISymbolRefPath *AstSymbolTableIterator::findLocalSymbolPath(const std::stri
 }
 
 ast::ISymbolRefPath *AstSymbolTableIterator::getScopeSymbolPath(int32_t off) const {
-    DEBUG_ENTER("getScopeSymbolPath");
+    DEBUG_ENTER("getScopeSymbolPath (off=%d)", off);
     ast::ISymbolRefPath *ret = m_factory->mkSymbolRefPath();
 
     for (int32_t i=0; i<(m_path.size()-off); i++) {

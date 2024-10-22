@@ -19,6 +19,7 @@
  *     Author:
  */
 #include "dmgr/impl/DebugMacros.h"
+#include "zsp/parser/impl/TaskGetName.h"
 #include "BuiltinsFactory.h"
 #include "TaskBuildSymbolTree.h"
 
@@ -552,6 +553,7 @@ void TaskBuildSymbolTree::visitPyImportFromStmt(ast::IPyImportFromStmt *i) {
 
 void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStmtDataDeclaration *i) {
     DEBUG_ENTER("visitProceduralStmtDataDeclaration %s", i->getName()->getId().c_str());
+#ifdef UNDEFINED
     ast::ISymbolScope *scope = symbolScope();
 
     std::unordered_map<std::string, int32_t>::const_iterator it =
@@ -574,6 +576,7 @@ void TaskBuildSymbolTree::visitProceduralStmtDataDeclaration(ast::IProceduralStm
         }
         scope->getSymtab().insert({i->getName()->getId(), id});
     }
+#endif // UNDEFINED
 
     DEBUG_LEAVE("visitProceduralStmtDataDeclaration");
 }
@@ -696,6 +699,7 @@ void TaskBuildSymbolTree::reportDuplicateSymbol(
         ast::ISymbolScope       *scope,
         ast::IScopeChild        *orig,
         ast::IScopeChild        *dup) {
+    DEBUG_ERROR("Duplicate declaration: %s", TaskGetName().get(orig).c_str());
     fprintf(stdout, "Error: duplicate declaration");
 }
 

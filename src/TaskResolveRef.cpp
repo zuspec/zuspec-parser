@@ -121,7 +121,7 @@ void TaskResolveRef::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted 
 }
 
 void TaskResolveRef::visitExprRefPathId(ast::IExprRefPathId *i) {
-    DEBUG_ENTER("visitExprRefPathId");
+    DEBUG_ENTER("visitExprRefPathId id=%s", i->getId()->getId().c_str());
 
 	// Find the first element
 
