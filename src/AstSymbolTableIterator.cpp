@@ -104,11 +104,11 @@ ast::ISymbolScope *AstSymbolTableIterator::getRootScope() const {
     return getSymScopeFront();
 }
 
-ast::ISymbolScope *AstSymbolTableIterator::getScope(int32_t off) const {
+ast::ISymbolScope *AstSymbolTableIterator::getScope(int32_t off) {
     return getSymScopeBack(off);
 }
 
-ast::IScopeChild *AstSymbolTableIterator::getScopeChild(int32_t idx) const {
+ast::IScopeChild *AstSymbolTableIterator::getScopeChild(int32_t idx) {
     return getSymScopeBack()->getChildren().at(idx).get();
 }
 
@@ -199,37 +199,55 @@ ISymbolTableIterator *AstSymbolTableIterator::clone() const {
     return new AstSymbolTableIterator(*this);
 }
 
-ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack() const {
+ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack() {
     // Walk through the scope backwards and return the 
     // first symbol scope
     ast::ISymbolScope *ss = 0;
 
-    for (std::vector<ast::IScopeChild *>::const_reverse_iterator
-        it=m_scope_s.rbegin();
-        it!=m_scope_s.rend(); it++) {
-        if ((ss=TaskGetSymbolScope().get(*it))) {
+    for (int32_t i=m_scope_s.size()-1; i>=0; i--) {
+        if ((ss=TaskGetSymbolScope().get(m_scope_s.at(i)))) {
             break;
+        } else {
+            DEBUG("Remove scope @ %d", i);
+            m_scope_s.erase(m_scope_s.begin()+i);
+            m_path.erase(m_path.begin()+i);
         }
     }
 
     return ss;
 }
 
-ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack(int32_t off) const {
+// ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack() const {
+//     // Walk through the scope backwards and return the 
+//     // first symbol scope
+//     ast::ISymbolScope *ss = 0;
+
+//     for (int32_t i=m_scope_s.size()-1; i>=0; i--) {
+//         if ((ss=TaskGetSymbolScope().get(m_scope_s.at(i)))) {
+//             break;
+//         }
+//     }
+
+//     return ss;
+// }
+
+ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack(int32_t off) {
     // Walk through the scope backwards and return the 
     // first symbol scope
     ast::ISymbolScope *ss = 0;
 
-    for (std::vector<ast::IScopeChild *>::const_reverse_iterator
-        it=m_scope_s.rbegin();
-        it!=m_scope_s.rend(); it++) {
-        if ((ss=TaskGetSymbolScope().get(*it))) {
+    for (int32_t i=m_scope_s.size()-1; i>=0; i--) {
+        if ((ss=TaskGetSymbolScope().get(m_scope_s.at(i)))) {
             if (!off) {
                 break;
             } else {
                 off--;
                 ss = 0;
             }
+        } else {
+            DEBUG("Remove scope @ %d", i);
+            m_scope_s.erase(m_scope_s.begin()+i);
+            m_path.erase(m_path.begin()+i);
         }
     }
 

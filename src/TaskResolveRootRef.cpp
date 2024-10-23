@@ -105,7 +105,7 @@ void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
         DEBUG("Failed to find symbol");
     }
 
-    DEBUG_LEAVE("visitSymbolScope m_ref=%p", m_ref);
+    DEBUG_LEAVE("visitSymbolScope m_ref=%p (sz=%d)", m_ref, (m_ref)?m_ref->getPath().size():-1);
 }
 
 //void TaskResolveRootRef::visitSymbolExecScope(ast::ISymbolExecScope *i) {

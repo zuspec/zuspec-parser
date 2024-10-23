@@ -50,9 +50,9 @@ public:
 
     virtual ast::ISymbolScope *getRootScope() const override;
 
-    virtual ast::ISymbolScope *getScope(int32_t off=0) const override;
+    virtual ast::ISymbolScope *getScope(int32_t off=0) override;
 
-    virtual ast::IScopeChild *getScopeChild(int32_t idx) const override;
+    virtual ast::IScopeChild *getScopeChild(int32_t idx) override;
 
     virtual ast::IScopeChild *resolveAbsPath(const ast::ISymbolRefPath *path) override;
 
@@ -69,9 +69,11 @@ public:
     virtual ISymbolTableIterator *clone() const override;
 
 private:
-    ast::ISymbolScope *getSymScopeBack() const;
+    ast::ISymbolScope *getSymScopeBack();
 
-    ast::ISymbolScope *getSymScopeBack(int32_t off) const;
+//    ast::ISymbolScope *getSymScopeBack() const;
+
+    ast::ISymbolScope *getSymScopeBack(int32_t off);
 
     ast::ISymbolScope *getSymScopeFront() const;
 

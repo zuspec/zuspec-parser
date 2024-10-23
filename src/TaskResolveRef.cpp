@@ -105,7 +105,7 @@ void TaskResolveRef::visitExprId(ast::IExprId *i) {
     ast::ISymbolRefPath *root = findRoot(i);
 
     m_ref = root;
-    DEBUG_LEAVE("visitExprId %s (%p)", i->getId().c_str(), m_ref);
+    DEBUG_LEAVE("visitExprId %s (%p %d)", i->getId().c_str(), m_ref, (m_ref)?m_ref->getPath().size():-1);
 }
 
 void TaskResolveRef::visitExprMemberPathElem(ast::IExprMemberPathElem *i) {
