@@ -834,39 +834,49 @@ antlrcpp::Any AstBuilderInt::visitProcedural_repeat_stmt(PSSParser::Procedural_r
         ast::IScopeChild *body = mkExecStmt(ctx->procedural_stmt());
         ast::IProceduralStmtRepeat *stmt = m_factory->mkProceduralStmtRepeat(
             "<repeat>",
+            body,
             (ctx->identifier())?mkId(ctx->identifier()):0,
-            mkExpr(ctx->expression()), body);
+            mkExpr(ctx->expression()));
 
+        ast::IExprId *id = 0;
         if (stmt->getIt_id()) {
             // Add a variable to the scope
-            ast::IExprId *id =m_factory->mkExprId(
+            id = m_factory->mkExprId(
                     stmt->getIt_id()->getId(),
                     stmt->getIt_id()->getIs_escaped());
             id->setLocation(stmt->getIt_id()->getLocation());
-            ast::IProceduralStmtDataDeclaration *var = m_factory->mkProceduralStmtDataDeclaration(
-                id,
-                0,
-                0);
-            int32_t idx = stmt->getChildren().size();
-            stmt->getChildren().push_back(ast::IScopeChildUP(var));
-            stmt->getSymtab().insert({id->getId(), idx});
+        } else {
+            id = m_factory->mkExprId("_", false);
         }
 
+        ast::IProceduralStmtDataDeclaration *var = m_factory->mkProceduralStmtDataDeclaration(
+            id,
+            0,
+            0);
+        var->setIndex(stmt->getChildren().size());
+        if (stmt->getIt_id()) {
+            stmt->getSymtab().insert({id->getId(), stmt->getChildren().size()});
+        }
+        stmt->getChildren().push_back(ast::IScopeChildUP(var));
+
         body->setIndex(stmt->getChildren().size());
-        stmt->getChildren().push_back(ast::IScopeChildUP(body));
 
         m_exec_stmt = stmt;
         m_exec_stmt_cnt++;
     } else if (ctx->is_repeat_while) {
+        ast::IScopeChild *body = mkExecStmt(ctx->procedural_stmt());
+        body->setIndex(0);
         ast::IProceduralStmtRepeatWhile *stmt = m_factory->mkProceduralStmtRepeatWhile(
-            mkExpr(ctx->expression()),
-            mkExecStmt(ctx->procedural_stmt()));
+            body,
+            mkExpr(ctx->expression()));
         m_exec_stmt = stmt;
         m_exec_stmt_cnt++;
     } else { // 'while'
+        ast::IScopeChild *body = mkExecStmt(ctx->procedural_stmt());
+        body->setIndex(0);
         ast::IProceduralStmtWhile *stmt = m_factory->mkProceduralStmtWhile(
-            mkExpr(ctx->expression()),
-            mkExecStmt(ctx->procedural_stmt()));
+            body,
+            mkExpr(ctx->expression()));
         m_exec_stmt = stmt;
         m_exec_stmt_cnt++;
     }

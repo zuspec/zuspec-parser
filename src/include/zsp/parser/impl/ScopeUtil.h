@@ -30,6 +30,15 @@ namespace parser {
 class ScopeUtil :
     public virtual ast::VisitorBase {
 public:
+    enum class Kind {
+        Unknown,
+        Constraint,
+        SymbolChildScope,
+        ProcBodyScope,
+        ProcSymScope,
+        Scope
+    };
+
     ScopeUtil(ast::IScopeChild *c) {
         init(c);
     }
@@ -37,25 +46,23 @@ public:
     virtual ~ScopeUtil() { }
 
     bool init(ast::IScopeChild *c) {
-        m_constraint_s = 0;
-        m_sym_cs = 0;
-        m_scope = 0;
+        m_kind = Kind::Unknown;
         c->accept(m_this);
         return valid();
     }
 
     bool valid() const {
-        return (m_sym_cs || m_scope || m_constraint_s);
+        return (m_kind != Kind::Unknown);
     }
 
     ast::IScopeChild *get() const {
-        if (m_sym_cs) {
-            return m_sym_cs;
-        } else if (m_scope) {
-            return m_scope;
-        } else {
-            return 0;
+        switch (m_kind) {
+            case Kind::SymbolChildScope: return m_scope.sym_cs;
+            case Kind::Scope: return m_scope.scope;
+            case Kind::Constraint: return m_scope.constraint_s;
+            case Kind::ProcBodyScope: return m_scope.proc_body_s;
         }
+        return 0;
     }
 
     template <class T> T *getT() const {
@@ -75,89 +82,145 @@ public:
  */
 
     int32_t getNumChildren() const {
-        if (m_sym_cs) {
-            return m_sym_cs->getChildren().size();
-        } else if (m_scope) {
-            return m_scope->getChildren().size();
-        } else if (m_constraint_s) {
-            return m_constraint_s->getConstraints().size();
-        } else {
-            return 0;
+        switch (m_kind) {
+            case Kind::SymbolChildScope:
+                return m_scope.sym_cs->getChildren().size();
+            case Kind::Scope:
+                return m_scope.scope->getChildren().size();
+            case Kind::Constraint:
+                return m_scope.constraint_s->getConstraints().size();
+            case Kind::ProcBodyScope:
+                return 1;
+            case Kind::ProcSymScope:
+                // 'body' counts as 1
+                return m_scope.proc_sym_s->getChildren().size() + 1;
         }
+        return 0;
     }
 
     ast::IScopeChild *getChild(int32_t idx) {
         ast::IScopeChild *ret = 0;
-        if (m_constraint_s) {
-            if (idx < m_constraint_s->getConstraints().size()) {
-                ret = m_constraint_s->getConstraints().at(idx).get();
-            }
-        } else if (m_scope) {
-            if (idx < m_scope->getChildren().size()) {
-                ret = m_scope->getChildren().at(idx).get();
-            }
-        } else if (m_sym_cs) {
-            if (idx < m_sym_cs->getChildren().size()) {
-                ret = m_sym_cs->getChildren().at(idx).get();
-            }
+        switch (m_kind) {
+            case Kind::Constraint:
+                if (idx < m_scope.constraint_s->getConstraints().size()) {
+                    ret = m_scope.constraint_s->getConstraints().at(idx).get();
+                }
+                break;
+            case Kind::Scope:
+                if (idx < m_scope.scope->getChildren().size()) {
+                    ret = m_scope.scope->getChildren().at(idx).get();
+                }
+                break;
+            case Kind::SymbolChildScope:
+                if (idx < m_scope.sym_cs->getChildren().size()) {
+                    ret = m_scope.sym_cs->getChildren().at(idx).get();
+                }
+                break;
+            case Kind::ProcBodyScope:
+                if (idx == 0) {
+                    ret = m_scope.proc_body_s->getBody();
+                }
+                break;
+            case Kind::ProcSymScope:
+                if (idx < m_scope.proc_sym_s->getChildren().size()) {
+                    ret = m_scope.proc_sym_s->getChildren().at(idx).get();
+                } else if (idx == m_scope.proc_sym_s->getChildren().size()) {
+                    ret = m_scope.proc_sym_s->getBody();
+                }
+                break;
         }
 
         return ret;
     }
 
     std::string getName() {
-        if (m_sym_cs) {
-            return m_sym_cs->getName();
-        } else {
-            return "";
+        switch (m_kind) {
+            case Kind::SymbolChildScope:
+                return m_scope.sym_cs->getName();
+            case Kind::ProcSymScope:
+                return m_scope.proc_sym_s->getName();
         }
+        return "";
     }
 
     virtual void visitConstraintBlock(ast::IConstraintBlock *i) override {
-        m_constraint_s = i;
+        m_kind = Kind::Constraint;
+        m_scope.constraint_s = i;
     }
 
     virtual void visitConstraintScope(ast::IConstraintScope *i) override {
-        m_constraint_s = i;
+        m_kind = Kind::Constraint;
+        m_scope.constraint_s = i;
     }
 
     virtual void visitExecScope(ast::IExecScope *i) override {
-        m_sym_cs = i;
+        m_kind = Kind::SymbolChildScope;
+        m_scope.sym_cs = i;
     }
 
     virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override {
         //
     }
 
+    virtual void visitProceduralStmtForeach(ast::IProceduralStmtForeach *i) override {
+        m_kind = Kind::ProcSymScope;
+        m_scope.proc_sym_s = i;
+    }
+
+    virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override {
+        m_kind = Kind::ProcSymScope;
+        m_scope.proc_sym_s = i;
+    }
+
+    virtual void visitProceduralStmtRepeatWhile(ast::IProceduralStmtRepeatWhile *i) override {
+        m_kind = Kind::ProcBodyScope;
+        m_scope.proc_body_s = i;
+    }
+
+    virtual void visitProceduralStmtWhile(ast::IProceduralStmtWhile *i) override {
+        m_kind = Kind::ProcBodyScope;
+        m_scope.proc_body_s = i;
+    }
+
     virtual void visitRootSymbolScope(ast::IRootSymbolScope *i) override {
-        m_sym_cs = i;
+        m_kind = Kind::SymbolChildScope;
+        m_scope.sym_cs = i;
     }
 
     virtual void visitSymbolChildrenScope(ast::ISymbolChildrenScope *i) override {
-        m_sym_cs = i;
+        m_kind = Kind::SymbolChildScope;
+        m_scope.sym_cs = i;
     }
 
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override {
-        m_sym_cs = i;
+        m_kind = Kind::SymbolChildScope;
+        m_scope.sym_cs = i;
     }
 
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
-        m_sym_cs = i;
+        m_kind = Kind::SymbolChildScope;
+        m_scope.sym_cs = i;
     }
 
     virtual void visitScope(ast::IScope *i) override {
-        m_scope = i;
+        m_kind = Kind::Scope;
+        m_scope.scope = i;
     }
 
     virtual void visitTypeScope(ast::ITypeScope *i) override {
-        m_scope = i;
+        m_kind = Kind::Scope;
+        m_scope.scope = i;
     }
 
 private:
-//    std::vector<ast::IScopeChildUP>     m_null;
-    ast::IConstraintScope               *m_constraint_s;
-    ast::ISymbolChildrenScope           *m_sym_cs;
-    ast::IScope                         *m_scope;
+    Kind                                m_kind;
+    union {
+        ast::IConstraintScope               *constraint_s;
+        ast::ISymbolChildrenScope           *sym_cs;
+        ast::IProceduralStmtSymbolBodyScope *proc_sym_s;
+        ast::IProceduralStmtBody            *proc_body_s;
+        ast::IScope                         *scope;
+    }                                   m_scope;
 
 };
 

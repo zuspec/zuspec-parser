@@ -52,14 +52,20 @@ public:
 
     virtual void visitExecScope(ast::IExecScope *i) override {
         if (i->getId() != -1) {
+            fprintf(stdout, "ExecScope: using Id (%d)\n", i->getId());
             m_index = i->getId();
         } else {
+            fprintf(stdout, "ExecScope: using Index (%d)\n", i->getIndex());
             m_index = i->getIndex();
         }
     }
 
     virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override {
-        m_index = i->getId();
+        if (i->getId() != -1) {
+            m_index = i->getId();
+        } else {
+            m_index = i->getIndex();
+        }
     }
 
     virtual void visitScopeChild(ast::IScopeChild *i) override {

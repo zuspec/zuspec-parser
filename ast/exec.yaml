@@ -76,28 +76,28 @@ classes:
     - data:
         - expr: UP<Expr>
   - ProceduralStmtRepeat:
-    - super: SymbolScope
+    - super: ProceduralStmtSymbolBodyScope
     - data:
         - it_id: UP<ExprId>
         - count: UP<Expr>
+  - ProceduralStmtBody:
+    - super: ExecStmt
+    - data:
         - body: UP<ScopeChild>
   - ProceduralStmtRepeatWhile:
-    - super: ExecStmt
+    - super: ProceduralStmtBody
     - data:
         - expr: UP<Expr>
-        - body: UP<ScopeChild>
   - ProceduralStmtWhile:
-    - super: ExecStmt
+    - super: ProceduralStmtBody
     - data:
         - expr: UP<Expr>
-        - body: UP<ScopeChild>
   - ProceduralStmtForeach:
-    - super: SymbolScope
+    - super: ProceduralStmtSymbolBodyScope
     - data:
         - path: UP<ExprRefPath>
         - it_id: UP<ExprId>
         - idx_id: UP<ExprId>
-        - body: UP<ScopeChild>
   - ProceduralStmtIfClause:
     - super: ScopeChild
     - data:
@@ -138,6 +138,10 @@ classes:
   - ProceduralStmtYield:
     - super: ExecStmt
     - data: []
+  - ProceduralStmtSymbolBodyScope:
+    - super: SymbolScope
+    - data:
+        - body: UP<ScopeChild>
 
 
 

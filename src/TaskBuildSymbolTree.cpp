@@ -233,14 +233,15 @@ void TaskBuildSymbolTree::visitExecStmt(ast::IExecStmt *i) {
 
 void TaskBuildSymbolTree::visitExecBlock(ast::IExecBlock *i) {
     DEBUG_ENTER("visitExecBlock");
-    visitExecScope(i);
+//    visitExecScope(i);
+    addChild(i, false);
     DEBUG_LEAVE("visitExecBlock");
 }
 
 void TaskBuildSymbolTree::visitExecScope(ast::IExecScope *i) {
     DEBUG_ENTER("visitExecScope");
-    DEBUG("Adding to scope %s", (symbolScope())?symbolScope()->getName().c_str():"<null>");
-    addChild(i, false);
+    // DEBUG("Adding to scope %s", (symbolScope())?symbolScope()->getName().c_str():"<null>");
+    // addChild(i, false);
 
     pushSymbolScope(i);
     DEBUG("Children: %d", i->getChildren().size());

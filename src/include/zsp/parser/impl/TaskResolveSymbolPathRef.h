@@ -120,11 +120,15 @@ public:
             }
             
             if (it+1 != ref->getPath().end()) {
-                if (!scope.init(ret)) {
+                ScopeUtil scope_t(ret);
+
+                if (!scope_t.valid()) {
                     DEBUG_ERROR("Failed to get scope @ %d/%d",
                         (it-ref->getPath().begin()), ref->getPath().size());
                     ret = 0;
                     break;
+                } else {
+                    scope.init(ret);
                 }
             }
         }
