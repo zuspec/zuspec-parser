@@ -33,6 +33,7 @@ AstSymbolTableIterator::AstSymbolTableIterator(
     ast::IFactory           *factory,
     ast::ISymbolScope       *root) : m_factory(factory) {
     m_scope_s.push_back(root);
+    m_path.push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, -1});
     DEBUG_INIT("AstSymbolTableIterator", dmgr);
 }
 
@@ -73,7 +74,7 @@ ast::ISymbolRefPath *AstSymbolTableIterator::findLocalSymbolPath(const std::stri
     if (idx != -1) {
         ast::ISymbolRefPath *ret = m_factory->mkSymbolRefPath();
         ret->getPath().insert(
-            ret->getPath().begin(), 
+            ret->getPath().begin(),
             m_path.begin(), 
             m_path.end());
         ret->getPath().push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, idx});
