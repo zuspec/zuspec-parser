@@ -144,9 +144,9 @@ classes:
         - type: UP<SymbolScope>
         - is_ctor: false
       - body:
-        - type: bool
+        - type: P<ExecScope>
         - is_ctor: false
-        - init: false
+        - init: 0
 
 - SymbolRefPath: 
     data:

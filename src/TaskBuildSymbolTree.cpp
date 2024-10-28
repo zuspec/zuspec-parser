@@ -353,14 +353,14 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
 //    ast::ISymbolExecScope *body = m_factory->mkSymbolExecScope("");
 //    body->setLocation(i->getLocation());
 //    body->setUpper(symbolScope());
-    pushSymbolScope(func_sym);
-    func_sym->setBody(true);
-    for (std::vector<ast::IScopeChildUP>::const_iterator
-        it=i->getBody()->getChildren().begin();
-        it!=i->getBody()->getChildren().end(); it++) {
-        (*it)->accept(m_this);
-    }
-    popSymbolScope();
+//    pushSymbolScope(func_sym);
+    func_sym->setBody(i->getBody());
+    // for (std::vector<ast::IScopeChildUP>::const_iterator
+    //     it=i->getBody()->getChildren().begin();
+    //     it!=i->getBody()->getChildren().end(); it++) {
+    //     (*it)->accept(m_this);
+    // }
+    // popSymbolScope();
 
     func_sym->setTarget(i);
     // Ensure that the definition takes the primary prototype location

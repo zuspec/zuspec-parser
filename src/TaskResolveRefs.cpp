@@ -224,6 +224,14 @@ void TaskResolveRefs::visitConstraintStmtForeach(ast::IConstraintStmtForeach *i)
     DEBUG_LEAVE("visitConstraintStmtForeach");
 }
 
+void TaskResolveRefs::visitExecScope(ast::IExecScope *i) {
+    DEBUG_ENTER("visitExecScope");
+    m_ctxt->symtab()->pushScope(i);
+    VisitorBase::visitExecScope(i);
+    m_ctxt->symtab()->popScope();
+    DEBUG_LEAVE("visitExecScope");
+}
+
 void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
     DEBUG_ENTER("visitExprRefPathContext %s", i->getHier_id()->getElems().at(0)->getId()->getId().c_str());
     // Find the first path element
@@ -637,6 +645,11 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
             it=i->getChildren().begin();
             it!=i->getChildren().end(); it++) {
             (*it)->accept(m_this);
+        }
+
+        // Resolve references in the body
+        if (i->getBody()) {
+            i->getBody()->accept(m_this);
         }
 //        m_ctxt->symtab()->popScope();
         m_ctxt->symtab()->popScope();

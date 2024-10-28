@@ -55,6 +55,8 @@ public:
 
     virtual void visitConstraintStmtForeach(ast::IConstraintStmtForeach *i) override;
 
+    virtual void visitExecScope(ast::IExecScope *i) override;
+
     virtual void visitExprRefPathContext(ast::IExprRefPathContext *i) override;
 
     virtual void visitExprRefPathId(ast::IExprRefPathId *i) override;
