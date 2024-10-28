@@ -326,7 +326,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
         for (std::vector<ast::IFunctionParamDeclUP>::const_iterator
             it=i->getProto()->getParameters().begin();
             it!=i->getProto()->getParameters().end(); it++) {
-            int32_t id = func_sym->getPlist()->getChildren().size();
+            int32_t id = func_sym->getChildren().size();
             std::unordered_map<std::string, int32_t>::const_iterator sym_it =
                 func_sym->getPlist()->getSymtab().find((*it)->getName()->getId());
             
@@ -338,6 +338,7 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
                     it->get());
             } else {
                 DEBUG("Add parameter %s to function symtab", (*it)->getName()->getId().c_str());
+                (*it)->setIndex(id);
                 func_sym->getSymtab().insert({(*it)->getName()->getId(), id});
                 func_sym->getChildren().push_back(ast::IScopeChildUP(it->get(), false));
             }
