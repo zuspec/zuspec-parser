@@ -34,6 +34,7 @@ public:
         Unknown,
         Constraint,
         SymbolChildScope,
+        SymbolFuncScope,
         ProcBodyScope,
         ProcSymScope,
         Scope
@@ -58,6 +59,7 @@ public:
     ast::IScopeChild *get() const {
         switch (m_kind) {
             case Kind::SymbolChildScope: return m_scope.sym_cs;
+            case Kind::SymbolFuncScope: return m_scope.sym_fs;
             case Kind::Scope: return m_scope.scope;
             case Kind::Constraint: return m_scope.constraint_s;
             case Kind::ProcBodyScope: return m_scope.proc_body_s;
@@ -85,6 +87,8 @@ public:
         switch (m_kind) {
             case Kind::SymbolChildScope:
                 return m_scope.sym_cs->getChildren().size();
+            case Kind::SymbolFuncScope:
+                return m_scope.sym_fs->getChildren().size() + 1;
             case Kind::Scope:
                 return m_scope.scope->getChildren().size();
             case Kind::Constraint:
@@ -116,6 +120,13 @@ public:
                     ret = m_scope.sym_cs->getChildren().at(idx).get();
                 }
                 break;
+            case Kind::SymbolFuncScope:
+                if (idx < m_scope.sym_fs->getChildren().size()) {
+                    ret = m_scope.sym_fs->getChildren().at(idx).get();
+                } else if (idx == m_scope.sym_fs->getChildren().size()) {
+                    ret = m_scope.sym_fs->getBody();
+                }
+                break;
             case Kind::ProcBodyScope:
                 if (idx == 0) {
                     ret = m_scope.proc_body_s->getBody();
@@ -136,6 +147,7 @@ public:
     std::string getName() {
         switch (m_kind) {
             case Kind::SymbolChildScope:
+            case Kind::SymbolFuncScope:
                 return m_scope.sym_cs->getName();
             case Kind::ProcSymScope:
                 return m_scope.proc_sym_s->getName();
@@ -193,8 +205,8 @@ public:
     }
 
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override {
-        m_kind = Kind::SymbolChildScope;
-        m_scope.sym_cs = i;
+        m_kind = Kind::SymbolFuncScope;
+        m_scope.sym_fs = i;
     }
 
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override {
@@ -217,6 +229,7 @@ private:
     union {
         ast::IConstraintScope               *constraint_s;
         ast::ISymbolChildrenScope           *sym_cs;
+        ast::ISymbolFunctionScope           *sym_fs;
         ast::IProceduralStmtSymbolBodyScope *proc_sym_s;
         ast::IProceduralStmtBody            *proc_body_s;
         ast::IScope                         *scope;

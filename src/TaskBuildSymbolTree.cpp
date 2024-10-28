@@ -330,16 +330,16 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
             std::unordered_map<std::string, int32_t>::const_iterator sym_it =
                 func_sym->getPlist()->getSymtab().find((*it)->getName()->getId());
             
-            if (sym_it != func_sym->getPlist()->getSymtab().end()) {
+            if (sym_it != func_sym->getSymtab().end()) {
                 // Duplicate
                 reportDuplicateSymbol(
                     func_sym,
-                    func_sym->getPlist()->getChildren().at(sym_it->second).get(),
+                    func_sym->getChildren().at(sym_it->second).get(),
                     it->get());
             } else {
                 DEBUG("Add parameter %s to function symtab", (*it)->getName()->getId().c_str());
-                func_sym->getPlist()->getSymtab().insert({(*it)->getName()->getId(), id});
-                func_sym->getPlist()->getChildren().push_back(ast::IScopeChildUP(it->get(), false));
+                func_sym->getSymtab().insert({(*it)->getName()->getId(), id});
+                func_sym->getChildren().push_back(ast::IScopeChildUP(it->get(), false));
             }
         }
     }
@@ -355,6 +355,8 @@ void TaskBuildSymbolTree::visitFunctionDefinition(ast::IFunctionDefinition *i) {
 //    body->setUpper(symbolScope());
 //    pushSymbolScope(func_sym);
     func_sym->setBody(i->getBody());
+    // ==size means to get body
+    i->getBody()->setIndex(func_sym->getChildren().size());
     // for (std::vector<ast::IScopeChildUP>::const_iterator
     //     it=i->getBody()->getChildren().begin();
     //     it!=i->getBody()->getChildren().end(); it++) {

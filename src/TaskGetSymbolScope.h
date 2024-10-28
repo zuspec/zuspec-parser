@@ -42,6 +42,10 @@ public:
         m_ret = i;
     }
 
+    virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *s) override {
+        m_ret = s;
+    }
+
     virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *s) override {
         m_ret = s;
     }

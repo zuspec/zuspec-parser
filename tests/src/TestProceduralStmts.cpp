@@ -97,6 +97,35 @@ TEST_F(TestProceduralStmts, iteration_var) {
         false);
 }
 
+TEST_F(TestProceduralStmts, function_local_var) {
+    const char *text = R"(
+        function int doit(int pval) {
+            int val = pval;
+            if (pval < 10) {
+                val = doit(val+1);
+            } else {
+                val = pval(10);
+            }
+            return val;
+        }
+    )";
+
+    enableDebug(true);
+    MarkerCollector marker_c; 
+
+
+    std::vector<ast::IGlobalScopeUP> files;
+    ast::ISymbolScopeUP root;
+
+    parseLink(
+        &marker_c,
+        text,
+        "nested_if_else_vars.pss",
+        files,
+        root,
+        false);
+}
+
 TEST_F(TestProceduralStmts, exec_iteration_var_1) {
     const char *text = R"(
         component pss_top {

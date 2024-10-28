@@ -89,6 +89,7 @@ public:
     }
 
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override {
+        fprintf(stdout, "visitSymbolFunctionScope: id=%d index=%d\n", i->getId(), i->getIndex());
         m_index = i->getId();
     }
 

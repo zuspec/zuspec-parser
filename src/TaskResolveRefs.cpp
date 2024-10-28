@@ -227,7 +227,11 @@ void TaskResolveRefs::visitConstraintStmtForeach(ast::IConstraintStmtForeach *i)
 void TaskResolveRefs::visitExecScope(ast::IExecScope *i) {
     DEBUG_ENTER("visitExecScope");
     m_ctxt->symtab()->pushScope(i);
-    VisitorBase::visitExecScope(i);
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
     m_ctxt->symtab()->popScope();
     DEBUG_LEAVE("visitExecScope");
 }
@@ -639,6 +643,7 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
 //    if (i->getBody()) {
         DEBUG("Push function scope %s", i->getName().c_str());
         m_ctxt->symtab()->pushScope(i);
+//        m_ctxt->symtab()->pushScope(i->getPlist());
 //        DEBUG("Push function body scope");
 //        m_ctxt->symtab()->pushScope(i->getBody());
         for (std::vector<ast::IScopeChildUP>::const_iterator
@@ -649,8 +654,11 @@ void TaskResolveRefs::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) {
 
         // Resolve references in the body
         if (i->getBody()) {
+            DEBUG("--> visitBody");
             i->getBody()->accept(m_this);
+            DEBUG("<-- visitBody");
         }
+
 //        m_ctxt->symtab()->popScope();
         m_ctxt->symtab()->popScope();
 //    }

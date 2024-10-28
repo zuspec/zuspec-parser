@@ -163,16 +163,19 @@ int32_t AstSymbolTableIterator::pushNamedScope(const std::string &name) {
 void AstSymbolTableIterator::pushScope(
         ast::IScopeChild            *s,
         ast::SymbolRefPathElemKind  kind) {
+    DEBUG_ENTER("pushScope %s",
+        (dynamic_cast<ast::ISymbolScope *>(s))?dynamic_cast<ast::ISymbolScope *>(s)->getName().c_str():"<unknown>");
     int32_t idx = (dynamic_cast<ast::ISymbolScope *>(s))?dynamic_cast<ast::ISymbolScope *>(s)->getId():-1;
     int32_t idx1 = TaskGetItemIndex().get(s);
     if (!dynamic_cast<ast::ISymbolScope *>(s)) {
         DEBUG("Not a symbol scope");
     }
     if (idx != idx1) {
-        DEBUG("negative");
+        DEBUG("negative (idx=%d idx1=%d)", idx, idx1);
     }
     m_scope_s.push_back(s);
     m_path.push_back({kind, idx1});
+    DEBUG_LEAVE("pushScope");
 }
 
 void AstSymbolTableIterator::popScope() {
