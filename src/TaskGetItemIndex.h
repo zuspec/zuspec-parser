@@ -52,10 +52,8 @@ public:
 
     virtual void visitExecScope(ast::IExecScope *i) override {
         if (i->getId() != -1) {
-            fprintf(stdout, "ExecScope: using Id (%d)\n", i->getId());
             m_index = i->getId();
         } else {
-            fprintf(stdout, "ExecScope: using Index (%d)\n", i->getIndex());
             m_index = i->getIndex();
         }
     }
@@ -89,7 +87,6 @@ public:
     }
 
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override {
-        fprintf(stdout, "visitSymbolFunctionScope: id=%d index=%d\n", i->getId(), i->getIndex());
         m_index = i->getId();
     }
 
