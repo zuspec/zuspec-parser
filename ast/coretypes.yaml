@@ -63,6 +63,9 @@ classes:
         super: Scope
         data:
         - fileid: int32_t
+        - filename: 
+          - type: string
+          - is_ctor: false
 
     - NamedScope:
         super: Scope

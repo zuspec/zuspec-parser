@@ -1,5 +1,6 @@
 
 import os
+from .parser import Parser
 
 def get_deps():
     return []

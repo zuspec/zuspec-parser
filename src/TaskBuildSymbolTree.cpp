@@ -60,6 +60,12 @@ ast::IRootSymbolScope *TaskBuildSymbolTree::build(
     for (std::vector<ast::IGlobalScope *>::const_iterator
         it=roots.begin();
         it!=roots.end(); it++) {
+        if ((*it)->getFileid() != -1) {
+            root->getFilenames().insert({
+                (*it)->getFileid(),
+                (*it)->getFilename()
+            });
+        }
         for (std::vector<ast::IScopeChildUP>::const_iterator
             c_it=(*it)->getChildren().begin();
             c_it!=(*it)->getChildren().end(); c_it++) {

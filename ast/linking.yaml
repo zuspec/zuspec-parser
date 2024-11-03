@@ -76,6 +76,9 @@ classes:
       - units:
         - type: list<UP<GlobalScope>>
         - is_ctor: false
+      - filenames:
+        - type: map<int32_t,string>
+        - is_ctor: false
 
 - SymbolEnumScope:
     super: SymbolScope
