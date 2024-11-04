@@ -1,5 +1,3 @@
-import zsp_parser.ast as zsp_ast
-import zsp_parser.core as zspp
 from typing import Dict, List, Tuple, TextIO
 
 class ParseException(Exception):
@@ -8,6 +6,8 @@ class ParseException(Exception):
 class Parser(object):
 
     def __init__(self):
+        import zsp_parser.ast as zsp_ast
+        import zsp_parser.core as zspp
         self.ast_f = zsp_ast.Factory.inst()
         self.parser_f = zspp.Factory.inst()
         self._root = None
