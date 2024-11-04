@@ -18,8 +18,8 @@ try:
     sys.path.insert(0, os.path.join(proj_dir, "python"))
     from zsp_parser.__build_num__ import BUILD_NUM
     version += ".%d" % BUILD_NUM
-except Exception:
-    pass
+except Exception as e:
+    print("NOTE: no version file found (%s)" % str(e))
 
 isSrcBuild = False
 
