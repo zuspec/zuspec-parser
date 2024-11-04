@@ -66,5 +66,5 @@ class Parser(object):
         pass
 
     @property
-    def root(self) -> zsp_ast.RootSymbolScope:
+    def root(self) -> 'zsp_ast.RootSymbolScope':
         return self._root
