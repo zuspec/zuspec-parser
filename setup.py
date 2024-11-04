@@ -77,6 +77,16 @@ setup_args = dict(
     name="zuspec-parser",
     packages=find_namespace_packages(where='python'),
     package_dir={'' : 'python' },
+    package_data={
+        'zsp_parser': [
+            "ast.pyi",
+            "ast.pxd",
+            "ast_decl.pxd",
+            "core.pyi",
+            "core.pxd",
+            "decl.pxd",
+        ]
+    },
     version=version,
     author="Matthew Ballance",
     author_email="matt.ballance@gmail.com",
@@ -113,6 +123,8 @@ if isSrcBuild:
     setup_args["ivpm_extdep_data"] = [
         (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast_decl.pxd'),
             os.path.join(proj_dir, "python", "zsp_parser", 'ast_decl.pxd')),
+        (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pyi'),
+            os.path.join(proj_dir, "python", "zsp_parser", 'ast.pyi')),
         (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pxd'),
             os.path.join(proj_dir, "python", "zsp_parser", 'ast.pxd')),
         (os.path.join(proj_dir, "build", "zsp_ast", "ext", 'ast.pyx'),

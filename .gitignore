@@ -45,6 +45,7 @@ python/ast.h
 python/ast.pyx
 python/ast_api.h
 python/zsp_parser/ast.pxd
+python/zsp_parser/ast.pyi
 python/zsp_parser/ast_decl.pxd
 python/zsp_parser/zsp_ast.pxd
 python/zsp_parser/zsp_ast_decl.pxd
