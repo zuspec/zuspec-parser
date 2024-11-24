@@ -176,6 +176,14 @@ cdef class Location(object):
     def file(self):
         return self._file
 
+    @property
+    def line(self):
+        return self._line
+
+    @property
+    def pos(self):
+        return self._pos
+
 cdef class LookupLocationResult(object):
 
     @staticmethod
@@ -193,6 +201,10 @@ cdef class Marker(object):
     
     cpdef str msg(self):
         return self._hndl.msg().decode()
+
+    cpdef severity(self):
+        cdef int severity_i = int(self._hndl.severity())
+        return MarkerSeverityE(severity_i)
 
     cpdef Location loc(self):
         cdef const ast_decl.Location *lp = &self._hndl.loc()
@@ -225,6 +237,13 @@ cdef class MarkerCollector(MarkerListener):
                 False
             ))
         return ret
+
+    cpdef int numMarkers(self):
+        return self.asCollector().markers().size()
+
+    cpdef Marker getMarker(self, int idx):
+        cdef decl.IMarkerP marker = self.asCollector().markers().at(idx).get()
+        return Marker.mk(marker, False)
 
     cdef decl.IMarkerCollector *asCollector(self):
         return dynamic_cast[decl.IMarkerCollectorP](self._hndl)

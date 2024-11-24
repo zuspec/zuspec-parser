@@ -34,16 +34,20 @@ class ITaskFindElementByLocation {
 public:
     enum class ElemKind {
         Expr,
+        Field,
         Type
     };
+
     struct Position {
         int32_t         lineno;
         int32_t         linepos;
     };
+
     struct Range {
         Position        start;
         Position        end;
     };
+
     struct Result {
         bool                    isValid;
         union {

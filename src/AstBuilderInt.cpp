@@ -1217,11 +1217,11 @@ antlrcpp::Any AstBuilderInt::visitActivity_repeat_stmt(PSSParser::Activity_repea
             body = m_factory->mkActivitySequence("");
         }
 
-		ast::IActivityRepeatCount *stmt = m_factory->mkActivityRepeatCount(
+		ast::IActivityRepeatCount *rstmt = m_factory->mkActivityRepeatCount(
 			(ctx->loop_var)?mkId(ctx->loop_var):0,
 			mkExpr(ctx->expression()),
             body);
-
+        stmt = rstmt;
 	} else {
 
 	}
@@ -1268,10 +1268,12 @@ antlrcpp::Any AstBuilderInt::visitData_declaration(PSSParser::Data_declarationCo
 			init);
 
         // Give the field a location that matches the field identifier
+        // Note: we supply the token to use when looking for doc comments
 		addChild(
             field, 
             (*it)->identifier()->start,
-            &field->getName()->getLocation());
+            &field->getName()->getLocation(),
+            ctx->data_type()->start);
 
 		if (m_field_depth > 0) {
 			m_fields.push_back(field);
@@ -2140,7 +2142,8 @@ void AstBuilderInt::syntaxError(
 	}
 }
 
-void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t, const ast::Location *loc) {
+void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t, const ast::Location *loc, Token *ct) {
+    DEBUG_ENTER("addChild (IScopeChild) %p %p", t, loc);
     c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 	c->setParent(scope());
@@ -2154,9 +2157,10 @@ void AstBuilderInt::addChild(ast::IScopeChild *c, Token *t, const ast::Location 
         });
     }
 
-	if (m_collectDocStrings && t) {
-		addDocstring(c, t);
+	if (m_collectDocStrings && (t || ct)) {
+		addDocstring(c, (ct)?ct:t);
 	}
+    DEBUG_LEAVE("addChild (IScopeChild) %p %p", t, loc);
 }
 
 void AstBuilderInt::addChild(ast::ISymbolScope *c, Token *start, Token *end) {
@@ -2255,6 +2259,7 @@ void AstBuilderInt::addChild(ast::IFunctionDefinition *c, Token *start, Token *e
 }
 
 void AstBuilderInt::addChild(ast::INamedScope *c, Token *start, Token *end) {
+    DEBUG_ENTER("addChild (INamedScope) %p %p", start, end);
     c->setLocation({
         m_file_id,
         (int32_t)start->getLine(),
@@ -2272,6 +2277,7 @@ void AstBuilderInt::addChild(ast::INamedScope *c, Token *start, Token *end) {
 	if (m_collectDocStrings && start) {
 		addDocstring(c, start);
 	}
+    DEBUG_LEAVE("addChild (INamedScope) %p %p", start, end);
 }
 
 void AstBuilderInt::addChild(ast::IScope *c, Token *start, Token *end) {

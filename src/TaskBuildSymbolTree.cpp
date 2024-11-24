@@ -18,6 +18,7 @@
  * Created on:
  *     Author:
  */
+#include <algorithm>
 #include "dmgr/impl/DebugMacros.h"
 #include "zsp/parser/impl/TaskGetName.h"
 #include "BuiltinsFactory.h"
@@ -57,10 +58,36 @@ ast::IRootSymbolScope *TaskBuildSymbolTree::build(
     }
     DEBUG_LEAVE("visitBuiltins");
 
+    std::vector<ast::IGlobalScope *> roots_s;
+
     for (std::vector<ast::IGlobalScope *>::const_iterator
         it=roots.begin();
         it!=roots.end(); it++) {
-        if ((*it)->getFileid() != -1) {
+        DEBUG("%p FileId: %d ; Filename: %s", *it, (*it)->getFileid(), (*it)->getFilename().c_str());
+        if ((*it)->getFileid() >= 0) {
+            roots_s.push_back(*it);
+        }
+    }
+    std::sort(roots_s.begin(), roots_s.end(), [](ast::IGlobalScope *s1, ast::IGlobalScope *s2) {
+        return s1->getFileid() < s2->getFileid();
+    });
+    uint32_t roots_s_idx = 0;
+    for (uint32_t i=0; i<=roots.back()->getFileid(); i++) {
+        if (i == roots_s_idx) {
+            DEBUG("Add %p (%d)", roots.at(roots_s_idx), roots_s_idx);
+            root->getUnits().push_back(ast::IGlobalScopeUP(roots.at(roots_s_idx), true));
+            roots_s_idx++;
+        } else {
+//            root->getUnits().push_back(ast::IGlobalScopeUP(0));
+        }
+    }
+
+    DEBUG("%d units", root->getUnits().size());
+
+    for (std::vector<ast::IGlobalScope *>::const_iterator
+        it=roots.begin();
+        it!=roots.end(); it++) {
+        if ((*it)->getFilename() != "") {
             root->getFilenames().insert({
                 (*it)->getFileid(),
                 (*it)->getFilename()
@@ -475,6 +502,12 @@ void TaskBuildSymbolTree::visitFunctionPrototype(ast::IFunctionPrototype *i) {
 
     func_sym->getPrototypes().push_back(i);
     DEBUG_LEAVE("visitFunctionPrototype %s", i->getName()->getId().c_str());
+}
+
+void TaskBuildSymbolTree::visitGlobalScope(ast::IGlobalScope *i) {
+    DEBUG_ENTER("visitGlobalScope");
+    addChild(i, false);
+    DEBUG_ENTER("visitGlobalScope");
 }
 
 void TaskBuildSymbolTree::visitPackageImportStmt(ast::IPackageImportStmt *i) {

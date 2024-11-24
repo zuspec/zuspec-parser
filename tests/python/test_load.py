@@ -5,8 +5,12 @@ Created on Mar 24, 2021
 '''
 from unittest.case import TestCase
 from _io import StringIO
+import zsp_parser.ast as zsp_ast
 
 class TestLoad(TestCase):
+
+    def foo(self):
+        f = zsp_ast.Factory()
     
     def test_smoke(self):
         from zsp_parser import core as zspp_core

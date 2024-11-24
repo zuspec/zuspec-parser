@@ -117,6 +117,7 @@ void TaskFindElementByLocation::visitExprId(ast::IExprId *i) {
                 ast::IField *t = dynamic_cast<ast::IField *>(m_ctxt_s.back().child);
                 DEBUG("Upper is a field (%s)", t->getName()->getId().c_str());
                 m_result.sourceKind = ElemKind::Expr;
+                m_result.targetKind = ElemKind::Field;
                 m_result.target = t;
             }
             m_result.isValid = true;

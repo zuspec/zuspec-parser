@@ -98,7 +98,8 @@ protected:
         std::vector<ast::IGlobalScopeUP>    &global,
         ast::ISymbolScopeUP                 &root,
         int32_t                             fileid,
-        bool                                load_stdlib);
+        bool                                load_stdlib,
+        bool                                process_doc_comments=false);
 
     std::pair<ast::IGlobalScope *, ast::ISymbolScope *> parseLink(
         IMarkerCollector               *marker_l,

@@ -115,7 +115,7 @@ public:
                     DEBUG("  scope %p => %p", scope_ts, ret);
                 } break;
                 default:
-                    DEBUG_ERROR("TODO: handle ElemKind %d", it->kind);
+                    DEBUG_ERROR("TODO: handle ElemKind %d", (int)it->kind);
                     break;
             }
             

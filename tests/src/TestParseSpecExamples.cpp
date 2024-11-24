@@ -260,7 +260,7 @@ component pss_top {
 TEST_F(TestParseSpecExamples, test_026_component_instantiation) {
     const char *text = R"(
 
-component vid_pipe_c { /* ... */};
+component vid_pipe_c { /* ... */ };
 component codec_c {
  vid_pipe_c pipeA, pipeB;
  action decode { /* ... */};
@@ -272,6 +272,7 @@ component pss_top {
  multimedia_ss_c multimedia_ss;
 };
     )";
+    enableDebug(true);
     runTest(text, "026_component_instantiation.pss");
 }
 

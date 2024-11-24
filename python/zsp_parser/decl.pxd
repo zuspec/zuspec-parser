@@ -108,5 +108,3 @@ cdef extern from "PyParserUtils.h" namespace "zsp::parser":
         dm.IDebugMgr                *dmgr,
         ast.ISymbolChildrenScope    *root,
         const ast.ISymbolRefPath    *ref)
-
-

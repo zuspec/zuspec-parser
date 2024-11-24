@@ -82,6 +82,8 @@ cdef class Marker(object):
 
     cpdef str msg(self)
 
+    cpdef severity(self)
+
     cpdef Location loc(self)
 
     @staticmethod
@@ -97,6 +99,10 @@ cdef class MarkerCollector(MarkerListener):
 
     cpdef markers(self)
 
+    cpdef int numMarkers(self)
+
+    cpdef Marker getMarker(self, int idx)
+
     cdef decl.IMarkerCollector *asCollector(self)
 
     @staticmethod
@@ -108,3 +114,4 @@ cdef class SymbolTableIterator(object):
 
     @staticmethod
     cdef SymbolTableIterator mk(decl.ISymbolTableIterator *hndl, bool owned=*)
+

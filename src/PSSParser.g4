@@ -1852,10 +1852,23 @@ filename_string: DOUBLE_QUOTED_STRING;
  * annotate <path> <type_identifier>();
  */	
 annotation:
-    TOK_AT type_identifier annotation_parameter_list?
+    (TOK_AT|TOK_COMMENT_AT) type_identifier annotation_parameter_list?
     ;
 
 annotation_parameter_list:
+	annotation_positional_parameter_list
+	| annotation_namemapped_parameter_list
+	;
+
+annotation_positional_parameter_list:
 	TOK_LPAREN ( expression ( TOK_COMMA expression )* )? TOK_RPAREN
     ;
+
+annotation_namemapped_parameter_list:
+	TOK_LPAREN annotation_namemapped_parameter_elem ( TOK_COMMA annotation_namemapped_parameter_elem )* TOK_RPAREN
+    ;
+
+annotation_namemapped_parameter_elem:
+	identifier TOK_SINGLE_EQ expression
+	;
 	

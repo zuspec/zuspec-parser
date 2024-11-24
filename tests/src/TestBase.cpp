@@ -187,7 +187,8 @@ void TestBase::parseLink(
         std::vector<ast::IGlobalScopeUP>    &global,
         ast::ISymbolScopeUP                 &root,
         int32_t                             fileid,
-        bool                                load_stdlib) {
+        bool                                load_stdlib,
+        bool                                process_doc_comments) {
     std::vector<ast::IGlobalScope *> files_p;
 	IAstBuilderUP ast_builder(m_factory->mkAstBuilder(marker_c));
 
@@ -197,6 +198,8 @@ void TestBase::parseLink(
         global.push_back(ast::IGlobalScopeUP(stdlib));
         files_p.push_back(stdlib);
     }
+
+    ast_builder->setCollectDocStrings(process_doc_comments);
 
     ast::IGlobalScope *file = m_ast_factory->mkGlobalScope(global.size());
 	ast_builder->build(file, content);
@@ -217,7 +220,7 @@ void TestBase::parseLink(
 
 	ILinkerUP linker(m_factory->mkAstLinker());
 
-	ast::ISymbolScopeUP root(linker->link(
+	root = ast::ISymbolScopeUP(linker->link(
 		marker_c,
         files_p
 	));
@@ -244,7 +247,7 @@ std::pair<ast::IGlobalScope *, ast::ISymbolScope *> TestBase::parseLink(
     std::vector<ast::IGlobalScopeUP> global;
     ast::ISymbolScopeUP root;
 
-    parseLink(marker_l, &s, name, global, root, 0, false);
+    parseLink(marker_l, &s, name, global, root, 0, false, process_doc_comments);
 
     return {global.back().release(), root.release()};
 }
@@ -286,7 +289,7 @@ void TestBase::parseLink(
 
 	ILinkerUP linker(m_factory->mkAstLinker());
 
-	ast::ISymbolScopeUP root(linker->link(
+	root = ast::ISymbolScopeUP(linker->link(
 		marker_c,
         files_p
 	));

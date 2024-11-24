@@ -176,6 +176,8 @@ TOK_CLASS: 'class';
 WS : [ \t\n\r]+ -> channel (10) ;
 //WS : [ \t\n\r]+ -> skip;
 
+TOK_COMMENT_AT: '//@';
+
 /**
  * BNF: SL_COMMENT ::= <kw>//</kw>\n 
  */

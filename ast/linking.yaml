@@ -53,9 +53,13 @@ classes:
     - name: string
 
 - SymbolScope:
+    doc: |
+      Base class for a node in the fully-linked tree
     super: SymbolChildrenScope
     data:
     - symtab: 
+      - doc: |
+          Maps between local item identifier and item child index
       - type: map<string,int32_t>
       - is_ctor: false
     - imports: 

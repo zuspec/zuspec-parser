@@ -82,6 +82,8 @@ public:
 
     virtual void visitFunctionPrototype(ast::IFunctionPrototype *i) override;
 
+    virtual void visitGlobalScope(ast::IGlobalScope *i) override;
+
     virtual void visitPackageImportStmt(ast::IPackageImportStmt *i) override;
 
     virtual void visitPyImportStmt(ast::IPyImportStmt *i) override;

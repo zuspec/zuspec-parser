@@ -247,7 +247,7 @@ public:
 
 private:
 
-    void addChild(ast::IScopeChild *c, Token *t, const ast::Location *loc=0);
+    void addChild(ast::IScopeChild *c, Token *t, const ast::Location *loc=0, Token *ct=0);
 
     void addChild(ast::ISymbolScope *c, Token *t, Token *end);
 
