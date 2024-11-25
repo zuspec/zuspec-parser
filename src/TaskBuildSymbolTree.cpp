@@ -298,14 +298,17 @@ void TaskBuildSymbolTree::visitExtendType(ast::IExtendType *i) {
     ext->setLocation(i->getLocation());
     ext->setTarget(i);
 
-    addChild(i, false);
+    //addChild(i, false);
 
+    addChild(ext, true);
     pushSymbolScope(ext);
+    DEBUG("%d children in extension scope", i->getChildren().size());
     for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
         (*it)->accept(this);
     }
+    DEBUG("%d children in extension symbol scope", ext->getChildren().size());
     popSymbolScope();
 
     DEBUG_LEAVE("visitExtendType");
@@ -849,9 +852,11 @@ bool TaskBuildSymbolTree::addChild(
     ast::ISymbolChild   *c, 
     const std::string   &name,
     bool                owned) {
-    DEBUG_ENTER("addChild(SymbolChild");
+    DEBUG_ENTER("addChild(SymbolChild) %s", name.c_str());
     ast::ISymbolScope *scope = symbolScope();
     owned = false;
+
+    DEBUG("scope: %s", scope->getName().c_str());
 
     if (c == scope) {
         DEBUG_ERROR("recursive");
@@ -876,10 +881,11 @@ bool TaskBuildSymbolTree::addChild(
             }
             c->setId(id);
             scope->getSymtab().insert({name, id});
+            scope->getChildren().push_back(ast::IScopeChildUP(c, owned));
         }
     }
     c->setUpper(scope);
-    DEBUG_LEAVE("addChild(SymbolChild");
+    DEBUG_LEAVE("addChild(SymbolChild)");
     return true;
 }
 

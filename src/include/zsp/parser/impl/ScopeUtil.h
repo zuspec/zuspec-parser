@@ -48,7 +48,9 @@ public:
 
     bool init(ast::IScopeChild *c) {
         m_kind = Kind::Unknown;
-        c->accept(m_this);
+        if (c) {
+            c->accept(m_this);
+        }
         return valid();
     }
 

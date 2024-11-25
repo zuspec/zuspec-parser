@@ -44,6 +44,8 @@ public:
 
     virtual void visitExtendType(ast::IExtendType *i) override;
 
+    virtual void visitRootSymbolScope(ast::IRootSymbolScope *i) override;
+
     virtual void visitSymbolEnumScope(ast::ISymbolEnumScope *i) override;
 
     virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override;

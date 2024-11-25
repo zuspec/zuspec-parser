@@ -111,6 +111,16 @@ void TaskApplyTypeExtensions::visitExtendType(ast::IExtendType *i) {
     DEBUG_LEAVE("visitExtendType");
 }
 
+void TaskApplyTypeExtensions::visitRootSymbolScope(ast::IRootSymbolScope *i) {
+    DEBUG_ENTER("visitRootSymbolScope");
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    DEBUG_LEAVE("visitRootSymbolScope");
+}
+
 void TaskApplyTypeExtensions::visitSymbolEnumScope(ast::ISymbolEnumScope *i) {
     DEBUG_ENTER("visitSymbolEnumScope");
     if (m_target_s) {
@@ -137,6 +147,7 @@ void TaskApplyTypeExtensions::visitSymbolExtendScope(ast::ISymbolExtendScope *i)
     DEBUG("Target scope: %s", target_s->getName().c_str());
     
     m_target_s = target_s;
+    DEBUG("%d children in extension scope", i->getChildren().size());
     for (std::vector<ast::IScopeChildUP>::const_iterator
         it=i->getChildren().begin();
         it!=i->getChildren().end(); it++) {
@@ -255,6 +266,9 @@ void TaskApplyTypeExtensions::addChild(
 
     if ((it=target->getSymtab().find(name)) == target->getSymtab().end()) {
         int32_t id = target->getChildren().size();
+        if (dynamic_cast<ast::ISymbolChild *>(child)) {
+            dynamic_cast<ast::ISymbolChild *>(child)->setUpper(target);
+        }
         target->getSymtab().insert({name, id});
         target->getChildren().push_back(child);
     } else {

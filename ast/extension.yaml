@@ -16,6 +16,15 @@ classes:
       data:
       - kind: ExtendTargetE
       - target: UP<TypeIdentifier>
+      - symtab: 
+        - doc: |
+            Maps between local item identifier and item child index
+        - type: map<string,int32_t>
+        - is_ctor: false
+      - imports: 
+        - type: UP<SymbolImportSpec>
+        - is_ctor: false
+
   - ExtendEnum:
       super: ScopeChild
       data:

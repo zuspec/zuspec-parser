@@ -72,9 +72,31 @@ void TaskLinkActionCompRefFields::visitComponent(ast::IComponent *i) {
     DEBUG_LEAVE("visitComponent %s", i->getName()->getId().c_str());
 }
 
+void TaskLinkActionCompRefFields::visitExtendType(ast::IExtendType *i) {
+    DEBUG_ENTER("visitExtendType");
+    ast::IScopeChild *ext_target = m_symtab->resolveAbsPath(
+        i->getTarget()->getTarget());
+    ast::ISymbolScope *target_s = dynamic_cast<ast::ISymbolScope *>(ext_target);
+
+    m_symtab->pushScope(target_s);
+    VisitorBase::visitExtendType(i);
+    m_symtab->popScope();
+    DEBUG_LEAVE("visitExtendType");
+}
+
 void TaskLinkActionCompRefFields::visitPackageScope(ast::IPackageScope *i) {
     DEBUG_ENTER("visitPackageScope");
     DEBUG_LEAVE("visitPackageScope");
+}
+
+void TaskLinkActionCompRefFields::visitRootSymbolScope(ast::IRootSymbolScope *i) {
+    DEBUG_ENTER("visitRootSymbolScope");
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    DEBUG_LEAVE("visitRootSymbolScope");
 }
 
 void TaskLinkActionCompRefFields::visitSymbolScope(ast::ISymbolScope *i) {
@@ -89,6 +111,21 @@ void TaskLinkActionCompRefFields::visitSymbolScope(ast::ISymbolScope *i) {
 
     m_symtab->popScope();
     DEBUG_LEAVE("visitSymbolScope %s", i->getName().c_str());
+}
+
+void TaskLinkActionCompRefFields::visitSymbolExtendScope(ast::ISymbolExtendScope *i) {
+    DEBUG_ENTER("visitSymbolExtendScope");
+    ast::IExtendType *ext = dynamic_cast<ast::IExtendType *>(i->getTarget());
+    ast::IScopeChild *ext_target = m_symtab->resolveAbsPath(ext->getTarget()->getTarget());
+    ast::ISymbolScope *target_s = dynamic_cast<ast::ISymbolScope *>(ext_target);
+    m_symtab->pushScope(target_s);
+    for (std::vector<ast::IScopeChildUP>::const_iterator
+        it=i->getChildren().begin();
+        it!=i->getChildren().end(); it++) {
+        (*it)->accept(m_this);
+    }
+    m_symtab->popScope();
+    DEBUG_LEAVE("visitSymbolExtendScope");
 }
 
 void TaskLinkActionCompRefFields::visitSymbolTypeScope(ast::ISymbolTypeScope *i) {

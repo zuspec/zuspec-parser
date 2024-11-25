@@ -79,6 +79,36 @@ component X {
         assert B_super is not None
         assert B_super.getName() == "A"
 
+    def test_extension(self):
+        factory = Factory.inst()
+        factory.getDebugMgr().enable(True)
+        parser = Parser()
 
+        parser.parses([
+            ("abc.pss", """
+             component C {}
+             component pss_top {
+                action A { }
+             }
+
+             extend component pss_top {
+                action B : A { }
+             }
+             """),
+        ])
+
+        sym_tree_root_u = SymbolScopeUtil(parser.link())
+        
+        A = SymbolTypeScopeUtil(sym_tree_root_u.getQname("pss_top::A"))
+        print("A: %s" % str(A))
+        A_super = A.getSuper()
+        print("A_super: %s" % str(A_super))
+        assert A_super is None
+
+        B = SymbolTypeScopeUtil(sym_tree_root_u.getQname("pss_top::B"))
+        B_super = B.getSuper()
+        print("B_super: %s" % str(B_super))
+        assert B_super is not None
+        assert B_super.getName() == "A"
 
         pass

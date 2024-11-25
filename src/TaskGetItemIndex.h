@@ -86,6 +86,14 @@ public:
         m_index = i->getId();
     }
 
+    virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override {
+        if (i->getIndex() != -1) {
+            m_index = i->getIndex();
+        } else {
+            m_index = i->getId();
+        }
+    }
+
     virtual void visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) override {
         m_index = i->getId();
     }

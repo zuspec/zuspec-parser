@@ -400,6 +400,12 @@ public:
         DEBUG_LEAVE("visitSymbolEnumScope");
     }
 
+    virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override {
+        DEBUG_ENTER("visitSymbolExtendScope");
+        m_ss = i;
+        DEBUG_LEAVE("visitSymbolExtendScope");
+    }
+
     virtual void visitSymbolScope(ast::ISymbolScope *i) override {
         DEBUG_ENTER("visitSymbolScope %s", i->getName().c_str());
         DEBUG_ERROR("Should not hit symbol scope when resolving a ref");

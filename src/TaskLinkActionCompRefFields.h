@@ -42,11 +42,19 @@ public:
 
     virtual void visitComponent(ast::IComponent *i) override;
 
+    virtual void visitExtendType(ast::IExtendType *i) override;
+
     virtual void visitPackageScope(ast::IPackageScope *i) override;
+
+    virtual void visitRootSymbolScope(ast::IRootSymbolScope *i) override;
 
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
+    virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override;
+
     virtual void visitSymbolTypeScope(ast::ISymbolTypeScope *i) override;
+
+
     
 private:
     static dmgr::IDebug             *m_dbg;
