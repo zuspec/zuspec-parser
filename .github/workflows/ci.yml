@@ -107,6 +107,7 @@ jobs:
         echo "BUILD_NUM=$env:BUILD_NUM" > python/zsp_parser/__build_num__.py
         $env:PYTHONPATH = '$PWD.Path/packages/pyastbuilder/src'
         echo "PYTHONPATH: $env:PYTHONPATH"
+        ./packages/python/Scripts/python setup.py build_ext
         ./packages/python/Scripts/python setup.py build bdist_wheel
     - name: Publish to PyPi
       if: startsWith(github.ref, 'refs/heads/main')
@@ -145,6 +146,7 @@ jobs:
           BUILD_NUM: ${{ github.run_id }}
         run: |
           echo "BUILD_NUM=${BUILD_NUM}" > python/zsp_parser/__build_num__.py
+          ./packages/python/bin/python3 setup.py build_ext --inplace
           ./packages/python/bin/python3 setup.py bdist_wheel
       - name: Publish to PyPi
         if: startsWith(github.ref, 'refs/heads/main')

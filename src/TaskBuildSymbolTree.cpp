@@ -691,7 +691,9 @@ void TaskBuildSymbolTree::visitScopeChild(ast::IScopeChild *i) {
 }
 
 void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
-    DEBUG_ENTER("visitTypeScope %s", i->getName()->getId().c_str());
+    DEBUG_ENTER("visitTypeScope %s %d children", 
+        i->getName()->getId().c_str(),
+        i->getChildren().size());
     ast::ISymbolScope *scope = symbolScope();
 
     ast::ISymbolScope *plist = 0;
@@ -738,7 +740,9 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
         popSymbolScope();
     }
 
-    DEBUG_LEAVE("visitTypeScope %s", i->getName()->getId().c_str());
+    DEBUG_LEAVE("visitTypeScope %s %d children", 
+        i->getName()->getId().c_str(),
+        ts->getChildren().size());
 }
 
 void TaskBuildSymbolTree::reportDuplicateSymbol(
@@ -878,10 +882,10 @@ bool TaskBuildSymbolTree::addChild(
                 scope->getChildren().push_back(ast::IScopeChildUP(c, owned));
             } else {
                 id = c->getIndex();
+                scope->getChildren().push_back(ast::IScopeChildUP(c, owned));
             }
             c->setId(id);
             scope->getSymtab().insert({name, id});
-            scope->getChildren().push_back(ast::IScopeChildUP(c, owned));
         }
     }
     c->setUpper(scope);

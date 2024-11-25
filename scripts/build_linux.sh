@@ -10,6 +10,11 @@ ${IVPM_PYTHON} -m ivpm update -a
 
 PYTHON=./packages/python/bin/python
 ${PYTHON} -m pip install twine auditwheel ninja wheel cython
+
+# First, do all the required code generation. This ensures the
+# Python package can be imported during final package build
+${PYTHON} setup.py build_ext --inplace
+
 ${PYTHON} setup.py bdist_wheel
 
 for whl in dist/*.whl; do

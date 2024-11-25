@@ -42,6 +42,22 @@ class SymbolScopeUtil(SymbolChildrenScopeUtil):
                 raise Exception("Scope %s does not contain element %s" % (
                     "::".join(name_l[:i]), name_e))
         return obj
+    
+    def getExtensions(self):
+        extensions_s = set()
+        extensions = []
+        init_def_target = self.obj.getTarget()
+        
+        for c in self.obj.children():
+            parent = c.getParent()
+            print("c: %s ; parent: %s ; init_def_target: %s" % (str(c.id()), str(parent), str(init_def_target)))
+            if hasattr(c, "getName"):
+                print("  name: %s" % c.getName())
+#            if c.getParent().equals(init_def_target) and c.getParent() not in extensions_s:
+#                extensions_s.add(c.getParent())
+#                extensions.append(c.Parent())
+        
+        pass
 
     pass
 

@@ -112,3 +112,33 @@ component X {
         assert B_super.getName() == "A"
 
         pass
+
+    def test_extension_s(self):
+        factory = Factory.inst()
+        factory.getDebugMgr().enable(True)
+        parser = Parser()
+
+        parser.parses([
+            ("abc.pss", """
+             component C {}
+             component pss_top {
+                action A { }
+             }
+
+             extend component pss_top {
+                action B : A { }
+             }
+
+             extend component pss_top {
+                action C : A { }
+             }
+             """),
+        ])
+
+        sym_tree_root_u = SymbolScopeUtil(parser.link())
+
+        pss_top_u = SymbolScopeUtil(sym_tree_root_u.getQname("pss_top"))
+        extensions = pss_top_u.getExtensions()
+        print("extension: %s" % str(extensions))
+
+        pass

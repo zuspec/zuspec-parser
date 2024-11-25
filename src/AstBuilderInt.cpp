@@ -2259,7 +2259,7 @@ void AstBuilderInt::addChild(ast::IFunctionDefinition *c, Token *start, Token *e
 }
 
 void AstBuilderInt::addChild(ast::INamedScope *c, Token *start, Token *end) {
-    DEBUG_ENTER("addChild (INamedScope) %p %p", start, end);
+    DEBUG_ENTER("addChild (INamedScope) %s %p %p", c->getName()->getId().c_str(), start, end);
     c->setLocation({
         m_file_id,
         (int32_t)start->getLine(),
@@ -2271,6 +2271,7 @@ void AstBuilderInt::addChild(ast::INamedScope *c, Token *start, Token *end) {
         (int32_t)end->getCharPositionInLine()+1
     });
     c->setParent(scope());
+    DEBUG("Parent: %p", c->getParent());
     c->setIndex(scope()->getChildren().size());
 	scope()->getChildren().push_back(ast::IScopeChildUP(c));
 

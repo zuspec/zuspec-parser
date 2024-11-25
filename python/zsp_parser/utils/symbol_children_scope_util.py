@@ -28,6 +28,6 @@ from .list_iterator import ListIterator
 class SymbolChildrenScopeUtil(object):
     obj : zsp_ast.SymbolChildrenScope
 
-    def children(self) -> Iterable:
-        return ListIterator(self.obj.numChildren(), self.obj.getChild)
+    # def children(self) -> Iterable:
+    #     return ListIterator(self.obj.numChildren(), self.obj.getChild)
 
