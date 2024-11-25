@@ -1,6 +1,5 @@
 from io import StringIO
 from typing import Dict, List, Tuple, TextIO
-import zsp_parser.ast as zsp_ast
 
 class ParseException(Exception):
     pass
@@ -9,6 +8,7 @@ class Parser(object):
 
     def __init__(self):
         import zsp_parser.core as zspp
+        import zsp_parser.ast as zsp_ast
         self.ast_f = zsp_ast.Factory.inst()
         self.parser_f = zspp.Factory.inst()
         self._root = None
@@ -66,7 +66,7 @@ class Parser(object):
 
         return True
     
-    def link(self) -> zsp_ast.RootSymbolScope:
+    def link(self) -> 'zsp_ast.RootSymbolScope':
         import zsp_parser.core as zspp
         linker = self.parser_f.mkAstLinker()
         marker_l = self.parser_f.mkMarkerCollector()
