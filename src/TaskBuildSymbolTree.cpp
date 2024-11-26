@@ -723,6 +723,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
     ts->setSynthetic(true);
     ts->setLocation(i->getLocation());
     ts->setTarget(i);
+    ts->setParent(i->getParent());
 
     // pyobj fields are opaque, since Python is a dynamically-typed library
     if (i->getName()->getId() == "pyobj") {

@@ -53,13 +53,9 @@ class SymbolScopeUtil(SymbolChildrenScopeUtil):
             print("c: %s ; parent: %s ; init_def_target: %s" % (str(c.id()), str(parent), str(init_def_target)))
             if hasattr(c, "getName"):
                 print("  name: %s" % c.getName())
-#            if c.getParent().equals(init_def_target) and c.getParent() not in extensions_s:
-#                extensions_s.add(c.getParent())
-#                extensions.append(c.Parent())
-        
-        pass
-
-    pass
-
+            if c.getParent() != init_def_target and c.getParent() not in extensions_s:
+                extensions_s.add(c.getParent())
+                extensions.append(c.getParent())
+        return extensions
 
 
