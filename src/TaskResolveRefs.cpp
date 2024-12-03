@@ -44,7 +44,7 @@ TaskResolveRefs::~TaskResolveRefs() {
 }
 
 void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
-    DEBUG_ENTER("resolve (SymbolScope root)");
+    DEBUG_ENTER("resolve (SymbolScope root) %d %p", root->getSymtab().size(), root);
 //    m_root = root;
     m_ctxt->pushSymtab(m_ctxt->getFactory()->mkAstSymbolTableIterator(root));
 
@@ -55,11 +55,13 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
     // Phases:
     // - 
 
+    DEBUG("resolve ==> process children");
     for (std::vector<ast::IScopeChildUP>::const_iterator
         it=root->getChildren().begin();
         it!=root->getChildren().end(); it++) {
         it->get()->accept(this);
     }
+    DEBUG("resolve <== process children");
 
     m_ctxt->popSymtab();
 
@@ -187,16 +189,18 @@ void TaskResolveRefs::visitActivityActionTypeTraversal(ast::IActivityActionTypeT
 //    field_udt->getType_id()->accept(m_this);
 //    DEBUG("<-- resolve field_udt->getType_id()");
 //    ast::IScopeChild *field_c = resolvePath(field_udt->getType_id()->getTarget());
-    ast::IScopeChild *field_c = resolvePath(field_udt->getType_id()->getTarget());
-    ast::ISymbolScope *field_scope = dynamic_cast<ast::ISymbolScope *>(field_c);
-    if (i->getWith_c()) {
-        m_ctxt->symtab()->pushScope(field_scope, ast::SymbolRefPathElemKind::ElemKind_Inline);
-        m_ctxt->pushInlineCtxt(field_scope);
-        DEBUG_ENTER(" ::getWith()");
-        i->getWith_c()->accept(m_this);
-        DEBUG_LEAVE(" ::getWith()");
-        m_ctxt->popInlineCtxt();
-        m_ctxt->symtab()->popScope();
+    if (field_udt->getType_id()->getTarget()) {
+        ast::IScopeChild *field_c = resolvePath(field_udt->getType_id()->getTarget());
+        ast::ISymbolScope *field_scope = dynamic_cast<ast::ISymbolScope *>(field_c);
+        if (i->getWith_c()) {
+            m_ctxt->symtab()->pushScope(field_scope, ast::SymbolRefPathElemKind::ElemKind_Inline);
+            m_ctxt->pushInlineCtxt(field_scope);
+            DEBUG_ENTER(" ::getWith()");
+            i->getWith_c()->accept(m_this);
+            DEBUG_LEAVE(" ::getWith()");
+            m_ctxt->popInlineCtxt();
+            m_ctxt->symtab()->popScope();
+        }
     }
     DEBUG_LEAVE("visitActivityActionTypeTraversal");
 }

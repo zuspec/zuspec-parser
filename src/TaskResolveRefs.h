@@ -77,6 +77,8 @@ public:
 
     virtual void visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i) override;
 
+//    virtual void visitRootSymbolScope(ast::IRootSymbolScope *i) override;
+
     virtual void visitSymbolScope(ast::ISymbolScope *i) override;
 
     virtual void visitSymbolExtendScope(ast::ISymbolExtendScope *i) override;
