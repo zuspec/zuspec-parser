@@ -28,16 +28,17 @@ namespace parser {
 
 
 ResolveContext::ResolveContext(
-    IFactory            *factory,
-    IMarkerListener     *marker_l,
-    ast::ISymbolScope   *root) : 
+    IFactory                *factory,
+    IMarkerListener         *marker_l,
+    ast::IRootSymbolScope   *root) : 
     m_factory(factory), m_marker_l(marker_l), m_root(root),
     m_specialization_depth(0) {
     m_symtab_it_s.push_back(ISymbolTableIteratorUP(new AstSymbolTableIterator(
         factory->getDebugMgr(),
         factory->getAstFactory(),
         root)));
-
+    m_inbound_refs.resize(root->getUnits().size(), std::unordered_set<int32_t>());
+    m_outbound_refs.resize(root->getUnits().size(), std::unordered_set<int32_t>());
 }
 
 ResolveContext::~ResolveContext() {
@@ -46,6 +47,24 @@ ResolveContext::~ResolveContext() {
 
 ast::IScopeChild *ResolveContext::resolveSymbolPathRef(ast::ISymbolRefPath *path) {
     return TaskResolveSymbolPathRef(m_factory->getDebugMgr(), m_root).resolve(path);
+}
+
+void ResolveContext::addRef(int32_t from, int32_t to) {
+    std::unordered_map<int32_t,int32_t>::const_iterator it;
+    int32_t from_idx = -1;
+    int32_t to_idx = -1;
+    
+    if ((it=m_root->getId2idx().find(from)) != m_root->getId2idx().end()) {
+        from_idx = it->second;
+    }
+    if ((it=m_root->getId2idx().find(to)) != m_root->getId2idx().end()) {
+        to_idx = it->second;
+    }
+
+    if (from_idx != -1 && to_idx != -1) {
+        m_inbound_refs.at(to_idx).insert(from);
+        m_outbound_refs.at(from_idx).insert(to);
+    }
 }
 
 void ResolveContext::addMarker(

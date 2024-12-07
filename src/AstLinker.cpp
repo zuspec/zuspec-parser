@@ -83,12 +83,13 @@ static uint64_t time_ms() {
 
 ast::IRootSymbolScope *AstLinker::link(
         IMarkerListener                         *marker_l,
-        const std::vector<ast::IGlobalScope *>  &scopes) {
+        const std::vector<ast::IGlobalScope *>  &scopes,
+        bool                                    own_scopes) {
     uint64_t build_symtree_s = time_ms();
     ast::IRootSymbolScope *symtree = TaskBuildSymbolTree(
         m_dmgr,
         m_ast_factory,
-        marker_l).build(scopes);
+        marker_l).build(scopes, own_scopes);
     uint64_t build_symtree_e = time_ms();
     DEBUG("Build symtree: %lldms", (build_symtree_e-build_symtree_s));
 
@@ -112,7 +113,8 @@ ast::IRootSymbolScope *AstLinker::link(
 ast::IRootSymbolScope *AstLinker::linkOverlay(
         IMarkerListener                         *marker_l,
         ast::IRootSymbolScope                   *base_symtab,
-        ast::IGlobalScope                       *overlay) {
+        ast::IGlobalScope                       *overlay,
+        bool                                    own_scopes) {
     DEBUG_ENTER("linkOverlay");
     // First, clone the base symbol table
     ast::IRootSymbolScope *root = TaskCloneSymbolScope(

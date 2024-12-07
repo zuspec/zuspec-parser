@@ -19,6 +19,7 @@
  *     Author: 
  */
 #pragma once
+#include <unordered_set>
 #include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IMarkerListener.h"
 #include "zsp/ast/IFactory.h"
@@ -38,7 +39,8 @@ public:
     virtual ~TaskBuildSymbolTree();
 
     ast::IRootSymbolScope *build(
-        const std::vector<ast::IGlobalScope *>  &roots);
+        const std::vector<ast::IGlobalScope *>  &roots,
+        bool                                    owned);
 
     ast::ISymbolTypeScope *build(ast::ITypeScope *ts);
 
@@ -144,10 +146,10 @@ protected:
         bool                owned=true);
 
 private:
-    static dmgr::IDebug                 *m_dbg;
-    ast::IFactory                       *m_factory;
-    IMarkerListener                     *m_marker_l;
-    std::vector<ast::ISymbolChild *>    m_scope_s;
+    static dmgr::IDebug                         *m_dbg;
+    ast::IFactory                               *m_factory;
+    IMarkerListener                             *m_marker_l;
+    std::vector<ast::ISymbolChild *>            m_scope_s;
 
 };
 

@@ -35,12 +35,14 @@ public:
 
     virtual ast::IRootSymbolScope *link(
         IMarkerListener                         *marker_l,
-        const std::vector<ast::IGlobalScope *>  &scopes) = 0;
+        const std::vector<ast::IGlobalScope *>  &scopes,
+        bool                                    own_scopes=true) = 0;
 
     virtual ast::IRootSymbolScope *linkOverlay(
         IMarkerListener                         *marker_l,
         ast::IRootSymbolScope                   *base_symtab,
-        ast::IGlobalScope                       *overlay) = 0;
+        ast::IGlobalScope                       *overlay,
+        bool                                    own_scopes=true) = 0;
 
 };
 

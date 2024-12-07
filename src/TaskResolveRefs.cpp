@@ -159,6 +159,11 @@ void TaskResolveRefs::visitActivityActionHandleTraversal(ast::IActivityActionHan
 
     i->getTarget()->setTarget(target_ref);
     ast::IScopeChild *target = resolvePath(i->getTarget()->getTarget());
+
+    if (target) {
+        m_ctxt->addRef(i->getLocation().fileid, target->getLocation().fileid);
+    }
+
     ast::IField *field = dynamic_cast<ast::IField *>(target);
     DEBUG("target=%p field=%p", target, field);
     DEBUG("field: %s", field->getName()->getId().c_str());
@@ -392,6 +397,12 @@ void TaskResolveRefs::visitExprRefPathContext(ast::IExprRefPathContext *i) {
         }
     }
 
+    if (target_c) {
+        m_ctxt->addRef(
+            i->getHier_id()->getElems().front()->getId()->getLocation().fileid,
+            target_c->getLocation().fileid);
+    }
+
     DEBUG_LEAVE("visitExprRefPathContext");
 }
 
@@ -416,6 +427,11 @@ void TaskResolveRefs::visitExprRefPathId(ast::IExprRefPathId *i) {
             i->getId()->getLocation(),
             "failed to resolve ref-path %s", 
             i->getId()->getId().c_str());
+    } else {
+        ast::IScopeChild *target_c = m_ctxt->resolveSymbolPathRef(target);
+        m_ctxt->addRef(
+            i->getId()->getLocation().fileid,
+            target_c->getLocation().fileid);
     }
     i->setTarget(target);
     DEBUG_LEAVE("visitExprRefPathId");
@@ -480,6 +496,13 @@ void TaskResolveRefs::visitExprRefPathStatic(ast::IExprRefPathStatic *i) {
             }
         }
         i->setTarget(target);
+    }
+
+    if (target) {
+        ast::IScopeChild *target_c = m_ctxt->resolveSymbolPathRef(target);
+        m_ctxt->addRef(
+            i->getBase().front()->getId()->getLocation().fileid,
+            target_c->getLocation().fileid);
     }
     DEBUG_LEAVE("visitExprRefPathStatic");
 }
@@ -763,6 +786,11 @@ void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
     if (target) {
         DEBUG("Success");
         i->getType_id()->setTarget(target);
+
+        ast::IScopeChild *target_c = m_ctxt->resolveSymbolPathRef(target);
+        m_ctxt->addRef(
+            i->getLocation().fileid,
+            target_c->getLocation().fileid);
     } else {
         DEBUG("Failed");
         // char tmp[1024];
@@ -782,6 +810,13 @@ void TaskResolveRefs::visitDataTypeUserDefined(ast::IDataTypeUserDefined *i) {
 void TaskResolveRefs::visitTypeIdentifier(ast::ITypeIdentifier *i) {
     DEBUG_ENTER("visitTypeIdentifier %s", i->getElems().at(0)->getId()->getId().c_str());
     ast::ISymbolRefPath *target = TaskResolveRef(m_ctxt).resolve(i);
+
+    if (target) {
+        ast::IScopeChild *target_c = m_ctxt->resolveSymbolPathRef(target);
+        m_ctxt->addRef(
+            i->getElems().front()->getId()->getLocation().fileid,
+            target_c->getLocation().fileid);
+    }
     i->setTarget(target);
     DEBUG_LEAVE("visitTypeIdentifier");
 }

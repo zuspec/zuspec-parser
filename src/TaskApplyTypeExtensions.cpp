@@ -42,7 +42,7 @@ TaskApplyTypeExtensions::~TaskApplyTypeExtensions() {
 
 }
 
-void TaskApplyTypeExtensions::apply(ast::ISymbolScope *root) {
+void TaskApplyTypeExtensions::apply(ast::IRootSymbolScope *root) {
     DEBUG_ENTER("apply");
     m_symtab_it = ISymbolTableIteratorUP(m_factory->mkAstSymbolTableIterator(root));
 

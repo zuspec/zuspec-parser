@@ -38,7 +38,7 @@ public:
 
     virtual ~TaskApplyTypeExtensions();
 
-    void apply(ast::ISymbolScope *root);
+    void apply(ast::IRootSymbolScope *root);
 
     virtual void visitExtendEnum(ast::IExtendEnum *i) override;
 
@@ -75,7 +75,7 @@ private:
     static dmgr::IDebug                     *m_dbg;
     IFactory                                *m_factory;
     IMarkerListener                         *m_marker_l;
-    ast::ISymbolScope                       *m_root;
+    ast::IRootSymbolScope                   *m_root;
     ISymbolTableIteratorUP                  m_symtab_it;
     ast::ISymbolScope                       *m_target_s;
 
