@@ -861,7 +861,7 @@ bool TaskBuildSymbolTree::addChild(
     ast::ISymbolScope *scope = symbolScope();
     owned = false;
 
-    DEBUG("scope: %s", scope->getName().c_str());
+    DEBUG("scope: %s %d (%p)", scope->getName().c_str(), scope->getSymtab().size(), scope);
 
     if (c == scope) {
         DEBUG_ERROR("recursive");
