@@ -18,9 +18,8 @@ package std_pkg {
 
     function bit[32] urandom_range(bit[32] min, bit[32] max);
 
-    component actor_c<component Tc, action Ta> {
-        Tc          comp;
-    }
+    // An actor is a component that autonomously runs a behavior
+    component actor_c<component Tc, action Ta> : Tc { }
 
 
 }

@@ -22,6 +22,7 @@ structs:
 classes:
     - AssocData:
         data: []
+
     - Scope:
         super: ScopeChild
         data:
@@ -29,9 +30,6 @@ classes:
             type: Location
             is_ctor: false
         - children: list<UP<ScopeChild>>
-#        - symtab:
-#            type: map<string,P<NamedScopeChild>>
-#            is_ctor: false
 
     - ScopeChild:
         data:

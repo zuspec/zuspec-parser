@@ -71,9 +71,17 @@ void TaskResolveRootRef::visitProceduralStmtRepeat(ast::IProceduralStmtRepeat *i
     DEBUG_LEAVE("visitProceduralStmtRepeat");
 }
 
+void TaskResolveRootRef::visitRootSymbolScope(ast::IRootSymbolScope *i) {
+    DEBUG_ENTER("visitRootSymbolScope %s %d %p", i->getName().c_str(), i->getSymtab().size(), i);
+    visitSymbolScope(i);
+    DEBUG_LEAVE("visitRootSymbolScope %s %d %p", i->getName().c_str(), i->getSymtab().size(), i);
+}
+
 void TaskResolveRootRef::visitSymbolScope(ast::ISymbolScope *i) {
-    DEBUG_ENTER("visitSymbolScope id=%s (%s)", 
-        m_id->getId().c_str(), i->getName().c_str());
+    DEBUG_ENTER("visitSymbolScope id=%s (%s) %d (%p)", 
+        m_id->getId().c_str(), i->getName().c_str(),
+        i->getSymtab().size(),
+        i);
     std::unordered_map<std::string,int32_t>::const_iterator it = i->getSymtab().find(m_id->getId());
 
     DEBUG("imports: %p", i->getImports());

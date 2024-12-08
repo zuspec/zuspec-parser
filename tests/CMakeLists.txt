@@ -14,11 +14,13 @@ file(GLOB TEST_SRCS
 	"src/*.cpp" 
 	"src/*.h")
 
+set(CMAKE_INSTALL_RPATH $ORIGIN/../lib)
+
 link_directories(
 	${CMAKE_BINARY_DIR}/gtest/lib
 	${CMAKE_BINARY_DIR}/gtest/lib64
-	${CMAKE_BINARY_DIR}/antlr4/lib
-	${CMAKE_BINARY_DIR}/antlr4/lib64
+	${CMAKE_BINARY_DIR}/lib
+	${CMAKE_BINARY_DIR}/lib64
 	${CMAKE_BINARY_DIR}/src
 	${CMAKE_BINARY_DIR}/zsp_ast/lib
 	${CMAKE_BINARY_DIR}/lib
