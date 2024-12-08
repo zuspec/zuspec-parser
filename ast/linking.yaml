@@ -75,13 +75,37 @@ classes:
       - init: false
 
 - RootSymbolScope:
+    doc: |
+      Root of a resolved symbol tree. Holds references to 
+      the physical linked-together files in addition to the
+      merged contents within the symbol tree.
     super: SymbolScope
     data:
       - units:
+        - doc: |
+            List of compilation units linked together in this symbol tree.
         - type: list<UP<GlobalScope>>
         - is_ctor: false
       - filenames:
+        - doc: |
+            Map of fileId (as specified by the file) to corresponding file path
+            to the 
         - type: map<int32_t,string>
+        - is_ctor: false
+      - id2idx:
+        - doc: |
+            Map from fileId (as specified by the file) to index in the units list
+        - type: map<int32_t,int32_t>
+        - is_ctor: false
+      - fileOutRef:
+        - doc: |
+            List of outbound refs from each unit
+        - type: list<list<int32_t>>
+        - is_ctor: false
+      - fileInRef:
+        - doc: |
+            List of inbound refs to each unit
+        - type: list<list<int32_t>>
         - is_ctor: false
 
 - SymbolEnumScope:

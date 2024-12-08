@@ -19,6 +19,8 @@
  *     Author: 
  */
 #pragma once
+#include <vector>
+#include <unordered_set>
 #include "dmgr/IDebugMgr.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/parser/ILinker.h"
@@ -39,18 +41,23 @@ public:
 
     virtual ast::IRootSymbolScope *link(
         IMarkerListener                         *marker_l,
-        const std::vector<ast::IGlobalScope *>  &scopes) override;
+        const std::vector<ast::IGlobalScope *>  &scopes,
+        bool                                    own_scopes) override;
 
     virtual ast::IRootSymbolScope *linkOverlay(
         IMarkerListener                         *marker_l,
         ast::IRootSymbolScope                   *base_symtab,
-        ast::IGlobalScope                       *overlay) override;
+        ast::IGlobalScope                       *overlay,
+        bool                                    own_scopes) override;
 
 private:
-    static dmgr::IDebug         *m_dbg;
-    dmgr::IDebugMgr             *m_dmgr;
-    IFactory                    *m_factory;
-    ast::IFactory               *m_ast_factory;
+    static dmgr::IDebug                         *m_dbg;
+    dmgr::IDebugMgr                             *m_dmgr;
+    IFactory                                    *m_factory;
+    ast::IFactory                               *m_ast_factory;
+    ast::IGlobalScope                           *m_file;
+    std::vector<std::unordered_set<int32_t>>    m_inbound_refs;
+    std::vector<std::unordered_set<int32_t>>    m_outbound_refs;
 };
 
 }

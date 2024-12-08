@@ -43,63 +43,44 @@ TaskBuildSymbolTree::~TaskBuildSymbolTree() {
 }
 
 ast::IRootSymbolScope *TaskBuildSymbolTree::build(
-        const std::vector<ast::IGlobalScope *>  &roots) {
+        const std::vector<ast::IGlobalScope *>  &roots,
+        bool                                    owned) {
     DEBUG_ENTER("build");
     ast::IRootSymbolScope *root = m_factory->mkRootSymbolScope("");
     root->setSynthetic(true);
     pushSymbolScope(root);
 
     DEBUG_ENTER("visitBuiltins");
+    std::vector<ast::IGlobalScope *> all_roots;
     ast::IGlobalScope *builtins = BuiltinsFactory(m_factory).build();
-    for (std::vector<ast::IScopeChildUP>::const_iterator
-        c_it=builtins->getChildren().begin();
-        c_it!=builtins->getChildren().end(); c_it++) {
-        (*c_it)->accept(this);
-    }
+    all_roots.push_back(builtins);
+    all_roots.insert(all_roots.end(), roots.begin(), roots.end());
     DEBUG_LEAVE("visitBuiltins");
 
-    std::vector<ast::IGlobalScope *> roots_s;
-
     for (std::vector<ast::IGlobalScope *>::const_iterator
-        it=roots.begin();
-        it!=roots.end(); it++) {
-        DEBUG("%p FileId: %d ; Filename: %s", *it, (*it)->getFileid(), (*it)->getFilename().c_str());
-        if ((*it)->getFileid() >= 0) {
-            roots_s.push_back(*it);
+        it=all_roots.begin();
+        it!=all_roots.end(); it++) {
+        int32_t idx = root->getUnits().size();
+
+        root->getUnits().push_back(ast::IGlobalScopeUP(*it, owned));
+        if ((*it)->getFileid() != -1) {
+            root->getId2idx().insert({(*it)->getFileid(), idx});
+            if ((*it)->getFilename() != "") {
+                root->getFilenames().insert({
+                    (*it)->getFileid(),
+                    (*it)->getFilename()
+                });
+            }
         }
-    }
-    std::sort(roots_s.begin(), roots_s.end(), [](ast::IGlobalScope *s1, ast::IGlobalScope *s2) {
-        return s1->getFileid() < s2->getFileid();
-    });
-    uint32_t roots_s_idx = 0;
-    for (uint32_t i=0; i<=roots.back()->getFileid(); i++) {
-        if (i == roots_s_idx) {
-            DEBUG("Add %p (%d)", roots.at(roots_s_idx), roots_s_idx);
-            root->getUnits().push_back(ast::IGlobalScopeUP(roots.at(roots_s_idx), true));
-            roots_s_idx++;
-        } else {
-//            root->getUnits().push_back(ast::IGlobalScopeUP(0));
+
+        for (std::vector<ast::IScopeChildUP>::const_iterator
+            c_it=(*it)->getChildren().begin();
+            c_it!=(*it)->getChildren().end(); c_it++) {
+            (*c_it)->accept(this);
         }
     }
 
     DEBUG("%d units", root->getUnits().size());
-
-    for (std::vector<ast::IGlobalScope *>::const_iterator
-        it=roots.begin();
-        it!=roots.end(); it++) {
-        if ((*it)->getFilename() != "") {
-            root->getFilenames().insert({
-                (*it)->getFileid(),
-                (*it)->getFilename()
-            });
-        }
-        for (std::vector<ast::IScopeChildUP>::const_iterator
-            c_it=(*it)->getChildren().begin();
-            c_it!=(*it)->getChildren().end(); c_it++) {
-//            root->getUnits().push_back(ast::IGlobalScopeUP(*it));
-            (*c_it)->accept(this);
-        }
-    }
 
     popSymbolScope();
 

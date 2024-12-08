@@ -101,6 +101,13 @@ void TaskResolveRefsOverlay::visitTypeScope(ast::ITypeScope *i) {
 
     std::unordered_map<std::string,int32_t>::const_iterator sym_it;
     sym_it = scope->getSymtab().find(i->getName()->getId());
+    if (sym_it == scope->getSymtab().end()) {
+        DEBUG_ERROR("Failed to find %s in %s", 
+            i->getName()->getId().c_str(),
+            scope->getName().c_str());
+        DEBUG_LEAVE("visitTypeScope");
+        return;
+    }
     ast::ISymbolScope *i_s = dynamic_cast<ast::ISymbolScope *>(
         scope->getChildren().at(sym_it->second).get());
     m_ctxt->symtab()->pushScope(i_s);

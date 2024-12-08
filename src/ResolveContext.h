@@ -21,8 +21,10 @@
 #pragma once
 #include <stdint.h>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include "dmgr/IDebugMgr.h"
+#include "zsp/ast/IRootSymbolScope.h"
 #include "zsp/ast/ISymbolRefPath.h"
 #include "zsp/parser/IFactory.h"
 #include "zsp/parser/IMarkerListener.h"
@@ -36,9 +38,9 @@ namespace parser {
 class ResolveContext {
 public:
     ResolveContext(
-        IFactory            *factory,
-        IMarkerListener     *marker_l,
-        ast::ISymbolScope   *root);
+        IFactory                *factory,
+        IMarkerListener         *marker_l,
+        ast::IRootSymbolScope   *root);
 
     virtual ~ResolveContext();
 
@@ -92,6 +94,8 @@ public:
 
     ast::IScopeChild *resolveSymbolPathRef(ast::ISymbolRefPath *path);
 
+    void addRef(int32_t from, int32_t to);
+
     void addMarker(
         MarkerSeverityE     severity,
         const ast::Location &loc,
@@ -110,12 +114,14 @@ public:
         ...);
 
 private:
-    ast::ISymbolScope                       *m_root;
-    std::vector<ast::ISymbolScope *>        m_inline_ctxt_s;
-    IFactory                                *m_factory;
-    IMarkerListener                         *m_marker_l;
-    int32_t                                 m_specialization_depth;
-    std::vector<ISymbolTableIteratorUP>     m_symtab_it_s;
+    ast::IRootSymbolScope                           *m_root;
+    std::vector<ast::ISymbolScope *>                m_inline_ctxt_s;
+    IFactory                                        *m_factory;
+    IMarkerListener                                 *m_marker_l;
+    int32_t                                         m_specialization_depth;
+    std::vector<ISymbolTableIteratorUP>             m_symtab_it_s;
+    std::vector<std::unordered_set<int32_t>>        m_inbound_refs;
+    std::vector<std::unordered_set<int32_t>>        m_outbound_refs;
 
 };
 
