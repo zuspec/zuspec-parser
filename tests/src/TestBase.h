@@ -63,7 +63,7 @@ protected:
 
 	ast::ISymbolScope *link(
 		parser::IMarkerListener				    *marker_l,
-		const std::vector<ast::IGlobalScopeUP>	&files
+		std::vector<ast::IGlobalScopeUP>	&files
 	);
 
 	ast::ISymbolScope *link(

@@ -1,0 +1,9 @@
+import std_pkg::*;
+
+package sync_pkg {
+
+    component channel_c<struct T : packed_s<>, int DEPTH=1> {
+
+    } 
+
+}

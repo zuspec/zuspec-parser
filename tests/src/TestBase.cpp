@@ -136,13 +136,13 @@ ast::IGlobalScope *TestBase::parse(
 
 ast::ISymbolScope *TestBase::link(
 		IMarkerListener					        *marker_l,
-		const std::vector<ast::IGlobalScopeUP>	&files) {
+		std::vector<ast::IGlobalScopeUP>	&files) {
 	std::vector<ast::IGlobalScope *> files_p;
 
-	for (std::vector<ast::IGlobalScopeUP>::const_iterator
+	for (std::vector<ast::IGlobalScopeUP>::iterator
 		it=files.begin();
 		it!=files.end(); it++) {
-		files_p.push_back(it->get());
+		files_p.push_back(it->release());
 	}
 
 	ILinkerUP linker(m_factory->mkAstLinker());
