@@ -18,4 +18,6 @@ documentation for details.
    :caption: Contents:
 
    quickstart
+   ast_structure
+   reference_api_docs
 
