@@ -1,3 +1,4 @@
+import std_pkg::*;
 
 package sync_pkg {
 
@@ -10,4 +11,5 @@ package sync_pkg {
             Te          data;
         }
     }
+
 }

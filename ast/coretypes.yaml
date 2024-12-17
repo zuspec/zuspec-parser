@@ -32,6 +32,10 @@ classes:
         - children: list<UP<ScopeChild>>
 
     - ScopeChild:
+        doc: |
+            Base class for most of the AST classes related to types
+            and structture. 
+
         data:
         - docstring:
           - type: string
