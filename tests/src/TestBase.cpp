@@ -195,7 +195,7 @@ void TestBase::parseLink(
     if (load_stdlib) {
 	    ast::IGlobalScope *stdlib = m_ast_factory->mkGlobalScope(global.size());
         m_factory->loadStandardLibrary(ast_builder.get(), stdlib);
-        global.push_back(ast::IGlobalScopeUP(stdlib));
+        global.push_back(ast::IGlobalScopeUP(stdlib, false));
         files_p.push_back(stdlib);
     }
 
@@ -266,14 +266,14 @@ void TestBase::parseLink(
     if (load_stdlib) {
 	    ast::IGlobalScope *stdlib = m_ast_factory->mkGlobalScope(files.size());
         m_factory->loadStandardLibrary(ast_builder.get(), stdlib);
-        files.push_back(ast::IGlobalScopeUP(stdlib));
+        files.push_back(ast::IGlobalScopeUP(stdlib, false));
         files_p.push_back(stdlib);
     }
 
     ast::IGlobalScope *file = m_ast_factory->mkGlobalScope(files.size());
 	ast_builder->build(file, &s);
 
-    files.push_back(ast::IGlobalScopeUP(file));
+    files.push_back(ast::IGlobalScopeUP(file, false));
     files_p.push_back(file);
 
 	for (std::vector<IMarkerUP>::const_iterator
