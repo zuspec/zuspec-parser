@@ -108,7 +108,7 @@ void TaskBuildSymbolTree::visitActivityDecl(ast::IActivityDecl *i) {
 ast::ISymbolTypeScope *TaskBuildSymbolTree::build(ast::ITypeScope *ts) {
     DEBUG_ENTER("build");
     ast::ISymbolTypeScope *ret = 0;
-    ast::ISymbolScope *root = m_factory->mkSymbolScope("");
+    ast::ISymbolScope *root = m_factory->mkSymbolScope("<root>");
     root->setLocation(ts->getLocation());
     root->setOpaque(ts->getOpaque());
     root->setSynthetic(true);
@@ -176,6 +176,7 @@ void TaskBuildSymbolTree::visitPackageScope(ast::IPackageScope *i) {
         id_it!=i->getId().end(); id_it++) {
         DEBUG("  process name-elem %s", (*id_it)->getId().c_str());
         ast::ISymbolScope *scope = dynamic_cast<ast::ISymbolScope *>(symbolScope());
+        DEBUG("Scope %s has %d symbols", scope->getName().c_str(), scope->getSymtab().size());
         std::unordered_map<std::string,int32_t>::const_iterator p_it;
         p_it = scope->getSymtab().find((*id_it)->getId());
 
@@ -275,7 +276,7 @@ void TaskBuildSymbolTree::visitExecScope(ast::IExecScope *i) {
 
 void TaskBuildSymbolTree::visitExtendType(ast::IExtendType *i) {
     DEBUG_ENTER("visitExtendType");
-    ast::ISymbolExtendScope *ext = m_factory->mkSymbolExtendScope("");
+    ast::ISymbolExtendScope *ext = m_factory->mkSymbolExtendScope("<extend>");
     ext->setLocation(i->getLocation());
     ext->setTarget(i);
 
@@ -680,7 +681,7 @@ void TaskBuildSymbolTree::visitTypeScope(ast::ITypeScope *i) {
     ast::ISymbolScope *plist = 0;
     if (i->getParams()) {
         DEBUG("Build out plist %d", i->getParams()->getParams().size());
-        plist = m_factory->mkSymbolScope("");
+        plist = m_factory->mkSymbolScope("<plist>");
         for (std::vector<ast::ITemplateParamDeclUP>::const_iterator
             it=i->getParams()->getParams().begin();
             it!=i->getParams()->getParams().end(); it++) {

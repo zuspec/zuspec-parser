@@ -32,9 +32,11 @@ AstSymbolTableIterator::AstSymbolTableIterator(
     dmgr::IDebugMgr         *dmgr,
     ast::IFactory           *factory,
     ast::ISymbolScope       *root) : m_factory(factory) {
-    m_scope_s.push_back(root);
-    m_path.push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, -1});
     DEBUG_INIT("AstSymbolTableIterator", dmgr);
+    int32_t idx = TaskGetItemIndex().get(root);
+    DEBUG("AstSymbolTableIterator: idx=%d", idx);
+    m_scope_s.push_back(root);
+    m_path.push_back({ast::SymbolRefPathElemKind::ElemKind_ChildIdx, idx});
 }
 
 AstSymbolTableIterator::AstSymbolTableIterator(
@@ -206,6 +208,7 @@ ISymbolTableIterator *AstSymbolTableIterator::clone() const {
 }
 
 ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack() {
+    DEBUG_ENTER("getSymScopeBack");
     // Walk through the scope backwards and return the 
     // first symbol scope
     ast::ISymbolScope *ss = 0;
@@ -220,6 +223,7 @@ ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack() {
         }
     }
 
+    DEBUG_LEAVE("getSymScopeBack %p", ss);
     return ss;
 }
 
@@ -241,6 +245,7 @@ ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack(int32_t off) {
     // Walk through the scope backwards and return the 
     // first symbol scope
     ast::ISymbolScope *ss = 0;
+    DEBUG_ENTER("getSymScopeBack %d", off);
 
     for (int32_t i=m_scope_s.size()-1; i>=0; i--) {
         if ((ss=TaskGetSymbolScope().get(m_scope_s.at(i)))) {
@@ -257,6 +262,7 @@ ast::ISymbolScope *AstSymbolTableIterator::getSymScopeBack(int32_t off) {
         }
     }
 
+    DEBUG_LEAVE("getSymScopeBack %p", ss);
     return ss;
 }
 
