@@ -44,7 +44,10 @@ TaskResolveRefs::~TaskResolveRefs() {
 }
 
 void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
-    DEBUG_ENTER("resolve (SymbolScope root) %d %p", root->getSymtab().size(), root);
+    DEBUG_ENTER("resolve (SymbolScope root) %d %p (%s)", 
+        root->getSymtab().size(), 
+        root,
+        root->getName().c_str());
 //    m_root = root;
     m_ctxt->pushSymtab(m_ctxt->getFactory()->mkAstSymbolTableIterator(root));
 
@@ -54,6 +57,12 @@ void TaskResolveRefs::resolve(ast::ISymbolScope *root) {
 
     // Phases:
     // - 
+
+    if (root->getImports()) {
+        DEBUG_ENTER("  Resolve Imports");
+        TaskResolveImports(m_ctxt).resolve(root);
+        DEBUG_LEAVE("  Resolve Imports");
+    }
 
     DEBUG("resolve ==> process children");
     for (std::vector<ast::IScopeChildUP>::const_iterator

@@ -50,6 +50,10 @@ public:
         m_ret = s;
     }
 
+    virtual void visitRootSymbolScope(ast::IRootSymbolScope *s) override {
+        m_ret = s;
+    }
+
     virtual void visitSymbolScope(ast::ISymbolScope *s) override {
         m_ret = s;
     }
