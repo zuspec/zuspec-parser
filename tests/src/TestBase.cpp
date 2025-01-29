@@ -96,7 +96,7 @@ void TestBase::runTest(
 
 	ast::ISymbolScopeUP root(linker->link(
 		&marker_c,
-		{global.get()}
+		{global.release()}
 	));
 
 	for (std::vector<IMarkerUP>::const_iterator

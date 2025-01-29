@@ -30,7 +30,9 @@ namespace parser {
 
 class TaskResolveEnumRef : public TaskResolveBase {
 public:
-    TaskResolveEnumRef(ResolveContext *ctxt);
+    TaskResolveEnumRef(
+        ResolveContext          *ctxt,
+        ast::ISymbolScope       *scope=0);
 
     virtual ~TaskResolveEnumRef();
 
@@ -47,6 +49,7 @@ public:
 private:
     static dmgr::IDebug                 *m_dbg;
     const ast::IExprId                  *m_id;
+    const ast::ISymbolScope             *m_scope;
     ast::ISymbolRefPath                 *m_ref;
 
 };

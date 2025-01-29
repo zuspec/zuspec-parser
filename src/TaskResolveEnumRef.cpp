@@ -27,7 +27,9 @@ namespace zsp {
 namespace parser {
 
 
-TaskResolveEnumRef::TaskResolveEnumRef(ResolveContext *ctxt) : TaskResolveBase(ctxt) {
+TaskResolveEnumRef::TaskResolveEnumRef(
+    ResolveContext      *ctxt,
+    ast::ISymbolScope   *scope) : TaskResolveBase(ctxt), m_scope(scope) {
     DEBUG_INIT("zsp::parser::TaskResolveEnumRef", ctxt->getDebugMgr());
 }
 
@@ -40,10 +42,18 @@ ast::ISymbolRefPath *TaskResolveEnumRef::resolve(const ast::IExprId *id) {
     m_id = id;
     m_ref = 0;
 
-    for (std::vector<ast::IScopeChildUP>::const_iterator
-        it=m_ctxt->symtab()->getScope()->getChildren().begin();
-        it!=m_ctxt->symtab()->getScope()->getChildren().end(); it++) {
-        it->get()->accept(m_this);
+    if (m_scope) {
+        for (std::vector<ast::IScopeChildUP>::const_iterator
+            it=m_scope->getChildren().begin();
+            it!=m_scope->getChildren().end(); it++) {
+            (*it)->accept(m_this);
+        }
+    } else {
+        for (std::vector<ast::IScopeChildUP>::const_iterator
+            it=m_ctxt->symtab()->getScope()->getChildren().begin();
+            it!=m_ctxt->symtab()->getScope()->getChildren().end(); it++) {
+            it->get()->accept(m_this);
+        }
     }
 
     DEBUG_LEAVE("resolve");

@@ -190,7 +190,7 @@ void TaskResolveRootRef::visitSymbolFunctionScope(ast::ISymbolFunctionScope *i) 
 ast::ISymbolRefPath *TaskResolveRootRef::searchImports(
     const ast::IExprId          *id,
     ast::ISymbolImportSpec      *imp) {
-    DEBUG_ENTER("searchImports");
+    DEBUG_ENTER("searchImports - %d statements", imp->getImports().size());
     ast::ISymbolRefPath *ret = 0;
 	for (std::vector<ast::IPackageImportStmt *>::const_iterator
 		imp_it=imp->getImports().begin();
@@ -219,7 +219,7 @@ ast::ISymbolRefPath *TaskResolveRootRef::searchImports(
 ast::ISymbolRefPath *TaskResolveRootRef::searchImport(
         const ast::IExprId          *id,
         ast::IPackageImportStmt     *imp) {
-	DEBUG_ENTER("searchImport %s", id->getId().c_str());
+	DEBUG_ENTER("searchImport sym=%s", id->getId().c_str());
     ast::ISymbolRefPath *ret = 0;
 
 	// ast::ISymbolRefPath *ret = 0;
@@ -249,10 +249,12 @@ ast::ISymbolRefPath *TaskResolveRootRef::searchImport(
 			ret->getPath().push_back({
                 ast::SymbolRefPathElemKind::ElemKind_ChildIdx, it->second
             });
-		}
+		} else {
+            ret = TaskResolveEnumRef(m_ctxt, target_s).resolve(id);
+        }
 	}
 
-	DEBUG_LEAVE("searchImport %s", id->getId().c_str());
+	DEBUG_LEAVE("searchImport %s %p", id->getId().c_str(), ret);
 	return ret;
 }
 
