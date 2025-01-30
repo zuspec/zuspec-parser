@@ -236,6 +236,7 @@ void TaskBuildSymbolTree::visitEnumDecl(ast::IEnumDecl *i) {
 
 void TaskBuildSymbolTree::visitEnumItem(ast::IEnumItem *i) {
     DEBUG_ENTER("visitEnumItem %s", i->getName()->getId().c_str());
+    i->setUpper(dynamic_cast<ast::ISymbolEnumScope *>(symbolScope()));
     addChild(i, i->getName()->getId(), false);
     DEBUG_LEAVE("visitEnumItem %s", i->getName()->getId().c_str());
 }

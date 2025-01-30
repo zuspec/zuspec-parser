@@ -19,6 +19,11 @@ classes:
     super: NamedScopeChild
     data:
     - value: UP<Expr>
+    - upper:
+        type: P<SymbolEnumScope>
+        is_ctor: false
+        init: 0
+        visit: false
 
 - EnumDecl:
     super: NamedScopeChild
