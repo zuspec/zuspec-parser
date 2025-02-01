@@ -146,6 +146,8 @@ if isSrcBuild:
             (antlr4_rt_lib, ""),
             ("build/{libdir}/{libpref}ast{dllext}", ""),
             ("build/{libdir}/{libpref}zsp-parser{dllext}", ""),
+            ("python/PyBaseVisitor.h", "share/include"),
+            ("python/PyParserUtils.h", "share/include"),
         ]
     }
 
