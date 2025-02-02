@@ -8,18 +8,17 @@ import sys
 import platform
 from setuptools import Extension, setup, find_namespace_packages
 
-version="0.0.1"
-
 proj_dir = os.path.dirname(os.path.abspath(__file__))
 pythondir = os.path.join(proj_dir, "python")
 
 try:
     import sys
-    sys.path.insert(0, os.path.join(proj_dir, "python"))
-    from zsp_parser.__build_num__ import BUILD_NUM
-    version += ".%d" % BUILD_NUM
+    sys.path.insert(0, os.path.join(proj_dir, "python/zsp_parser"))
+    from __version__ import VERSION
+    version = VERSION
 except Exception as e:
     print("NOTE: no version file found (%s)" % str(e))
+    version = "0.0.1"
 
 isSrcBuild = False
 
