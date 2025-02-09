@@ -14,11 +14,13 @@ pythondir = os.path.join(proj_dir, "python")
 try:
     import sys
     sys.path.insert(0, os.path.join(proj_dir, "python/zsp_parser"))
-    from __version__ import VERSION
+    from __version__ import VERSION, BASE
+    base = BASE
     version = VERSION
 except Exception as e:
     print("NOTE: no version file found (%s)" % str(e))
-    version = "0.0.1"
+    base = "0.0.1"
+    version = base
 
 isSrcBuild = False
 
