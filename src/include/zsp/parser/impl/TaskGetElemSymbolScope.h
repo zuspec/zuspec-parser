@@ -34,7 +34,7 @@ public:
         ast::ISymbolScope       *root,
         const std::string       &logid="zsp::parse::TaskGetElemSymbolScope") : 
         m_dbg(0), m_path_resolver(dmgr, root) {
-        DEBUG_INIT(logid, dmgr);
+        DEBUG_INIT(logid.c_str(), dmgr);
     }
 
     virtual ~TaskGetElemSymbolScope() { }

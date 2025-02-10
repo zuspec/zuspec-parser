@@ -23,7 +23,7 @@ package:
     - name: pyastbuilder
       url: https://github.com/mballance/pyastbuilder.git
     - name: debug-mgr
-      url: https://github.com/mballance/debug-mgr.git
+      src: pypi
     - name: pytest
       src: pypi
     - name: toposort
