@@ -799,6 +799,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::
     ));
 
     if (prefix && hid) {
+        DEBUG("Creating an ExprRefPathStaticRooted expression");
         ast::IProceduralStmtExpr *stmt = m_factory->mkProceduralStmtExpr(
             m_factory->mkExprRefPathStaticRooted(
                 prefix,
@@ -806,6 +807,7 @@ antlrcpp::Any AstBuilderInt::visitProcedural_void_function_call_stmt(PSSParser::
         m_exec_stmt = stmt;
         m_exec_stmt_cnt++;
     } else {
+        DEBUG("Creating an ExprRefPathContext expression");
         ast::IProceduralStmtExpr *stmt = m_factory->mkProceduralStmtExpr(
             m_factory->mkExprRefPathContext(hid));
         m_exec_stmt = stmt;

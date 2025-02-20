@@ -517,23 +517,47 @@ void TaskResolveRefs::visitExprRefPathStatic(ast::IExprRefPathStatic *i) {
 }
 
 void TaskResolveRefs::visitExprRefPathStaticRooted(ast::IExprRefPathStaticRooted *i) {
-    DEBUG_ENTER("visitExprRefPathStaticRooted");
+    DEBUG_ENTER("visitExprRefPathStaticRooted %s",
+        i->getLeaf()->getElems().at(0)->getId()->getId().c_str());
     // Resolve the root
-    i->getRoot()->accept(m_this);
-
-    if (!i->getRoot()->getTarget()) {
-        DEBUG_LEAVE("visitExprRefPathStaticRooted -- failed root resolution");
-        return;
-    }
-
-    i->getLeaf()->accept(m_this);
-
-    if (i->getRoot()->getTarget()->getPyref_idx() != -1) {
-        // The root ends in a Python-type reference
-        DEBUG("Root (static) reference has a Python component");
+    if (i->getRoot()->getIs_global()) {
+        ast::IExprId *id = i->getLeaf()->getElems().at(0)->getId();
+        DEBUG("Global reference -- first find leaf %s", id->getId().c_str());
+        std::unordered_map<std::string,int32_t>::const_iterator it;
+        const std::unordered_map<std::string,int32_t> &symtab = 
+            m_ctxt->symtab()->getRootScope()->getSymtab();
+        
+        if ((it=symtab.find(id->getId())) == symtab.end()) {
+            DEBUG_ERROR("Failed to resolve leaf %s", id->getId().c_str());
+            for (it=symtab.begin(); it!=symtab.end(); it++) {
+                DEBUG("Symbol: %s", it->first.c_str());
+            }
+        } else {
+            ast::ISymbolRefPath *ref = 
+                m_ctxt->getFactory()->getAstFactory()->mkSymbolRefPath();
+            ast::SymbolRefPathElem elem;
+            elem.kind = ast::SymbolRefPathElemKind::ElemKind_ChildIdx;
+            elem.idx = it->second;
+            ref->getPath().push_back(elem);
+            i->getRoot()->setTarget(ref);
+        }
     } else {
-        DEBUG("Root (static) reference does not have a Python component");
-        DEBUG("TODO: visitExprRefPathStaticRooted");
+        i->getRoot()->accept(m_this);
+
+        if (!i->getRoot()->getTarget()) {
+            DEBUG_LEAVE("visitExprRefPathStaticRooted -- failed root resolution");
+            return;
+        }
+
+        i->getLeaf()->accept(m_this);
+
+        if (i->getRoot()->getTarget()->getPyref_idx() != -1) {
+            // The root ends in a Python-type reference
+            DEBUG("Root (static) reference has a Python component");
+        } else {
+            DEBUG("Root (static) reference does not have a Python component");
+            DEBUG("TODO: visitExprRefPathStaticRooted");
+        }
     }
 
     DEBUG_LEAVE("visitExprRefPathStaticRooted");
