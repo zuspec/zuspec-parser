@@ -20,6 +20,10 @@ package executor_pkg {
         function void add_executor(executor_base_c exe);
     };
 
+    component executor_group_default_c {
+        function void add_executor(executor_base_c exe);
+    }
+
     struct executor_claim_s<
         struct TRAIT : executor_trait_s = empty_executor_trait_s> {
         rand TRAIT trait;
