@@ -390,6 +390,31 @@ antlrcpp::Any AstBuilderInt::visitAbstract_action_declaration(PSSParser::Abstrac
 	return 0;
 }
 
+antlrcpp::Any AstBuilderInt::visitActivity_bind_stmt(PSSParser::Activity_bind_stmtContext *ctx) {
+    DEBUG_ENTER("visitActivity_bind_stmt");
+    ast::IExprHierarchicalId *lhs;
+
+    lhs = mkHierarchicalId(ctx->hierarchical_id());
+    ast::IActivityBindStmt *stmt = m_factory->mkActivityBindStmt(lhs);
+
+    if (ctx->activity_bind_item_or_list()->hierarchical_id()) {
+        stmt->getRhs().push_back(
+            mkHierarchicalId(ctx->activity_bind_item_or_list()->hierarchical_id()));
+    } else {
+        std::vector<PSSParser::Hierarchical_idContext *> items = ctx->activity_bind_item_or_list()->hierarchical_id_list()->hierarchical_id();
+        for (std::vector<PSSParser::Hierarchical_idContext *>::const_iterator
+            it=items.begin(); 
+            it!=items.end(); it++) {
+            stmt->getRhs().push_back(mkHierarchicalId((*it)));
+        }
+    }
+    setLoc(stmt, ctx->start);
+    m_activity_stmt = stmt;
+    
+    DEBUG_LEAVE("visitActivity_bind_stmt");
+    return 0;
+}
+
 antlrcpp::Any AstBuilderInt::visitActivity_declaration(PSSParser::Activity_declarationContext *ctx) {
     DEBUG_ENTER("visitActivity_declaration");
     ast::IActivityDecl *activity = m_factory->mkActivityDecl("");

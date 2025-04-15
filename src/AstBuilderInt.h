@@ -82,6 +82,8 @@ public:
 
 	virtual antlrcpp::Any visitAbstract_action_declaration(PSSParser::Abstract_action_declarationContext *ctx);
 
+    virtual antlrcpp::Any visitActivity_bind_stmt(PSSParser::Activity_bind_stmtContext *ctx) override;
+
     virtual antlrcpp::Any visitActivity_declaration(PSSParser::Activity_declarationContext *ctx) override;
 
 	virtual antlrcpp::Any visitFlow_ref_field_declaration(PSSParser::Flow_ref_field_declarationContext *ctx) override;
