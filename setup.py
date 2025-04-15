@@ -69,7 +69,7 @@ ext = Extension(
 
 extensions=[ast_ext, ext]
 
-setup_requires=['cython', 'ciostream']
+setup_requires=['cython', 'ciostream', 'debug-mgr', 'ivpm']
 
 if isSrcBuild:
     setup_requires.append('pyastbuilder')
