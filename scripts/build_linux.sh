@@ -11,7 +11,12 @@ ${IVPM_PYTHON} -m ivpm update -a --py-prerls-packages
 PYTHON=./packages/python/bin/python
 ${PYTHON} -m pip install twine auditwheel ninja wheel cython
 
-echo "IVPM version:"
+echo "IVPM version: (1)"
+${PYTHON} -m pip show ivpm
+
+${PYTHON} -m pip install --upgrade --pre ivpm
+
+echo "IVPM version: (2)"
 ${PYTHON} -m pip show ivpm
 
 # First, do all the required code generation. This ensures the
