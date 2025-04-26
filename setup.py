@@ -137,7 +137,7 @@ if isSrcBuild:
     ]
 
     if platform.system() == "Linux":
-        antlr4_rt_lib = "build/{libdir}/{libpref}antlr4-runtime{dllext}.4.8"
+        antlr4_rt_lib = "build/{libdir}/{libpref}antlr4-runtime{dllext}"
     else:
         antlr4_rt_lib = "build/{libdir}/{libpref}antlr4-runtime{dllext}"
 
