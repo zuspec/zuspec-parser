@@ -60,7 +60,7 @@ add_library(zsp-parser SHARED
 	${ANTLR_PSSLexer_OUTPUTS})
 
 install(TARGETS zsp-parser
-    DESTINATION lib
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
     EXPORT zsp-targets)
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/zsp" # source directory
