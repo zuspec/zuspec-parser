@@ -137,7 +137,18 @@ if isSrcBuild:
     ]
 
     if platform.system() == "Linux":
-        antlr4_rt_lib = "build/{libdir}/{libpref}antlr4-runtime{dllext}"
+        antlr4_rt_lib = None
+        for libdir in ("lib", "lib64"):
+            if os.path.exists("build/%s/libantlr4-runtime.so" % libdir):
+                for f in os.listdir("build/%s" % libdir):
+                    if f.startswith("libantlr4-runtime.so."):
+                        antlr4_rt_lib = "build/{libdir}/%s" % f
+                        break
+            if antlr4_rt_lib is not None:
+                break
+
+        print("antlr4_rt_lib: %s" % antlr4_rt_lib)
+#        antlr4_rt_lib = "build/{libdir}/{libpref}antlr4-runtime{dllext}"
     else:
         antlr4_rt_lib = "build/{libdir}/{libpref}antlr4-runtime{dllext}"
 

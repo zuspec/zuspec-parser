@@ -27,5 +27,6 @@ ${PYTHON} setup.py bdist_wheel
 
 for whl in dist/*.whl; do
     ${PYTHON} -m auditwheel repair --only-plat $whl
+    if test $? -ne 0; then exit 1; fi
     rm $whl
 done
