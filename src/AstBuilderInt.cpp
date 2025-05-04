@@ -1081,7 +1081,33 @@ antlrcpp::Any AstBuilderInt::visitComponent_declaration(PSSParser::Component_dec
     }
 
 	addChild(comp, ctx->start, ctx->TOK_RCBRACE()->getSymbol());
+
 	push_scope(comp);
+
+    if (!super_t) {
+        // TODO: add in predefined methods
+        DEBUG("Add set_executor() method (%s)", comp->getName()->getId().c_str());
+        ast::IFunctionPrototype *set_executor = m_factory->mkFunctionPrototype(
+            m_factory->mkExprId("set_executor", false),
+            0,
+            false,
+            true);
+        set_executor->setIs_core(true);
+        comp->getChildren().push_back(ast::IScopeChildUP(set_executor));
+    } else {
+        DEBUG("Have base type. Not adding set_executor() method (%s)",
+            comp->getName()->getId().c_str());
+    }
+
+#ifdef UNDEFINED
+    ast::IFunctionPrototype *set_default_executor = m_factory->mkFunctionPrototype(
+        m_factory->mkExprId("set_default_executor", false),
+        0,
+        false,
+        true);
+    addChild(set_default_executor, 0, 0);
+#endif // UNDEFINED
+
 	std::vector<PSSParser::Component_body_item_annContext *> body = ctx->component_body_item_ann();
 	for (std::vector<PSSParser::Component_body_item_annContext *>::const_iterator
 		it=body.begin();

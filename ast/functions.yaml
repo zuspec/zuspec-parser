@@ -58,6 +58,10 @@ classes:
             type: bool
         - is_solve:
             type: bool
+        - is_core:
+            type: bool
+            is_ctor: false
+            init: false
 
   - FunctionImport:
     - super: ScopeChild
