@@ -596,6 +596,7 @@ component_body_item:
 	| component_body_compile_if
     | monitor_declaration
     | cover_stmt
+    | activity_declaration /* zuspec extension */
  	| TOK_SEMICOLON
 	;
 
