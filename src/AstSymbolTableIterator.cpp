@@ -177,6 +177,8 @@ void AstSymbolTableIterator::pushScope(
     }
     if (idx != idx1) {
         DEBUG("negative (idx=%d idx1=%d)", idx, idx1);
+    } else if (idx1 == -1) {
+        DEBUG("Scope results in negative idx");
     }
     m_scope_s.push_back(s);
     m_path.push_back({kind, idx1});
