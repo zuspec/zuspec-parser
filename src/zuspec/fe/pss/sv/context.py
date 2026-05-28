@@ -7,7 +7,29 @@ from __future__ import annotations
 
 import dataclasses as dc
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+# SV keywords that clash with user field/variable names.
+# When a PSS field is named one of these, prefix it with ``_zsp_``.
+_SV_KEYWORDS: frozenset = frozenset([
+    "initial", "final", "priority", "property",
+    "type", "static", "local", "protected", "virtual",
+    "class", "extends", "implements", "interface",
+    "package", "import", "export", "ref",
+    "input", "output", "inout",
+    "module", "endmodule", "function", "endfunction",
+    "task", "endtask", "endclass", "endpackage",
+    "time", "event", "real", "integer",
+    "wire", "reg", "logic", "bit",
+    "always", "always_comb", "always_ff",
+    "begin", "end", "fork", "join",
+    "if", "else", "case", "endcase", "default",
+    "for", "foreach", "while", "do", "repeat",
+    "return", "break", "continue",
+    "new", "null", "this", "super",
+    "rand", "randc", "constraint",
+    "assign", "force", "release",
+])
 
 from zuspec.dataclasses import ir
 
@@ -27,6 +49,82 @@ class LoweringContext:
 
     # The AstToIrContext from the parser (type_map, parent_comp_names, etc.)
     ir_ctx: Optional[Any] = dc.field(default=None)
+
+    # Generation-time warnings: list of (message, location_hint) tuples.
+    # Populated by lowering passes for unsupported or degraded constructs.
+    warnings: List[Tuple[str, str]] = dc.field(default_factory=list)
+
+    # Pre-computed ActivityPlan objects keyed by action qualified name.
+    # Populated by pss_to_sv() before lowering begins when ir_ctx is set.
+    activity_plans: Dict[str, Any] = dc.field(default_factory=dict)
+
+    def warn(self, msg: str, location: str = "") -> None:
+        """Record a generation-time warning and print it to stderr."""
+        import sys
+        entry = (msg, location)
+        self.warnings.append(entry)
+        loc = f" [{location}]" if location else ""
+        print(f"zuspec-sv warning{loc}: {msg}", file=sys.stderr)
+
+    def resolve_sv_class_name(self, ref_name: str) -> str:
+        """Return the canonical mangled SV class name for a PSS type reference.
+
+        Handles unqualified names by scanning the type_map and sv_name_map,
+        preferring the canonical (most-qualified) key that was used to emit
+        the class.
+
+        Also handles instance-path references (e.g. ``enc::encode_pipeline``
+        where ``enc`` is a component instance of type ``encoder_c``): when the
+        exact path is not found in type_map, we fall back to matching on the
+        last path segment (``encode_pipeline``) across all registered types.
+        """
+        if self.ir_ctx is None:
+            return self.mangle_name(ref_name)
+        type_map = self.ir_ctx.type_map
+        # Exact match
+        target = type_map.get(ref_name)
+        if target is None:
+            # Suffix scan for *::ref_name (full ref_name as a suffix)
+            for k, v in type_map.items():
+                if k.endswith(f"::{ref_name}"):
+                    target = v
+                    break
+        if target is None and "::" in ref_name:
+            # ref_name may be an instance-qualified path (e.g. enc::encode_pipeline)
+            # where the first segment is an instance name, not a type name.
+            # Try matching on the last segment only across all registered types.
+            short = ref_name.split("::")[-1]
+            candidates = [
+                (k, v) for k, v in type_map.items()
+                if k == short or k.endswith(f"::{short}")
+            ]
+            if len(candidates) == 1:
+                target = candidates[0][1]
+            elif candidates:
+                # Pick the most-qualified candidate
+                target = max(candidates, key=lambda kv: kv[0].count("::"))[1]
+        if target is None:
+            return self.mangle_name(ref_name)
+        tid = id(target)
+        # Return the mangled name that was already recorded in sv_name_map
+        for k, m in self.sv_name_map.items():
+            if id(type_map.get(k)) == tid:
+                return m
+        # Not yet mangled: use the most-qualified key
+        best = ref_name
+        for k, v in type_map.items():
+            if id(v) == tid and k.count("::") > best.count("::"):
+                best = k
+        return self.mangle_name(best)
+
+    def safe_field_name(self, name: str) -> str:
+        """Return a SV-safe version of a field/variable name.
+
+        If *name* is an SV reserved keyword, returns ``_zsp_<name>``.
+        """
+        if name in _SV_KEYWORDS:
+            return f"_zsp_{name}"
+        return name
 
     def mangle_name(self, pss_name: str) -> str:
         """Convert a PSS qualified name to a valid SV identifier.
@@ -89,9 +187,41 @@ class LoweringContext:
             return f"bit [{elem}]"
 
         if isinstance(dtype, ir.DataTypeRef):
+            # Resolve through sv_name_map to get the canonical mangled class name.
+            # DataTypeRef fields may reference action or component types whose
+            # mangled names were determined during the forward-decl pass.
+            # Also handles instance-path references (e.g. "tx::send_pkt" where "tx"
+            # is a component instance of type "tx_c") by delegating to resolve_sv_class_name
+            # when the simple lookup fails.
+            if self.ir_ctx is not None:
+                target = self.ir_ctx.type_map.get(dtype.ref_name)
+                if target is None:
+                    for k, v in self.ir_ctx.type_map.items():
+                        if k.endswith(f"::{dtype.ref_name}"):
+                            target = v
+                            break
+                if target is not None:
+                    tid = id(target)
+                    for k, m in self.sv_name_map.items():
+                        if id(self.ir_ctx.type_map.get(k)) == tid:
+                            return m
+                    best = dtype.ref_name
+                    for k, v in self.ir_ctx.type_map.items():
+                        if id(v) == tid and k.count("::") > best.count("::"):
+                            best = k
+                    return self.mangle_name(best)
+                # Fall back to instance-path resolution (same as resolve_sv_class_name)
+                return self.resolve_sv_class_name(dtype.ref_name)
             return self.mangle_name(dtype.ref_name)
 
         if isinstance(dtype, (ir.DataTypeStruct, ir.DataTypeClass, ir.DataTypeComponent)):
+            # Same canonical lookup for inline type objects
+            if self.ir_ctx is not None and dtype.name:
+                target = self.ir_ctx.type_map.get(dtype.name)
+                if target is not None:
+                    for k, m in self.sv_name_map.items():
+                        if id(self.ir_ctx.type_map.get(k)) == id(target):
+                            return m
             return self.mangle_name(dtype.name) if dtype.name else "int"
 
         # Fallback

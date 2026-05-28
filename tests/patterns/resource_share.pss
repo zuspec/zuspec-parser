@@ -1,0 +1,59 @@
+// Resource share: two concurrent actions share a read-only resource
+// while an exclusive writer holds a separate lock.
+// Exercises: share keyword, lock keyword in same pool, parallel with
+//            mix of shared and exclusive claims, pool sizing.
+//
+// Original work for zuspec test suite. MIT-licensed.
+
+resource mmio_region_r {
+    rand bit[8] region_id;
+}
+
+component pss_top {
+    pool [8] mmio_region_r region_pool;
+    bind region_pool *;
+
+    action mmio_read {
+        share mmio_region_r region;
+        rand bit[32] offset;
+        rand bit[32] rdata;
+        constraint offset[1:0] == 0;
+    }
+
+    action mmio_write {
+        lock mmio_region_r region;
+        rand bit[32] offset;
+        rand bit[32] wdata;
+        constraint offset[1:0] == 0;
+    }
+
+    // Two concurrent readers sharing the same pool region
+    action concurrent_reads {
+        activity {
+            parallel {
+                do mmio_read;
+                do mmio_read;
+            }
+        }
+    }
+
+    // Sequential: write then read (exclusive then shared)
+    action write_then_read {
+        activity {
+            do mmio_write;
+            do mmio_read;
+            do mmio_read;
+        }
+    }
+
+    action do_test {
+        rand int rounds;
+        constraint rounds in [1..4];
+        activity {
+            repeat (rounds) {
+                do concurrent_reads;
+            }
+            do write_then_read;
+        }
+    }
+}

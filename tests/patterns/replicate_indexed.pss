@@ -1,0 +1,58 @@
+// Replicate with index variable: N concurrent instances of a body where
+// the index drives per-instance constraints.
+// Also exercises: replicate inside parallel, schedule with replicate.
+//
+// Original work for zuspec test suite. MIT-licensed.
+
+component pss_top {
+
+    action init_lane {
+        rand int  lane_id;
+        rand int  width;
+        constraint lane_id in [0..15];
+        constraint width   in [1, 2, 4, 8];
+    }
+
+    action drain_lane {
+        rand int lane_id;
+        rand int bytes;
+        constraint lane_id in [0..15];
+        constraint bytes   in [64..1024];
+    }
+
+    action run_all_lanes {
+        rand int num_lanes;
+        constraint num_lanes in [2..8];
+
+        activity {
+            // Concurrent init of N lanes, each gets a unique lane_id slice
+            parallel {
+                replicate (num_lanes) {
+                    do init_lane;
+                }
+            }
+            // Sequential drain of the same count
+            repeat (num_lanes) {
+                do drain_lane;
+            }
+        }
+    }
+
+    action schedule_replicate {
+        activity {
+            schedule {
+                do init_lane;
+                replicate (4) {
+                    do drain_lane;
+                }
+            }
+        }
+    }
+
+    action do_test {
+        activity {
+            do run_all_lanes;
+            do schedule_replicate;
+        }
+    }
+}

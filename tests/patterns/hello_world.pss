@@ -1,0 +1,41 @@
+// Simple hello-world PSS model.
+// Exercises: basic component/action structure, rand fields with range
+// constraints, named constraint blocks, bit-slice alignment constraints,
+// exec body with message().
+//
+// Original work for zuspec test suite. MIT-licensed.
+
+component pss_top {
+
+    action write_reg {
+        rand bit[32] addr;
+        rand bit[32] data;
+
+        constraint addr_aligned { addr[1:0] == 0; }
+        constraint addr_range   { addr in [0x1000..0x1FFF]; }
+
+        exec body {
+            message(NONE, "write_reg: addr=0x%x data=0x%x", addr, data);
+        }
+    }
+
+    action read_reg {
+        rand bit[32] addr;
+        rand bit[32] expected;
+
+        constraint addr in [0x1000..0x1FFF];
+        constraint addr[1:0] == 0;
+
+        exec body {
+            message(NONE, "read_reg: addr=0x%x", addr);
+        }
+    }
+
+    action do_test {
+        activity {
+            do write_reg;
+            do write_reg;
+            do read_reg;
+        }
+    }
+}

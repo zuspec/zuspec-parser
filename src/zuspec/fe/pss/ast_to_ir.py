@@ -447,8 +447,9 @@ class AstToIrTranslator:
             if not isinstance(dtype, ir.DataTypeClass):
                 continue
             for field in dtype.fields:
-                if field.kind in (ir.FieldKind.Input, ir.FieldKind.Output,
-                                  ir.FieldKind.Lock, ir.FieldKind.Share):
+                # Exclude Lock/Share (resources) -- those are handled by the
+                # resource-pool second pass below with an appropriate capacity.
+                if field.kind in (ir.FieldKind.Input, ir.FieldKind.Output):
                     fdt = field.datatype
                     if isinstance(fdt, ir.DataTypeStruct) and fdt.flow_kind is not None:
                         if fdt.name and fdt.name not in seen_flow_types:
@@ -580,6 +581,32 @@ class AstToIrTranslator:
                 field = self._translate_field_ref(ctx, child)
                 if field:
                     action_ir.fields.append(field)
+            elif isinstance(child, pss_ast.ActionHandleField):
+                # Named action handle declared at the action or activity level.
+                # E.g. `link_init a_init;` → Field(kind=Field, name='a_init',
+                #       datatype=DataTypeRef('link_init'))
+                # These become class-level handles on the action, constructed
+                # in pre_solve() before randomize().
+                name_node = child.getName()
+                handle_name = name_node.getId() if hasattr(name_node, 'getId') else str(name_node)
+                type_node = child.getType()
+                type_id = type_node.getType_id() if hasattr(type_node, 'getType_id') else None
+                type_parts: list = []
+                if type_id:
+                    for _ti in range(type_id.numElems()):
+                        elem = type_id.getElem(_ti)
+                        eid = elem.getId() if hasattr(elem, 'getId') else None
+                        if eid and hasattr(eid, 'getId'):
+                            type_parts.append(eid.getId())
+                handle_type_name = '::'.join(type_parts) if type_parts else None
+                if handle_name and handle_type_name:
+                    from zuspec.ir.core.fields import FieldKind as _HFK
+                    _hf = ir.Field(
+                        name=handle_name,
+                        kind=_HFK.Field,
+                        datatype=ir.DataTypeRef(ref_name=handle_type_name),
+                    )
+                    action_ir.fields.append(_hf)
             elif isinstance(child, pss_ast.FieldClaim):
                 # lock/share resource claim (PSS LRM section 9.3)
                 field = self._translate_field_claim(ctx, child)
@@ -2154,7 +2181,29 @@ class AstToIrTranslator:
                         args.append(arg_ir)
                 result = ir.ExprCall(func=result, args=args)
 
-        return result
+        return self._apply_ref_bit_slice(expr, result)
+
+    def _apply_ref_bit_slice(self, expr_node, result: ir.Expr) -> ir.Expr:
+        """If *expr_node* carries a bit-slice, wrap *result* in ExprSubscript.
+
+        ``ExprRefPathContext`` and the static variants can all have a
+        ``getSlice()`` method returning an ``ExprBitSlice`` AST node.  When
+        present, we must produce ``ExprSubscript(value=result, slice=ExprSlice(...)``
+        so the SV lowering emits ``result[upper:lower]`` in the constraint.
+        """
+        if not hasattr(expr_node, 'getSlice'):
+            return result
+        slice_node = expr_node.getSlice()
+        if slice_node is None:
+            return result
+        # bit_slice grammar: [upper:lower]; ExprBitSlice has getLhs()=upper, getRhs()=lower
+        upper_node = slice_node.getLhs() if hasattr(slice_node, 'getLhs') else None
+        lower_node = slice_node.getRhs() if hasattr(slice_node, 'getRhs') else None
+        # Translate bounds as plain numeric constants (they are always constant exprs)
+        upper_expr = ir.ExprConstant(value=int(upper_node.getValue())) if (upper_node and hasattr(upper_node, 'getValue')) else None
+        lower_expr = ir.ExprConstant(value=int(lower_node.getValue())) if (lower_node and hasattr(lower_node, 'getValue')) else None
+        slc = ir.ExprSlice(lower=lower_expr, upper=upper_expr, step=None, is_bit_slice=True)
+        return ir.ExprSubscript(value=result, slice=slc)
 
     def _resolve_enum_constant(self, ctx: AstToIrContext, name: str) -> Optional[int]:
         """Check if *name* is an enum member across all registered enums.
@@ -2184,12 +2233,17 @@ class AstToIrTranslator:
         return ir.ExprSubscript(value=value, slice=index)
 
     def _translate_expr_bitslice(self, ctx: AstToIrContext, expr: pss_ast.ExprBitSlice) -> ir.ExprSlice:
-        """Translate a bit slice expression"""
-        value = self._translate_expression(ctx, expr.getLhs())
-        lower = self._translate_expression(ctx, expr.getLower())
-        upper = self._translate_expression(ctx, expr.getUpper())
+        """Translate a standalone bit-slice expression.
 
-        return ir.ExprSlice(lower=lower, upper=upper, step=None)
+        ExprBitSlice only carries the bounds (getLhs()=upper, getRhs()=lower).
+        When a bit-slice appears on a ref-path it is handled via _apply_ref_bit_slice;
+        this path handles any rare standalone occurrence.
+        """
+        upper_node = expr.getLhs()
+        lower_node = expr.getRhs()
+        upper = ir.ExprConstant(value=int(upper_node.getValue())) if (upper_node and hasattr(upper_node, 'getValue')) else None
+        lower = ir.ExprConstant(value=int(lower_node.getValue())) if (lower_node and hasattr(lower_node, 'getValue')) else None
+        return ir.ExprSlice(lower=lower, upper=upper, step=None, is_bit_slice=True)
 
     def _translate_expr_substring(self, ctx: AstToIrContext, expr: pss_ast.ExprSubstring) -> ir.ExprSlice:
         """Translate a string sub-string expression s[start..end] → ExprSlice"""

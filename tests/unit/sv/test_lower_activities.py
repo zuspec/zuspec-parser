@@ -192,7 +192,7 @@ class TestSelect:
         lines = _lower_activity_stmt(ctx, stmt, "comp")
         text = "\n".join(lines)
         assert "$urandom_range" in text
-        assert "case (_sel_idx)" in text
+        assert "_zsp_sel" in text  # select uses named block
         assert "a1.body();" in text
         assert "a2.body();" in text
 
@@ -205,7 +205,9 @@ class TestSelect:
         ])
         lines = _lower_activity_stmt(ctx, stmt, "comp")
         text = "\n".join(lines)
-        assert "'{ 3, 1 }" in text
+        # Weights 3/1 → total=4; case $urandom_range(0, 3) with [0:2] for branch 0
+        assert "$urandom_range(0, 3)" in text
+        assert "_zsp_sel" in text  # named block
 
     def test_select_with_guard(self, ctx):
         stmt = ir.ActivitySelect(branches=[

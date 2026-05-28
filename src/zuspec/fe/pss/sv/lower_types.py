@@ -20,6 +20,37 @@ from .context import LoweringContext
 from .lower_constraints import lower_constraint_func
 
 
+def _resolve_super(ctx: LoweringContext, ref_name: str) -> str:
+    """Resolve an unqualified super-type reference to its canonical SV class name.
+
+    Mirrors the logic in lower_actions._resolve_super: find the type object,
+    then return the mangled name recorded in sv_name_map for that object.
+    """
+    if ctx.ir_ctx is None:
+        return ctx.mangle_name(ref_name)
+    type_map = ctx.ir_ctx.type_map
+    target = type_map.get(ref_name)
+    if target is None:
+        for key, dtype in type_map.items():
+            if key.endswith(f"::{ref_name}"):
+                target = dtype
+                break
+    if target is None:
+        return ctx.mangle_name(ref_name)
+    target_id = id(target)
+    for key, mangled in ctx.sv_name_map.items():
+        if id(type_map.get(key)) == target_id:
+            return mangled
+    best = ref_name
+    for key, dtype in type_map.items():
+        if id(dtype) == target_id:
+            if key.count("::") > best.count("::") or (
+                key.count("::") == best.count("::") and len(key) > len(best)
+            ):
+                best = key
+    return ctx.mangle_name(best)
+
+
 def lower_enum(ctx: LoweringContext, dtype: ir.DataTypeEnum) -> SVTypedefEnum:
     """Lower a PSS enum to an SVTypedefEnum."""
     sv_name = ctx.mangle_name(dtype.name) if dtype.name else "unnamed_enum"
@@ -39,9 +70,9 @@ def lower_struct(ctx: LoweringContext, dtype: ir.DataTypeStruct) -> SVClass:
     extends = None
     if dtype.super:
         if isinstance(dtype.super, ir.DataTypeRef):
-            extends = ctx.mangle_name(dtype.super.ref_name)
+            extends = _resolve_super(ctx, dtype.super.ref_name)
         elif hasattr(dtype.super, 'name') and dtype.super.name:
-            extends = ctx.mangle_name(dtype.super.name)
+            extends = _resolve_super(ctx, dtype.super.name)
 
     # Fields
     fields: List[SVClassField] = []
@@ -50,7 +81,7 @@ def lower_struct(ctx: LoweringContext, dtype: ir.DataTypeStruct) -> SVClass:
         is_rand = f.rand_kind == "rand"
         is_randc = f.rand_kind == "randc"
         fields.append(SVClassField(
-            name=f.name,
+            name=ctx.safe_field_name(f.name),
             dtype=sv_dtype,
             is_rand=is_rand,
             is_randc=is_randc,

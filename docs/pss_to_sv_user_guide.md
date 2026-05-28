@@ -230,3 +230,460 @@ endclass
 ```
 
 The generated files can be added to your UVM compilation alongside your existing testbench. The `zsp_test_top` module can be excluded when using UVM -- your UVM test replaces it.
+
+---
+
+## Supported PSS Features
+
+The table below summarises every PSS construct and its current support status in the SV backend.
+
+**Legend:** ✅ Fully supported · 🔶 Partial (see note) · ❌ Not yet supported
+
+### Data types
+
+| PSS construct | SV mapping | Status |
+|---|---|---|
+| `int` / `bit[N]` / `bool` | `int` / `bit [N-1:0]` / `bit` | ✅ |
+| `string` | `string` | ✅ |
+| `chandle` | `chandle` | ✅ |
+| `enum E { ... }` | `typedef enum { ... } E` | ✅ |
+| `struct S { ... }` | `class S` with rand fields + constraints | ✅ |
+| `list<T>` / `array<T,N>` | `T [$]` / `T [N]` | ✅ |
+| `map<K,V>` / `set<T>` | `V [K]` / `bit [T]` (assoc arrays) | ✅ |
+
+### Flow objects
+
+| PSS construct | SV mapping | Status |
+|---|---|---|
+| `buffer B { ... }` | `class B extends zsp_buffer` | ✅ |
+| `stream S { ... }` | `class S extends zsp_stream` | ✅ |
+| `state T { ... }` | `class T extends zsp_state` | ✅ |
+| `output F f` on action | rand field; captured after `body()` | ✅ |
+| `input F f` on action | field injected before `pre_solve()` | ✅ |
+| `pool [N] T p; bind p *;` | `zsp_resource_pool #(T,N) p` on component | ✅ |
+| Constraint back-propagation through binds | SV `randomize() with { }` injection | ✅ |
+
+### Resources
+
+| PSS construct | SV mapping | Status |
+|---|---|---|
+| `resource R { ... }` | `class R extends zsp_resource` | ✅ |
+| `pool [N] R p; bind p *;` | `zsp_resource_pool #(R,N) p` on component | ✅ |
+| `lock R r` | `rand int unsigned r_instance_id`; `p.lock(id)` / `p.unlock(id)` | ✅ |
+| `share R r` | `rand int unsigned r_instance_id`; `p.try_share(id)` / `p.unshare(id)` | ✅ |
+| Head-action coordinated solve for parallel blocks | Fisher-Yates shuffle or `std::randomize unique` | ✅ |
+
+### Components
+
+| PSS construct | SV mapping | Status |
+|---|---|---|
+| `component C { ... }` | `class C extends zsp_component` | ✅ |
+| Component sub-component fields | field + `new()` call in constructor | ✅ |
+| `function` (import) | `pure virtual task/function` in `_import_if` class | ✅ |
+| Component inheritance | `class C extends Base` | ✅ |
+
+### Actions
+
+| PSS construct | SV mapping | Status |
+|---|---|---|
+| `action A { ... }` | `class A extends zsp_action` | ✅ |
+| `rand` fields + constraints | SV `rand` fields + `constraint` blocks | ✅ |
+| Named constraints | Named `constraint` blocks; inherited by derived types | ✅ |
+| Named constraint override | Override block of same name in derived class | ✅ |
+| `abstract action A` | `virtual class A extends zsp_action` | ✅ |
+| Action inheritance | `class Derived extends Base` | ✅ |
+| `exec body { ... }` | `virtual task body()` | ✅ |
+| `exec pre_solve { ... }` | `virtual function void pre_solve()` | ✅ |
+| `exec post_solve { ... }` | `virtual function void post_solve()` | ✅ |
+| `covergroup in action` | SV `covergroup` + `cg_inst` field; sampled in `post_solve` | ✅ |
+
+### Activity
+
+| PSS construct | SV mapping | Status |
+|---|---|---|
+| Sequential block `{ ... }` | `begin ... end` | ✅ |
+| Named action handle traversal `h;` | `h.comp=comp; h.pre_solve(); h.randomize(); ...` | ✅ |
+| Anonymous traversal `do T;` | `T _anon = new(); ...` | ✅ |
+| Inline constraint `do T with { ... }` | `randomize() with { ... }` | ✅ |
+| `parallel { ... }` | `fork ... join` | ✅ |
+| `parallel join_first/join_none { ... }` | `fork ... join_any` / `fork ... join_none` | 🔶 IR supported; pssparser gap |
+| `schedule { ... }` | Topologically ordered staged fork/join | ✅ |
+| `bind` in schedule | Flow-object inject/capture wiring | ✅ |
+| `repeat (N) { ... }` | `repeat (N) begin ... end` | ✅ |
+| `repeat (i: N) { ... }` | `for (int i=0; i<N; i++) begin ... end` | ✅ |
+| `do-while` / `while-do` | `do ... while` / `while ... begin ... end` | ✅ |
+| `foreach` | `foreach (coll[iter]) begin ... end` | ✅ |
+| `if`/`else` | `if ... begin ... end else begin ... end` | ✅ |
+| `match` | `case ... endcase` | ✅ |
+| `select { [w]: ... }` | Weighted random branch (shuffle or `std::randomize`) | ✅ |
+| `replicate (N) { ... }` | `fork` with loop over body | ✅ |
+| `replicate (i: N) { ... }` | `fork` with indexed loop | ✅ |
+| `atomic { ... }` | Semaphore `get(1)` / `put(1)` guard | ✅ |
+| `super` traversal | `super.activity()` | ✅ |
+
+### Exec-body statements
+
+| PSS construct | SV mapping | Status |
+|---|---|---|
+| Assignment `x = expr` | `x = expr;` | ✅ |
+| Augmented assignment `x += expr` | `x += expr;` | ✅ |
+| `if`/`else`, `match`, `foreach` | Standard SV control flow | ✅ |
+| `repeat`, `while`, `do-while` | Standard SV loops | ✅ |
+| `break` / `continue` | `break` / `continue` | ✅ |
+| `return` | `return` | ✅ |
+| Function call | Direct SV call | ✅ |
+| `message(verbosity, fmt, ...)` | `$display(fmt, ...)` | ✅ |
+| `yield` | Comment (no SV equivalent in class context) | 🔶 |
+| `cover(expr)` | `cover (expr);` + `ZSP_TRACE` | ✅ |
+| `assert(expr)` / `assume(expr)` | `assert (expr);` / (comment) | ✅ / 🔶 |
+
+---
+
+## Flow-Object Support
+
+PSS flow objects — **buffer**, **stream**, and **state** — carry data between producer and consumer actions. The SV backend handles all three.
+
+### Buffer objects
+
+A buffer is produced by one action, lives in a pool between actions, and consumed by a later action. In generated SV, the buffer is materialised as a class instance stored in a local variable between traversals.
+
+```pss
+buffer packet_buf { rand int seq; }
+
+component pss_top {
+    pool packet_buf pkt_pool;  bind pkt_pool *;
+
+    action produce { output packet_buf out_pkt; }
+    action consume { input  packet_buf in_pkt; }
+
+    action do_test {
+        activity {
+            p: do produce;
+            c: do consume;
+            bind p.out_pkt c.in_pkt;
+        }
+    }
+}
+```
+
+Generated SV (activity task, simplified):
+
+```systemverilog
+task automatic activity();
+    packet_buf _flow_p_out_pkt;      // buffer local variable
+
+    // Producer
+    produce p = new();
+    p.comp = comp;
+    p.pre_solve();
+    if (!p.randomize()) $fatal(1, "randomize failed: p");
+    p.post_solve();
+    p.body();
+    _flow_p_out_pkt = p.out_pkt;     // capture after body
+
+    // Consumer — injected value pins the constraint
+    consume c = new();
+    c.in_pkt = _flow_p_out_pkt;      // inject before pre_solve
+    c.comp = comp;
+    c.pre_solve();
+    if (!c.randomize() with { in_pkt == _flow_p_out_pkt; })
+        $fatal(1, "randomize failed: c");
+    c.post_solve();
+    c.body();
+endtask
+```
+
+The consumer's `randomize() with { in_pkt == _flow_p_out_pkt; }` clause is the **constraint back-propagation**: any constraints the consumer places on `in_pkt` fields are visible to the SV solver and can influence what the producer generates.
+
+### Stream objects
+
+A stream is like a buffer but carries timing semantics: the producer and consumer execute concurrently (in a `schedule` block), and the stream value flows from producer to consumer via a typed channel.  The generated SV wiring is the same as for buffers — a local variable threaded through the activity.
+
+### State objects
+
+A state object represents persistent shared state that can be read and written by multiple actions. Unlike buffers, a state object is not consumed: the same state object passes in and out of each action. This models registers or flag sets that accumulate mutations over a scenario.
+
+```pss
+state link_state_s { rand bool established; rand int retry_count; }
+
+action link_connect {
+    input  link_state_s prev;
+    output link_state_s next;
+    constraint next.established == true;
+}
+```
+
+The generated SV is structurally identical to buffer wiring: inject `prev` before `pre_solve`, capture `next` after `body`.
+
+### Constraint back-propagation
+
+When a consumer places a constraint directly on an input flow-object field, that constraint is visible to the SV solver through the `randomize() with {}` clause. Consider:
+
+```pss
+action pipe_end {
+    input image_stream final_istate;
+    constraint final_istate.resized == true;   // consumer constraint
+}
+```
+
+The generated consumer randomize call includes this constraint as a with-clause, which forces the upstream producer (via the injected flow variable) to also satisfy it. For simple SV-solvable cases this happens automatically. For complex cross-action chains (where the constraint involves multiple linked actions), the DPI joint-chain solver is used instead — see **Schedule Blocks and Joint Chain Solve** below.
+
+---
+
+## Schedule Blocks
+
+A PSS `schedule` block declares a set of actions with partial ordering determined by `bind` directives and flow-object data dependencies. The SV backend topologically stages the schedule into `fork`/`join` groups.
+
+```pss
+action do_pipeline {
+    activity {
+        schedule {
+            a0: do load;
+            a1: do process;
+            a2: do store;
+            bind a1.in_buf a0.out_buf;
+            bind a2.in_buf a1.out_buf;
+        }
+    }
+}
+```
+
+Generated SV (simplified):
+
+```systemverilog
+// Stage 1: load (no dependencies)
+begin
+    load a0 = new();
+    ...
+    a0.body();
+    _flow_a0_out_buf = a0.out_buf;
+end
+
+// Stage 2: process (depends on a0 output)
+begin
+    process a1 = new();
+    a1.in_buf = _flow_a0_out_buf;
+    ...
+    a1.body();
+    _flow_a1_out_buf = a1.out_buf;
+end
+
+// Stage 3: store (depends on a1 output)
+begin
+    store a2 = new();
+    a2.in_buf = _flow_a1_out_buf;
+    ...
+    a2.body();
+end
+```
+
+Actions that are independent of each other within a schedule block are placed in the same stage and executed as a `fork`/`join`.
+
+### Joint chain DPI solve
+
+When a pipeline chain has cross-action constraints that cannot be satisfied by injecting solved values action-by-action (for example, a constraint on the chain exit that requires the solver to see all intermediate variables simultaneously), the backend falls back to the **joint chain DPI solve** protocol:
+
+1. At generation time, all chain variables and constraints are compiled into a single `SolveProblem` and base64-encoded as a package constant (`CHAIN_PROBLEM_B64`).
+2. At simulation time:
+   - `zsp_dpi_compile_b64(CHAIN_PROBLEM_B64)` — deserialise the problem once.
+   - `zsp_dpi_pin_var_h(ctx, VID_x, value)` — pin chain entry variables from upstream buffers.
+   - `zsp_dpi_solve_h(ctx, $urandom())` — single joint solve of the entire chain.
+   - `zsp_dpi_get_value_h(ctx, VID_y)` — read solved values back into action fields.
+   - Execute actions in chain order: `pre_solve` / `post_solve` / `body`.
+   - `zsp_dpi_release_h(ctx)` — release the solver context.
+
+This is the path that makes the pipeline example with `resized == true` on `pipe_end` work correctly — the constraint propagates back through the entire chain in one solve step.
+
+---
+
+## Resource Pools
+
+PSS resource objects represent exclusive or shared hardware resources (DMA channels, MMIO regions, mutex-protected blocks). The SV backend implements full pool lifecycle management.
+
+### Declarations
+
+```pss
+resource dma_channel_r { rand bit[4] id; }
+
+component dma_c {
+    pool [4] dma_channel_r ch_pool;
+    bind ch_pool *;
+
+    action mem_copy {
+        lock dma_channel_r ch;   // exclusive
+    }
+}
+```
+
+Generated component:
+
+```systemverilog
+class dma_c extends zsp_component;
+    zsp_resource_pool #(dma_channel_r, 4) ch_pool;  // pool field
+
+    function new(string name, zsp_component parent);
+        super.new(name, parent);
+        ch_pool = new("ch_pool", this);
+    endfunction
+endclass
+```
+
+Generated action:
+
+```systemverilog
+class dma_c__mem_copy extends zsp_action;
+    dma_channel_r    ch;                  // resource reference
+    rand int unsigned ch_instance_id;     // pool slot selector (rand)
+    ...
+endclass
+```
+
+### Lock/unlock lifecycle
+
+In a sequential traversal:
+
+```systemverilog
+// after randomize() — acquire
+comp.ch_pool.lock(mem_copy_inst.ch_instance_id);
+mem_copy_inst.ch = comp.ch_pool.get(mem_copy_inst.ch_instance_id);
+
+mem_copy_inst.body();
+
+// after body() — release (reverse order)
+comp.ch_pool.unlock(mem_copy_inst.ch_instance_id);
+```
+
+`share` uses `try_share` / `unshare` instead of `lock` / `unlock`.
+
+### Parallel coordination
+
+When a `parallel` block has branches that all claim resources from the same pool, the SV backend emits a **head-action coordinated solve** before the `fork`: it assigns unique pool slots to each branch's head action so they cannot deadlock waiting for the same resource.
+
+For N ≤ 8 claimants, a Fisher-Yates shuffle assigns pool indices. For larger N, `std::randomize` with a `unique` constraint is used. Lock acquisition still happens in canonical alphabetical order within each branch to prevent hold-and-wait deadlocks.
+
+---
+
+## Coverage
+
+PSS `covergroup` blocks inside actions are mapped to SV `covergroup` declarations.
+
+```pss
+action write_op {
+    rand int addr;
+    rand bool cached;
+    covergroup cg_write_op {
+        cp_addr:   coverpoint addr   { bins low  = {[0:0xFF]};
+                                       bins high = {[0x100:0xFFFF]}; }
+        cp_cached: coverpoint cached;
+    }
+}
+```
+
+Generated SV (inside action class):
+
+```systemverilog
+class pss_top__write_op extends zsp_action;
+    rand int addr;
+    rand bit cached;
+
+    covergroup cg_pss_top__write_op;
+        cp_addr:   coverpoint addr;
+        cp_cached: coverpoint cached;
+    endgroup
+
+    pss_top__write_op cg_inst;
+
+    virtual function void post_solve();
+        if (cg_inst != null) cg_inst.sample();
+    endfunction
+    ...
+endclass
+```
+
+The covergroup is sampled automatically in `post_solve()` after every `randomize()` call, so every generated test stimulus contributes to coverage.
+
+The PSS `cover` statement in exec blocks is mapped to a procedural `cover` assertion plus a `ZSP_TRACE` call for observability:
+
+```systemverilog
+`ZSP_TRACE("cover: my_point");
+cover (condition_expr);
+```
+
+---
+
+## Constraint Solving Strategy
+
+The backend uses a three-tier strategy, applied per action based on what types of fields and constraints are present:
+
+**SV-native** — The action has no flow-object input fields and no cross-action constraints. All fields are solved entirely by the SV `randomize()` call. This is the fast path and requires no Zuspec DPI involvement at simulation time.
+
+**SV with injection** — The action consumes a flow-object whose values were determined by an upstream producer. The solved values are injected as constants before `pre_solve()` and pinned via `randomize() with {}`. The SV solver handles everything; DPI is not needed.
+
+**DPI joint-chain** — One or more cross-action constraints cannot be satisfied action-by-action. The backend identifies the chain at generation time, compiles the full chain problem, embeds it as a base64 constant, and emits the five-step DPI protocol at simulation time. This is used for pipelines where exit constraints back-propagate through intermediate transformations.
+
+The classification is computed during the analysis pre-pass in `pss_to_sv()` and stored in the lowering context. No runtime overhead is paid for the SV-native or SV-with-injection tiers.
+
+---
+
+## Generation-Time Diagnostics
+
+The backend prints warnings to stderr for constructs that are partially supported or silently degraded:
+
+```
+zuspec-sv warning [NodeType]: unsupported activity node 'X' — skipped
+```
+
+Warnings are also accessible programmatically via the `LoweringContext.warnings` list after the lowering pass returns. This list can be inspected in unit tests or build scripts to detect unexpected degradation.
+
+Errors that prevent any SV from being generated (IR translation failures, file I/O errors) raise Python exceptions as normal.
+
+---
+
+## VCS-Specific Notes
+
+These behaviours were discovered during VCS W-2024.09 validation and
+influenced the generated code style. Other simulators (Questa, Xcelium) do not
+share them.
+
+### Output flow-object fields must be `rand`
+
+VCS treats handles that are NOT declared `rand` as fixed-value constants in the
+constraint solve. If `next` is a non-`rand` `link_state_s` handle, the
+constraint `next.established == 1` causes `CNST-CIF` immediately — the solver
+sees `established = 0` (default) as a constant conflicting with the constraint.
+
+The backend declares every `output` flow-object field as `rand` so VCS
+includes its sub-fields in the constraint scope.
+
+### `rand_mode(0)` applies class-wide in VCS
+
+Calling `some_obj.rand_mode(0)` where `some_obj` is of type `T` disables
+randomization of **all** `T` instances, not just `some_obj`. The backend avoids
+calling `rand_mode` on flow-object handles for this reason. `constraint_mode`
+is used instead (it is per-instance).
+
+### Compound action constraint scoping
+
+When a compound action (one with named sub-action handles) calls
+`do_test.randomize()`, VCS traverses sub-action constraint graphs. If a
+sub-action has constraints that reference flow-object inputs (e.g. `prev`),
+which are null until `body()` runs, the traversal causes `CNST-CIF`.
+
+The fix: call `handle.constraint_mode(0)` in the parent's `pre_solve()`,
+then `handle.constraint_mode(1)` before each explicit `handle.randomize()` in
+`body()`.
+
+### Named begin/end blocks for local variable declarations
+
+Array and scalar declarations inside **unnamed** `begin`/`end` blocks in
+`virtual task` bodies are rejected by VCS (even with `automatic`). The
+`select` weighted-branch lowering uses a named block `begin : _zsp_sel` to
+work around this.
+
+### `randomize()` on compound root actions
+
+For compound actions with no direct `rand` fields, the generated test harness
+skips `root.randomize()` entirely (the sub-actions are randomized individually
+in `body()`). Calling `randomize()` on such an action would traverse the null
+flow-input graph of sub-actions and produce `CNST-CIF`.
+

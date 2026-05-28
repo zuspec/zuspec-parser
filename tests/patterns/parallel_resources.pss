@@ -1,0 +1,68 @@
+// Parallel activities with resource pool claims.
+// Exercises: resource declaration, pool, bind, lock, parallel fork/join,
+//            sequential activity.
+
+resource dma_channel_r {
+    rand bit[4] id;
+}
+
+component dma_c {
+    pool [4] dma_channel_r ch_pool;
+    bind ch_pool *;
+
+    action mem_read {
+        lock dma_channel_r ch;
+        rand bit[32] src_addr;
+        rand bit[16] length;
+
+        constraint src_addr[1:0] == 0;
+        constraint length in [1..1024];
+
+        exec body {
+            message(NONE, "mem_read: src=0x%x len=%0d", src_addr, length);
+        }
+    }
+
+    action mem_write {
+        lock dma_channel_r ch;
+        rand bit[32] dst_addr;
+        rand bit[16] length;
+
+        constraint dst_addr[1:0] == 0;
+        constraint length in [1..1024];
+
+        exec body {
+            message(NONE, "mem_write: dst=0x%x len=%0d", dst_addr, length);
+        }
+    }
+
+    action mem_copy {
+        activity {
+            parallel {
+                do mem_read;
+                do mem_write;
+            }
+        }
+    }
+
+    action burst_copy {
+        rand int count;
+        constraint count in [2..4];
+        activity {
+            repeat (count) {
+                do mem_copy;
+            }
+        }
+    }
+}
+
+component pss_top {
+    dma_c dma;
+
+    action do_test {
+        activity {
+            do dma::burst_copy;
+            do dma::mem_copy;
+        }
+    }
+}

@@ -1,0 +1,60 @@
+// Weighted select / conditional activity.
+// Exercises: select with weights, guards, if/else, do-while loop.
+
+enum bus_op_e { READ, WRITE, RMW }
+
+component pss_top {
+
+    action bus_read {
+        rand bit[32] addr;
+        rand bit[32] rdata;
+        constraint addr[1:0] == 0;
+    }
+
+    action bus_write {
+        rand bit[32] addr;
+        rand bit[32] wdata;
+        constraint addr[1:0] == 0;
+    }
+
+    action bus_rmw {
+        rand bit[32] addr;
+        rand bit[32] mask;
+        rand bit[32] wdata;
+        constraint addr[1:0] == 0;
+    }
+
+    action random_bus_op {
+        rand bus_op_e op_kind;
+        activity {
+            select {
+                [50]: do bus_read;
+                [30]: do bus_write;
+                [20]: do bus_rmw;
+            }
+        }
+    }
+
+    action guarded_test {
+        rand int mode;
+        constraint mode in [0..2];
+        activity {
+            if (mode == 0) {
+                do bus_read;
+            } else {
+                do bus_write;
+            }
+        }
+    }
+
+    action do_test {
+        rand int iterations;
+        constraint iterations in [3..10];
+        activity {
+            repeat (iterations) {
+                do random_bus_op;
+            }
+            do guarded_test;
+        }
+    }
+}

@@ -16,6 +16,27 @@ if TYPE_CHECKING:
     from .context import LoweringContext
 
 
+# ------------------------------------------------------------------
+# PSS exec-block built-in function mapping
+# ------------------------------------------------------------------
+# PSS built-in names (ExprAttribute.attr) -> None means handle below
+_PSS_BUILTINS = {"message", "yield"}
+
+
+def _lower_pss_call(ctx, func_attr: str, args) -> str:
+    from .lower_exprs import lower_expr as _le
+    if func_attr == "message":
+        # message(verbosity, format_string, arg0, ...) -> $display(fmt, ...)
+        if len(args) >= 2:
+            fmt_and_args = ", ".join(_le(ctx, a) for a in args[1:])
+            return f"$display({fmt_and_args})"
+        return "$display()"
+    if func_attr == "yield":
+        return "// yield (no-op in SV class execution)"
+    return None
+
+
+
 def lower_stmts(ctx: LoweringContext, stmts: List[ir.Stmt]) -> List[str]:
     """Lower a list of IR statements to SV statement strings.
 
@@ -32,6 +53,19 @@ def lower_stmt(ctx: LoweringContext, stmt: ir.Stmt) -> List[str]:
     """Lower a single IR statement to SV statement line(s)."""
 
     if isinstance(stmt, ir.StmtExpr):
+        # Check for PSS built-in function calls before generic lowering
+        if isinstance(stmt.expr, ir.ExprCall):
+            func = stmt.expr.func
+            func_attr = None
+            if isinstance(func, ir.ExprAttribute):
+                func_attr = func.attr
+            elif isinstance(func, ir.ExprRefUnresolved):
+                func_attr = func.name
+            if func_attr in (_PSS_BUILTINS if func_attr else ()):
+                sv_stmt = _lower_pss_call(ctx, func_attr, stmt.expr.args)
+                if sv_stmt is not None:
+                    return [f"{sv_stmt};"]
+                return []
         expr_str = lower_expr(ctx, stmt.expr)
         if expr_str:
             return [f"{expr_str};"]
@@ -155,6 +189,21 @@ def lower_stmt(ctx: LoweringContext, stmt: ir.Stmt) -> List[str]:
         return lines
 
     # Fallback
+    if isinstance(stmt, ir.StmtCover):
+        # PSS cover -> SV: immediate cover assertion, plus a trace for observability.
+        # In task/function context, ``cover`` requires a procedural context;
+        # we emit it here and let the simulator decide on support.
+        cond = lower_expr(ctx, stmt.test)
+        if stmt.msg is not None:
+            msg = lower_expr(ctx, stmt.msg)
+            return [
+                f"`ZSP_TRACE(\"cover: {msg}\");",
+                f"cover ({cond});",
+            ]
+        return [f"cover ({cond});"]
+
+    ctx.warn(f"unsupported exec-body statement '{type(stmt).__name__}' — skipped",
+             type(stmt).__name__)
     return [f"// unsupported stmt: {type(stmt).__name__}"]
 
 

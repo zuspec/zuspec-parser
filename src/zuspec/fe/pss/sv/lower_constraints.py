@@ -54,11 +54,20 @@ _CMPOP_MAP = {
 def lower_constraint_func(
     ctx: LoweringContext,
     func: ir.Function,
+    known_field_names: Optional[List[str]] = None,
 ) -> Optional[List[str]]:
     """Lower an IR constraint Function to a list of SV constraint expression strings.
 
     Constraint functions are IR Functions with ``metadata['_is_constraint'] == True``.
     Each statement in the body is a ``StmtExpr`` wrapping a constraint expression.
+
+    Args:
+        ctx: Lowering context.
+        func: The IR constraint function.
+        known_field_names: When provided, constraints referencing a field name
+            not in this set are skipped.  This filters out IR-translator-generated
+            constraints on implicit fields (e.g. ``alignment``) that have no SV
+            counterpart.
 
     Returns:
         List of SV constraint expression strings, or None if not a constraint.
@@ -66,10 +75,63 @@ def lower_constraint_func(
     if not func.metadata.get("_is_constraint"):
         return None
 
+    # Build a set of top-level attribute names referenced in this constraint body
+    # and validate them against the known field list when provided.
+    if known_field_names is not None:
+        known = set(known_field_names)
+        refs = _collect_top_attr_refs(func.body)
+        unknown = refs - known
+        if unknown:
+            ctx.warn(
+                f"constraint '{func.name}' references unknown field(s) {sorted(unknown)}"
+                " — skipped (IR-generated implicit constraint)",
+                func.name,
+            )
+            return []
+
     exprs: List[str] = []
     for stmt in func.body:
         _lower_constraint_stmt(ctx, stmt, exprs)
     return exprs
+
+
+def _collect_top_attr_refs(stmts) -> set:
+    """Collect top-level ExprAttribute names (field refs) from constraint stmts."""
+    names: set = set()
+
+    def _walk(node) -> None:
+        if node is None:
+            return
+        if isinstance(node, ir.ExprAttribute):
+            # Only collect self-references (TypeExprRefSelf), not sub-field chains
+            if isinstance(node.value, ir.TypeExprRefSelf):
+                names.add(node.attr)
+            else:
+                _walk(node.value)
+            return
+        # Recurse into common expression containers
+        for attr in ('value', 'left', 'right', 'lhs', 'rhs', 'test',
+                     'container', 'lower', 'upper'):
+            child = getattr(node, attr, None)
+            if child is not None and not isinstance(child, (int, float, str, bool)):
+                _walk(child)
+        for attr in ('ranges', 'values', 'args', 'comparators', 'body', 'orelse'):
+            lst = getattr(node, attr, None)
+            if isinstance(lst, list):
+                for item in lst:
+                    _walk(item)
+
+    for stmt in stmts:
+        if isinstance(stmt, ir.StmtExpr):
+            _walk(stmt.expr)
+        elif isinstance(stmt, ir.StmtIf):
+            _walk(stmt.test)
+            for s in (stmt.body or []):
+                _walk(s)
+            for s in (stmt.orelse or []):
+                _walk(s)
+
+    return names
 
 
 def _lower_constraint_stmt(

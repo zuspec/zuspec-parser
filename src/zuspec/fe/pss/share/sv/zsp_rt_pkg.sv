@@ -137,6 +137,11 @@ package zsp_rt_pkg;
             lock_sem[id].put(1);
         endfunction
 
+        // Return a handle to the resource at index id
+        function T get(int id);
+            return instances[id];
+        endfunction
+
         // Non-blocking share attempt
         function bit try_share(int id);
             if (!lock_held[id]) begin

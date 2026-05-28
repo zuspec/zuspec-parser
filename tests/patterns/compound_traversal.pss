@@ -1,0 +1,60 @@
+// Compound action traversal: named action handles declared at the action
+// level; traversed by name in the activity body with inline constraints.
+// Also exercises: hierarchical flow binding through named handles.
+//
+// Original work for zuspec test suite. MIT-licensed.
+
+buffer sector_buf {
+    rand int  lba;
+    rand bool valid;
+    constraint lba in [0..65535];
+}
+
+component pss_top {
+
+    pool sector_buf sector_pool;
+    bind sector_pool *;
+
+    action read_sector {
+        output sector_buf out_sec;
+        rand int channel;
+        constraint channel in [0..3];
+    }
+
+    action verify_sector {
+        input  sector_buf in_sec;
+        rand bool strict;
+    }
+
+    action write_sector {
+        input  sector_buf in_sec;
+        rand int dest_channel;
+        constraint dest_channel in [0..3];
+    }
+
+    // Named handles: declared at action level, traversed in activity
+    action copy_and_verify {
+        read_sector   rd;
+        verify_sector vf;
+        write_sector  wr;
+
+        activity {
+            rd with { channel == 0; };
+            vf with { strict == true; };
+            wr with { dest_channel == 1; };
+
+            bind rd.out_sec vf.in_sec;
+            bind vf.in_sec  wr.in_sec;
+        }
+    }
+
+    action do_test {
+        rand int count;
+        constraint count in [2..6];
+        activity {
+            repeat (count) {
+                do copy_and_verify;
+            }
+        }
+    }
+}

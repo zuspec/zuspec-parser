@@ -129,7 +129,7 @@ class TestSelect:
         ])
         lines = lower_activity(ctx, activity, "comp")
         text = "\n".join(lines)
-        assert "_sel_weights" in text
+        assert "$urandom_range" in text  # select uses range-label case
         assert "3" in text
         assert "1" in text
         assert "common_act" in text

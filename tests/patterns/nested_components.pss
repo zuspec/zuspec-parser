@@ -1,0 +1,65 @@
+// Nested component hierarchy and action inheritance.
+// Exercises: component nesting, action inheritance, rand field kinds,
+//            abstract action, foreach activity.
+
+enum priority_e { LOW, MEDIUM, HIGH }
+
+struct request_s {
+    rand priority_e priority;
+    rand bit[16]    size;
+    rand bool       urgent;
+
+    constraint size in [64..4096];
+    constraint size[5:0] == 0;
+}
+
+component cpu_c {
+    action fetch {
+        rand bit[32]  pc;
+        rand request_s req;
+        constraint pc[1:0] == 0;
+    }
+
+    action execute {
+        rand bit[8] opcode;
+        rand int    cycles;
+        constraint cycles in [1..32];
+    }
+}
+
+component mem_c {
+    action cache_op {
+        rand bool    is_write;
+        rand bit[32] addr;
+        constraint addr[5:0] == 0;
+    }
+}
+
+component soc_c {
+    cpu_c cpu;
+    mem_c mem;
+
+    action run_workload {
+        rand int num_instructions;
+        constraint num_instructions in [4..16];
+
+        activity {
+            repeat (num_instructions) {
+                do cpu::fetch;
+                do cpu::execute;
+                do mem::cache_op;
+            }
+        }
+    }
+}
+
+component pss_top {
+    soc_c soc;
+
+    action do_test {
+        activity {
+            do soc::run_workload;
+            do soc::run_workload;
+        }
+    }
+}

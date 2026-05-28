@@ -1,0 +1,74 @@
+// State flow objects: a persistent state object threads through a sequence
+// of actions that each read and update it.
+// Exercises: state declaration, input/output state fields, sequential
+//            activity with state threading, named action handles in activity,
+//            constraints on state sub-fields.
+//
+// NOTE: several features here expose pssparser/IR limitations (see
+// KNOWN_LIMITATIONS.md):
+//   - Named action handles in activity blocks lose type info in the IR
+//   - State member constraints (next.established == true) are parsed
+//     but may not propagate correctly through flow wiring
+//
+// Original work for zuspec test suite. MIT-licensed.
+
+state link_state_s {
+    rand bool  established;
+    rand int   retry_count;
+    rand bool  error_seen;
+
+    constraint retry_count in [0..7];
+}
+
+component pss_top {
+    pool link_state_s state_pool;
+    bind state_pool *;
+
+    action link_init {
+        output link_state_s link;
+        constraint link.established  == false;
+        constraint link.retry_count  == 0;
+        constraint link.error_seen   == false;
+    }
+
+    action link_connect {
+        input  link_state_s prev;
+        output link_state_s next;
+        constraint next.established == true;
+        constraint next.retry_count == prev.retry_count;
+        constraint next.error_seen  == prev.error_seen;
+    }
+
+    action link_transfer {
+        input  link_state_s prev;
+        output link_state_s next;
+        rand int length;
+        constraint length in [64..4096];
+        constraint prev.established == true;
+        constraint next.established == true;
+        constraint next.retry_count == prev.retry_count;
+    }
+
+    action link_teardown {
+        input link_state_s prev;
+        constraint prev.established == true;
+    }
+
+    action do_test {
+        activity {
+            link_init     a_init;
+            link_connect  a_conn;
+            link_transfer a_xfr;
+            link_teardown a_tear;
+
+            a_init;
+            a_conn;
+            a_xfr;
+            a_tear;
+
+            bind a_conn.prev  a_init.link;
+            bind a_xfr.prev   a_conn.next;
+            bind a_tear.prev  a_xfr.next;
+        }
+    }
+}

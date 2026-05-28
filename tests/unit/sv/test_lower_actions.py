@@ -209,3 +209,75 @@ class TestActionInheritance:
         for line in lines:
             if "nonrand_f" in line:
                 assert "rand " not in line or "nonrand" in line.split("rand ")[0]
+
+
+class TestSuperTypeResolution:
+    """Regression tests for qualified super-type name resolution (bug fix)."""
+
+    def test_unqualified_super_resolves_to_qualified(self):
+        """Derived action inside a component must extend the qualified base name."""
+        from zuspec.fe.pss import Parser, AstToIrTranslator
+        from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
+        from zuspec.be.sv.ir.sv_emit import SVEmitter
+        p = Parser()
+        p.parses([('t.pss', '''
+            component pss_top {
+                abstract action base_act { rand int x; }
+                action derived_act : base_act { rand int y; }
+                action root_a { activity { do derived_act; } }
+            }
+        ''')])
+        ast = p.link()
+        ctx = AstToIrTranslator().translate(ast, annotations=p.annotations)
+        nodes = pss_to_sv(ctx)
+        sv = SVEmitter().emit_all(nodes)
+        assert "class pss_top__derived_act extends pss_top__base_act;" in sv, \
+            f"Expected qualified extends, got:\n{sv}"
+
+    def test_cross_component_super_resolves(self):
+        """Action in sub-component extending action in base component."""
+        from zuspec.fe.pss import Parser, AstToIrTranslator
+        from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
+        from zuspec.be.sv.ir.sv_emit import SVEmitter
+        p = Parser()
+        p.parses([('t.pss', '''
+            component sub_c {
+                abstract action base_op { rand int v; }
+                action impl_op : base_op { rand int extra; }
+            }
+            component pss_top {
+                sub_c sub;
+                action root_a { activity { do sub::impl_op; } }
+            }
+        ''')])
+        ast = p.link()
+        ctx = AstToIrTranslator().translate(ast, annotations=p.annotations)
+        nodes = pss_to_sv(ctx)
+        sv = SVEmitter().emit_all(nodes)
+        assert "class sub_c__impl_op extends sub_c__base_op;" in sv
+
+
+class TestConstraintFieldValidation:
+    """Regression tests for filtering IR-generated constraints on unknown fields."""
+
+    def test_implicit_alignment_constraint_filtered(self):
+        """IR-generated 'alignment' constraint must not appear in SV output."""
+        from zuspec.fe.pss import Parser, AstToIrTranslator
+        from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
+        from zuspec.be.sv.ir.sv_emit import SVEmitter
+        p = Parser()
+        p.parse(['packages/zuspec-fe-pss/tests/patterns/pipeline_stream.pss'])
+        ast = p.link()
+        ctx = AstToIrTranslator().translate(ast, annotations=p.annotations)
+        nodes = pss_to_sv(ctx)
+        sv = SVEmitter().emit_all(nodes)
+        # 'alignment' should only appear as a field declaration, never inside a constraint block
+        in_constraint = False
+        for line in sv.splitlines():
+            stripped = line.strip()
+            if stripped.startswith('constraint '):
+                in_constraint = True
+            if in_constraint and 'alignment' in stripped:
+                assert False, f"'alignment' found inside a constraint block:\n{line}"
+            if stripped == '}':
+                in_constraint = False

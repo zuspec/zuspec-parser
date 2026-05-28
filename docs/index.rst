@@ -22,3 +22,4 @@ Parser-specific documentation has moved to `packages/pssparser/docs`.
 
    quickstart
    api
+   pss_to_sv

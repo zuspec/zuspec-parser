@@ -29,16 +29,25 @@ from zuspec.be.sv.ir.sv import (
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
 
+_FILE_DPI_PKG  = "zsp_dpi_pkg.sv"
 _FILE_RT       = "zsp_rt_pkg.sv"
 _FILE_GEN_PKG  = "zsp_gen_pkg.sv"
 _FILE_TOP      = "zsp_top.sv"
 _FILE_FILELIST = "zsp_filelist.f"
 
+# Compilation order: DPI pkg first (no dependencies), then rt pkg, then generated code
 _COMPILE_ORDER = [
+    _FILE_DPI_PKG,
     _FILE_RT,
     _FILE_GEN_PKG,
     _FILE_TOP,
 ]
+
+# Default path to zsp_dpi_pkg.sv (in zuspec-solver package)
+_DEFAULT_DPI_PKG_PATH = (
+    Path(__file__).resolve().parents[6]
+    / "zuspec-solver" / "src" / "sv" / "zsp_dpi_pkg.sv"
+)
 
 
 def classify_node(node: Any) -> str:
@@ -62,11 +71,19 @@ def emit_files(
     output_dir: str,
     runtime_lib_path: Optional[Path] = None,
     top_module_node: Optional[SVModuleDecl] = None,
+    dpi_pkg_path: Optional[Path] = None,
 ) -> List[Path]:
     """Write SV IR nodes to organized output files.
 
     All generated classes are wrapped in ``package zsp_gen_pkg`` which
-    imports ``zsp_rt_pkg``.  The top module imports both.
+    imports ``zsp_rt_pkg`` and ``zsp_dpi_pkg``.  The top module imports both.
+
+    Args:
+        nodes: SV IR nodes from pss_to_sv().
+        output_dir: Directory to write output files.
+        runtime_lib_path: Path to zsp_rt_pkg.sv (defaults to share/ directory).
+        top_module_node: Optional generated test harness module node.
+        dpi_pkg_path: Path to zsp_dpi_pkg.sv. Defaults to zuspec-solver/src/sv/.
     """
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -79,14 +96,22 @@ def emit_files(
     buckets = classify_nodes(all_nodes)
     written: List[Path] = []
 
-    # Copy runtime library
+    # Resolve DPI package path
+    _dpi_path = dpi_pkg_path or _DEFAULT_DPI_PKG_PATH
+
+    # Copy DPI package (zsp_dpi_pkg.sv)
+    filelist_entries: List[str] = []
+    if _dpi_path and _dpi_path.exists():
+        dpi_dst = out / _FILE_DPI_PKG
+        shutil.copy2(str(_dpi_path), str(dpi_dst))
+        written.append(dpi_dst)
+        filelist_entries.append(_FILE_DPI_PKG)
+
+    # Copy runtime library (zsp_rt_pkg.sv)
     if runtime_lib_path and runtime_lib_path.exists():
         rt_dst = out / _FILE_RT
         shutil.copy2(str(runtime_lib_path), str(rt_dst))
         written.append(rt_dst)
-
-    filelist_entries: List[str] = []
-    if runtime_lib_path and runtime_lib_path.exists():
         filelist_entries.append(_FILE_RT)
 
     # Emit generated package (all classes wrapped in a package)
@@ -94,6 +119,7 @@ def emit_files(
     if gen_nodes:
         pkg_lines: List[str] = []
         pkg_lines.append("package zsp_gen_pkg;")
+        pkg_lines.append("  import zsp_dpi_pkg::*;")
         pkg_lines.append("  import zsp_rt_pkg::*;")
         pkg_lines.append("")
         sv_body = emitter.emit_all(gen_nodes)

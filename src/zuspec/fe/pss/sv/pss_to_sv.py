@@ -17,6 +17,45 @@ from .lower_actions import lower_action
 from .lower_imports import lower_import_interface
 
 
+# PSS stdlib packages whose types are provided by zsp_rt_pkg.sv and must
+# not be emitted into user-generated SV.
+_STDLIB_PREFIXES = (
+    "executor_pkg::",
+    "addr_reg_pkg::",
+    "sync_pkg::",
+    "std_pkg::",
+)
+
+# Bare stdlib names that appear without a package prefix in the type_map
+_STDLIB_BARE = frozenset([
+    "array", "list", "set", "map",
+    "bool", "int", "string",
+    "endianness_e", "message_verbosity_e", "reg_access",
+    "channel_c", "actor_c",
+    "executor_trait_s", "empty_executor_trait_s",
+    "executor_base_c", "executor_c", "executor_group_c", "executor_group_default_c",
+    "executor_claim_s",
+    "addr_space_base_c", "addr_space_group_c",
+    "addr_trait_s", "empty_addr_trait_s", "addr_handle_t",
+    "addr_region_base_s", "addr_region_s", "transparent_addr_region_s",
+    "addr_claim_base_s", "addr_claim_s", "transparent_addr_claim_s",
+    "sizeof_s", "sized_addr_handle_s",
+    "contiguous_addr_space_c", "transparent_addr_space_c",
+    "reg_c", "reg_group_c",
+    "packed_s",
+])
+
+
+def _is_stdlib(qname: str) -> bool:
+    """Return True if *qname* belongs to a PSS stdlib package."""
+    if any(qname.startswith(pfx) for pfx in _STDLIB_PREFIXES):
+        return True
+    # Bare aliases for stdlib types start with bit[ or int[
+    if qname.startswith(("bit[", "int[")):
+        return True
+    return qname in _STDLIB_BARE
+
+
 def pss_to_sv(ir_ctx: AstToIrContext) -> List[Any]:
     """Lower a Zuspec IR context to a list of SV IR nodes.
 
@@ -42,6 +81,25 @@ def pss_to_sv(ir_ctx: AstToIrContext) -> List[Any]:
     result: List[Any] = []
 
     # Classify IR types, keeping the qualified name from the type_map key
+    # --- Pre-pass: run activity analysis for every action that has an
+    #     activity, so downstream lowering can reuse the results. ---
+    try:
+        from .analyze_activity import analyze_activity as _analyze_activity
+        from zuspec.dataclasses import ir as _ir
+        for _qname, _dtype in ir_ctx.type_map.items():
+            if not isinstance(_dtype, _ir.DataTypeClass):
+                continue
+            _act_ir = getattr(_dtype, 'activity_ir', None)
+            if _act_ir is None:
+                continue
+            try:
+                _plan = _analyze_activity(ctx, _act_ir)
+                ctx.activity_plans[_qname] = _plan
+            except Exception:
+                pass  # analysis failures are non-fatal
+    except ImportError:
+        pass  # analyze_activity module optional
+
     enums: List[Tuple[str, ir.DataTypeEnum]] = []
     structs: List[Tuple[str, ir.DataTypeStruct]] = []
     components: List[Tuple[str, ir.DataTypeComponent]] = []
@@ -52,6 +110,10 @@ def pss_to_sv(ir_ctx: AstToIrContext) -> List[Any]:
         if id(dtype) in ctx.emitted:
             continue
         ctx.emitted.add(id(dtype))
+
+        # Skip PSS stdlib types: provided by zsp_rt_pkg.sv, not user code
+        if _is_stdlib(name):
+            continue
 
         if isinstance(dtype, ir.DataTypeEnum):
             enums.append((name, dtype))

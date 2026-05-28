@@ -1,0 +1,63 @@
+// Pipeline pattern: stream flow objects through a schedule block.
+// Exercises: stream declaration, schedule with labeled traversals,
+//            activity bind, abstract action, inheritance.
+
+stream frame_s {
+    rand bool processed;
+    rand int  frame_id;
+}
+
+buffer raw_frame_buf {
+    rand bool loaded;
+    rand int  source_id;
+}
+
+component pss_top {
+    pool raw_frame_buf frame_mem;
+    bind frame_mem *;
+
+    pool frame_s frame_stream;
+    bind frame_stream *;
+
+    action load_frame {
+        output raw_frame_buf out_buf;
+        rand int source;
+        constraint source in [0..7];
+    }
+
+    action frame_in {
+        input  raw_frame_buf in_buf;
+        output frame_s       out_frame;
+
+        constraint out_frame.processed == false;
+    }
+
+    action frame_out {
+        input  frame_s       in_frame;
+        output raw_frame_buf out_buf;
+    }
+
+    abstract action transform_base {
+        input  frame_s in_frame;
+        output frame_s out_frame;
+    }
+
+    action scale    : transform_base { rand int factor; constraint factor in [1..4]; }
+    action colorize : transform_base { rand int palette; constraint palette in [0..15]; }
+
+    action pipeline_test {
+        activity {
+            schedule {
+                a0: do load_frame;
+                a1: do frame_in;
+                a2: do scale;
+                a3: do colorize;
+                a4: do frame_out;
+                bind a1.in_buf       a0.out_buf;
+                bind a2.in_frame     a1.out_frame;
+                bind a3.in_frame     a2.out_frame;
+                bind a4.in_frame     a3.out_frame;
+            }
+        }
+    }
+}

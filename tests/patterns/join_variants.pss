@@ -1,0 +1,73 @@
+// Parallel join variants: the PSS spec defines join (all), join_first,
+// join_none, and join_select.  This pattern exercises the default "wait-all"
+// parallel and the structural patterns that precede those variants.
+// Note: join_first/join_none use pssparser-specific syntax that may vary
+// by tool; this file uses the subset parseable by zuspec's pssparser.
+//
+// Original work for zuspec test suite. MIT-licensed.
+
+component pss_top {
+
+    action poll_sensor {
+        rand int sensor_id;
+        rand int reading;
+        constraint sensor_id in [0..7];
+        constraint reading   in [0..1023];
+    }
+
+    action log_event {
+        rand int event_code;
+        constraint event_code in [1..255];
+    }
+
+    action start_background {
+        rand int task_id;
+        constraint task_id in [0..31];
+    }
+
+    // Default join: wait for ALL branches
+    action poll_all_sensors {
+        activity {
+            parallel {
+                do poll_sensor;
+                do poll_sensor;
+                do poll_sensor;
+            }
+        }
+    }
+
+    // Three independent parallel sensor polls followed by a log
+    action poll_then_log {
+        activity {
+            parallel {
+                do poll_sensor;
+                do poll_sensor;
+            }
+            do log_event;
+        }
+    }
+
+    // Nested parallel: outer waits for both inner groups
+    action nested_parallel {
+        activity {
+            parallel {
+                parallel {
+                    do poll_sensor;
+                    do start_background;
+                }
+                parallel {
+                    do poll_sensor;
+                    do start_background;
+                }
+            }
+        }
+    }
+
+    action do_test {
+        activity {
+            do poll_all_sensors;
+            do poll_then_log;
+            do nested_parallel;
+        }
+    }
+}

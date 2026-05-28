@@ -1,0 +1,73 @@
+// Abstract action and named constraint override in derived types.
+// Exercises: abstract action, single-level inheritance, named constraint
+//            blocks that are overridden in derived types, anonymous traversal.
+//
+// NOTE: constraints referencing flow-object sub-fields (e.g. out.field.member)
+// are not supported by this version of pssparser; constraints here operate on
+// direct (non-flow-object) rand fields only.
+//
+// Original work for zuspec test suite. MIT-licensed.
+
+enum codec_e  { H264, H265, AV1 }
+enum quality_e { Q_LOW, Q_MED, Q_HIGH }
+
+component encoder_c {
+
+    abstract action encode_base {
+        rand int      src_width;
+        rand int      src_height;
+        rand codec_e  target_codec;
+        rand quality_e quality;
+
+        constraint src_width  in [320, 640, 1280, 1920];
+        constraint src_height in [240, 480,  720, 1080];
+
+        // Named constraints: derived types can override these by name
+        constraint min_quality  { quality != Q_LOW; }
+        constraint codec_check  { target_codec != AV1; }
+    }
+
+    // HD encoder: always HIGH quality, AV1 allowed
+    action encode_hd : encode_base {
+        constraint min_quality { quality == Q_HIGH; }
+        constraint codec_check { target_codec == H265; }
+        constraint src_width   >= 1280;
+    }
+
+    // SD encoder: medium quality, width constrained down
+    action encode_sd : encode_base {
+        constraint min_quality { quality == Q_MED; }
+        constraint codec_check { target_codec == H264; }
+        constraint src_width   <= 640;
+    }
+
+    action transcode {
+        rand codec_e  from_codec;
+        rand codec_e  to_codec;
+        rand int      frame_count;
+        constraint from_codec != to_codec;
+        constraint frame_count in [1..60];
+    }
+
+    action encode_pipeline {
+        activity {
+            do encode_hd;
+            do encode_sd;
+            do transcode;
+        }
+    }
+}
+
+component pss_top {
+    encoder_c enc;
+
+    action do_test {
+        rand int rounds;
+        constraint rounds in [1..3];
+        activity {
+            repeat (rounds) {
+                do enc::encode_pipeline;
+            }
+        }
+    }
+}
