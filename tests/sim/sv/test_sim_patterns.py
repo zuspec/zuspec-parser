@@ -21,7 +21,7 @@ from typing import List, Optional, Tuple
 
 import pytest
 
-from zuspec.fe.pss import Parser, AstToIrTranslator, generate_sv_files
+from pssc import Parser, AstToIrTranslator, generate_sv_files
 from zuspec.dataclasses import ir as pss_ir
 
 # ---------------------------------------------------------------------------

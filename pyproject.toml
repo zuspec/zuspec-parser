@@ -3,24 +3,32 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "zuspec-fe-pss"
+name = "pssc"
 dynamic = ["version"]
-description = "PSS AST to Zuspec IR translation built on pssparser"
+description = "PSSC — the PSS compiler: PSS source to SystemVerilog, C, and Python via Zuspec IR"
 authors = [
   { name = "Matthew Ballance", email = "matt.ballance@gmail.com" },
 ]
 requires-python = ">=3.10"
 dependencies = [
   "pssparser",
-  "zuspec-dataclasses",
   "zuspec-ir-core",
+  "zuspec-dataclasses",
+  "zuspec-be-sv",
+  "zuspec-be-sw",
 ]
 
+[project.scripts]
+pssc = "pssc.cli:main"
+
 [tool.setuptools.dynamic]
-version = {attr = "zuspec.fe.pss.__version__.version"}
+version = {attr = "pssc.__version__.version"}
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+pssc = ["std_libs/*.pss", "share/sv/*.sv"]

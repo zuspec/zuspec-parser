@@ -1,6 +1,6 @@
 """PSS FE → RT tests: foreach constraints (§16.1.7)."""
 import pytest
-from zuspec.fe.pss import load_pss
+from pssc import load_pss
 from zuspec.dataclasses import randomize
 
 

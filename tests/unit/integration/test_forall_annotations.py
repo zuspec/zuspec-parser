@@ -1,6 +1,6 @@
 """Tests for forall constraint support via PssAnnotation two-pass parse."""
 import pytest
-from zuspec.fe.pss import (
+from pssc import (
     load_pss, _preprocess_pss_pass1, _preprocess_pss,
     _transform_forall_foreach, _remove_covergroup_blocks,
     Parser, PssAnnotation,

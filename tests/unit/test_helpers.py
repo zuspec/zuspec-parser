@@ -2,7 +2,7 @@
 Shared test utilities and helpers for PSS frontend tests
 """
 from typing import Optional, List, Tuple, Any
-from zuspec.fe.pss import Parser
+from pssc import Parser
 from pssparser.core import Factory
 from pssparser.utils import SymbolScopeUtil, SymbolTypeScopeUtil
 

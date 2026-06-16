@@ -4,8 +4,8 @@ import pytest
 from zuspec.dataclasses import ir
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_actions import lower_action
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_actions import lower_action
 
 
 @pytest.fixture
@@ -216,8 +216,8 @@ class TestSuperTypeResolution:
 
     def test_unqualified_super_resolves_to_qualified(self):
         """Derived action inside a component must extend the qualified base name."""
-        from zuspec.fe.pss import Parser, AstToIrTranslator
-        from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
+        from pssc import Parser, AstToIrTranslator
+        from pssc.targets.sv.pss_to_sv import pss_to_sv
         from zuspec.be.sv.ir.sv_emit import SVEmitter
         p = Parser()
         p.parses([('t.pss', '''
@@ -236,8 +236,8 @@ class TestSuperTypeResolution:
 
     def test_cross_component_super_resolves(self):
         """Action in sub-component extending action in base component."""
-        from zuspec.fe.pss import Parser, AstToIrTranslator
-        from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
+        from pssc import Parser, AstToIrTranslator
+        from pssc.targets.sv.pss_to_sv import pss_to_sv
         from zuspec.be.sv.ir.sv_emit import SVEmitter
         p = Parser()
         p.parses([('t.pss', '''
@@ -262,8 +262,8 @@ class TestConstraintFieldValidation:
 
     def test_implicit_alignment_constraint_filtered(self):
         """IR-generated 'alignment' constraint must not appear in SV output."""
-        from zuspec.fe.pss import Parser, AstToIrTranslator
-        from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
+        from pssc import Parser, AstToIrTranslator
+        from pssc.targets.sv.pss_to_sv import pss_to_sv
         from zuspec.be.sv.ir.sv_emit import SVEmitter
         p = Parser()
         p.parse(['packages/zuspec-fe-pss/tests/patterns/pipeline_stream.pss'])

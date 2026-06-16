@@ -27,10 +27,10 @@ except ImportError:
     HAS_PARSER = False
 
 if HAS_PARSER:
-    from zuspec.fe.pss.ast_to_ir import AstToIrTranslator, AstToIrContext
-    from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-    from zuspec.fe.pss.sv.emit_files import emit_files
-    from zuspec.fe.pss.sv.lower_top import generate_top_module
+    from pssc.ast2ir import AstToIrTranslator, AstToIrContext
+    from pssc.targets.sv.pss_to_sv import pss_to_sv
+    from pssc.targets.sv.emit_files import emit_files
+    from pssc.targets.sv.lower_top import generate_top_module
     from zuspec.be.sv.ir.sv_emit import SVEmitter
     from zuspec.dataclasses import ir
 

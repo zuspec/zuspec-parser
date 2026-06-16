@@ -3,8 +3,8 @@
 import pytest
 from zuspec.dataclasses import ir
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_schedule import analyze_schedule, lower_schedule, ScheduleError
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_schedule import analyze_schedule, lower_schedule, ScheduleError
 
 
 @pytest.fixture

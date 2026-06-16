@@ -10,8 +10,8 @@ from zuspec.dataclasses import ir
 from zuspec.ir.core.fields import FieldKind
 from zuspec.ir.core import expr as ir_expr
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_activities import (
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_activities import (
     _lower_anon_traversal,
     _get_resource_claims,
 )
@@ -46,7 +46,7 @@ def _make_action_type_with_resource(lock: bool = True):
 
 def _make_ctx_with_type(action_type_name, dtype):
     """Build a LoweringContext with one type registered."""
-    from zuspec.fe.pss.ast_to_ir import AstToIrContext
+    from pssc.ast2ir import AstToIrContext
     ir_ctx = AstToIrContext()
     ir_ctx.add_type(action_type_name, dtype)
     return LoweringContext(ir_ctx=ir_ctx)

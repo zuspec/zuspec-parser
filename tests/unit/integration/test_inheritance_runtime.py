@@ -8,7 +8,7 @@ Verifies that:
 - Multi-level (A -> B -> C) chains work end-to-end
 """
 import pytest
-from zuspec.fe.pss import load_pss
+from pssc import load_pss
 from zuspec.dataclasses import randomize
 
 

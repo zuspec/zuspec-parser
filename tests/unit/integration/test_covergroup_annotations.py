@@ -1,6 +1,6 @@
 """Tests for covergroup annotation extraction and IR injection."""
 import pytest
-from zuspec.fe.pss import (
+from pssc import (
     load_pss, Parser, PssAnnotation,
     _parse_covergroup_body, _remove_covergroup_blocks,
 )
@@ -124,7 +124,7 @@ def test_covergroup_injected_into_ir():
         }
     }
     """
-    from zuspec.fe.pss.ast_to_ir import AstToIrTranslator
+    from pssc.ast2ir import AstToIrTranslator
     parser = Parser()
     parser.parses([('t.pss', pss)])
     root = parser.link()
@@ -140,7 +140,7 @@ def test_covergroup_injected_into_ir():
 
 def test_covergroup_parse_succeeds_with_cross():
     """PSS with a covergroup+cross should parse without raising ParseException."""
-    from zuspec.fe.pss import load_pss
+    from pssc import load_pss
     # Just verify no exception is raised; covergroup is removed by preprocessor
     ns = load_pss("""
         component pss_top {

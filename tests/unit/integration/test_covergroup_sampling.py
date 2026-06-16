@@ -1,8 +1,8 @@
 """Runtime tests for covergroup sampling after action body/activity (WI-7)."""
 import pytest
-from zuspec.fe.pss import load_pss, Parser
-from zuspec.fe.pss.ast_to_ir import AstToIrTranslator
-from zuspec.fe.pss.ir_to_runtime import IrToRuntimeBuilder
+from pssc import load_pss, Parser
+from pssc.ast2ir import AstToIrTranslator
+from pssc.runtime import IrToRuntimeBuilder
 from zuspec.dataclasses.rt.coverage_model import PssCoverageModel, eval_cover_expr
 from zuspec.dataclasses.rt.activity_runner import _sample_covergroups
 from zuspec.dataclasses import ir as zdc_ir

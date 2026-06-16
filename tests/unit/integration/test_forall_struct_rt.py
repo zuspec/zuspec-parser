@@ -6,7 +6,7 @@ support is not yet implemented; the solver-level logic IS in place and is tested
 here via direct ir_parser interaction. End-to-end runtime tests are marked xfail.
 """
 import pytest
-from zuspec.fe.pss import load_pss
+from pssc import load_pss
 from zuspec.dataclasses import randomize
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")

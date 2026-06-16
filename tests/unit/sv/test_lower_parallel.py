@@ -3,15 +3,15 @@
 import pytest
 from zuspec.dataclasses import ir
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_activities import _lower_activity_stmt
-from zuspec.fe.pss.sv.lower_head_solve import (
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_activities import _lower_activity_stmt
+from pssc.targets.sv.lower_head_solve import (
     HeadAction,
     emit_head_action_solve,
     _emit_shuffle_solve,
     _emit_randomize_solve,
 )
-from zuspec.fe.pss.sv.lower_resources import ResourceClaim
+from pssc.targets.sv.lower_resources import ResourceClaim
 
 
 @pytest.fixture

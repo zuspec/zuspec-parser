@@ -1,49 +1,28 @@
 
 package:
-  name: zuspec-fe-pss
+  name: pssc
   version: 0.0.1
 
   dep-sets:
   - name: default-dev
     deps: 
-    - name: zuspec-dataclasses
-      url: https://github.com/zuspec/zuspec-dataclasses.git
     - name: pssparser
-      src: pypi
+#      src: pypi
+      url: https://github.com/psstools/pssparser.git
+    - name: zuspec-ir-core
+      url: https://github.com/zuspec/zuspec-ir-core.git
+    - name: zuspec-be-sw
+      url: https://github.com/zuspec/zuspec-be-sw.git
+    - name: zuspec-be-sv
+      url: https://github.com/zuspec/zuspec-be-sv.git
+    - name: zuspec-solver
+      url: https://github.com/zuspec/zuspec-solver.git
     - name: pytest
       src: pypi
-    - name: Sphinx
+    - name: sphinx
       src: pypi
     - name: sphinx-rtd-theme
       src: pypi
-    - name: cairosvg
-      src: pypi
-    - name: breathe
-      src: pypi
-    - name: funcparserlib
-      src: pypi
-      version: 1.0.0a0
-    - name: mistune
-      src: pypi
-      version: <2.0.0
-    - name: sphinxcontrib-makedomain
-      src: pypi
-    - name: sphinxcontrib-openapi
-      src: pypi
-    - name: sphinxcontrib-spelling
-      src: pypi
-    - name: sphinxcontrib-seqdiag
-      src: pypi
-      version: <3.0.0
-    - name: sphinx-issues
-      src: pypi
-    - name: sphinx-argparse
-      src: pypi
-    - name: pyenchant
-      src: pypi
-    - name: jinja2
-      src: pypi
-
 
   - name: default
     deps:

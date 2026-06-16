@@ -18,7 +18,7 @@ import warnings
 
 import pytest
 
-from zuspec.fe.pss import Parser, AstToIrTranslator, IrToRuntimeBuilder
+from pssc import Parser, AstToIrTranslator, IrToRuntimeBuilder
 from zuspec.dataclasses.rt.scenario_runner import ScenarioRunner
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")

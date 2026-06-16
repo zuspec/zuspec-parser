@@ -6,7 +6,7 @@ Translates PSS AST nodes to Zuspec IR (Intermediate Representation).
 from __future__ import annotations
 import logging
 from typing import Dict, List, Optional, Any, Set, TYPE_CHECKING
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 
 if TYPE_CHECKING:
     import pssparser.ast as pss_ast

@@ -10,7 +10,7 @@ import tempfile
 import warnings
 import pytest
 
-from zuspec.fe.pss import Parser, AstToIrTranslator, IrToRuntimeBuilder
+from pssc import Parser, AstToIrTranslator, IrToRuntimeBuilder
 from zuspec.dataclasses.rt.scenario_runner import ScenarioRunner
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")
@@ -165,7 +165,7 @@ async def test_abstract_action_excluded():
         _f.write(_PARALLEL_SRC)
         _fname = _f.name
     try:
-        from zuspec.fe.pss import Parser as _P, AstToIrTranslator as _T
+        from pssc import Parser as _P, AstToIrTranslator as _T
         _p = _P(); _p.parse([_fname]); _root = _p.link()
         _ctx = _T().translate(_root)
         base_ir = _ctx.type_map.get('base_c::base_action')

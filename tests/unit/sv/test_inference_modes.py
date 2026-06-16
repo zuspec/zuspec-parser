@@ -7,16 +7,16 @@ mechanisms are emitted in the generated SV output.
 import pytest
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.ast_to_ir import AstToIrContext
-from zuspec.fe.pss.sv.lower_factory import (
+from pssc.targets.sv.context import LoweringContext
+from pssc.ast2ir import AstToIrContext
+from pssc.targets.sv.lower_factory import (
     ActionTypeEntry,
     assign_type_ids,
     emit_factory_function,
     emit_factory_items,
     emit_type_id_constants,
 )
-from zuspec.fe.pss.sv.lower_inference import (
+from pssc.targets.sv.lower_inference import (
     InferenceSlot,
     SlotComplexity,
     classify_slot,

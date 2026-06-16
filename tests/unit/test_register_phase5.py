@@ -6,8 +6,8 @@ Unit tests for Register IR Phase 5 Implementation
 Tests field extraction from struct-based registers and offset computation.
 """
 import pytest
-from zuspec.fe.pss import Parser
-from zuspec.fe.pss.ast_to_ir import AstToIrTranslator
+from pssc import Parser
+from pssc.ast2ir import AstToIrTranslator
 from zuspec.dataclasses import ir
 
 

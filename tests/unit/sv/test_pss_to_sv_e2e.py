@@ -8,8 +8,8 @@ import pytest
 from zuspec.dataclasses import ir
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
-from zuspec.fe.pss.ast_to_ir import AstToIrContext
-from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
+from pssc.ast2ir import AstToIrContext
+from pssc.targets.sv.pss_to_sv import pss_to_sv
 
 
 @pytest.fixture

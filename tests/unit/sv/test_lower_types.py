@@ -4,8 +4,8 @@ import pytest
 from zuspec.dataclasses import ir
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_types import (
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_types import (
     lower_enum,
     lower_struct,
     lower_resource,

@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import pytest
 from zuspec.dataclasses import ir
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_actions import lower_action
-from zuspec.fe.pss.sv.lower_stmts import lower_stmt, _lower_pss_call
-from zuspec.fe.pss.sv.lower_exprs import lower_expr
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_actions import lower_action
+from pssc.targets.sv.lower_stmts import lower_stmt, _lower_pss_call
+from pssc.targets.sv.lower_exprs import lower_expr
 
 
 def _make_ctx():

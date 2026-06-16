@@ -1,7 +1,7 @@
 """End-to-end covergroup sampling through ScenarioRunner (WI-7 full integration)."""
 import asyncio
 import pytest
-from zuspec.fe.pss import load_pss
+from pssc import load_pss
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")
 
@@ -103,7 +103,7 @@ def test_dice_pss_parses_and_covergroup_extracted():
     if not os.path.exists(dice_path):
         pytest.skip("dice.pss not found")
 
-    from zuspec.fe.pss import load_pss_files
+    from pssc import load_pss_files
     ns = load_pss_files([dice_path])
 
     # draw_shape should be registered

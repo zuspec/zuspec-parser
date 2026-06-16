@@ -9,7 +9,7 @@ from typing import Any, List, Tuple
 from zuspec.dataclasses import ir
 from zuspec.be.sv.ir.sv import SVForwardDecl
 
-from ..ast_to_ir import AstToIrContext
+from ...ast2ir import AstToIrContext
 from .context import LoweringContext
 from .lower_types import lower_enum, lower_struct
 from .lower_components import lower_component

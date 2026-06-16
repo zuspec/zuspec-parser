@@ -4,8 +4,8 @@ import pytest
 from zuspec.dataclasses import ir
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_imports import lower_import_interface
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_imports import lower_import_interface
 
 
 @pytest.fixture

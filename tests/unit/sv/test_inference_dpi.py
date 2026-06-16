@@ -8,7 +8,7 @@ syntactically correct without requiring the DPI library.
 import pytest
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
-from zuspec.fe.pss.sv.lower_inference import (
+from pssc.targets.sv.lower_inference import (
     InferenceSlot,
     emit_dpi_inference_imports,
     emit_dpi_inference_task,

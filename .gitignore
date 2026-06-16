@@ -59,3 +59,8 @@ __pycache__/
 *.egg-info/
 
 src/.antlr
+
+.agents/
+.claude/
+.codex/
+

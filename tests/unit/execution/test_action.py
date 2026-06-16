@@ -1,6 +1,6 @@
 from __future__ import annotations
 import asyncio
-from zuspec.fe.pss import Parser, AstToIrTranslator, AstToIrContext, IrToRuntimeBuilder
+from pssc import Parser, AstToIrTranslator, AstToIrContext, IrToRuntimeBuilder
 
 
 def _build(pss_text: str):

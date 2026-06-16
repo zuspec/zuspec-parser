@@ -5,7 +5,7 @@ import os
 import tempfile
 import pytest
 
-from zuspec.fe.pss import Parser, AstToIrTranslator, IrToRuntimeBuilder
+from pssc import Parser, AstToIrTranslator, IrToRuntimeBuilder
 from zuspec.ir.core.fields import FieldKind, Pool
 from zuspec.ir.core.data_type import DataTypeClass
 

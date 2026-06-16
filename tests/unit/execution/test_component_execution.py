@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import pytest
 
-from zuspec.fe.pss import Parser, AstToIrTranslator, IrToRuntimeBuilder
+from pssc import Parser, AstToIrTranslator, IrToRuntimeBuilder
 from zuspec.dataclasses.rt.scenario_runner import ScenarioRunner
 
 

@@ -6,9 +6,9 @@ Tests end-to-end PSS code -> AST -> IR translation
 """
 import pytest
 import unittest
-from zuspec.fe.pss import Parser
+from pssc import Parser
 from pssparser.core import Factory
-from zuspec.fe.pss.ast_to_ir import AstToIrTranslator
+from pssc.ast2ir import AstToIrTranslator
 from zuspec.dataclasses import ir
 
 

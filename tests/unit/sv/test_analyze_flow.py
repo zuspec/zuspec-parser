@@ -11,14 +11,14 @@ from zuspec.dataclasses import ir
 from zuspec.ir.core.fields import FieldKind
 from zuspec.ir.core import expr as ir_expr
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.analyze_flow import (
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.analyze_flow import (
     analyze_flow,
     ActivityFlowInfo,
     FlowBindingInfo,
     _expr_attr_chain,
 )
-from zuspec.fe.pss.sv.classify_constraints import (
+from pssc.targets.sv.classify_constraints import (
     classify_constraint,
     ConstraintClass,
     classify_action_constraints,

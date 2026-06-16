@@ -4,13 +4,13 @@ import os
 import tempfile
 import pytest
 
-from zuspec.fe.pss import Parser, AstToIrTranslator
+from pssc import Parser, AstToIrTranslator
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")
 
 _SML_PKG = os.path.join(
     os.path.dirname(__file__), '..', '..', '..',
-    'src', 'zuspec', 'fe', 'pss', 'std_libs', 'sml_pkg.pss',
+    'src', 'pssc', 'std_libs', 'sml_pkg.pss',
 )
 
 

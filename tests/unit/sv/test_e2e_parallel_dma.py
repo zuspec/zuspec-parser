@@ -12,14 +12,14 @@ import pytest
 from zuspec.dataclasses import ir
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
-from zuspec.fe.pss.ast_to_ir import AstToIrContext
-from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-from zuspec.fe.pss.sv.emit_files import emit_files
-from zuspec.fe.pss.sv.lower_top import generate_top_module
-from zuspec.fe.pss.sv.lower_activities import lower_activity
-from zuspec.fe.pss.sv.lower_resources import ResourceClaim, emit_resource_acquire, emit_resource_release
-from zuspec.fe.pss.sv.lower_head_solve import HeadAction, emit_head_action_solve
-from zuspec.fe.pss.sv.context import LoweringContext
+from pssc.ast2ir import AstToIrContext
+from pssc.targets.sv.pss_to_sv import pss_to_sv
+from pssc.targets.sv.emit_files import emit_files
+from pssc.targets.sv.lower_top import generate_top_module
+from pssc.targets.sv.lower_activities import lower_activity
+from pssc.targets.sv.lower_resources import ResourceClaim, emit_resource_acquire, emit_resource_release
+from pssc.targets.sv.lower_head_solve import HeadAction, emit_head_action_solve
+from pssc.targets.sv.context import LoweringContext
 
 
 @pytest.fixture

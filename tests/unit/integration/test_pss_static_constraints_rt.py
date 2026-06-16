@@ -7,7 +7,7 @@ Each test:
   4. Asserts the constraint is satisfied
 """
 import pytest
-from zuspec.fe.pss import load_pss
+from pssc import load_pss
 from zuspec.dataclasses import randomize
 
 

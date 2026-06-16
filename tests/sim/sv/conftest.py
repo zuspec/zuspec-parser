@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-# Stub pssparser so zuspec.fe.pss can be imported without native lib
+# Stub pssparser so pssc can be imported without native lib
 if "pssparser" not in sys.modules:
     _stub = types.ModuleType("pssparser")
     _stub.Parser = None
@@ -24,10 +24,10 @@ if "pssparser" not in sys.modules:
     sys.modules["pssparser.ast"] = _ast
 
 from zuspec.dataclasses import ir
-from zuspec.fe.pss.ast_to_ir import AstToIrContext
-from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-from zuspec.fe.pss.sv.emit_files import emit_files
-from zuspec.fe.pss.sv.lower_top import generate_top_module
+from pssc.ast2ir import AstToIrContext
+from pssc.targets.sv.pss_to_sv import pss_to_sv
+from pssc.targets.sv.emit_files import emit_files
+from pssc.targets.sv.lower_top import generate_top_module
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
 

@@ -9,7 +9,7 @@ Covers Phase 6 of the implementation plan:
 
 import pytest
 
-from zuspec.fe.pss.sv.lower_flow_objects import (
+from pssc.targets.sv.lower_flow_objects import (
     FlowBinding,
     emit_buffer_decl,
     emit_buffer_producer_capture,
@@ -24,13 +24,13 @@ from zuspec.fe.pss.sv.lower_flow_objects import (
     emit_flow_traversal_parallel,
     emit_flow_object_wiring,
 )
-from zuspec.fe.pss.sv.lower_flow_constraints import (
+from pssc.targets.sv.lower_flow_constraints import (
     PropagatedConstraint,
     extract_flow_constraints,
     propagate_constraints_to_producer,
     build_field_remap,
 )
-from zuspec.fe.pss.sv.context import LoweringContext
+from pssc.targets.sv.context import LoweringContext
 
 
 # -----------------------------------------------------------------------

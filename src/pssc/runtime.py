@@ -17,7 +17,7 @@ from zuspec.dataclasses import ir as zdc_ir
 from zuspec.dataclasses.rt.executor import ObjectExecutor, _ReturnSignal
 
 if TYPE_CHECKING:
-    from .ast_to_ir import AstToIrContext
+    from .ast2ir import AstToIrContext
 
 # ---------------------------------------------------------------------------
 # Scalar integer type map  (bits, signed) -> zdc type alias

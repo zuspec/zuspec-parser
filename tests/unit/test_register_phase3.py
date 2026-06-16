@@ -6,8 +6,8 @@ Unit tests for Register IR Phase 3 Implementation
 Tests register functions and register group creation.
 """
 import pytest
-from zuspec.fe.pss import Parser
-from zuspec.fe.pss.ast_to_ir import AstToIrTranslator
+from pssc import Parser
+from pssc.ast2ir import AstToIrTranslator
 from zuspec.dataclasses import ir
 
 

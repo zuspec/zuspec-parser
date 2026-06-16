@@ -1,6 +1,6 @@
 """PSS FE → RT tests: unique constraints (§16.1.9)."""
 import pytest
-from zuspec.fe.pss import load_pss
+from pssc import load_pss
 from zuspec.dataclasses import randomize
 
 

@@ -6,16 +6,16 @@ from zuspec.dataclasses import ir
 from zuspec.ir.core.fields import FieldKind
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_components import lower_component
-from zuspec.fe.pss.sv.lower_actions import lower_action
-from zuspec.fe.pss.sv.lower_activities import (
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_components import lower_component
+from pssc.targets.sv.lower_actions import lower_action
+from pssc.targets.sv.lower_activities import (
     lower_activity,
     _lower_activity_stmt,
     _lower_replicate,
 )
-from zuspec.fe.pss.sv.lower_coverage import lower_action_covergroups
-from zuspec.fe.pss.sv.lower_stmts import lower_stmt
+from pssc.targets.sv.lower_coverage import lower_action_covergroups
+from pssc.targets.sv.lower_stmts import lower_stmt
 
 
 @pytest.fixture

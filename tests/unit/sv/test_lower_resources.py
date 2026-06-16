@@ -1,7 +1,7 @@
 """Tests for resource acquire/release lowering."""
 
 import pytest
-from zuspec.fe.pss.sv.lower_resources import (
+from pssc.targets.sv.lower_resources import (
     ResourceClaim,
     emit_resource_acquire,
     emit_resource_release,

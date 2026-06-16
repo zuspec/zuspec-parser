@@ -103,8 +103,8 @@ endmodule
 """
 
     # Generate SV from lowering pipeline but replace top with our checker
-    from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-    from zuspec.fe.pss.sv.emit_files import emit_files
+    from pssc.targets.sv.pss_to_sv import pss_to_sv
+    from pssc.targets.sv.emit_files import emit_files
     from pathlib import Path
 
     sv_dir = str(Path(str(tmpdir)) / "sv_out")
@@ -168,8 +168,8 @@ module zsp_test_top;
 endmodule
 """
 
-    from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-    from zuspec.fe.pss.sv.emit_files import emit_files
+    from pssc.targets.sv.pss_to_sv import pss_to_sv
+    from pssc.targets.sv.emit_files import emit_files
     from pathlib import Path
 
     sv_dir = str(Path(str(tmpdir)) / "sv_out")
@@ -218,8 +218,8 @@ module zsp_test_top;
 endmodule
 """
 
-    from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-    from zuspec.fe.pss.sv.emit_files import emit_files
+    from pssc.targets.sv.pss_to_sv import pss_to_sv
+    from pssc.targets.sv.emit_files import emit_files
     from pathlib import Path
 
     sv_dir = str(Path(str(tmpdir)) / "sv_out")
@@ -275,8 +275,8 @@ module zsp_test_top;
 endmodule
 """
 
-    from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-    from zuspec.fe.pss.sv.emit_files import emit_files
+    from pssc.targets.sv.pss_to_sv import pss_to_sv
+    from pssc.targets.sv.emit_files import emit_files
     from pathlib import Path
 
     sv_dir = str(Path(str(tmpdir)) / "sv_out")
@@ -332,8 +332,8 @@ module zsp_test_top;
 endmodule
 """
 
-    from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-    from zuspec.fe.pss.sv.emit_files import emit_files
+    from pssc.targets.sv.pss_to_sv import pss_to_sv
+    from pssc.targets.sv.emit_files import emit_files
     from pathlib import Path
 
     sv_dir = str(Path(str(tmpdir)) / "sv_out")
@@ -383,8 +383,8 @@ module zsp_test_top;
 endmodule
 """
 
-    from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-    from zuspec.fe.pss.sv.emit_files import emit_files
+    from pssc.targets.sv.pss_to_sv import pss_to_sv
+    from pssc.targets.sv.emit_files import emit_files
     from pathlib import Path
 
     sv_dir = str(Path(str(tmpdir)) / "sv_out")

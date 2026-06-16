@@ -3,8 +3,8 @@
 import pytest
 from zuspec.dataclasses import ir
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_constraints import lower_constraint_func
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_constraints import lower_constraint_func
 
 
 @pytest.fixture

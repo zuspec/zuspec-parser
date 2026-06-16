@@ -10,9 +10,9 @@ from zuspec.dataclasses import ir
 from zuspec.ir.core import expr as ir_expr
 from zuspec.ir.core.fields import FieldKind
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_activities import lower_activity, _FlowCtx
-from zuspec.fe.pss.sv.analyze_flow import FlowBindingInfo
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_activities import lower_activity, _FlowCtx
+from pssc.targets.sv.analyze_flow import FlowBindingInfo
 
 
 # ------------------------------------------------------------------ #
@@ -70,7 +70,7 @@ def test_buffer_producer_capture_emitted():
 
     # Inject fctx into lower_activity by monkey-patching the analysis
     # (we test _lower_activity_stmt directly with pre-built fctx)
-    from zuspec.fe.pss.sv.lower_activities import _lower_anon_traversal
+    from pssc.targets.sv.lower_activities import _lower_anon_traversal
     prod_lines = _lower_anon_traversal(ctx, activity.stmts[0], "comp", fctx)
     joined = "\n".join(prod_lines)
 
@@ -92,7 +92,7 @@ def test_buffer_consumer_injection_emitted():
     fctx = _ctx_with_bindings([b])
     flow_var = fctx.get_flow_var(b)
 
-    from zuspec.fe.pss.sv.lower_activities import _lower_anon_traversal
+    from pssc.targets.sv.lower_activities import _lower_anon_traversal
     cons_lines = _lower_anon_traversal(
         ctx, _make_anon("consumer", "c"), "comp", fctx
     )
@@ -117,7 +117,7 @@ def test_buffer_consumer_with_constraint_emitted():
     fctx = _ctx_with_bindings([b])
     flow_var = fctx.get_flow_var(b)
 
-    from zuspec.fe.pss.sv.lower_activities import _lower_anon_traversal
+    from pssc.targets.sv.lower_activities import _lower_anon_traversal
     cons_lines = _lower_anon_traversal(
         ctx, _make_anon("consumer", "c"), "comp", fctx
     )
@@ -143,7 +143,7 @@ def test_buffer_producer_no_injection():
     )
     fctx = _ctx_with_bindings([b])
 
-    from zuspec.fe.pss.sv.lower_activities import _lower_anon_traversal
+    from pssc.targets.sv.lower_activities import _lower_anon_traversal
     prod_lines = _lower_anon_traversal(
         ctx, _make_anon("producer", "p"), "comp", fctx
     )
@@ -173,7 +173,7 @@ def test_activity_sequence_with_buffer_flow():
     ])
 
     # Manually call lower_activity with pre-built fctx by calling _lower_activity_stmt
-    from zuspec.fe.pss.sv.lower_activities import _lower_activity_stmt
+    from pssc.targets.sv.lower_activities import _lower_activity_stmt
     lines = []
     for stmt in activity.stmts:
         lines.extend(_lower_activity_stmt(ctx, stmt, "comp", fctx))
@@ -214,7 +214,7 @@ def test_activity_bind_suppressed_with_fctx():
             attr="in_buf"),
     )
 
-    from zuspec.fe.pss.sv.lower_activities import _lower_activity_stmt
+    from pssc.targets.sv.lower_activities import _lower_activity_stmt
     lines = _lower_activity_stmt(ctx, bind_stmt, "comp", fctx)
     assert lines == [], f"Expected empty, got: {lines}"
 
@@ -233,7 +233,7 @@ def test_activity_bind_emits_comment_without_fctx():
             attr="in_buf"),
     )
 
-    from zuspec.fe.pss.sv.lower_activities import _lower_activity_stmt
+    from pssc.targets.sv.lower_activities import _lower_activity_stmt
     lines = _lower_activity_stmt(ctx, bind_stmt, "comp", None)
     assert len(lines) == 1
     assert "bind" in lines[0].lower()
@@ -251,7 +251,7 @@ def test_activity_schedule_lowers_children():
         pragmas={},
         join_spec=None,
     )
-    from zuspec.fe.pss.sv.lower_activities import _lower_activity_stmt
+    from pssc.targets.sv.lower_activities import _lower_activity_stmt
     lines = _lower_activity_stmt(ctx, sched, "comp", None)
     joined = "\n".join(lines)
     # Should contain the action lifecycle, not an "unsupported" comment
@@ -285,7 +285,7 @@ def test_lower_activity_emits_flow_var_decl():
     # Use _FlowCtx directly: call the internal path that emits declarations
     # by testing that the ctx-level code in lower_activity produces the decl
     # when we manually inject the binding into fctx.
-    from zuspec.fe.pss.sv.lower_activities import _lower_activity_stmt
+    from pssc.targets.sv.lower_activities import _lower_activity_stmt
 
     # Manually emit the declaration that lower_activity would emit from fctx
     decl_lines = []

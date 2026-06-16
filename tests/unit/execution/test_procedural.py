@@ -6,7 +6,7 @@ repeat, while, repeat-while, foreach, if-else, match, break/continue, return.
 from __future__ import annotations
 import asyncio
 import pytest
-from zuspec.fe.pss import Parser, AstToIrTranslator, AstToIrContext, IrToRuntimeBuilder
+from pssc import Parser, AstToIrTranslator, AstToIrContext, IrToRuntimeBuilder
 
 
 def _build(pss_text: str):

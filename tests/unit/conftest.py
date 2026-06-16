@@ -2,7 +2,7 @@
 pytest configuration and shared fixtures for PSS frontend tests
 """
 import pytest
-from zuspec.fe.pss import Parser
+from pssc import Parser
 from pssparser.core import Factory
 
 

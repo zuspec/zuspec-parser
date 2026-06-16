@@ -10,20 +10,20 @@ from zuspec.dataclasses import ir
 from zuspec.ir.core import expr as ir_expr
 from zuspec.ir.core.fields import FieldKind
 
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.analyze_activity import (
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.analyze_activity import (
     analyze_activity,
     ActivityPlan,
     PipelineChain,
     _walk_chain,
     _build_chains,
 )
-from zuspec.fe.pss.sv.analyze_flow import (
+from pssc.targets.sv.analyze_flow import (
     FlowBindingInfo,
     ActivityFlowInfo,
     TraversalMeta,
 )
-from zuspec.fe.pss.sv.classify_constraints import SolveMode
+from pssc.targets.sv.classify_constraints import SolveMode
 
 
 # ------------------------------------------------------------------ #
@@ -208,7 +208,7 @@ def test_build_chains_dpi_mode_triggers_compilation():
 
 try:
     from pssparser import Parser
-    from zuspec.fe.pss.ast_to_ir import AstToIrTranslator
+    from pssc.ast2ir import AstToIrTranslator
     HAS_PSS = True
 except ImportError:
     HAS_PSS = False

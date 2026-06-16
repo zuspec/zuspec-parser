@@ -32,9 +32,9 @@ from typing import List
 
 import pytest
 
-from zuspec.fe.pss import Parser, AstToIrTranslator
+from pssc import Parser, AstToIrTranslator
 from zuspec.be.sv.ir.sv_emit import SVEmitter
-from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
+from pssc.targets.sv.pss_to_sv import pss_to_sv
 
 # ---------------------------------------------------------------------------
 # Locate pattern files

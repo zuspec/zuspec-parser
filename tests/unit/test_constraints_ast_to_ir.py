@@ -1,8 +1,8 @@
 """Tests for PSS constraint translation: AST → IR Function with _is_constraint metadata."""
 import pytest
-from zuspec.fe.pss import Parser
+from pssc import Parser
 from pssparser.core import Factory
-from zuspec.fe.pss.ast_to_ir import AstToIrTranslator
+from pssc.ast2ir import AstToIrTranslator
 from zuspec.dataclasses import ir
 from zuspec.ir.core.stmt import StmtExpr, StmtIf
 

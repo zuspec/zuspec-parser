@@ -1,9 +1,9 @@
 """Tests for fill activity reconstruction and coverage-driven termination."""
 import pytest
 import asyncio
-from zuspec.fe.pss import load_pss, Parser
-from zuspec.fe.pss.ast_to_ir import AstToIrTranslator
-from zuspec.fe.pss.ir_to_runtime import IrToRuntimeBuilder
+from pssc import load_pss, Parser
+from pssc.ast2ir import AstToIrTranslator
+from pssc.runtime import IrToRuntimeBuilder
 from zuspec.dataclasses import PssCoverageModel, ScenarioRunner
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")

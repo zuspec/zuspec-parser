@@ -12,17 +12,17 @@ import pytest
 from zuspec.dataclasses import ir
 from zuspec.be.sv.ir.sv_emit import SVEmitter
 
-from zuspec.fe.pss.ast_to_ir import AstToIrContext
-from zuspec.fe.pss.sv.pss_to_sv import pss_to_sv
-from zuspec.fe.pss.sv.emit_files import emit_files
-from zuspec.fe.pss.sv.context import LoweringContext
-from zuspec.fe.pss.sv.lower_flow_objects import (
+from pssc.ast2ir import AstToIrContext
+from pssc.targets.sv.pss_to_sv import pss_to_sv
+from pssc.targets.sv.emit_files import emit_files
+from pssc.targets.sv.context import LoweringContext
+from pssc.targets.sv.lower_flow_objects import (
     FlowBinding,
     emit_flow_traversal_sequential,
     emit_flow_traversal_parallel,
     emit_flow_object_wiring,
 )
-from zuspec.fe.pss.sv.lower_flow_constraints import (
+from pssc.targets.sv.lower_flow_constraints import (
     propagate_constraints_to_producer,
     build_field_remap,
 )

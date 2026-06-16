@@ -4,7 +4,7 @@ import os
 import tempfile
 import pytest
 
-from zuspec.fe.pss import Parser, AstToIrTranslator, _preprocess_pss
+from pssc import Parser, AstToIrTranslator, _preprocess_pss
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")
 

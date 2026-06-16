@@ -5,7 +5,7 @@ Stubs out pssparser so tests run without the native parser library.
 import sys
 import types
 
-# Stub pssparser so zuspec.fe.pss can be imported without native lib
+# Stub pssparser so pssc can be imported without native lib
 if "pssparser" not in sys.modules:
     _stub = types.ModuleType("pssparser")
     _stub.Parser = None

@@ -8,8 +8,8 @@ Three layers:
 import pytest
 from unittest.mock import patch
 
-from zuspec.fe.pss import load_pss, ParseException, PssTranslationError
-from zuspec.fe.pss.ast_to_ir import AstToIrContext
+from pssc import load_pss, ParseException, PssTranslationError
+from pssc.ast2ir import AstToIrContext
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +58,7 @@ def test_translation_error_raised_when_ctx_has_errors():
         return ctx
 
     with patch(
-        "zuspec.fe.pss.AstToIrTranslator.translate",
+        "pssc.AstToIrTranslator.translate",
         fake_translate,
     ):
         with pytest.raises(PssTranslationError) as exc_info:
@@ -78,7 +78,7 @@ def test_translation_error_message_lists_errors():
         return ctx
 
     with patch(
-        "zuspec.fe.pss.AstToIrTranslator.translate",
+        "pssc.AstToIrTranslator.translate",
         fake_translate,
     ):
         with pytest.raises(PssTranslationError) as exc_info:
@@ -113,7 +113,7 @@ def test_valid_pss_no_exception():
 
 def test_valid_pss_no_ctx_errors():
     """Translator ctx.errors is empty for normal valid PSS."""
-    from zuspec.fe.pss import Parser, AstToIrTranslator
+    from pssc import Parser, AstToIrTranslator
 
     p = Parser()
     p.parses([("x.pss", "struct Foo { rand bit[8] x; constraint x > 0; }")])

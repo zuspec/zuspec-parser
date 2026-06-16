@@ -9,9 +9,9 @@ Covers:
 """
 import unittest
 
-from zuspec.fe.pss import Parser
+from pssc import Parser
 from pssparser.core import Factory
-from zuspec.fe.pss.ast_to_ir import AstToIrTranslator, AstToIrContext
+from pssc.ast2ir import AstToIrTranslator, AstToIrContext
 from zuspec.dataclasses import ir
 
 
