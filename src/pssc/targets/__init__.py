@@ -57,8 +57,9 @@ def discover() -> None:
 def _register_builtins() -> None:
     from .python_tgt import PythonTarget
     from .sv_tgt import SvTarget
+    from .sw_tgt import CHostTarget
 
-    for tgt in (PythonTarget(), SvTarget()):
+    for tgt in (PythonTarget(), SvTarget(), CHostTarget()):
         register(tgt)
 
 
