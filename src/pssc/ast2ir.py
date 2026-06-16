@@ -34,8 +34,6 @@ class AstToIrContext:
         self.parent_comp_names: Dict[str, str] = {}
         # Set of local variable names in the current scope (e.g. foreach loop vars)
         self.local_vars: set = set()
-        # Pending range constraints from `rand int in [range]` fields; flushed per type.
-        self._pending_range_constraints: list = []
 
     def push_scope(self, scope: ir.DataType):
         """Push a new scope (component, struct, etc.)"""
@@ -248,6 +246,9 @@ class AstToIrTranslator:
                 if constraint_func:
                     target_ir.functions.append(constraint_func)
 
+        # Flush any `rand int in [range]` domain constraints onto the extended type.
+        self._flush_range_constraints(target_ir)
+
         ctx.pop_scope()
 
     def _translate_extend_enum(self, ctx: AstToIrContext, extend: pss_ast.ExtendEnum):
@@ -407,6 +408,9 @@ class AstToIrTranslator:
                     stmts = self._translate_exec_scope(ctx, child)
                     func = ir.Function(name='run_end', is_async=False, body=stmts)
                     comp.functions.append(func)
+
+        # Flush any `rand int in [range]` domain constraints onto this component.
+        self._flush_range_constraints(comp)
 
         # Pop type-chain name for component
         self._type_chain_stack.pop()
@@ -633,8 +637,8 @@ class AstToIrTranslator:
             elif isinstance(child, pss_ast.ActivityDecl):
                 action_ir.activity_ir = self._translate_activity_body(ctx, child)
                      
-        # Flush any pending `rand int in [range]` constraints as a constraint function.
-        self._flush_range_constraints(ctx, action_ir)
+        # Flush any `rand int in [range]` domain constraints onto this action.
+        self._flush_range_constraints(action_ir)
 
         # Inject forall constraints, covergroups, and fill rewrites from PssAnnotation side-channel
         current_chain = list(self._type_chain_stack)
@@ -999,21 +1003,30 @@ class AstToIrTranslator:
             return None
         return ir.ExprRangeList(ranges=ranges)
 
-    def _flush_range_constraints(self, ctx: AstToIrContext, action_ir: ir.DataTypeStruct) -> None:
-        """Convert pending range constraints into a constraint function and clear them."""
-        if not ctx._pending_range_constraints:
+    def _flush_range_constraints(self, type_ir: ir.DataTypeStruct) -> None:
+        """Emit one constraint function for any of ``type_ir``'s own fields that
+        carry a ``rand int in [range]`` domain.
+
+        Scoped to ``type_ir.fields`` so a domain on one type can never leak onto
+        another (e.g. a std-lib struct's ``alignment`` domain onto a user action).
+        """
+        pending = [(f, getattr(f, '_pssc_domain_in', None)) for f in type_ir.fields]
+        pending = [(f, in_expr) for f, in_expr in pending if in_expr is not None]
+        if not pending:
             return
-        body: List[ir.Stmt] = []
-        for _fname, in_expr in ctx._pending_range_constraints:
-            body.append(ir.StmtExpr(expr=in_expr))
-        n = sum(1 for f in action_ir.functions if f.metadata.get('_is_constraint'))
+        body: List[ir.Stmt] = [ir.StmtExpr(expr=in_expr) for _f, in_expr in pending]
+        n = sum(1 for f in type_ir.functions if f.metadata.get('_is_constraint'))
         cfunc = ir.Function(
             name=f'_range_{n}',
             body=body,
             metadata={'_is_constraint': True},
         )
-        action_ir.functions.append(cfunc)
-        ctx._pending_range_constraints = []
+        type_ir.functions.append(cfunc)
+        for f, _in_expr in pending:
+            try:
+                delattr(f, '_pssc_domain_in')
+            except AttributeError:
+                pass
 
     def _hier_id_to_expr(self, hier_id) -> 'ir.Expr':
         """Convert an ExprHierarchicalId to a chain of ExprAttribute nodes.
@@ -1146,6 +1159,9 @@ class AstToIrTranslator:
                 constraint_func = self._translate_constraint_block(ctx, child, struct_ir)
                 if constraint_func:
                     struct_ir.functions.append(constraint_func)
+
+        # Flush any `rand int in [range]` domain constraints onto this struct.
+        self._flush_range_constraints(struct_ir)
 
         # Inject forall constraints from PssAnnotation side-channel
         current_chain = list(self._type_chain_stack)
@@ -1550,7 +1566,10 @@ class AstToIrTranslator:
             if range_list is not None:
                 field_ref = ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr=field_name)
                 in_expr = ir.ExprIn(value=field_ref, container=range_list)
-                ctx._pending_range_constraints.append((field_name, in_expr))
+                # Carry the domain `in` constraint on the field itself; the owning
+                # type flushes it via _flush_range_constraints. (Using a shared ctx
+                # list previously leaked struct-level domains onto unrelated actions.)
+                ir_field._pssc_domain_in = in_expr
 
         return ir_field
 

@@ -20,6 +20,13 @@ _PATTERNS = os.path.join(
     'modeling_patterns', 'pss',
 )
 
+if not os.path.isdir(_PATTERNS):
+    import pytest
+    pytest.skip(
+        "external modeling_patterns/ data not present in this checkout",
+        allow_module_level=True,
+    )
+
 
 def _build_from_files(*paths):
     p = Parser()

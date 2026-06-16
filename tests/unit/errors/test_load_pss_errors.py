@@ -51,7 +51,7 @@ def test_parse_exception_marker_names_bad_type():
 
 def test_translation_error_raised_when_ctx_has_errors():
     """load_pss() raises PssTranslationError if the translator records errors."""
-    def fake_translate(self, root):
+    def fake_translate(self, root, annotations=None):
         ctx = AstToIrContext()
         ctx.add_error("synthetic error A")
         ctx.add_error("synthetic error B")
@@ -72,7 +72,7 @@ def test_translation_error_raised_when_ctx_has_errors():
 
 def test_translation_error_message_lists_errors():
     """PssTranslationError str() includes each individual error."""
-    def fake_translate(self, root):
+    def fake_translate(self, root, annotations=None):
         ctx = AstToIrContext()
         ctx.add_error("problem with field x")
         return ctx

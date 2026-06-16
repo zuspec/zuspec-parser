@@ -262,11 +262,14 @@ class TestConstraintFieldValidation:
 
     def test_implicit_alignment_constraint_filtered(self):
         """IR-generated 'alignment' constraint must not appear in SV output."""
+        import os
         from pssc import Parser, AstToIrTranslator
         from pssc.targets.sv.pss_to_sv import pss_to_sv
         from zuspec.be.sv.ir.sv_emit import SVEmitter
+        pss = os.path.join(os.path.dirname(__file__), '..', '..', 'patterns',
+                           'pipeline_stream.pss')
         p = Parser()
-        p.parse(['packages/zuspec-fe-pss/tests/patterns/pipeline_stream.pss'])
+        p.parse([pss])
         ast = p.link()
         ctx = AstToIrTranslator().translate(ast, annotations=p.annotations)
         nodes = pss_to_sv(ctx)

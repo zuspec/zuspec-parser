@@ -18,6 +18,12 @@ EXAMPLE_PSS = os.path.join(
     '01-HelloWorld', 'example.pss',
 )
 
+if not os.path.exists(EXAMPLE_PSS):
+    pytest.skip(
+        "external 01-HelloWorld/example.pss not present in this checkout",
+        allow_module_level=True,
+    )
+
 # Suppress warnings from skipped constraints on unbound flow inputs
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")
 

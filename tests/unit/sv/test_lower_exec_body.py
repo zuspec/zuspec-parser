@@ -62,8 +62,8 @@ def test_message_lowered_to_display():
     ctx = _make_ctx()
     # Simulate message(HIGH=3, "hello") call
     args = [
-        ir.ExprConstant(value=3, kind=None),   # HIGH
-        ir.ExprConstant(value="hello", kind=None),
+        ir.ExprConstant(value=3),   # HIGH
+        ir.ExprConstant(value="hello"),
     ]
     result = _lower_pss_call(ctx, "message", args)
     assert result == '$display("hello")', f"Unexpected: {result!r}"
@@ -73,8 +73,8 @@ def test_message_with_format_args():
     """message(LOW, "val=%d", val) -> $display("val=%d", val);"""
     ctx = _make_ctx()
     args = [
-        ir.ExprConstant(value=1, kind=None),   # LOW
-        ir.ExprConstant(value="val=%d", kind=None),
+        ir.ExprConstant(value=1),   # LOW
+        ir.ExprConstant(value="val=%d"),
         ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr="val"),
     ]
     result = _lower_pss_call(ctx, "message", args)
@@ -108,8 +108,8 @@ def test_stmt_expr_message_call():
     stmt = ir.StmtExpr(expr=ir.ExprCall(
         func=ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr="message"),
         args=[
-            ir.ExprConstant(value=3, kind=None),  # HIGH
-            ir.ExprConstant(value="Test %d", kind=None),
+            ir.ExprConstant(value=3),  # HIGH
+            ir.ExprConstant(value="Test %d"),
             ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr="x"),
         ],
         keywords=[],
@@ -166,8 +166,8 @@ def test_body_with_message_call():
     body_stmts = [ir.StmtExpr(expr=ir.ExprCall(
         func=ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr="message"),
         args=[
-            ir.ExprConstant(value=1, kind=None),
-            ir.ExprConstant(value="executing", kind=None),
+            ir.ExprConstant(value=1),
+            ir.ExprConstant(value="executing"),
         ],
         keywords=[],
     ))]
@@ -183,7 +183,7 @@ def test_body_with_assignment():
     ctx = _make_ctx()
     body_stmts = [ir.StmtAssign(
         targets=[ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr="result")],
-        value=ir.ExprConstant(value=42, kind=None),
+        value=ir.ExprConstant(value=42),
     )]
     action = _make_simple_action(body_stmts=body_stmts)
     sv_class = lower_action(ctx, action)
@@ -207,7 +207,7 @@ def test_pre_solve_with_stmt():
     ctx = _make_ctx()
     pre_stmts = [ir.StmtAssign(
         targets=[ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr="mode")],
-        value=ir.ExprConstant(value=1, kind=None),
+        value=ir.ExprConstant(value=1),
     )]
     action = _make_simple_action(pre_solve_stmts=pre_stmts)
     sv_class = lower_action(ctx, action)
@@ -221,13 +221,13 @@ def test_both_body_and_pre_solve():
     ctx = _make_ctx()
     body_stmts = [ir.StmtExpr(expr=ir.ExprCall(
         func=ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr="message"),
-        args=[ir.ExprConstant(value=3, kind=None),
-              ir.ExprConstant(value="done", kind=None)],
+        args=[ir.ExprConstant(value=3),
+              ir.ExprConstant(value="done")],
         keywords=[],
     ))]
     pre_stmts = [ir.StmtAssign(
         targets=[ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr="x")],
-        value=ir.ExprConstant(value=0, kind=None),
+        value=ir.ExprConstant(value=0),
     )]
     action = _make_simple_action(body_stmts=body_stmts, pre_solve_stmts=pre_stmts)
     sv_class = lower_action(ctx, action)

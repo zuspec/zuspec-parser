@@ -144,6 +144,7 @@ def _generate_sv_from_ctx(ir_ctx: AstToIrContext, output_dir: str, **options) ->
 
     multi_file = options.pop('multi_file', True)
     inference_mode = options.pop('inference_mode', 'static')
+    include_runtime = options.pop('include_runtime', True)
     sv_nodes = pss_to_sv(ir_ctx)
     rt_src = _get_runtime_lib_path()
 
@@ -163,7 +164,7 @@ def _generate_sv_from_ctx(ir_ctx: AstToIrContext, output_dir: str, **options) ->
         return emit_files(
             nodes=sv_nodes,
             output_dir=output_dir,
-            runtime_lib_path=rt_src if rt_src.exists() else None,
+            runtime_lib_path=rt_src if (include_runtime and rt_src.exists()) else None,
             top_module_node=top_node,
         )
 
@@ -184,9 +185,18 @@ def _generate_sv_from_ctx(ir_ctx: AstToIrContext, output_dir: str, **options) ->
     gen_path.write_text(sv_text + "\n")
     written.append(gen_path)
 
-    if rt_src.exists():
+    if include_runtime and rt_src.exists():
         rt_dst = out / 'zsp_rt_pkg.sv'
         shutil.copy2(str(rt_src), str(rt_dst))
         written.append(rt_dst)
 
     return written
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 public API: the canonical IR hand-off, driver, and CLI-backed compile.
+# Imported last so the targets registry (which reaches back into this module for
+# the SV path) sees a fully-initialized package.
+# ---------------------------------------------------------------------------
+from .ir import to_core_context  # noqa: E402
+from .driver import compile, CompileResult, CompileError  # noqa: E402

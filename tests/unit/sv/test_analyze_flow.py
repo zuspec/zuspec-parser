@@ -95,7 +95,7 @@ def test_expr_attr_chain_single_level():
 
 def test_expr_attr_chain_non_attr():
     from zuspec.ir.core.expr import ExprConstant
-    result = _expr_attr_chain(ExprConstant(value=42, kind=None))
+    result = _expr_attr_chain(ExprConstant(value=42))
     assert result is None
 
 
@@ -215,7 +215,7 @@ def test_collect_refs_binary_expr():
 def test_collect_refs_constant():
     """ExprConstant -> {}"""
     from zuspec.ir.core.expr import ExprConstant
-    refs = _collect_top_field_refs(ExprConstant(value=42, kind=None))
+    refs = _collect_top_field_refs(ExprConstant(value=42))
     assert refs == set()
 
 
@@ -237,7 +237,7 @@ def test_classify_no_flow_refs():
     """Constraint on local field only -> SV_NATIVE."""
     ctx = _make_ctx()
     # constraint val > 0
-    body = [_make_gt_stmt(_self_attr("val"), ir_expr.ExprConstant(value=0, kind=None))]
+    body = [_make_gt_stmt(_self_attr("val"), ir_expr.ExprConstant(value=0))]
     result = classify_constraint(ctx, "top::act", body, set(), set())
     assert result == ConstraintClass.SV_NATIVE
 
@@ -255,7 +255,7 @@ def test_classify_input_eq_constant():
     ctx = _make_ctx()
     body = [_make_eq_stmt(
         _self_subattr("in_s", "resized"),
-        ir_expr.ExprConstant(value=1, kind=None)
+        ir_expr.ExprConstant(value=1)
     )]
     result = classify_constraint(ctx, "top::act", body, {"in_s"}, set())
     assert result == ConstraintClass.DPI_REQUIRED
@@ -267,7 +267,7 @@ def test_classify_input_only_ref_no_output():
     # constraint in_b.value > 0  (no output field referenced)
     body = [_make_gt_stmt(
         _self_subattr("in_b", "value"),
-        ir_expr.ExprConstant(value=0, kind=None)
+        ir_expr.ExprConstant(value=0)
     )]
     result = classify_constraint(ctx, "top::act", body, {"in_b"}, {"out_b"})
     assert result == ConstraintClass.DPI_REQUIRED

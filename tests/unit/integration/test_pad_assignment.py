@@ -33,6 +33,13 @@ _PAD_PSS = os.path.join(
     'modeling_patterns', 'pss', 'pad_assignment', 'pad_assignment.pss',
 )
 
+if not os.path.exists(_PAD_PSS):
+    import pytest
+    pytest.skip(
+        "external modeling_patterns/pad_assignment.pss not present in this checkout",
+        allow_module_level=True,
+    )
+
 
 def _build_classes():
     p = Parser()
