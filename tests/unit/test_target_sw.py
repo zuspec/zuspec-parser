@@ -246,6 +246,85 @@ def test_chost_activity_model_links(tmp_path):
     assert run.returncode == 0, run.stderr
 
 
+FIELD_ACTIVITY_SRC = """
+component pss_top {
+    action Leaf { bit[8] v; exec body { print("leaf v=%d", v); } }
+    action Root { Leaf a; Leaf b; activity { a; b; } }
+}
+"""
+
+
+def test_activity_field_hoisting(tmp_path):
+    # each traversed sub-action's field becomes a path-prefixed coroutine local;
+    # siblings `a` and `b` get distinct locals (no collision)
+    p = tmp_path / "m.pss"
+    p.write_text(FIELD_ACTIVITY_SRC)
+    out = tmp_path / "c"
+    pssc.compile(str(p), target="c-host", output_dir=str(out))
+    root_c = (out / "pss_top__root.c").read_text()
+    assert "a__v" in root_c and "b__v" in root_c
+    # the hoisted local is the printed value (not a dropped/garbage arg)
+    assert 'fprintf(stdout, "leaf v=%d\\n", locals->a__v)' in root_c
+
+
+@pytest.mark.c_toolchain
+def test_chost_activity_with_fields_runs(tmp_path):
+    if shutil.which("gcc") is None:
+        pytest.skip("gcc not available")
+    p = tmp_path / "m.pss"
+    p.write_text(FIELD_ACTIVITY_SRC)
+    out = tmp_path / "c"
+    res = pssc.compile(str(p), target="c-host", output_dir=str(out))
+    run = _link_and_run(out, res.outputs)
+    assert run.returncode == 0, run.stderr
+    # two traversals, each prints its (zero-initialized, unsolved) field
+    assert run.stdout.split("\n")[:2] == ["leaf v=0", "leaf v=0"], run.stdout
+
+
+PARALLEL_SRC = """
+component pss_top {
+    action Leaf { exec body { print("leaf"); } }
+    action Root { Leaf a; Leaf b; activity { parallel { a; b; } } }
+}
+"""
+
+SELECT_SRC = """
+component pss_top {
+    action AA { exec body { print("A"); } }
+    action BB { exec body { print("B"); } }
+    action Root { AA a; BB b; activity { select { a; b; } } }
+}
+"""
+
+
+@pytest.mark.c_toolchain
+def test_chost_parallel_runs_both(tmp_path):
+    if shutil.which("gcc") is None:
+        pytest.skip("gcc not available")
+    p = tmp_path / "m.pss"
+    p.write_text(PARALLEL_SRC)
+    out = tmp_path / "c"
+    res = pssc.compile(str(p), target="c-host", output_dir=str(out))
+    run = _link_and_run(out, res.outputs)
+    assert run.returncode == 0, run.stderr
+    # parallel runs both branches (sequential schedule)
+    assert run.stdout.split() == ["leaf", "leaf"], run.stdout
+
+
+@pytest.mark.c_toolchain
+def test_chost_select_takes_first_branch(tmp_path):
+    if shutil.which("gcc") is None:
+        pytest.skip("gcc not available")
+    p = tmp_path / "m.pss"
+    p.write_text(SELECT_SRC)
+    out = tmp_path / "c"
+    res = pssc.compile(str(p), target="c-host", output_dir=str(out))
+    run = _link_and_run(out, res.outputs)
+    assert run.returncode == 0, run.stderr
+    # select takes the first branch deterministically (A, never B)
+    assert run.stdout.split() == ["A"], run.stdout
+
+
 def test_chost_emits_root_harness(tmp_path):
     # the generated main.c instantiates the root action and drives its activity
     p = tmp_path / "m.pss"
