@@ -15,8 +15,8 @@ from .base import Target
 
 
 class SvTarget(Target):
-    name = "sv"
-    description = "SystemVerilog classes solved by the SV solver (style 1)"
+    name = "sv-native"
+    description = "Pure SystemVerilog classes solved by the SV solver (style 1)"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(

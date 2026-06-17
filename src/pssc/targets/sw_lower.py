@@ -22,6 +22,8 @@ import dataclasses as _dc
 
 import zuspec.ir.core as ir
 
+from .sw_solve import solve_action, problem_bytes, seed_for
+
 
 # ---------------------------------------------------------------------------
 # PSS builtin -> C mapping
@@ -53,17 +55,9 @@ def _lower_builtin_call(expr):
         return None
     if not args:
         return None
-    fmt, values = args[0], args[1:]
-    if not values:
-        new_args = [fmt]
-    elif len(values) == 1:
-        # print(fmt % value) -> fprintf(stdout, fmt, value)
-        new_args = [ir.ExprBin(lhs=fmt, op=ir.BinOp.Mod, rhs=values[0])]
-    else:
-        # zuspec-be-sw's print renders a single format value only; leave
-        # multi-value forms untouched (documented limitation).
-        return None
-    return ir.ExprCall(func=ir.ExprRefUnresolved(name="print"), args=new_args)
+    # Emit bare print(fmt, v1, v2, ...); the backend renders
+    # fprintf(stdout, "fmt\n", v1, v2, ...) (any number of format values).
+    return ir.ExprCall(func=ir.ExprRefUnresolved(name="print"), args=args)
 
 
 def _rewrite_stmt(stmt):
@@ -159,69 +153,177 @@ def _resolve_sub_action(action, handle, type_m, scope):
     return None, None
 
 
-def _rebind_fields(node, prefix, field_names):
-    """Rewrite ``self.<f>`` (f in ``field_names``) -> local ``<prefix><f>``."""
-    if (isinstance(node, ir.ExprAttribute)
-            and isinstance(node.value, ir.TypeExprRefSelf)
-            and node.attr in field_names):
-        return ir.ExprRefLocal(name=prefix + node.attr)
+def _subscript_index(node, bindings):
+    """Constant index of a subscript slice: a literal or a bound loop var."""
+    if isinstance(node, ir.ExprConstant):
+        return node.value
+    if isinstance(node, ir.ExprRefLocal) and node.name in bindings:
+        return bindings[node.name]
+    return None
+
+
+def _self_path(node, bindings):
+    """Path tuple of a self-rooted ref (``self.pts[0].x`` -> ``("pts", 0, "x")``),
+    or ``None``. Subscripts must resolve to a constant (literal or bound loop var)."""
+    if isinstance(node, ir.TypeExprRefSelf):
+        return ()
+    if isinstance(node, ir.ExprAttribute):
+        base = _self_path(node.value, bindings)
+        return base + (node.attr,) if base is not None else None
+    if isinstance(node, ir.ExprSubscript):
+        base = _self_path(node.value, bindings)
+        idx = _subscript_index(node.slice, bindings)
+        return base + (idx,) if (base is not None and idx is not None) else None
+    return None
+
+
+def _rebind_fields(node, prefix, slot_map, bindings):
+    """Rewrite a sub-action's own-field refs to hoisted locals, and bound ``foreach``
+    loop vars to their constant: a self-rooted path in ``slot_map`` becomes local
+    ``<prefix><cname>``; a bound loop var becomes a constant."""
+    path = _self_path(node, bindings)
+    if path and path in slot_map:
+        return ir.ExprRefLocal(name=prefix + slot_map[path])
+    if isinstance(node, ir.ExprRefLocal) and node.name in bindings:
+        return ir.ExprConstant(value=bindings[node.name])
     if not _dc.is_dataclass(node):
         return node
     changes = {}
     for f in _dc.fields(node):
         v = getattr(node, f.name)
         if isinstance(v, ir.Base):
-            nv = _rebind_fields(v, prefix, field_names)
+            nv = _rebind_fields(v, prefix, slot_map, bindings)
             if nv is not v:
                 changes[f.name] = nv
         elif isinstance(v, list) and v:
-            nl = [_rebind_fields(x, prefix, field_names) if isinstance(x, ir.Base) else x
+            nl = [_rebind_fields(x, prefix, slot_map, bindings) if isinstance(x, ir.Base) else x
                   for x in v]
             if any(a is not b for a, b in zip(nl, v)):
                 changes[f.name] = nl
     return _dc.replace(node, **changes) if changes else node
 
 
-def _is_data_field(fld) -> bool:
-    """A scalar data field (not a sub-action / component / flow-object reference)."""
-    return not isinstance(fld.datatype, ir.DataTypeRef)
-
-
-def _inline_sub_action(qual_name, action, type_m, seen, prefix):
-    """Inline a *traversed* sub-action: hoist its data fields as locals, then its
-    (builtin-lowered) body or nested activity, rebinding self-field refs."""
+def _lower_body(stmts, prefix, slot_map, bindings):
+    """Lower exec-body statements: unroll ``foreach`` over a (flattened) array, then
+    rebind field refs / loop vars. Other statements (incl. if/while) recurse so a
+    nested ``foreach`` still unrolls."""
     out = []
-    field_names = set()
-    for fld in getattr(action, "fields", []):
-        if not _is_data_field(fld):
+    for stmt in stmts:
+        if isinstance(stmt, ir.StmtForeach) and isinstance(stmt.target, ir.ExprRefLocal):
+            arr_path = _self_path(stmt.iter, bindings)
+            if arr_path is not None:
+                idx_var = stmt.target.name
+                indices = sorted({p[len(arr_path)] for p in slot_map
+                                  if len(p) > len(arr_path)
+                                  and p[:len(arr_path)] == arr_path
+                                  and isinstance(p[len(arr_path)], int)})
+                for k in indices:
+                    out += _lower_body(stmt.body, prefix, slot_map, {**bindings, idx_var: k})
+                continue
+        if isinstance(stmt, (ir.StmtIf, ir.StmtWhile)):
+            ch = {}
+            for attr in ("body", "orelse"):
+                sub = getattr(stmt, attr, None)
+                if isinstance(sub, list):
+                    ch[attr] = _lower_body(sub, prefix, slot_map, bindings)
+            test = _rebind_fields(stmt.test, prefix, slot_map, bindings) if getattr(stmt, "test", None) else None
+            if test is not None:
+                ch["test"] = test
+            out.append(_dc.replace(stmt, **ch) if ch else stmt)
             continue
-        out.append(ir.StmtAnnAssign(
-            target=ir.ExprRefLocal(name=prefix + fld.name),
-            annotation=fld.datatype,
-            value=ir.ExprConstant(value=0),
-        ))
-        field_names.add(fld.name)
-
-    body_fn = next((fn for fn in getattr(action, "functions", []) if fn.name == "body"), None)
-    if body_fn is not None:
-        out.extend(_rebind_fields(s, prefix, field_names) for s in body_fn.body)
-        return out
-    if getattr(action, "activity_ir", None) is not None:
-        out.extend(_inline_activity(qual_name, action, type_m, seen, prefix))
+        out.append(_rebind_fields(stmt, prefix, slot_map, bindings))
     return out
 
 
-def _inline_activity(qual_name, action, type_m, seen, prefix):
+def _field_locals(fld):
+    """Hoistable locals for a data field as ``[(cname, path, elem_dt)]`` — one per
+    scalar-int leaf, recursing through arrays and structs (``path`` is the
+    ``slot_map`` key; ``cname`` its ``_``-joined form). Non-int leaves are skipped."""
+    return _type_locals((fld.name,), fld.datatype)
+
+
+def _type_locals(path, dt):
+    cname = "_".join(str(s) for s in path)
+    if isinstance(dt, ir.DataTypeInt):
+        return [(cname, path, dt)]
+    if (isinstance(dt, ir.DataTypeArray) and isinstance(dt.size, int)):
+        out = []
+        for i in range(dt.size):
+            out += _type_locals(path + (i,), dt.element_type)
+        return out
+    if isinstance(dt, ir.DataTypeStruct) and not isinstance(dt, ir.DataTypeClass):
+        out = []
+        for sf in dt.fields:
+            out += _type_locals(path + (sf.name,), sf.datatype)
+        return out
+    return []
+
+
+def solve_global_name(prefix, cname):
+    """C global the runtime-solve harness fills and the coroutine reads."""
+    return "g_" + prefix + cname
+
+
+def solve_global_name(prefix, cname):
+    """C global the runtime-solve harness fills and the coroutine reads."""
+    return "g_" + prefix + cname
+
+
+def _inline_sub_action(qual_name, action, type_m, seen, prefix, solve_plan):
+    """Inline a *traversed* sub-action: hoist its data fields as locals, then its
+    (builtin-lowered) body or nested activity, rebinding self-field refs.
+
+    ``rand`` field initialization depends on the solve mode:
+      * pre-solve (``solve_plan is None``, style 5): constraint-satisfying value
+        solved at compile time and baked in;
+      * runtime-solve (style 4): the hoisted local reads a C global the harness
+        fills by solving at startup; the per-traversal problem is recorded in
+        ``solve_plan``.
+    Non-rand / unsolved fields default to 0.
+    """
+    out = []
+    if solve_plan is None:
+        solved, runtime_cnames = solve_action(action, seed=seed_for(prefix)), set()
+    else:
+        pbytes, slots = problem_bytes(action)
+        solved, runtime_cnames = {}, {s.cname for s in slots}
+        if pbytes is not None:
+            solve_plan.append({"prefix": prefix, "bytes": pbytes, "slots": slots})
+
+    slot_map = {}
+    for fld in getattr(action, "fields", []):
+        for cname, path, elem_dt in _field_locals(fld):
+            slot_map[path] = cname
+            if cname in runtime_cnames:
+                value = ir.ExprRefUnresolved(name=solve_global_name(prefix, cname))
+            else:
+                value = ir.ExprConstant(value=solved.get(cname, 0))
+            out.append(ir.StmtAnnAssign(
+                target=ir.ExprRefLocal(name=prefix + cname),
+                annotation=elem_dt,
+                value=value,
+            ))
+
+    body_fn = next((fn for fn in getattr(action, "functions", []) if fn.name == "body"), None)
+    if body_fn is not None:
+        out.extend(_lower_body(body_fn.body, prefix, slot_map, {}))
+        return out
+    if getattr(action, "activity_ir", None) is not None:
+        out.extend(_inline_activity(qual_name, action, type_m, seen, prefix, solve_plan))
+    return out
+
+
+def _inline_activity(qual_name, action, type_m, seen, prefix, solve_plan):
     """Inline ``action``'s activity, accumulating the handle ``prefix`` so nested
     locals never collide. ``action`` owns the traversed sub-action fields, so it
     (and its scope) stay fixed across the whole activity tree."""
     act_ir = getattr(action, "activity_ir", None)
     if act_ir is None:
         return []
-    return _lower_activity_node(act_ir, qual_name, action, type_m, seen, prefix)
+    return _lower_activity_node(act_ir, qual_name, action, type_m, seen, prefix, solve_plan)
 
 
-def _lower_activity_node(node, qual_name, action, type_m, seen, prefix):
+def _lower_activity_node(node, qual_name, action, type_m, seen, prefix, solve_plan):
     """Lower one activity node to coroutine statements.
 
     First slice: ``parallel`` runs its branches in order (observationally
@@ -230,21 +332,30 @@ def _lower_activity_node(node, qual_name, action, type_m, seen, prefix):
     needs the solver). Repeat/schedule are not yet handled.
     """
     scope = _scope_of(qual_name)
-    if isinstance(node, ir.ActivitySequenceBlock):
+    # sequence / parallel / schedule all run their children; for atomic, non-timed
+    # actions a sequential order is a valid schedule (true concurrency is future work).
+    if isinstance(node, (ir.ActivitySequenceBlock, ir.ActivityParallel, ir.ActivitySchedule)):
         out = []
         for s in node.stmts:
-            out.extend(_lower_activity_node(s, qual_name, action, type_m, seen, prefix))
+            out.extend(_lower_activity_node(s, qual_name, action, type_m, seen, prefix, solve_plan))
         return out
-    if isinstance(node, ir.ActivityParallel):
+    if isinstance(node, ir.ActivityRepeat):
+        # repeat (N) { body } — unroll a constant count; each iteration gets its own
+        # prefix so hoisted locals / per-instance solves stay distinct.
+        count = node.count
+        if not (isinstance(count, ir.ExprConstant) and isinstance(count.value, int)):
+            return []  # non-constant repeat count not yet supported
         out = []
-        for s in node.stmts:
-            out.extend(_lower_activity_node(s, qual_name, action, type_m, seen, prefix))
+        for i in range(max(0, count.value)):
+            for s in node.body:
+                out.extend(_lower_activity_node(
+                    s, qual_name, action, type_m, seen, prefix + f"r{i}__", solve_plan))
         return out
     if isinstance(node, ir.ActivitySelect):
         if node.branches:
             out = []
             for s in node.branches[0].body:
-                out.extend(_lower_activity_node(s, qual_name, action, type_m, seen, prefix))
+                out.extend(_lower_activity_node(s, qual_name, action, type_m, seen, prefix, solve_plan))
             return out
         return []
     if isinstance(node, ir.ActivityTraversal):
@@ -252,18 +363,18 @@ def _lower_activity_node(node, qual_name, action, type_m, seen, prefix):
         if sub is None or sub_key in seen:
             return []
         return _inline_sub_action(
-            sub_key, sub, type_m, seen | {sub_key}, prefix + node.handle + "__")
+            sub_key, sub, type_m, seen | {sub_key}, prefix + node.handle + "__", solve_plan)
     return []  # unsupported activity node
 
 
-def _synthesize_activity_body(qual_name, action, type_m):
+def _synthesize_activity_body(qual_name, action, type_m, solve_plan):
     """If ``action`` has an activity but no explicit body, synthesize a ``body``
     coroutine that inlines the activity (the root action stays a real instance)."""
     if any(fn.name == "body" for fn in getattr(action, "functions", [])):
         return action
     if getattr(action, "activity_ir", None) is None:
         return action
-    stmts = _inline_activity(qual_name, action, type_m, frozenset({qual_name}), "")
+    stmts = _inline_activity(qual_name, action, type_m, frozenset({qual_name}), "", solve_plan)
     if not stmts:
         return action
     body = ir.Function(name="body", is_async=True, body=stmts)
@@ -288,8 +399,12 @@ def _action_to_component(act: "ir.DataTypeClass", name: str) -> "ir.DataTypeComp
 
 def _iter_traversals(act_ir):
     """Yield ``ActivityTraversal`` nodes from a (possibly nested) activity."""
-    if isinstance(act_ir, (ir.ActivitySequenceBlock, ir.ActivityParallel)):
+    if isinstance(act_ir, (ir.ActivitySequenceBlock, ir.ActivityParallel,
+                           ir.ActivitySchedule)):
         for s in act_ir.stmts:
+            yield from _iter_traversals(s)
+    elif isinstance(act_ir, ir.ActivityRepeat):
+        for s in act_ir.body:
             yield from _iter_traversals(s)
     elif isinstance(act_ir, ir.ActivitySelect):
         for br in act_ir.branches:
@@ -299,6 +414,19 @@ def _iter_traversals(act_ir):
         yield act_ir
 
 
+def _traversed_keys(type_m) -> set:
+    """Qualified keys of all sub-actions reached by some activity (i.e. inlined)."""
+    traversed = set()
+    for name, dt in type_m.items():
+        if not (_is_action(dt) and getattr(dt, "activity_ir", None) is not None):
+            continue
+        for trav in _iter_traversals(dt.activity_ir):
+            key, _ = _resolve_sub_action(dt, trav.handle, type_m, _scope_of(name))
+            if key:
+                traversed.add(key)
+    return traversed
+
+
 def find_root_action(core: "ir.Context"):
     """Return the qualified name of the single top-level activity-bearing action
     (one with an ``activity_ir`` that no other activity traverses), or ``None``."""
@@ -306,33 +434,57 @@ def find_root_action(core: "ir.Context"):
         name for name, dt in core.type_m.items()
         if _is_action(dt) and getattr(dt, "activity_ir", None) is not None
     }
-    traversed = set()
-    for name in activity_actions:
-        dt = core.type_m[name]
-        for trav in _iter_traversals(dt.activity_ir):
-            key, _ = _resolve_sub_action(dt, trav.handle, core.type_m, _scope_of(name))
-            if key:
-                traversed.add(key)
-    roots = activity_actions - traversed
+    roots = activity_actions - _traversed_keys(core.type_m)
     return next(iter(roots)) if len(roots) == 1 else None
 
 
-def to_sw_context(core: "ir.Context") -> "ir.Context":
+def _drop_subaction_ref_fields(dt, traversed, type_m, scope):
+    """Drop ``DataTypeRef`` fields pointing at inlined sub-actions — after inlining
+    they are dead (their behaviour lives in the synthesized body as locals), and
+    keeping them would reference components we no longer emit."""
+    def is_subaction_ref(fld):
+        ref = getattr(fld.datatype, "ref_name", None)
+        if ref is None:
+            return False
+        for cand in (ref, f"{scope}::{ref}" if scope else None):
+            if cand in traversed:
+                return True
+        return any(k in traversed for k, _v in type_m.items()
+                   if k.split("::")[-1] == ref)
+    kept = [f for f in dt.fields if not is_subaction_ref(f)]
+    return _dc.replace(dt, fields=kept) if len(kept) != len(dt.fields) else dt
+
+
+def to_sw_context(core: "ir.Context", solve_plan=None) -> "ir.Context":
     """Return a new ``Context`` with PSS actions lowered to components.
 
     Node objects for non-action types are shared (identity preserved); only
     actions are wrapped into fresh ``DataTypeComponent`` instances.
+
+    ``solve_plan``: pass a list to enable **runtime** constraint solving (PSS
+    style 4) — each traversed sub-action's serialized dv-solve problem is appended
+    as ``{"prefix", "bytes", "var_map"}`` and its rand fields read C globals the
+    harness fills. ``None`` (default) keeps **compile-time** pre-solve (style 5).
     """
     # Phase 1: lower PSS builtins (print/message) in every type's functions, so
     # that activity inlining below splices already-lowered sub-action bodies.
     lowered = {name: _lower_builtins_in_type(dt) for name, dt in core.type_m.items()}
 
+    # Sub-actions reached by an activity are inlined into their parent's body, so
+    # their standalone components are dead — and emitting them would hit gaps in
+    # the backend's array/constraint codegen. Drop them (and the now-dead
+    # sub-action-ref fields that pointed at them).
+    traversed = _traversed_keys(lowered)
+
     # Phase 2: synthesize bodies for activity-only actions, then lower actions to
     # components (named by their qualified type_m key to avoid file collisions).
     new_type_m = {}
     for name, dt in lowered.items():
+        if name in traversed:
+            continue
         if _is_action(dt):
-            dt = _synthesize_activity_body(name, dt, lowered)
+            dt = _synthesize_activity_body(name, dt, lowered, solve_plan)
+            dt = _drop_subaction_ref_fields(dt, traversed, lowered, _scope_of(name))
             dt = _action_to_component(dt, name)
         new_type_m[name] = dt
     return ir.Context(type_m=new_type_m)

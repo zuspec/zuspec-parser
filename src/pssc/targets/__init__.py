@@ -17,11 +17,13 @@ _REGISTRY: Dict[str, Target] = {}
 _discovered = False
 
 
-def register(target: Target) -> None:
-    """Register a target instance under its ``name``."""
+def register(target: Target, aliases=()) -> None:
+    """Register a target instance under its ``name`` (and any ``aliases``)."""
     if not target.name:
         raise ValueError(f"{type(target).__name__} has no 'name'")
     _REGISTRY[target.name] = target
+    for alias in aliases:
+        _REGISTRY[alias] = target
 
 
 def get(name: str) -> Target:
@@ -34,8 +36,8 @@ def get(name: str) -> Target:
 
 
 def list_targets() -> List[str]:
-    """Return the sorted names of all registered targets."""
-    return sorted(_REGISTRY)
+    """Return the sorted canonical target names (aliases excluded)."""
+    return sorted(name for name, t in _REGISTRY.items() if name == t.name)
 
 
 def discover() -> None:
@@ -57,9 +59,13 @@ def discover() -> None:
 def _register_builtins() -> None:
     from .python_tgt import PythonTarget
     from .sv_tgt import SvTarget
-    from .sw_tgt import CHostTarget
+    from .sw_tgt import (CHostTarget, CHostPresolvedTarget,
+                         CEmbeddedTarget, CEmbeddedPresolvedTarget, SvDpiTarget)
 
-    for tgt in (PythonTarget(), SvTarget(), CHostTarget()):
+    register(PythonTarget())
+    register(SvTarget(), aliases=("sv",))   # `sv` kept as a back-compat alias
+    for tgt in (CHostTarget(), CHostPresolvedTarget(),
+                CEmbeddedTarget(), CEmbeddedPresolvedTarget(), SvDpiTarget()):
         register(tgt)
 
 

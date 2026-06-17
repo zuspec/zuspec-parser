@@ -8,12 +8,18 @@ from pssc.targets.base import Target
 
 def test_builtin_targets_registered():
     names = targets.list_targets()
-    assert "sv" in names and "python" in names
+    assert "sv-native" in names and "python" in names
 
 
 def test_get_returns_target_with_name():
-    t = targets.get("sv")
-    assert isinstance(t, Target) and t.name == "sv"
+    t = targets.get("sv-native")
+    assert isinstance(t, Target) and t.name == "sv-native"
+
+
+def test_sv_alias_resolves():
+    # `sv` is kept as a back-compat alias for `sv-native`
+    assert targets.get("sv") is targets.get("sv-native")
+    assert "sv" not in targets.list_targets()  # alias hidden from the canonical list
 
 
 def test_unknown_target_clear_error():

@@ -17,6 +17,8 @@ package:
       url: https://github.com/zuspec/zuspec-be-sv.git
     - name: zuspec-solver
       url: https://github.com/zuspec/zuspec-solver.git
+    - name: dv-solve
+      url: https://github.com/fvutils/dv-solve.git
     - name: pytest
       src: pypi
     - name: sphinx

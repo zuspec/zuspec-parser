@@ -16,6 +16,7 @@ dependencies = [
   "zuspec-dataclasses",
   "zuspec-be-sv",
   "zuspec-be-sw",
+  "dv-solve",
 ]
 
 [project.scripts]

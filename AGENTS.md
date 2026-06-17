@@ -19,6 +19,16 @@ direnv exec . pytest tests/unit          # fast unit suite (pytest.ini default)
 direnv exec . pssc --version             # console entry point
 ```
 
+The `c-host` target's compile-time constraint solving needs the **dv-solve** C
+library built once:
+
+```
+cmake -S packages/dv-solve -B packages/dv-solve/build
+cmake --build packages/dv-solve/build --target dv_solve
+```
+
+(Without it, rand fields fall back to zero-initialization.)
+
 Do not make assumptions about the number of cores. Use what is available.
 
 ## Changing the AST

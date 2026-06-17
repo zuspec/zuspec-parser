@@ -1875,23 +1875,32 @@ class AstToIrTranslator:
         idx_id = stmt.getIdx_id()
         path = stmt.getPath()
 
-        if it_id is None or path is None:
+        if path is None or (it_id is None and idx_id is None):
             if self.debug:
-                self.logger.debug("foreach: missing iterator or path")
+                self.logger.debug("foreach: missing iterator/index or path")
             return None
 
-        iter_name = it_id.getId() if hasattr(it_id, 'getId') else str(it_id)
+        def _name(n):
+            if n is None:
+                return None
+            return n.getId() if hasattr(n, 'getId') else str(n)
+
+        it_name = _name(it_id)
+        idx_name = _name(idx_id)
+
+        # The loop "target" is the variable the body uses to walk the collection.
+        # Element form `foreach(v : arr)` binds `v` to the element; index form
+        # `foreach(arr[i])` binds `i` to the index (no element var). The C lowering
+        # unrolls by index keying off ``target.name``, so for the index-only form
+        # the index variable serves as the target.
+        iter_name = it_name if it_name is not None else idx_name
         target = ir.ExprRefLocal(name=iter_name)
 
         collection_ir = self._translate_expression(ctx, path)
         if collection_ir is None:
             return None
 
-        index_var = None
-        idx_name = None
-        if idx_id is not None:
-            idx_name = idx_id.getId() if hasattr(idx_id, 'getId') else str(idx_id)
-            index_var = ir.ExprRefLocal(name=idx_name)
+        index_var = ir.ExprRefLocal(name=idx_name) if idx_name is not None else None
 
         # Register loop variables so body references resolve to ExprRefLocal
         ctx.local_vars.add(iter_name)
