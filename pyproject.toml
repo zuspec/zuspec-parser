@@ -32,4 +32,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-pssc = ["std_libs/*.pss", "share/sv/*.sv"]
+pssc = ["std_libs/*.pss", "share/sv/*.sv", "share/c/*.h", "share/cpp/*.hpp"]

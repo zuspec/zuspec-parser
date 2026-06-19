@@ -44,8 +44,10 @@ AVAILABLE_SIMS = _class_capable_sims()
 
 
 def _get_runtime_lib_path():
+    # pssc ships the SV runtime package under src/pssc/share/sv/ (the pre-migration
+    # src/zuspec/fe/pss/share/sv/ path no longer exists in this repo).
     rt = (Path(__file__).resolve().parents[3]
-          / "src" / "zuspec" / "fe" / "pss" / "share" / "sv" / "zsp_rt_pkg.sv")
+          / "src" / "pssc" / "share" / "sv" / "zsp_rt_pkg.sv")
     return rt if rt.exists() else None
 
 

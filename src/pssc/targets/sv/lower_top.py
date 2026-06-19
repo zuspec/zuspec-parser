@@ -18,6 +18,40 @@ if TYPE_CHECKING:
     from .context import LoweringContext
 
 
+def emit_root_action_lifecycle(
+    root_action_type: str,
+    has_activity: bool = True,
+    indent: str = "  ",
+    comp_ref: str = "top",
+) -> List[str]:
+    """Emit the SV lines that run one root action's lifecycle.
+
+    Constructs the action, wires its component reference, then runs
+    ``pre_solve`` -> ``randomize`` -> ``post_solve`` -> ``activity()``/``body()``.
+    A component instance named *comp_ref* must already be in scope.
+
+    Shared by the standalone harness (:func:`generate_top_module`) and the OO
+    export-API implementation task, so the lifecycle has a single source of
+    truth.
+
+    Args:
+        root_action_type: Mangled SV class name of the root action.
+        has_activity: True -> call ``activity()`` (compound); False -> ``body()``.
+        indent: Leading indent for the emitted lines.
+        comp_ref: Name of the in-scope component instance to assign to ``comp``.
+    """
+    lines: List[str] = []
+    lines.append(f"{indent}begin")
+    lines.append(f"{indent}  automatic {root_action_type} root = new();")
+    lines.append(f"{indent}  root.comp = {comp_ref};")
+    lines.append(f"{indent}  root.pre_solve();")
+    lines.append(f'{indent}  if (!root.randomize()) $fatal(1, "root action randomize failed");')
+    lines.append(f"{indent}  root.post_solve();")
+    lines.append(f"{indent}  root.{'activity' if has_activity else 'body'}();")
+    lines.append(f"{indent}end")
+    return lines
+
+
 def generate_top_module(
     comp_type: str,
     root_action_type: str,
@@ -91,18 +125,8 @@ def generate_top_module(
         body.append("  join_none")
         body.append("")
 
-    # Root action lifecycle
-    body.append("  begin")
-    body.append(f"    automatic {root_action_type} root = new();")
-    body.append("    root.comp = top;")
-    body.append("    root.pre_solve();")
-    body.append(f'    if (!root.randomize()) $fatal(1, "root action randomize failed");')
-    body.append("    root.post_solve();")
-    if has_activity:
-        body.append("    root.activity();")
-    else:
-        body.append("    root.body();")
-    body.append("  end")
+    # Root action lifecycle (shared with the OO export-API impl)
+    body.extend(emit_root_action_lifecycle(root_action_type, has_activity, indent="  "))
     body.append("")
 
     # Completion

@@ -58,6 +58,21 @@ class LoweringContext:
     # Populated by pss_to_sv() before lowering begins when ir_ctx is set.
     activity_plans: Dict[str, Any] = dc.field(default_factory=dict)
 
+    # Set True by lowering when a construct actually emits a zsp_dpi_* solver
+    # call, so emit_files only pulls in zsp_dpi_pkg when it is needed (importing
+    # it without linking the C impl produces undefined-symbol errors).
+    uses_dpi_solver: bool = dc.field(default=False)
+
+    def import_function_names(self) -> Set[str]:
+        """Names of package-scope import functions (target/solve).
+
+        Calls to these inside exec bodies are routed through the import-API
+        handle (``comp.import_if.<name>(...)``) by the expression lowering.
+        """
+        ir_ctx = self.ir_ctx
+        funcs = getattr(ir_ctx, "import_functions", None) if ir_ctx else None
+        return {f.name for f in funcs} if funcs else set()
+
     def warn(self, msg: str, location: str = "") -> None:
         """Record a generation-time warning and print it to stderr."""
         import sys

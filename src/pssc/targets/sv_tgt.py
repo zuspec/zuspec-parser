@@ -1,9 +1,14 @@
 """SystemVerilog target (output style 1): SV classes solved by the SV constraint
 solver.
 
-Wraps the preserved PSS->SV lowering (``pssc.targets.sv``). The default emission
-is byte-identical to the legacy :func:`pssc.generate_sv_files`, achieved by
-delegating to the same ``_generate_sv_from_ctx`` code path.
+Wraps the preserved PSS->SV lowering (``pssc.targets.sv``). Two package shapes
+are available via ``--projection``:
+
+  * ``oo_api`` (default) -- an interface-class export API (``import_api_if`` /
+    ``export_api_if``) plus a factory, driven by an external testbench:
+    ``export_api_if ep = pss_top::type_id().create(imp); ep.Entry();``
+  * ``harness`` -- the legacy standalone ``zsp_test_top`` module (self-contained,
+    no testbench).
 """
 from __future__ import annotations
 
@@ -33,9 +38,31 @@ class SvTarget(Target):
             default=True,
             help="sv target: emit one zsp_pkg.sv instead of one file per type",
         )
+        parser.add_argument(
+            "--projection",
+            dest="sv_projection",
+            choices=("oo_api", "harness"),
+            default="oo_api",
+            help="sv target: package shape -- 'oo_api' (export API + factory, "
+            "default) or 'harness' (standalone zsp_test_top module)",
+        )
+        parser.add_argument(
+            "--export-action",
+            dest="sv_export_actions",
+            action="append",
+            metavar="NAME",
+            default=None,
+            help="sv target (oo_api): expose this action on export_api_if "
+            "(repeatable; default: the auto-detected root action)",
+        )
+        parser.add_argument(
+            "--package-name",
+            dest="sv_package_name",
+            default="zsp_gen_pkg",
+            help="sv target: name of the generated package (default: zsp_gen_pkg)",
+        )
 
     def run(self, ctx, opts: argparse.Namespace) -> List[Path]:
-        # Delegate to the exact legacy code path to guarantee output parity.
         from .. import _generate_sv_from_ctx
 
         return _generate_sv_from_ctx(
@@ -43,4 +70,7 @@ class SvTarget(Target):
             str(getattr(opts, "output_dir", ".") or "."),
             multi_file=getattr(opts, "sv_multi_file", True),
             include_runtime=getattr(opts, "rt_pkg", True),
+            projection=getattr(opts, "sv_projection", "oo_api"),
+            export_actions=getattr(opts, "sv_export_actions", None),
+            package_name=getattr(opts, "sv_package_name", "zsp_gen_pkg"),
         )

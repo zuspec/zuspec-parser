@@ -34,6 +34,10 @@ class AstToIrContext:
         self.parent_comp_names: Dict[str, str] = {}
         # Set of local variable names in the current scope (e.g. foreach loop vars)
         self.local_vars: set = set()
+        # Package/global-scope `import target/solve function` declarations,
+        # surfaced so the SV backend can expose each on `import_api_if` and route
+        # exec-body calls through the import handle.
+        self.import_functions: List[ir.Function] = []
 
     def push_scope(self, scope: ir.DataType):
         """Push a new scope (component, struct, etc.)"""
@@ -178,6 +182,50 @@ class AstToIrTranslator:
                 self._translate_extend(ctx, child)
             elif isinstance(child, pss_ast.ExtendEnum):
                 self._translate_extend_enum(ctx, child)
+            elif isinstance(child, pss_ast.FunctionImportProto):
+                self._translate_import_proto(ctx, child)
+
+    def _translate_import_proto(self, ctx: AstToIrContext, node) -> None:
+        """Capture a package-scope ``import target/solve function`` declaration.
+
+        Recorded on ``ctx.import_functions`` so the SV backend can expose each as
+        a method on ``import_api_if`` and route calls through the handle.
+        ``getPlat()``: 1 == target (runs on the SUT -> SV task when void),
+        2 == solve (solve-time -> SV function).
+        """
+        proto = node.getProto() if hasattr(node, 'getProto') else None
+        if proto is None:
+            return
+        name_node = proto.getName()
+        func_name = name_node.getId() if isinstance(name_node, pss_ast.ExprId) else str(name_node)
+
+        return_type = None
+        rt_node = proto.getRtype() if hasattr(proto, 'getRtype') else None
+        if rt_node is not None:
+            return_type = self._translate_data_type(ctx, rt_node)
+
+        params: List[ir.Arg] = []
+        for i in range(proto.numParameters()):
+            param = proto.getParameter(i)
+            if param is None:
+                continue
+            pn_node = param.getName()
+            pname = pn_node.getId() if isinstance(pn_node, pss_ast.ExprId) else str(pn_node)
+            ptype = self._translate_data_type(ctx, param.getType())
+            if ptype is not None:
+                params.append(ir.Arg(arg=pname, annotation=ptype))
+
+        plat = node.getPlat() if hasattr(node, 'getPlat') else 0
+        ir_func = ir.Function(
+            name=func_name,
+            args=ir.Arguments(args=params),
+            returns=return_type,
+            is_async=False,
+            is_import=True,
+            is_target=(int(plat) == 1),
+            is_solve=(int(plat) == 2),
+        )
+        ctx.import_functions.append(ir_func)
 
     def _translate_extend(self, ctx: AstToIrContext, extend: pss_ast.ExtendType):
         """Translate a PSS extend declaration, adding fields/functions to the target IR type.
@@ -1923,6 +1971,62 @@ class AstToIrTranslator:
 
         return ir.StmtForeach(target=target, iter=collection_ir, body=body, index_var=index_var)
 
+    def _translate_stmt_body(self, ctx: AstToIrContext, node) -> List[ir.Stmt]:
+        """Translate a statement body that may be either a block (a scope with
+        ``children()``) or a single bare statement.
+
+        PSS allows a single statement after a ``match``/``if`` arm, e.g.
+        ``["CSR"]: return 0x00;`` (as the register offset functions use), as well
+        as a ``{ ... }`` compound. The block case iterates children; the bare
+        case translates the node directly.
+        """
+        body: List[ir.Stmt] = []
+        if node is None:
+            return body
+        if hasattr(node, "children"):
+            for child in node.children():
+                if child is None:
+                    continue
+                stmt_ir = self._translate_statement(ctx, child)
+                if stmt_ir:
+                    body.append(stmt_ir)
+        else:
+            stmt_ir = self._translate_statement(ctx, node)
+            if stmt_ir:
+                body.append(stmt_ir)
+        return body
+
+    def _translate_match_pattern(self, ctx: AstToIrContext, cond_node):
+        """Translate a match-arm condition (an ``ExprOpenRangeList`` ``[...]``) to
+        an IR pattern.
+
+        Each open-range value is a single value (``[x]``) or a range
+        (``[lo..hi]``). A single value -> ``PatternValue``; several values in one
+        arm -> ``PatternOr``. (Ranges currently key off the low bound; the
+        register name-match use case only ever uses single string values.)
+        """
+        if cond_node is None:
+            return ir.PatternAs(pattern=None, name="_")
+
+        pats = []
+        if hasattr(cond_node, "numValues"):
+            for i in range(cond_node.numValues()):
+                orv = cond_node.getValue(i)
+                lhs = orv.getLhs() if hasattr(orv, "getLhs") else None
+                lhs_ir = self._translate_expression(ctx, lhs) if lhs is not None else None
+                if lhs_ir is not None:
+                    pats.append(ir.PatternValue(value=lhs_ir))
+        else:
+            e = self._translate_expression(ctx, cond_node)
+            if e is not None:
+                pats.append(ir.PatternValue(value=e))
+
+        if not pats:
+            return ir.PatternAs(pattern=None, name="_")
+        if len(pats) == 1:
+            return pats[0]
+        return ir.PatternOr(patterns=pats)
+
     def _translate_stmt_match(self, ctx: AstToIrContext, stmt: pss_ast.ProceduralStmtMatch) -> Optional[ir.StmtMatch]:
         """Translate a match statement: match (expr) { [val]: { ... } default: { ... } }"""
         subject_node = stmt.getExpr()
@@ -1937,25 +2041,12 @@ class AstToIrTranslator:
             choice = stmt.getChoice(i)
             if choice is None:
                 continue
-            body_scope = choice.getBody()
-            body = []
-            if body_scope:
-                for child in body_scope.children():
-                    if child is None:
-                        continue
-                    stmt_ir = self._translate_statement(ctx, child)
-                    if stmt_ir:
-                        body.append(stmt_ir)
+            body = self._translate_stmt_body(ctx, choice.getBody())
 
             if choice.getIs_default():
                 pattern = ir.PatternAs(pattern=None, name="_")
             else:
-                cond_node = choice.getCond()
-                if cond_node is not None:
-                    cond_ir = self._translate_expression(ctx, cond_node)
-                    pattern = ir.PatternValue(value=cond_ir) if cond_ir else ir.PatternAs(pattern=None, name="_")
-                else:
-                    pattern = ir.PatternAs(pattern=None, name="_")
+                pattern = self._translate_match_pattern(ctx, choice.getCond())
 
             cases.append(ir.StmtMatchCase(pattern=pattern, body=body))
 

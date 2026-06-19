@@ -59,6 +59,16 @@ def _is_stdlib(qname: str) -> bool:
 def pss_to_sv(ir_ctx: AstToIrContext) -> List[Any]:
     """Lower a Zuspec IR context to a list of SV IR nodes.
 
+    Thin wrapper around :func:`pss_to_sv_with_ctx` that discards the lowering
+    context. Prefer :func:`pss_to_sv_with_ctx` when the caller needs the context
+    (e.g. for name mangling during export-API / top-module generation).
+    """
+    return pss_to_sv_with_ctx(ir_ctx)[0]
+
+
+def pss_to_sv_with_ctx(ir_ctx: AstToIrContext) -> Tuple[List[Any], LoweringContext]:
+    """Lower a Zuspec IR context to SV IR nodes, returning the context too.
+
     The returned list is in dependency order:
     1. Forward declarations
     2. Enums
@@ -75,7 +85,9 @@ def pss_to_sv(ir_ctx: AstToIrContext) -> List[Any]:
         ir_ctx: The translation context from ``AstToIrTranslator.translate()``.
 
     Returns:
-        Ordered list of SV IR nodes ready for ``SVEmitter``.
+        Tuple of (ordered list of SV IR nodes ready for ``SVEmitter``, the
+        :class:`LoweringContext` used during lowering). The context exposes
+        ``mangle_name()`` / ``sv_name_map`` for downstream generation.
     """
     ctx = LoweringContext(ir_ctx=ir_ctx)
     result: List[Any] = []
@@ -172,4 +184,4 @@ def pss_to_sv(ir_ctx: AstToIrContext) -> List[Any]:
         result.append(lower_action(ctx, act, comp_type_name=comp_name))
         act.name = orig_name
 
-    return result
+    return result, ctx

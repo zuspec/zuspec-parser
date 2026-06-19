@@ -59,11 +59,17 @@ def discover() -> None:
 def _register_builtins() -> None:
     from .python_tgt import PythonTarget
     from .sv_tgt import SvTarget
+    from .progseq_tgt import ProgSeqTarget
+    from .c_progseq_tgt import CProgSeqTarget
+    from .cpp_progseq_tgt import CppProgSeqTarget
     from .sw_tgt import (CHostTarget, CHostPresolvedTarget,
                          CEmbeddedTarget, CEmbeddedPresolvedTarget, SvDpiTarget)
 
     register(PythonTarget())
     register(SvTarget(), aliases=("sv",))   # `sv` kept as a back-compat alias
+    register(ProgSeqTarget(), aliases=("progseq",))
+    register(CProgSeqTarget(), aliases=("progseq-c",))
+    register(CppProgSeqTarget(), aliases=("progseq-cpp",))
     for tgt in (CHostTarget(), CHostPresolvedTarget(),
                 CEmbeddedTarget(), CEmbeddedPresolvedTarget(), SvDpiTarget()):
         register(tgt)

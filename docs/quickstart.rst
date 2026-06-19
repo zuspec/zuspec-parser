@@ -69,6 +69,16 @@ For lower-level access to the translation pipeline:
    ctx = AstToIrTranslator().translate(root)
    assert not ctx.errors
 
+Generating a Programming API
+============================
+
+To turn a PSS component tree (a register model plus its driver routines) into a
+reusable programming API in SystemVerilog, C, or C++, see :doc:`progseq` (and
+:doc:`progseq_design` for the architecture). For example::
+
+   pssc compile -t c-progseq --root dma_engine_c --link-style vtable \
+       dma_regs.pss dma_engine.pss -o out/
+
 Parser Documentation
 ====================
 

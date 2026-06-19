@@ -63,6 +63,38 @@ def build_parser() -> argparse.ArgumentParser:
     t = sub.add_parser("targets", help="list available targets")
     t.set_defaults(func=_cmd_targets)
 
+    # --- sv-core-path ------------------------------------------------------
+    scp = sub.add_parser(
+        "sv-core-path",
+        help="print the path to the bundled SV core package (pssc_reg_pkg)",
+    )
+    scp.add_argument(
+        "--file", action="store_true",
+        help="print the path to pssc_reg_pkg.sv instead of its directory",
+    )
+    scp.set_defaults(func=_cmd_sv_core_path)
+
+    # --- c-core-path / cpp-core-path --------------------------------------
+    ccp = sub.add_parser(
+        "c-core-path",
+        help="print the directory of the bundled C core seam headers (pssc_mem*.h)",
+    )
+    ccp.add_argument(
+        "--file", metavar="NAME", nargs="?", const=C_CORE_HEADER,
+        help="print the path to a specific header (default: pssc_mem.h)",
+    )
+    ccp.set_defaults(func=_cmd_c_core_path)
+
+    xcp = sub.add_parser(
+        "cpp-core-path",
+        help="print the directory of the bundled C++ core header (pssc_reg.hpp)",
+    )
+    xcp.add_argument(
+        "--file", metavar="NAME", nargs="?", const=CPP_CORE_HEADER,
+        help="print the path to a specific header (default: pssc_reg.hpp)",
+    )
+    xcp.set_defaults(func=_cmd_cpp_core_path)
+
     return p
 
 
@@ -96,6 +128,51 @@ def _cmd_targets(args: argparse.Namespace) -> int:
     _targets.discover()
     for name in _targets.list_targets():
         print(f"{name:24} {_targets.get(name).description}")
+    return 0
+
+
+#: Filename of the bundled SV core package under ``pssc/share/sv``.
+SV_CORE_PKG = "pssc_reg_pkg.sv"
+
+
+def sv_core_dir() -> Path:
+    """Return the directory of the bundled SV core package (``pssc/share/sv``)."""
+    from importlib.resources import files
+    return Path(str(files("pssc") / "share" / "sv"))
+
+
+def _cmd_sv_core_path(args: argparse.Namespace) -> int:
+    d = sv_core_dir()
+    print(d / SV_CORE_PKG if args.file else d)
+    return 0
+
+
+#: Default header names under ``pssc/share/c`` and ``pssc/share/cpp``.
+C_CORE_HEADER = "pssc_mem.h"
+CPP_CORE_HEADER = "pssc_reg.hpp"
+
+
+def c_core_dir() -> Path:
+    """Return the directory of the bundled C core seam headers (``pssc/share/c``)."""
+    from importlib.resources import files
+    return Path(str(files("pssc") / "share" / "c"))
+
+
+def cpp_core_dir() -> Path:
+    """Return the directory of the bundled C++ core header (``pssc/share/cpp``)."""
+    from importlib.resources import files
+    return Path(str(files("pssc") / "share" / "cpp"))
+
+
+def _cmd_c_core_path(args: argparse.Namespace) -> int:
+    d = c_core_dir()
+    print(d / args.file if args.file else d)
+    return 0
+
+
+def _cmd_cpp_core_path(args: argparse.Namespace) -> int:
+    d = cpp_core_dir()
+    print(d / args.file if args.file else d)
     return 0
 
 

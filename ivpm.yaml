@@ -19,6 +19,10 @@ package:
       url: https://github.com/zuspec/zuspec-solver.git
     - name: dv-solve
       url: https://github.com/fvutils/dv-solve.git
+    - name: verilator
+      url: https://github.com/edapack/verilator-bin
+      src: gh-rls
+      cache: true
     - name: pytest
       src: pypi
     - name: sphinx

@@ -72,11 +72,13 @@ def emit_files(
     runtime_lib_path: Optional[Path] = None,
     top_module_node: Optional[SVModuleDecl] = None,
     dpi_pkg_path: Optional[Path] = None,
+    emit_dpi: bool = False,
+    package_name: str = "zsp_gen_pkg",
 ) -> List[Path]:
     """Write SV IR nodes to organized output files.
 
-    All generated classes are wrapped in ``package zsp_gen_pkg`` which
-    imports ``zsp_rt_pkg`` and ``zsp_dpi_pkg``.  The top module imports both.
+    All generated classes are wrapped in ``package <package_name>`` which
+    imports ``zsp_rt_pkg`` (and ``zsp_dpi_pkg`` only when ``emit_dpi`` is set).
 
     Args:
         nodes: SV IR nodes from pss_to_sv().
@@ -84,6 +86,13 @@ def emit_files(
         runtime_lib_path: Path to zsp_rt_pkg.sv (defaults to share/ directory).
         top_module_node: Optional generated test harness module node.
         dpi_pkg_path: Path to zsp_dpi_pkg.sv. Defaults to zuspec-solver/src/sv/.
+        emit_dpi: When True, copy/import the DPI solver package
+            (``zsp_dpi_pkg.sv``). Defaults to False: the PSS front end lowers
+            constraints to SV-native ``randomize()`` and emits no ``zsp_dpi_*``
+            calls, so importing the package without linking its C implementation
+            would produce undefined-symbol link errors (notably on Verilator).
+        package_name: Name of the generated package (and its ``.sv`` filename),
+            so the OO export-API projection can emit a user-named package.
     """
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -99,9 +108,11 @@ def emit_files(
     # Resolve DPI package path
     _dpi_path = dpi_pkg_path or _DEFAULT_DPI_PKG_PATH
 
-    # Copy DPI package (zsp_dpi_pkg.sv)
+    # Copy DPI package (zsp_dpi_pkg.sv) only when the design actually uses the
+    # DPI solver -- otherwise its declared imports become undefined symbols at
+    # link time (the C implementation is not built/linked here).
     filelist_entries: List[str] = []
-    if _dpi_path and _dpi_path.exists():
+    if emit_dpi and _dpi_path and _dpi_path.exists():
         dpi_dst = out / _FILE_DPI_PKG
         shutil.copy2(str(_dpi_path), str(dpi_dst))
         written.append(dpi_dst)
@@ -114,24 +125,28 @@ def emit_files(
         written.append(rt_dst)
         filelist_entries.append(_FILE_RT)
 
-    # Emit generated package (all classes wrapped in a package)
+    # Emit generated package (all classes wrapped in a package). The package
+    # name (and hence its filename) is configurable so the OO projection can
+    # emit a user-named package.
+    gen_pkg_file = f"{package_name}.sv"
     gen_nodes = buckets.get(_FILE_GEN_PKG, [])
     if gen_nodes:
         pkg_lines: List[str] = []
-        pkg_lines.append("package zsp_gen_pkg;")
-        pkg_lines.append("  import zsp_dpi_pkg::*;")
+        pkg_lines.append(f"package {package_name};")
+        if emit_dpi:
+            pkg_lines.append("  import zsp_dpi_pkg::*;")
         pkg_lines.append("  import zsp_rt_pkg::*;")
         pkg_lines.append("")
         sv_body = emitter.emit_all(gen_nodes)
         for line in sv_body.splitlines():
             pkg_lines.append(f"  {line}" if line.strip() else "")
         pkg_lines.append("")
-        pkg_lines.append("endpackage : zsp_gen_pkg")
+        pkg_lines.append(f"endpackage : {package_name}")
 
-        filepath = out / _FILE_GEN_PKG
+        filepath = out / gen_pkg_file
         filepath.write_text("\n".join(pkg_lines) + "\n")
         written.append(filepath)
-        filelist_entries.append(_FILE_GEN_PKG)
+        filelist_entries.append(gen_pkg_file)
 
     # Emit top module (needs to import both packages)
     top_nodes = buckets.get(_FILE_TOP, [])
@@ -139,12 +154,12 @@ def emit_files(
         # Prepend import of generated package to the module body
         for node in top_nodes:
             if isinstance(node, SVModuleDecl):
-                # Insert import zsp_gen_pkg::* after the existing import zsp_rt_pkg::*
+                # Insert import <package_name>::* after the existing import zsp_rt_pkg::*
                 new_body = []
                 for line in node.body_lines:
                     new_body.append(line)
                     if "import zsp_rt_pkg::*;" in line:
-                        new_body.append("import zsp_gen_pkg::*;")
+                        new_body.append(f"import {package_name}::*;")
                 node.body_lines = new_body
 
         sv_text = emitter.emit_all(top_nodes)

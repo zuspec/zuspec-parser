@@ -153,6 +153,18 @@ def lower_expr(ctx: LoweringContext, expr: ir.Expr) -> str:
             cond = lower_expr(ctx, expr.args[0])
             body = lower_expr(ctx, expr.args[1])
             return f"({cond} -> {body})"
+        # Package-scope import functions (target/solve) are realised by the
+        # testbench-supplied import_api_if and reached via the component's
+        # import handle: doit(a) -> comp.import_if.doit(a).
+        fname = None
+        if isinstance(expr.func, ir.ExprRefUnresolved):
+            fname = expr.func.name
+        elif (isinstance(expr.func, ir.ExprAttribute)
+                and isinstance(expr.func.value, ir.TypeExprRefSelf)):
+            fname = expr.func.attr
+        if fname and fname in ctx.import_function_names():
+            args = ", ".join(lower_expr(ctx, a) for a in expr.args)
+            return f"comp.import_if.{fname}({args})"
         func = lower_expr(ctx, expr.func)
         args = ", ".join(lower_expr(ctx, a) for a in expr.args)
         return f"{func}({args})"

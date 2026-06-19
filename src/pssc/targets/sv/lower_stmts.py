@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 # PSS exec-block built-in function mapping
 # ------------------------------------------------------------------
 # PSS built-in names (ExprAttribute.attr) -> None means handle below
-_PSS_BUILTINS = {"message", "yield"}
+_PSS_BUILTINS = {"message", "print", "error", "fatal", "yield"}
 
 
 def _lower_pss_call(ctx, func_attr: str, args) -> str:
@@ -31,6 +31,21 @@ def _lower_pss_call(ctx, func_attr: str, args) -> str:
             fmt_and_args = ", ".join(_le(ctx, a) for a in args[1:])
             return f"$display({fmt_and_args})"
         return "$display()"
+    if func_attr == "print":
+        # print(format_str, args...) -> $write(...). PSS 'print' is printf-style
+        # and does NOT append a newline, so $write (not $display) is faithful.
+        if args:
+            fmt_and_args = ", ".join(_le(ctx, a) for a in args)
+            return f"$write({fmt_and_args})"
+        return "$write()"
+    if func_attr == "error":
+        # error(format_str, args...) -> $error(...)
+        fmt_and_args = ", ".join(_le(ctx, a) for a in args)
+        return f"$error({fmt_and_args})"
+    if func_attr == "fatal":
+        # fatal(exit_code, format_str, args...) -> $fatal(...)
+        fmt_and_args = ", ".join(_le(ctx, a) for a in args)
+        return f"$fatal({fmt_and_args})"
     if func_attr == "yield":
         return "// yield (no-op in SV class execution)"
     return None

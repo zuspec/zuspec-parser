@@ -53,12 +53,33 @@ package zsp_rt_pkg;
     endclass
 
     // ======================================================================
+    // pss_action_run_if -- IP-independent generic-run facade (Command pattern).
+    //
+    // A generated <Action>_runner binds one export-API entry point (and, in
+    // future, its arguments) behind this uniform run(), so a testbench can build
+    // and replay a heterogeneous, ordered list of action invocations:
+    //   pss_action_run_if program[$];
+    //   program.push_back(pss_top::Entry_runner::create(ep));
+    //   foreach (program[i]) program[i].run();
+    // ======================================================================
+    interface class pss_action_run_if;
+        pure virtual task run();
+    endclass
+
+    // ======================================================================
     // zsp_action -- base for all generated action classes
     // ======================================================================
     class zsp_action;
         zsp_component comp_base;
 
         virtual task body();
+        endtask
+
+        // Default no-op activity. Compound actions override this with a
+        // generated traversal; atomic actions inherit this default which
+        // falls back to body(), so activity() is callable regardless.
+        virtual task activity();
+            body();
         endtask
 
         virtual function void pre_solve();
