@@ -46,15 +46,8 @@ class SvTarget(Target):
             help="sv target: package shape -- 'oo_api' (export API + factory, "
             "default) or 'harness' (standalone zsp_test_top module)",
         )
-        parser.add_argument(
-            "--export-action",
-            dest="sv_export_actions",
-            action="append",
-            metavar="NAME",
-            default=None,
-            help="sv target (oo_api): expose this action on export_api_if "
-            "(repeatable; default: the auto-detected root action)",
-        )
+        # `--export-action` is the shared compile-level option (cli.build_parser);
+        # consumed below via opts.export_actions.
         parser.add_argument(
             "--package-name",
             dest="sv_package_name",
@@ -71,6 +64,6 @@ class SvTarget(Target):
             multi_file=getattr(opts, "sv_multi_file", True),
             include_runtime=getattr(opts, "rt_pkg", True),
             projection=getattr(opts, "sv_projection", "oo_api"),
-            export_actions=getattr(opts, "sv_export_actions", None),
+            export_actions=getattr(opts, "export_actions", None),
             package_name=getattr(opts, "sv_package_name", "zsp_gen_pkg"),
         )

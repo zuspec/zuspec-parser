@@ -43,6 +43,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     c.add_argument("-q", "--quiet", action="store_true",
                    help="do not print written file paths")
+    # Shared across the SV export targets (sv-native oo_api, sv-dpi-bridge):
+    # which actions to expose as entry points. Added once here so multiple
+    # targets can consume it without colliding in the single compile parser.
+    c.add_argument(
+        "--export-action", dest="export_actions", action="append",
+        metavar="NAME", default=None,
+        help="action to expose as an export entry point (repeatable; "
+        "default: the auto-detected single root action)",
+    )
     # per-target options (names are unique across targets)
     _targets.discover()
     for name in _targets.list_targets():

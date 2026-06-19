@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
 from pathlib import Path
 from typing import List, Optional
 
@@ -249,6 +250,261 @@ class SvDpiTarget(_CTarget):
     default_runtime_solve = True
     harness_with_main = False   # SV calls pssc_run via DPI instead of main()
     emit_sv_dpi = True
+
+
+# ---------------------------------------------------------------------------
+# sv-dpi-bridge: multi-action C scenario driven from SV via the zsp_bridge DPI
+# runtime (Backend B, Phase C1). See design/pssc-c-bridge-runtime-design.md and
+# design/pssc-c1-impl-plan.md. No imports yet (C2+).
+# ---------------------------------------------------------------------------
+
+def _c_share_dir() -> Path:
+    """pssc's C seam directory (ships zsp_bridge.{h,c})."""
+    return Path(__file__).resolve().parents[1] / "share" / "c"
+
+
+def _besw_share() -> tuple:
+    """(include_dir, rt_dir) of the zuspec-be-sw runtime."""
+    from zuspec.be import sw as _sw
+    base = Path(_sw.__file__).parent / "share"
+    return base / "include", base / "rt"
+
+
+def _dvsolve_share() -> tuple:
+    """(include_dir, lib_dir) for dv-solve (runtime constraint solving)."""
+    import dv_solve as _dv  # the installed package, if present
+    root = Path(_dv.__file__).resolve().parents[2]
+    return root / "src" / "c", root / "build"
+
+
+def _resolve_actions(core, opts) -> List[dict]:
+    """Resolve the export-action set to ``[{id, short, ctype, header}]``.
+
+    Uses ``--export-action`` names when given, else the auto-detected single
+    root. ``ctype`` is the sanitized C type (``pss_top__Entry``); ``header`` is
+    its lowercased ``.h``; ``short`` is the unqualified action name.
+    """
+    names = getattr(opts, "export_actions", None)
+    quals: List[str] = []
+    if names:
+        for n in names:
+            q = _resolve_root(core, n)
+            if q is None:
+                raise ValueError(f"sv-dpi-bridge: cannot resolve export action '{n}'")
+            quals.append(q)
+    else:
+        q = find_root_action(core)
+        if q is None:
+            raise ValueError(
+                "sv-dpi-bridge: no export actions; pass --export-action NAME")
+        quals.append(q)
+
+    actions = []
+    for i, q in enumerate(quals):
+        ctype = _sanitize(q)
+        actions.append({
+            "id": i,
+            "short": q.split("::")[-1],
+            "ctype": ctype,
+            "header": ctype.lower() + ".h",
+            "dt": core.type_m.get(q),   # IR dtype, for presolving rand fields
+        })
+    return actions
+
+
+def _field_assigns(a: dict, var: str, runtime: bool) -> List[str]:
+    """C assignments that set a spawned action's own ``rand`` fields between
+    ``_init`` and ``_body``: a runtime-solved global (``root.x = g_Entry__x;``)
+    when ``runtime``, else a baked constant (``root.x = 4;``).
+
+    Covers top-level scalar rand fields (the common atomic-action case); deeper
+    paths / arrays are left to the activity-inlining solve path. Non-rand fields
+    keep the ``_init`` default of 0.
+    """
+    dt = a.get("dt")
+    if dt is None:
+        return []
+    from .sw_lower import _field_locals, solve_global_name
+    out: List[str] = []
+    if runtime:
+        solve = a.get("solve") or {}
+        prefix = solve.get("prefix", "")
+        slot_cnames = {s.cname for s in solve.get("slots", [])}
+        for fld in getattr(dt, "fields", []):
+            for cname, path, _edt in _field_locals(fld):
+                if len(path) == 1 and cname in slot_cnames:
+                    out.append(f"        {var}.{path[0]} = {solve_global_name(prefix, cname)};")
+        return out
+    try:
+        from .sw_solve import solve_action, seed_for
+        solved = solve_action(dt, seed=seed_for(getattr(dt, "name", "") or ""))
+    except Exception:
+        return []
+    for fld in getattr(dt, "fields", []):
+        for cname, path, _edt in _field_locals(fld):
+            if len(path) == 1 and cname in solved:
+                out.append(f"        {var}.{path[0]} = {int(solved[cname])};")
+    return out
+
+
+def _bridge_dispatch_c(actions: List[dict], runtime: bool) -> str:
+    """The generated ``pssc_bridge_dispatch.c``: ACTION_* ids + spawn switch.
+
+    Each case instantiates the action's root coroutine in **static** storage (it
+    must outlive ``spawn`` until ``run`` drains it -- one active instance per
+    action, the documented serial contract), injects its solved rand fields, and
+    posts its ``_body`` onto the bridge timebase. When ``runtime``, the per-spawn
+    ``seed`` drives ``pssc_solve_all`` (dv-solve) into the ``g_*`` globals.
+    """
+    from .sw_lower import solve_global_name
+    L = ['#include "zsp_bridge.h"', "#include <stdint.h>"]
+    for a in actions:
+        L.append(f'#include "{a["header"]}"')
+    if runtime:
+        L.append("extern void pssc_solve_all(unsigned long long seed);")
+        for a in actions:
+            solve = a.get("solve") or {}
+            for s in solve.get("slots", []):
+                L.append(f'extern int32_t {solve_global_name(solve["prefix"], s.cname)};')
+    L.append("")
+    for a in actions:
+        L.append(f'#define ACTION_{a["short"]} {a["id"]}')
+    L.append("")
+    L.append("void pssc_bridge_dispatch(zsp_bridge_t *b, int action_id, long long seed) {")
+    if runtime:
+        L.append("    pssc_solve_all((unsigned long long)seed);")
+    else:
+        L.append("    (void)seed;")
+    L.append("    switch (action_id) {")
+    for a in actions:
+        ct = a["ctype"]
+        L.append(f'    case ACTION_{a["short"]}: {{')
+        L.append(f"        static {ct} root;")
+        L.append(f'        {ct}_init(&b->ctxt, &root, "root", NULL);')
+        L.extend(_field_assigns(a, "root", runtime))
+        L.append(f"        {ct}_body(&root, &b->tb);")
+        L.append("        break;")
+        L.append("    }")
+    L.append("    default: break;")
+    L.append("    }")
+    L.append("}")
+    return "\n".join(L) + "\n"
+
+
+def _bridge_pkg_sv(actions: List[dict]) -> str:
+    """``pssc_bridge_pkg.sv``: DPI decls, ACTION_* localparams, and a
+    ``pssc_run_action`` trampoline task (spawn -> run -> drain to done)."""
+    L = ["// pssc-generated bridge package (sv-dpi-bridge).",
+         "package pssc_bridge_pkg;",
+         '  import "DPI-C" function chandle zsp_bridge_create();',
+         '  import "DPI-C" function void    zsp_bridge_destroy(chandle b);',
+         '  import "DPI-C" function void    zsp_bridge_spawn(chandle b, int action_id, longint seed);',
+         '  import "DPI-C" function void    zsp_bridge_run(chandle b);',
+         '  import "DPI-C" function int     zsp_bridge_done(chandle b);',
+         ""]
+    for a in actions:
+        L.append(f'  localparam int ACTION_{a["short"]} = {a["id"]};')
+    L += [
+        "",
+        "  // Spawn one action and drive the C scheduler to completion.",
+        "  task automatic pssc_run_action(chandle b, int action_id, longint seed);",
+        "    zsp_bridge_spawn(b, action_id, seed);",
+        "    zsp_bridge_run(b);",
+        "    while (zsp_bridge_done(b) == 0) zsp_bridge_run(b);",
+        "  endtask",
+        "",
+        "  // As above, but draw the C-side seed from the calling process's random",
+        "  // state ($urandom is the thread PRNG, reproducible under the testbench",
+        "  // seed). The C side uses it for runtime constraint solving.",
+        "  task automatic pssc_run_action_rand(chandle b, int action_id);",
+        "    pssc_run_action(b, action_id, {$urandom(), $urandom()});",
+        "  endtask",
+        "endpackage",
+    ]
+    return "\n".join(L) + "\n"
+
+
+class SvDpiBridgeTarget(Target):
+    name = "sv-dpi-bridge"
+    description = ("Multi-action C scenario as a DPI shared lib (libpssc_scenario.so) "
+                  "driven from SV via the zsp_bridge runtime (Phase C1)")
+
+    # `--export-action` is the shared compile-level option (see cli.build_parser).
+
+    def run(self, ctx, opts: argparse.Namespace) -> List[Path]:
+        import subprocess
+        from zuspec.be.sw import CGenerator
+
+        core = getattr(ctx, "ir_context", None) or to_core_context(ctx)
+        actions = _resolve_actions(core, opts)
+        runtime = bool(getattr(opts, "runtime_solve", False))
+
+        out = Path(str(getattr(opts, "output_dir", ".") or "."))
+        out.mkdir(parents=True, exist_ok=True)
+
+        # Generate the C scenario (the body coroutines; rand fields are injected
+        # by the dispatcher -- baked (presolve) or solved per-spawn (runtime)).
+        sw_ctx = to_sw_context(core, solve_plan=None)
+        gen = list(CGenerator(output_dir=str(out)).generate(sw_ctx))
+
+        # Runtime-solve: a per-action dv-solve problem -> pssc_solve.c (separate
+        # TU: dv-solve headers must not co-occur with the runtime's zsp_alloc.h).
+        if runtime:
+            from .sw_solve import problem_bytes
+            plan = []
+            for a in actions:
+                pb, slots = problem_bytes(a["dt"]) if a.get("dt") is not None else (None, [])
+                if pb is not None and slots:
+                    a["solve"] = {"prefix": a["short"] + "__", "slots": slots}
+                    plan.append({"prefix": a["solve"]["prefix"], "bytes": pb, "slots": slots})
+            if plan:
+                (out / "pssc_solve.c").write_text(_solve_c(plan))
+
+        # Bridge runtime (copied) + generated dispatcher + SV shim.
+        share_c = _c_share_dir()
+        for fn in ("zsp_bridge.h", "zsp_bridge.c"):
+            (out / fn).write_text((share_c / fn).read_text())
+        (out / "pssc_bridge_dispatch.c").write_text(_bridge_dispatch_c(actions, runtime))
+        (out / "pssc_bridge_pkg.sv").write_text(_bridge_pkg_sv(actions))
+
+        written = list(gen) + [
+            out / "zsp_bridge.h", out / "zsp_bridge.c",
+            out / "pssc_bridge_dispatch.c", out / "pssc_bridge_pkg.sv",
+        ]
+        if runtime and (out / "pssc_solve.c").exists():
+            written.append(out / "pssc_solve.c")
+
+        # Build libpssc_scenario.so when a compiler is available.
+        if shutil.which("gcc"):
+            inc, rt = _besw_share()
+            objs: List[str] = []
+            link_extra: List[str] = []
+            # Separate TU for the dv-solve solver (own include path).
+            if runtime and (out / "pssc_solve.c").exists():
+                dv_inc, dv_lib = _dvsolve_share()
+                solve_o = out / "pssc_solve.o"
+                rs = subprocess.run(
+                    ["gcc", "-w", "-c", "-fPIC", f"-I{dv_inc}",
+                     str(out / "pssc_solve.c"), "-o", str(solve_o)],
+                    capture_output=True, text=True)
+                if rs.returncode != 0:
+                    raise RuntimeError(f"pssc_solve.c build failed:\n{rs.stderr}")
+                objs.append(str(solve_o))
+                link_extra = [f"-L{dv_lib}", "-ldv_solve", f"-Wl,-rpath,{dv_lib}"]
+
+            srcs = [str(f) for f in gen if f.suffix == ".c" and f.name != "main.c"]
+            srcs += [str(out / "zsp_bridge.c"), str(out / "pssc_bridge_dispatch.c")]
+            srcs += [str(p) for p in rt.glob("*.c")]
+            lib = out / "libpssc_scenario.so"
+            cmd = ["gcc", "-w", "-fPIC", "-shared",
+                   f"-I{inc}", f"-I{share_c}", f"-I{out}", *srcs, *objs,
+                   "-o", str(lib), *link_extra]
+            r = subprocess.run(cmd, capture_output=True, text=True)
+            if r.returncode != 0:
+                raise RuntimeError(f"libpssc_scenario.so build failed:\n{r.stderr}")
+            written.append(lib)
+
+        return written
 
 
 class CEmbeddedTarget(_CTarget):
