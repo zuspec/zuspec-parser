@@ -113,6 +113,66 @@ def test_bridge_presolved_rand_runs_on_verilator(tmp_path):
     assert 3 < int(m.group(1)) < 8, run.stdout
 
 
+_IMPORT_MODEL = """
+package dut_api {
+    import target function void do_write(int a, int b);
+    import solve  function int  do_read(int a);
+}
+component pss_top {
+    import dut_api::*;
+    action Entry { exec body { do_write(16, do_read(7)); } }
+}
+"""
+
+# do_write is a *target* -> a blocking SV task that consumes time (#10); do_read
+# is a *solve* -> a synchronous function. The blocking import suspends the C
+# coroutine, SV forks the task (advancing time), and the mailbox re-wakes it.
+_TB_IMPORTS = """\
+module tb;
+  import pssc_bridge_pkg::*;
+  class imp_impl implements pssc_import_if;
+    virtual task do_write(int a, int b); #10; $display("[imp @%0t] do_write(%0d,%0d)", $time, a, b); endtask
+    virtual function int do_read(int a); return a + 5; endfunction
+  endclass
+  initial begin
+    chandle b = zsp_bridge_create();
+    imp_impl imp = new();
+    pssc_set_imports(imp);
+    pssc_run_action(b, ACTION_Entry, 64'd1);
+    $display("[TB @%0t] done", $time);
+    $finish;
+  end
+endmodule
+"""
+
+
+def test_bridge_blocking_import_consumes_time(tmp_path):
+    """Blocking (target) import: the C coroutine suspends, SV runs the
+    time-consuming task via fork, and the mailbox re-wakes it. do_read (solve)
+    flows back synchronously. Needs --export-dynamic for the solve export."""
+    src = tmp_path / "m.pss"
+    src.write_text(_IMPORT_MODEL)
+    out = tmp_path / "out"
+    pssc.compile(str(src), target="sv-dpi-bridge", output_dir=str(out),
+                 export_actions=["Entry"])
+    (out / "tb.sv").write_text(_TB_IMPORTS)
+    build = subprocess.run(
+        ["verilator", "--binary", "--timing", "-Wno-fatal", "-Wno-WIDTH",
+         "--top-module", "tb", "pssc_bridge_pkg.sv", "tb.sv",
+         "-LDFLAGS",
+         f"-L{out} -lpssc_scenario -Wl,-rpath,{out} -Wl,--export-dynamic",
+         "-o", "sim_tb"],
+        cwd=str(out), capture_output=True, text=True)
+    assert build.returncode == 0, build.stderr
+    run = subprocess.run([str(out / "obj_dir" / "sim_tb")],
+                         capture_output=True, text=True)
+    # do_read(7)=12 flowed back into C, which called the blocking do_write(16,12);
+    # the #10 in the task means it (and the action) complete at time 10.
+    assert "do_write(16,12)" in run.stdout, run.stdout
+    assert "@10" in run.stdout, run.stdout
+    assert "done" in run.stdout, run.stdout
+
+
 _TB_RAND_AUTOSEED = """\
 module tb;
   import pssc_bridge_pkg::*;

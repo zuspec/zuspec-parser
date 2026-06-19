@@ -312,6 +312,60 @@ def _resolve_actions(core, opts) -> List[dict]:
     return actions
 
 
+def _rewrite_import_calls(core, solve_names, target_names) -> None:
+    """Rewrite exec-body import calls (mutates action bodies in ``core``):
+
+    * **solve** imports -> a *global* call (``do_read(...)``), resolved at link by
+      an SV ``export "DPI-C"`` function (synchronous);
+    * **target** imports -> an *await* of the self-method call, which makes be-sw
+      emit ``zsp_timebase_call(&<comp>_<import>_task, ...)`` + a suspend, so the
+      coroutine blocks while the SV import task (possibly time-consuming) runs and
+      the bridge mailbox re-wakes it.
+    """
+    import zuspec.ir.core as ir
+    solve_names = set(solve_names or ())
+    target_names = set(target_names or ())
+    if not solve_names and not target_names:
+        return
+
+    def _is_self_call(e, names):
+        return (isinstance(e, ir.ExprCall)
+                and isinstance(e.func, ir.ExprAttribute)
+                and isinstance(e.func.value, ir.TypeExprRefSelf)
+                and e.func.attr in names)
+
+    def rw_expr(e):
+        if e is None or not hasattr(e, "__class__"):
+            return e
+        for attr in ("func", "value", "lhs", "rhs", "slice", "expr"):
+            if hasattr(e, attr):
+                setattr(e, attr, rw_expr(getattr(e, attr)))
+        if hasattr(e, "args") and isinstance(e.args, list):
+            e.args = [rw_expr(x) for x in e.args]
+        if _is_self_call(e, solve_names):
+            e.func = ir.ExprRefUnresolved(name=e.func.attr)   # synchronous global
+        return e
+
+    def rw_stmt(s):
+        # A void target import call appears as a bare statement -> await it.
+        if isinstance(s, ir.StmtExpr) and _is_self_call(s.expr, target_names):
+            s.expr.args = [rw_expr(a) for a in s.expr.args]   # solve args first
+            s.expr = ir.ExprAwait(value=s.expr)
+            return
+        for attr in ("expr", "value", "condition", "test"):
+            if hasattr(s, attr) and getattr(s, attr) is not None:
+                setattr(s, attr, rw_expr(getattr(s, attr)))
+        for attr in ("body", "orelse"):
+            if hasattr(s, attr) and isinstance(getattr(s, attr), list):
+                for x in getattr(s, attr):
+                    rw_stmt(x)
+
+    for dt in core.type_m.values():
+        for fn in getattr(dt, "functions", []) or []:
+            for s in getattr(fn, "body", []) or []:
+                rw_stmt(s)
+
+
 def _field_assigns(a: dict, var: str, runtime: bool) -> List[str]:
     """C assignments that set a spawned action's own ``rand`` fields between
     ``_init`` and ``_body``: a runtime-solved global (``root.x = g_Entry__x;``)
@@ -391,36 +445,206 @@ def _bridge_dispatch_c(actions: List[dict], runtime: bool) -> str:
     return "\n".join(L) + "\n"
 
 
-def _bridge_pkg_sv(actions: List[dict]) -> str:
-    """``pssc_bridge_pkg.sv``: DPI decls, ACTION_* localparams, and a
-    ``pssc_run_action`` trampoline task (spawn -> run -> drain to done)."""
+def _import_sv_type(ann) -> str:
+    """SV type for an import arg/return. Scalar integral only in this slice."""
+    bits = int(getattr(ann, "bits", 32) or 32) if ann is not None else 32
+    if bits <= 32:
+        return "int"
+    return "longint"
+
+
+def _import_kinds(imports):
+    """Split imports into (solve, target). solve = synchronous value/function;
+    target = blocking SUT task (may consume time)."""
+    imports = list(imports or [])
+    solve = [f for f in imports if not getattr(f, "is_target", False) or f.returns is not None]
+    target = [f for f in imports if getattr(f, "is_target", False) and f.returns is None]
+    return solve, target
+
+
+def _bridge_imports_sv(imports) -> List[str]:
+    """The import seam:
+
+    * ``pssc_import_if`` the testbench implements (target -> **task**, solve ->
+      **function**) + a global handle/setter;
+    * one ``export "DPI-C"`` **function** per *solve* import (the C scenario calls
+      it synchronously by name);
+    * ``FN_*`` ids and ``pssc_dispatch_import`` for *target* imports, which the
+      forking trampoline runs out of the request mailbox.
+    """
+    solve, target = _import_kinds(imports)
+    if not solve and not target:
+        return []
+    L = ["",
+         "  // Import seam: testbench implements pssc_import_if + registers it via",
+         "  // pssc_set_imports. solve imports are synchronous export \"DPI-C\"",
+         "  // functions; target imports are tasks run from the request mailbox.",
+         "  interface class pssc_import_if;"]
+    for f in target:
+        args = ", ".join(f"{_import_sv_type(a.annotation)} {a.arg}" for a in f.args.args)
+        L.append(f"    pure virtual task {f.name}({args});")
+    for f in solve:
+        args = ", ".join(f"{_import_sv_type(a.annotation)} {a.arg}" for a in f.args.args)
+        ret = _import_sv_type(f.returns) if f.returns is not None else "void"
+        L.append(f"    pure virtual function {ret} {f.name}({args});")
+    L.append("  endclass")
+    L.append("  pssc_import_if g_pssc_imp;")
+    L.append("  function void pssc_set_imports(pssc_import_if imp); g_pssc_imp = imp; endfunction")
+    # solve imports: synchronous export "DPI-C" functions
+    for f in solve:
+        argdecl = ", ".join(f"{_import_sv_type(a.annotation)} {a.arg}" for a in f.args.args)
+        argcall = ", ".join(a.arg for a in f.args.args)
+        ret = _import_sv_type(f.returns) if f.returns is not None else "void"
+        L.append(f'  export "DPI-C" function {f.name};')
+        if ret == "void":
+            L.append(f"  function void {f.name}({argdecl}); g_pssc_imp.{f.name}({argcall}); endfunction")
+        else:
+            L.append(f"  function {ret} {f.name}({argdecl}); return g_pssc_imp.{f.name}({argcall}); endfunction")
+    # target imports: FN ids + a dispatcher run from the mailbox
+    if target:
+        for i, f in enumerate(target):
+            L.append(f"  localparam int FN_{f.name} = {i};")
+        L.append("  task automatic pssc_dispatch_import(int fn_id, chandle ab);")
+        L.append("    case (fn_id)")
+        for f in target:
+            call = ", ".join(f"zsp_bridge_arg_i(ab, {j})" for j in range(len(f.args.args)))
+            L.append(f"      FN_{f.name}: g_pssc_imp.{f.name}({call});")
+        L.append("    endcase")
+        L.append("  endtask")
+    return L
+
+
+def _bridge_pkg_sv(actions: List[dict], imports=None) -> str:
+    """``pssc_bridge_pkg.sv``: DPI decls, ACTION_* localparams, the import seam
+    (when the model has imports), and a ``pssc_run_action`` trampoline task.
+
+    ``zsp_bridge_run`` is a **context** import: the C scenario may re-enter SV
+    (calling an exported import) while it runs, which requires the SV scope to be
+    set (IEEE 1800 35.5.3; matches the Verilator finding).
+    """
+    _solve, target = _import_kinds(imports)
     L = ["// pssc-generated bridge package (sv-dpi-bridge).",
          "package pssc_bridge_pkg;",
          '  import "DPI-C" function chandle zsp_bridge_create();',
          '  import "DPI-C" function void    zsp_bridge_destroy(chandle b);',
          '  import "DPI-C" function void    zsp_bridge_spawn(chandle b, int action_id, longint seed);',
-         '  import "DPI-C" function void    zsp_bridge_run(chandle b);',
+         '  import "DPI-C" context function void zsp_bridge_run(chandle b);',
          '  import "DPI-C" function int     zsp_bridge_done(chandle b);',
-         ""]
+         '  import "DPI-C" context function void zsp_bridge_capture_scope();',
+         '  import "DPI-C" function int     zsp_bridge_next_request(chandle b, output int req_id, output int fn_id, output chandle args);',
+         '  import "DPI-C" function void    zsp_bridge_complete(chandle b, int req_id, longint ret);',
+         '  import "DPI-C" function longint zsp_bridge_arg_i(chandle args, int idx);']
+    L += _bridge_imports_sv(imports)
+    L.append("")
     for a in actions:
         L.append(f'  localparam int ACTION_{a["short"]} = {a["id"]};')
+    L.append("")
+    if target:
+        # Trampoline as a forking event loop: run the C scheduler, drain blocking
+        # import requests, fork each SV import task (it may consume time), and
+        # complete it (re-waking the coroutine); repeat until done.
+        L += [
+            "  // Spawn one action; service blocking imports via fork/complete.",
+            "  task automatic pssc_run_action(chandle b, int action_id, longint seed);",
+            "    int rid, fid; chandle ab; int outstanding = 0; event progress;",
+            "    zsp_bridge_capture_scope();",
+            "    zsp_bridge_spawn(b, action_id, seed);",
+            "    forever begin",
+            "      zsp_bridge_run(b);",
+            "      while (zsp_bridge_next_request(b, rid, fid, ab)) begin",
+            "        outstanding++;",
+            "        fork",
+            "          begin",
+            "            automatic int     l_rid = rid;",
+            "            automatic int     l_fid = fid;",
+            "            automatic chandle l_ab  = ab;",
+            "            pssc_dispatch_import(l_fid, l_ab);",
+            "            zsp_bridge_complete(b, l_rid, 64'd0);",
+            "            outstanding--; -> progress;",
+            "          end",
+            "        join_none",
+            "      end",
+            "      if (zsp_bridge_done(b) && outstanding == 0) break;",
+            "      @progress;",
+            "    end",
+            "  endtask",
+        ]
+    else:
+        L += [
+            "  // Spawn one action and drive the C scheduler to completion.",
+            "  task automatic pssc_run_action(chandle b, int action_id, longint seed);",
+            "    zsp_bridge_capture_scope();   // arm SV scope for C->SV imports",
+            "    zsp_bridge_spawn(b, action_id, seed);",
+            "    zsp_bridge_run(b);",
+            "    while (zsp_bridge_done(b) == 0) zsp_bridge_run(b);",
+            "  endtask",
+        ]
     L += [
         "",
-        "  // Spawn one action and drive the C scheduler to completion.",
-        "  task automatic pssc_run_action(chandle b, int action_id, longint seed);",
-        "    zsp_bridge_spawn(b, action_id, seed);",
-        "    zsp_bridge_run(b);",
-        "    while (zsp_bridge_done(b) == 0) zsp_bridge_run(b);",
-        "  endtask",
-        "",
         "  // As above, but draw the C-side seed from the calling process's random",
-        "  // state ($urandom is the thread PRNG, reproducible under the testbench",
-        "  // seed). The C side uses it for runtime constraint solving.",
+        "  // state ($urandom is the thread PRNG, reproducible under the testbench seed).",
         "  task automatic pssc_run_action_rand(chandle b, int action_id);",
         "    pssc_run_action(b, action_id, {$urandom(), $urandom()});",
         "  endtask",
         "endpackage",
     ]
+    return "\n".join(L) + "\n"
+
+
+def _bridge_import_tasks_c(actions: List[dict], target_imports) -> str:
+    """Generated coroutine sub-tasks for blocking (target) imports + FN_* ids.
+
+    One ``<comp>_<import>_task`` per (export action, target import): marshal the
+    call args into a request, post it (suspending the coroutine), and on resume
+    return ``thread->rval``. Referenced by the action body's ``zsp_timebase_call``.
+    """
+    target_imports = list(target_imports or [])
+    if not target_imports:
+        return ""
+    L = ['#include "zsp_bridge.h"', "#include <stdarg.h>", "#include <stdint.h>", ""]
+    for i, f in enumerate(target_imports):
+        L.append(f"#define FN_{f.name} {i}")
+    L.append("")
+    for a in actions:
+        ct = a["ctype"]
+        for f in target_imports:
+            n = len(f.args.args)
+            fn = f"{ct}_{f.name}_task"
+            L.append(f"zsp_frame_t *{fn}(zsp_timebase_t *tb, zsp_thread_t *thread, int idx, va_list *args) {{")
+            L.append("    zsp_frame_t *ret = thread->leaf; (void)tb;")
+            L.append("    typedef struct { zsp_bridge_req_t req; } locals_t;")
+            L.append("    switch (idx) {")
+            L.append("    case 0: {")
+            L.append(f"        ret = zsp_timebase_alloc_frame(thread, sizeof(locals_t), &{fn});")
+            L.append("        locals_t *L = zsp_frame_locals(ret, locals_t);")
+            L.append("        (void)va_arg(*args, void *);   /* self */")
+            for j in range(n):
+                L.append(f"        long long a{j} = (long long)va_arg(*args, int);")
+            L.append(f"        L->req.fn_id = FN_{f.name}; L->req.argc = {n};")
+            for j in range(n):
+                L.append(f"        L->req.argv[{j}] = a{j};")
+            L.append("        zsp_bridge_post_request(thread, &L->req);")
+            L.append("        ret->idx = 1; break;")
+            L.append("    }")
+            L.append("    case 1: ret = zsp_timebase_return(thread, (uintptr_t)thread->rval); break;")
+            L.append("    }")
+            L.append("    return ret;")
+            L.append("}")
+            L.append("")
+    return "\n".join(L) + "\n"
+
+
+def _bridge_import_protos_h(a: dict, target_imports) -> str:
+    """Forward declarations for one action's blocking-import sub-tasks, appended
+    to that action's generated header (its body_task takes the function address).
+    Plain prototypes are idempotent under re-inclusion."""
+    target_imports = list(target_imports or [])
+    if not target_imports:
+        return ""
+    L = ["", "/* pssc bridge: blocking-import sub-tasks */", "#include <stdarg.h>"]
+    for f in target_imports:
+        L.append(f"zsp_frame_t *{a['ctype']}_{f.name}_task("
+                 "zsp_timebase_t *, zsp_thread_t *, int, va_list *);")
     return "\n".join(L) + "\n"
 
 
@@ -438,14 +662,33 @@ class SvDpiBridgeTarget(Target):
         core = getattr(ctx, "ir_context", None) or to_core_context(ctx)
         actions = _resolve_actions(core, opts)
         runtime = bool(getattr(opts, "runtime_solve", False))
+        imports = list(getattr(ctx, "import_functions", None) or [])
 
         out = Path(str(getattr(opts, "output_dir", ".") or "."))
         out.mkdir(parents=True, exist_ok=True)
 
+        # Imports: solve -> synchronous global call (SV export "DPI-C"); target ->
+        # await (suspend) serviced via the request mailbox + a sub-task coroutine.
+        solve_imports, target_imports = _import_kinds(imports)
+        _rewrite_import_calls(core, {f.name for f in solve_imports},
+                              {f.name for f in target_imports})
+
         # Generate the C scenario (the body coroutines; rand fields are injected
         # by the dispatcher -- baked (presolve) or solved per-spawn (runtime)).
+        #
+        # Disable be-sw's async->sync body conversion: the bridge always drives
+        # action bodies as async coroutines on the timebase, so the inlined
+        # `_body_sync` variant is dead code -- and its statement generator renders
+        # a rewritten global import call as `0(...)` (the async generator renders
+        # it correctly), which would fail to compile. Async-only sidesteps that.
         sw_ctx = to_sw_context(core, solve_plan=None)
-        gen = list(CGenerator(output_dir=str(out)).generate(sw_ctx))
+        from zuspec.be.sw.async_analyzer import AsyncAnalyzer
+        _orig_sc = AsyncAnalyzer.is_sync_convertible
+        AsyncAnalyzer.is_sync_convertible = lambda self, c, f: False
+        try:
+            gen = list(CGenerator(output_dir=str(out)).generate(sw_ctx))
+        finally:
+            AsyncAnalyzer.is_sync_convertible = _orig_sc
 
         # Runtime-solve: a per-action dv-solve problem -> pssc_solve.c (separate
         # TU: dv-solve headers must not co-occur with the runtime's zsp_alloc.h).
@@ -465,7 +708,21 @@ class SvDpiBridgeTarget(Target):
         for fn in ("zsp_bridge.h", "zsp_bridge.c"):
             (out / fn).write_text((share_c / fn).read_text())
         (out / "pssc_bridge_dispatch.c").write_text(_bridge_dispatch_c(actions, runtime))
-        (out / "pssc_bridge_pkg.sv").write_text(_bridge_pkg_sv(actions))
+        (out / "pssc_bridge_pkg.sv").write_text(_bridge_pkg_sv(actions, imports))
+
+        # Blocking (target) imports: the sub-task coroutines, plus their
+        # prototypes appended to each action's generated header (the body_task TU
+        # takes &<comp>_<import>_task). Header-scoped -- a global force-include
+        # would leak into runtime TUs whose stale zsp_thread.h conflicts.
+        have_target = bool(target_imports)
+        if have_target:
+            (out / "pssc_bridge_imports.c").write_text(
+                _bridge_import_tasks_c(actions, target_imports))
+            for a in actions:
+                hdr = out / a["header"]
+                if hdr.exists():
+                    hdr.write_text(hdr.read_text()
+                                   + _bridge_import_protos_h(a, target_imports))
 
         written = list(gen) + [
             out / "zsp_bridge.h", out / "zsp_bridge.c",
@@ -473,6 +730,8 @@ class SvDpiBridgeTarget(Target):
         ]
         if runtime and (out / "pssc_solve.c").exists():
             written.append(out / "pssc_solve.c")
+        if have_target:
+            written.append(out / "pssc_bridge_imports.c")
 
         # Build libpssc_scenario.so when a compiler is available.
         if shutil.which("gcc"):
@@ -494,6 +753,8 @@ class SvDpiBridgeTarget(Target):
 
             srcs = [str(f) for f in gen if f.suffix == ".c" and f.name != "main.c"]
             srcs += [str(out / "zsp_bridge.c"), str(out / "pssc_bridge_dispatch.c")]
+            if have_target:
+                srcs.append(str(out / "pssc_bridge_imports.c"))
             srcs += [str(p) for p in rt.glob("*.c")]
             lib = out / "libpssc_scenario.so"
             cmd = ["gcc", "-w", "-fPIC", "-shared",

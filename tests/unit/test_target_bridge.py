@@ -94,6 +94,50 @@ def test_bridge_presolves_rand_fields(tmp_path):
     assert disp.index("_init") < disp.index("root.x =") < disp.index("_body")
 
 
+_IMPORT_MODEL = """
+package dut_api {
+    import target function void do_write(int a, int b);
+    import solve  function int  do_read(int a);
+}
+component pss_top {
+    import dut_api::*;
+    action Entry { exec body { do_write(16, do_read(7)); } }
+}
+"""
+
+
+def test_bridge_import_seam_splits_target_and_solve(tmp_path):
+    """Imports split: a *solve* import is a synchronous export "DPI-C" function;
+    a *target* import is a blocking task dispatched from the mailbox."""
+    src = tmp_path / "m.pss"
+    src.write_text(_IMPORT_MODEL)
+    out = tmp_path / "out"
+    pssc.compile(str(src), target="sv-dpi-bridge", output_dir=str(out),
+                 export_actions=["Entry"])
+    pkg = (out / "pssc_bridge_pkg.sv").read_text()
+    assert "interface class pssc_import_if;" in pkg
+    # target -> task, solve -> function
+    assert "pure virtual task do_write(int a, int b);" in pkg
+    assert "pure virtual function int do_read(int a);" in pkg
+    # solve import: synchronous export; target import: mailbox dispatch (no export)
+    assert 'export "DPI-C" function do_read;' in pkg
+    assert 'export "DPI-C" function do_write;' not in pkg
+    assert "localparam int FN_do_write = 0;" in pkg
+    assert "task automatic pssc_dispatch_import" in pkg
+    assert "FN_do_write: g_pssc_imp.do_write(" in pkg
+    # forking trampoline + re-entrancy plumbing
+    assert "join_none" in pkg
+    assert 'context function void zsp_bridge_capture_scope' in pkg
+    # the C body: solve import is a global call; target import is a suspend
+    # (zsp_timebase_call to the generated sub-task), not a struct member.
+    body = (out / "pss_top__entry.c").read_text()
+    assert "zsp_timebase_call(thread, &pss_top__Entry_do_write_task" in body
+    assert "do_read(7)" in body
+    assert "self->do_write" not in body
+    # the blocking sub-task coroutine was generated
+    assert (out / "pssc_bridge_imports.c").read_text().count("pss_top__Entry_do_write_task") >= 1
+
+
 def test_bridge_runtime_solve_dispatch(tmp_path):
     """--runtime-solve emits a dv-solve TU and per-spawn solving into the action's
     rand fields (root.<f> = g_<prefix><f>), driven by the spawn seed."""
