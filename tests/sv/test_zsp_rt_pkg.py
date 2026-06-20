@@ -11,11 +11,12 @@ import shutil
 import pytest
 from dv_flow.mgr import PackageLoader, TaskGraphBuilder, TaskListenerLog, TaskSetRunner
 
-# Path to the SV runtime package directory (for +incdir)
+# Path to the SV runtime package directory (for +incdir). pssc ships it under
+# src/pssc/share/sv/ (the pre-migration src/zuspec/fe/pss/share/sv/ is gone).
 _RT_PKG_DIR = os.path.normpath(os.path.join(
     os.path.dirname(__file__),
     os.pardir, os.pardir,
-    "src", "zuspec", "fe", "pss", "share", "sv",
+    "src", "pssc", "share", "sv",
 ))
 _DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
