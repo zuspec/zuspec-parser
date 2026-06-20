@@ -138,6 +138,38 @@ def test_bridge_import_seam_splits_target_and_solve(tmp_path):
     assert (out / "pssc_bridge_imports.c").read_text().count("pss_top__Entry_do_write_task") >= 1
 
 
+_PARALLEL_MODEL = """
+package d { import target function void do_op(int id); }
+component pss_top {
+    import d::*;
+    action Leaf1 { exec body { do_op(1); } }
+    action Leaf2 { exec body { do_op(2); } }
+    action Par { activity { parallel { do Leaf1; do Leaf2; } } }
+}
+"""
+
+
+def test_bridge_parallel_generates_fork_join(tmp_path):
+    """A top-level parallel action generates fork/join coroutines and the
+    dispatcher spawns the par task instead of the (sequential) body."""
+    src = tmp_path / "m.pss"
+    src.write_text(_PARALLEL_MODEL)
+    out = tmp_path / "out"
+    pssc.compile(str(src), target="sv-dpi-bridge", output_dir=str(out),
+                 export_actions=["Par"])
+    par = (out / "pssc_bridge_parallel.c").read_text()
+    assert "zsp_par_block_init(&L->pb, 2);" in par         # two branches
+    assert "pssc_par_pss_top__Par_b0" in par and "pssc_par_pss_top__Par_b1" in par
+    assert "zsp_par_block_done_one" in par and "zsp_par_block_join" in par
+    # each branch runs a leaf body coroutine
+    assert "&pss_top__Leaf1_body_task" in par
+    assert "&pss_top__Leaf2_body_task" in par
+    # the dispatcher spawns the par task, not Par_body
+    disp = (out / "pssc_bridge_dispatch.c").read_text()
+    assert "&pssc_par_pss_top__Par_task" in disp
+    assert "pss_top__Par_body(" not in disp
+
+
 def test_bridge_runtime_solve_dispatch(tmp_path):
     """--runtime-solve emits a dv-solve TU and per-spawn solving into the action's
     rand fields (root.<f> = g_<prefix><f>), driven by the spawn seed."""

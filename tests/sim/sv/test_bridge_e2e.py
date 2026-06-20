@@ -186,6 +186,61 @@ endmodule
 """
 
 
+_PARALLEL_MODEL = """
+package d { import target function void do_op(int id); }
+component pss_top {
+    import d::*;
+    action Leaf1 { exec body { do_op(1); } }
+    action Leaf2 { exec body { do_op(2); } }
+    action Par { activity { parallel { do Leaf1; do Leaf2; } } }
+}
+"""
+
+_TB_PARALLEL = """\
+module tb;
+  import pssc_bridge_pkg::*;
+  class imp_impl implements pssc_import_if;
+    virtual task do_op(int id); #10; $display("[imp @%0t] do_op(%0d)", $time, id); endtask
+  endclass
+  initial begin
+    chandle b = zsp_bridge_create();
+    imp_impl imp = new();
+    pssc_set_imports(imp);
+    pssc_run_action(b, ACTION_Par, 64'd1);
+    $display("[TB @%0t] done", $time);
+    $finish;
+  end
+endmodule
+"""
+
+
+def test_bridge_parallel_imports_run_concurrently(tmp_path):
+    """Two blocking imports under `parallel` post at the same instant and the
+    trampoline forks both: each #10 task overlaps, so BOTH fire at time 10 (not
+    10 and 20) and the action completes at 10."""
+    src = tmp_path / "m.pss"
+    src.write_text(_PARALLEL_MODEL)
+    out = tmp_path / "out"
+    pssc.compile(str(src), target="sv-dpi-bridge", output_dir=str(out),
+                 export_actions=["Par"])
+    (out / "tb.sv").write_text(_TB_PARALLEL)
+    build = subprocess.run(
+        ["verilator", "--binary", "--timing", "-Wno-fatal", "-Wno-WIDTH",
+         "--top-module", "tb", "pssc_bridge_pkg.sv", "tb.sv",
+         "-LDFLAGS", f"-L{out} -lpssc_scenario -Wl,-rpath,{out} -Wl,--export-dynamic",
+         "-o", "sim_tb"],
+        cwd=str(out), capture_output=True, text=True)
+    assert build.returncode == 0, build.stderr
+    run = subprocess.run([str(out / "obj_dir" / "sim_tb")],
+                         capture_output=True, text=True)
+    import re
+    times = [int(t) for t in re.findall(r"do_op\(\d+\)", run.stdout) and
+             re.findall(r"@(\d+)\] do_op", run.stdout)]
+    assert "do_op(1)" in run.stdout and "do_op(2)" in run.stdout, run.stdout
+    # both imports complete at the same time (concurrent, not serialized)
+    assert times == [10, 10], f"expected both @10 (concurrent), got {times}\n{run.stdout}"
+
+
 def test_bridge_runtime_solve_seeded_from_sv_thread(tmp_path):
     """--runtime-solve: the C side solves the action's constraints per-spawn,
     seeded from the SV thread's random state, on Verilator."""

@@ -366,6 +366,68 @@ def _rewrite_import_calls(core, solve_names, target_names) -> None:
                 rw_stmt(s)
 
 
+_STDLIB_PKG_PREFIXES = ("executor_pkg::", "addr_reg_pkg::", "sync_pkg::", "std_pkg::")
+
+
+def _resolve_action_qual(core, short):
+    """Resolve a traversal's ``action_type`` short name to its qualified type_m
+    key (preferring the ``::``-qualified entry that be-sw mangles from)."""
+    import zuspec.ir.core as ir
+    best = None
+    for k, dt in core.type_m.items():
+        if not isinstance(dt, ir.DataTypeClass):
+            continue
+        if k == short or k.endswith("::" + short):
+            if "::" in k:
+                return k
+            best = best or k
+    return best
+
+
+def _user_action_specs(core) -> List[dict]:
+    """All user (non-stdlib) action types: ``[{qual, ctype, header, dt}]`` deduped
+    by identity (qualified key preferred). be-sw generates a body coroutine for
+    each, so each may reference its own import sub-tasks."""
+    import zuspec.ir.core as ir
+    seen, out = set(), []
+    for name, dt in core.type_m.items():
+        if not isinstance(dt, ir.DataTypeClass):
+            continue
+        if any(name.startswith(p) for p in _STDLIB_PKG_PREFIXES) or "::" not in name:
+            continue
+        if id(dt) in seen:
+            continue
+        seen.add(id(dt))
+        ct = _sanitize(name)
+        out.append({"qual": name, "ctype": ct, "header": ct.lower() + ".h", "dt": dt})
+    return out
+
+
+def _parallel_branches(core, dt):
+    """If ``dt``'s activity is a single top-level ``parallel`` of ``do <Leaf>``
+    traversals, return the branch leaves' qualified names; else None."""
+    import zuspec.ir.core as ir
+    node = getattr(dt, "activity_ir", None)
+    if node is None:
+        return None
+    if isinstance(node, ir.ActivitySequenceBlock):
+        stmts = node.stmts or []
+        if len(stmts) != 1:
+            return None
+        node = stmts[0]
+    if not isinstance(node, ir.ActivityParallel):
+        return None
+    leaves = []
+    for ch in (node.stmts or []):
+        if not isinstance(ch, ir.ActivityAnonTraversal):
+            return None
+        q = _resolve_action_qual(core, ch.action_type)
+        if q is None:
+            return None
+        leaves.append(q)
+    return leaves or None
+
+
 def _field_assigns(a: dict, var: str, runtime: bool) -> List[str]:
     """C assignments that set a spawned action's own ``rand`` fields between
     ``_init`` and ``_body``: a runtime-solved global (``root.x = g_Entry__x;``)
@@ -411,7 +473,10 @@ def _bridge_dispatch_c(actions: List[dict], runtime: bool) -> str:
     ``seed`` drives ``pssc_solve_all`` (dv-solve) into the ``g_*`` globals.
     """
     from .sw_lower import solve_global_name
+    has_par = any(a.get("parallel") for a in actions)
     L = ['#include "zsp_bridge.h"', "#include <stdint.h>"]
+    if has_par:
+        L.append("#include <stdarg.h>")
     for a in actions:
         L.append(f'#include "{a["header"]}"')
     if runtime:
@@ -420,6 +485,10 @@ def _bridge_dispatch_c(actions: List[dict], runtime: bool) -> str:
             solve = a.get("solve") or {}
             for s in solve.get("slots", []):
                 L.append(f'extern int32_t {solve_global_name(solve["prefix"], s.cname)};')
+    for a in actions:
+        if a.get("parallel"):
+            L.append(f'extern zsp_frame_t *pssc_par_{a["ctype"]}_task('
+                     "zsp_timebase_t *, zsp_thread_t *, int, va_list *);")
     L.append("")
     for a in actions:
         L.append(f'#define ACTION_{a["short"]} {a["id"]}')
@@ -433,10 +502,16 @@ def _bridge_dispatch_c(actions: List[dict], runtime: bool) -> str:
     for a in actions:
         ct = a["ctype"]
         L.append(f'    case ACTION_{a["short"]}: {{')
-        L.append(f"        static {ct} root;")
-        L.append(f'        {ct}_init(&b->ctxt, &root, "root", NULL);')
-        L.extend(_field_assigns(a, "root", runtime))
-        L.append(f"        {ct}_body(&root, &b->tb);")
+        if a.get("parallel"):
+            # spawn the fork/join coroutine instead of the (sequential) body
+            L.append(f"        zsp_thread_t *t = zsp_timebase_thread_create("
+                     f"&b->tb, &pssc_par_{ct}_task, ZSP_THREAD_FLAGS_NONE, b);")
+            L.append("        t->exit_f = (zsp_thread_exit_f)&zsp_timebase_thread_free;")
+        else:
+            L.append(f"        static {ct} root;")
+            L.append(f'        {ct}_init(&b->ctxt, &root, "root", NULL);')
+            L.extend(_field_assigns(a, "root", runtime))
+            L.append(f"        {ct}_body(&root, &b->tb);")
         L.append("        break;")
         L.append("    }")
     L.append("    default: break;")
@@ -634,6 +709,93 @@ def _bridge_import_tasks_c(actions: List[dict], target_imports) -> str:
     return "\n".join(L) + "\n"
 
 
+def _bridge_parallel_c(par_specs: List[dict]) -> str:
+    """Generated fork/join coroutines for top-level ``parallel`` actions.
+
+    Per parallel action: one branch coroutine per ``do <Leaf>`` that constructs
+    the leaf, runs its (be-sw-generated) body coroutine, then ``done_one`` + wakes
+    the suspended parent on join; and a ``pssc_par_<comp>_task`` that forks the
+    branches and suspends until they join. The dispatcher spawns this task instead
+    of the action's (sequentially-inlined) body. Concurrent blocking imports post
+    at the same instant -> the SV trampoline forks them concurrently.
+    """
+    if not par_specs:
+        return ""
+    headers = sorted({lb["header"] for p in par_specs for lb in p["leaves"]})
+    bodies = sorted({lb["body"] for p in par_specs for lb in p["leaves"]})
+    L = ['#include "zsp_bridge.h"', '#include "zsp_par_block.h"',
+         "#include <stdarg.h>", "#include <stdint.h>"]
+    L += [f'#include "{h}"' for h in headers]
+    L.append("")
+    # prototypes for the leaf body coroutines (un-static'd in their own TU)
+    for body in bodies:
+        L.append(f"zsp_frame_t *{body}(zsp_timebase_t *, zsp_thread_t *, int, va_list *);")
+    L.append("")
+    for p in par_specs:
+        ct = p["ctype"]
+        for i, lb in enumerate(p["leaves"]):
+            lct, lbody = lb["ctype"], lb["body"]
+            fn = f"pssc_par_{ct}_b{i}"
+            L += [
+                f"static zsp_frame_t *{fn}(zsp_timebase_t *tb, zsp_thread_t *thread, int idx, va_list *args) {{",
+                "    zsp_frame_t *ret = thread->leaf; (void)tb;",
+                f"    typedef struct {{ zsp_par_block_t *pb; zsp_thread_t *parent; {lct} leaf; }} locals_t;",
+                "    switch (idx) {",
+                "    case 0: {",
+                f"        ret = zsp_timebase_alloc_frame(thread, sizeof(locals_t), &{fn});",
+                "        locals_t *L = zsp_frame_locals(ret, locals_t);",
+                "        L->pb = va_arg(*args, zsp_par_block_t *);",
+                "        L->parent = va_arg(*args, zsp_thread_t *);",
+                "        zsp_bridge_t *b = va_arg(*args, zsp_bridge_t *);",
+                f'        {lct}_init(&b->ctxt, &L->leaf, "leaf", NULL);',
+                "        ret->idx = 1;",
+                f"        ret = zsp_timebase_call(thread, &{lbody}, &L->leaf);",
+                "        break;",
+                "    }",
+                "    case 1: {",
+                "        locals_t *L = zsp_frame_locals(thread->leaf, locals_t);",
+                "        zsp_par_block_done_one(L->pb);",
+                "        if (zsp_par_block_join(L->pb)) {",
+                "            L->parent->flags &= ~ZSP_THREAD_FLAGS_BLOCKED;",
+                "            zsp_timebase_schedule(tb, L->parent);",
+                "        }",
+                "        ret = zsp_timebase_return(thread, 0);",
+                "        break;",
+                "    }",
+                "    }",
+                "    return ret;",
+                "}",
+            ]
+        n = len(p["leaves"])
+        task = f"pssc_par_{ct}_task"
+        L += [
+            f"zsp_frame_t *{task}(zsp_timebase_t *tb, zsp_thread_t *thread, int idx, va_list *args) {{",
+            "    zsp_frame_t *ret = thread->leaf; (void)tb;",
+            "    typedef struct { zsp_par_block_t pb; } locals_t;",
+            "    switch (idx) {",
+            "    case 0: {",
+            f"        ret = zsp_timebase_alloc_frame(thread, sizeof(locals_t), &{task});",
+            "        locals_t *L = zsp_frame_locals(ret, locals_t);",
+            "        zsp_bridge_t *b = va_arg(*args, zsp_bridge_t *);",
+            f"        zsp_par_block_init(&L->pb, {n});",
+        ]
+        for i in range(n):
+            L.append(f"        {{ zsp_thread_t *bt = zsp_timebase_thread_create("
+                     f"tb, &pssc_par_{ct}_b{i}, ZSP_THREAD_FLAGS_NONE, &L->pb, thread, b);"
+                     " bt->exit_f = (zsp_thread_exit_f)&zsp_timebase_thread_free; }")
+        L += [
+            "        thread->flags |= ZSP_THREAD_FLAGS_BLOCKED;",
+            "        ret->idx = 1; break;",
+            "    }",
+            "    case 1: ret = zsp_timebase_return(thread, 0); break;",
+            "    }",
+            "    return ret;",
+            "}",
+            "",
+        ]
+    return "\n".join(L) + "\n"
+
+
 def _bridge_import_protos_h(a: dict, target_imports) -> str:
     """Forward declarations for one action's blocking-import sub-tasks, appended
     to that action's generated header (its body_task takes the function address).
@@ -672,6 +834,23 @@ class SvDpiBridgeTarget(Target):
         solve_imports, target_imports = _import_kinds(imports)
         _rewrite_import_calls(core, {f.name for f in solve_imports},
                               {f.name for f in target_imports})
+
+        # All user actions get a be-sw body coroutine (each may reference its own
+        # import sub-tasks). Detect export actions whose activity is a top-level
+        # `parallel` -> generate a fork/join task instead of the sequential body.
+        user_specs = _user_action_specs(core)
+        by_qual = {u["qual"]: u for u in user_specs}
+        par_specs = []
+        for a in actions:
+            leaves = _parallel_branches(core, a.get("dt")) if a.get("dt") is not None else None
+            if not leaves:
+                continue
+            lspecs = [by_qual[q] for q in leaves if q in by_qual]
+            if len(lspecs) == len(leaves):
+                a["parallel"] = True
+                par_specs.append({"ctype": a["ctype"], "leaves": [
+                    {"ctype": u["ctype"], "header": u["header"],
+                     "body": u["ctype"] + "_body_task"} for u in lspecs]})
 
         # Generate the C scenario (the body coroutines; rand fields are injected
         # by the dispatcher -- baked (presolve) or solved per-spawn (runtime)).
@@ -716,13 +895,28 @@ class SvDpiBridgeTarget(Target):
         # would leak into runtime TUs whose stale zsp_thread.h conflicts.
         have_target = bool(target_imports)
         if have_target:
+            # Import sub-tasks for every user action (any action's body may call a
+            # target import). Prototypes appended to each action's own header --
+            # a global force-include would clash with the stale zsp_thread.h.
             (out / "pssc_bridge_imports.c").write_text(
-                _bridge_import_tasks_c(actions, target_imports))
-            for a in actions:
-                hdr = out / a["header"]
+                _bridge_import_tasks_c(user_specs, target_imports))
+            for u in user_specs:
+                hdr = out / u["header"]
                 if hdr.exists():
                     hdr.write_text(hdr.read_text()
-                                   + _bridge_import_protos_h(a, target_imports))
+                                   + _bridge_import_protos_h(u, target_imports))
+
+        # Top-level parallel actions: the fork/join coroutines. be-sw makes each
+        # <leaf>_body_task `static`; un-static the leaves the parallel coroutines
+        # call so they link across TUs.
+        if par_specs:
+            for ct in {lb["ctype"] for p in par_specs for lb in p["leaves"]}:
+                cf = out / (ct.lower() + ".c")
+                if cf.exists():
+                    cf.write_text(cf.read_text().replace(
+                        f"static zsp_frame_t *{ct}_body_task(",
+                        f"zsp_frame_t *{ct}_body_task("))
+            (out / "pssc_bridge_parallel.c").write_text(_bridge_parallel_c(par_specs))
 
         written = list(gen) + [
             out / "zsp_bridge.h", out / "zsp_bridge.c",
@@ -732,6 +926,8 @@ class SvDpiBridgeTarget(Target):
             written.append(out / "pssc_solve.c")
         if have_target:
             written.append(out / "pssc_bridge_imports.c")
+        if par_specs:
+            written.append(out / "pssc_bridge_parallel.c")
 
         # Build libpssc_scenario.so when a compiler is available.
         if shutil.which("gcc"):
@@ -755,6 +951,8 @@ class SvDpiBridgeTarget(Target):
             srcs += [str(out / "zsp_bridge.c"), str(out / "pssc_bridge_dispatch.c")]
             if have_target:
                 srcs.append(str(out / "pssc_bridge_imports.c"))
+            if par_specs:
+                srcs.append(str(out / "pssc_bridge_parallel.c"))
             srcs += [str(p) for p in rt.glob("*.c")]
             lib = out / "libpssc_scenario.so"
             cmd = ["gcc", "-w", "-fPIC", "-shared",
