@@ -22,7 +22,7 @@ jobs:
         if test -z "${tag}"; then
             echo "Configuring a candidate release"
             sed -i -e 's/SUFFIX=".*"/SUFFIX=".${{ github.run_id }}rc0"/g' \
-              src/zuspec/fe/pss/__version__.py
+              src/pssc/__version__.py
         else
             echo "Configuring a full release"
         fi
