@@ -176,6 +176,22 @@ package zsp_rt_pkg;
             if (share_count[id] > 0)
                 share_count[id]--;
         endfunction
+
+        // Claim any free instance for exclusive use; returns its id, or -1 if
+        // none is available. Atomic (a function, so concurrent callers in a
+        // fork serialize and obtain distinct ids).
+        function int claim();
+            for (int i = 0; i < instances.size(); i++)
+                if (try_lock(i)) return i;
+            return -1;
+        endfunction
+
+        // Claim any instance for shared (read) use; returns its id, or -1.
+        function int claim_shared();
+            for (int i = 0; i < instances.size(); i++)
+                if (try_share(i)) return i;
+            return -1;
+        endfunction
     endclass
 
     // ======================================================================

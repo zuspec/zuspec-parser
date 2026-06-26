@@ -51,6 +51,81 @@ _CMPOP_MAP = {
 }
 
 
+def lower_constraint_func_ir(
+    ctx: LoweringContext,
+    func: ir.Function,
+    known_field_names: Optional[List[str]] = None,
+) -> Optional[ir.ConstraintBlock]:
+    """Lower an IR constraint Function to a structured ``ConstraintBlock`` (D3).
+
+    This is the structured counterpart of :func:`lower_constraint_func` used by
+    the pure-SV (``sv-pure``) path: instead of pre-rendered SV strings it
+    produces ``zuspec.ir.core`` constraint nodes, which the be-sv backend emits
+    via ``SVConstraintEmitter`` (decision D4). The constraint *expressions* are
+    the existing core ``Expr`` nodes from the function body — no re-rendering.
+
+    Returns the block, or ``None`` if *func* is not a constraint or is skipped
+    by the ``known_field_names`` filter (matching :func:`lower_constraint_func`).
+    """
+    if not func.metadata.get("_is_constraint"):
+        return None
+
+    if known_field_names is not None:
+        known = set(known_field_names)
+        refs = _collect_top_attr_refs(func.body)
+        unknown = refs - known
+        if unknown:
+            ctx.warn(
+                f"constraint '{func.name}' references unknown field(s) {sorted(unknown)}"
+                " — skipped (IR-generated implicit constraint)",
+                func.name,
+            )
+            return None
+
+    items: List[ir.Constraint] = []
+    for stmt in func.body:
+        _constraint_items_from_stmt(stmt, items)
+    return ir.ConstraintBlock(name=func.name, items=items)
+
+
+def _constraint_items_from_stmt(stmt: ir.Stmt, out: List[ir.Constraint]) -> None:
+    """Convert one constraint-body statement into structured constraint items."""
+    if isinstance(stmt, ir.StmtExpr):
+        out.append(ir.ConstraintExpr(expr=stmt.expr))
+
+    elif isinstance(stmt, ir.StmtIf):
+        then_body: List[ir.Constraint] = []
+        for s in (stmt.body or []):
+            _constraint_items_from_stmt(s, then_body)
+        else_body: List[ir.Constraint] = []
+        for s in (stmt.orelse or []):
+            _constraint_items_from_stmt(s, else_body)
+        out.append(ir.ConstraintIfElse(
+            cond=stmt.test, then_body=then_body, else_body=else_body))
+
+    elif isinstance(stmt, ir.StmtForeach):
+        inner: List[ir.Constraint] = []
+        for s in (stmt.body or []):
+            _constraint_items_from_stmt(s, inner)
+        out.append(ir.ConstraintForeach(
+            array=stmt.iter, index_var=_expr_name(stmt.target), body=inner))
+
+    elif isinstance(stmt, ir.StmtUnique):
+        out.append(ir.ConstraintUnique(
+            items=[ir.ExprRefUnresolved(name=v) for v in stmt.vars]))
+
+
+def _expr_name(expr: ir.Expr) -> str:
+    """Best-effort identifier name for a loop/index expression."""
+    if isinstance(expr, ir.ExprRefLocal):
+        return expr.name
+    if isinstance(expr, ir.ExprRefUnresolved):
+        return expr.name
+    if isinstance(expr, ir.ExprAttribute):
+        return expr.attr
+    return "i"
+
+
 def lower_constraint_func(
     ctx: LoweringContext,
     func: ir.Function,

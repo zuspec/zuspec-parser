@@ -1,0 +1,352 @@
+# yaml-language-server: $schema=https://dv-flow.github.io/flow.dv.schema.json
+#****************************************************************************
+#* flow.yaml -- the `pssc` DV Flow Manager task package
+#*
+#* Reference tasks emit the bundled SV/C/C++ core source as filesets; build
+#* tasks consume PSS source (std.FileSet type: pssSource) and run one pssc
+#* output style each. See docs/dvflow-tasks-design.md.
+#****************************************************************************
+package:
+  name: pssc
+  desc: >
+    PSS compiler tasks -- reference the bundled SV/C/C++ core source and build
+    each pssc output style (SystemVerilog, C, C++, DPI) from PSS source.
+
+  types:
+  - name: PsscArgs
+    desc: Shared options forwarded to pssc.compile by build tasks
+    with:
+      export_action:
+        doc: Action(s) to expose as export entry points
+        type: list
+      args:
+        doc: Extra raw pssc options (escape hatch)
+        type: list
+
+  - name: AgentSkill
+    uses: std.DataItem
+    tags:
+      - std.AgentSkillTag
+    doc: |
+      PSS compiler package skill for LLM agent discovery.
+    with:
+      name:
+        type: str
+        value: "pss-compile"
+      desc:
+        type: str
+        value: "Compile PSS source to SystemVerilog, C, C++, or DPI via pssc"
+      skill_doc:
+        type: str
+        value: |
+          # PSS Compiler Package (pssc)
+
+          Compiles PSS source into SystemVerilog, C, C++, or DPI outputs, and
+          references the SV/C/C++ core source that pssc bundles.
+
+          ## Quick Start
+
+          ```yaml
+          package:
+            name: my_dv
+            imports:
+              - name: pssc
+              - { name: hdlsim.vlt, as: sim }
+            tasks:
+              - { name: pss, uses: std.FileSet,
+                  with: { type: pssSource, include: "*.pss" } }
+              - { name: gen, uses: pssc.SvNative, needs: [pss],
+                  with: { export_action: [Entry] } }
+              - { name: build, uses: sim.SimImage, needs: [gen],
+                  with: { top: [tb] } }
+              - { name: run, uses: sim.SimRun, needs: [build] }
+          ```
+
+          ## PSS source
+
+          PSS inputs are std.FileSet datasets tagged `type: pssSource`.
+
+          ## Build tasks (one per output style)
+
+          - `pssc.SvNative`   -> SystemVerilog classes (SV solver)
+          - `pssc.SvDpi`      -> SV facade over the C runtime via DPI
+          - `pssc.SvDpiBridge`-> C scenario DPI .so + SV trampoline
+          - `pssc.CHost` / `pssc.CHostPresolved` -> host C
+          - `pssc.CEmbedded` / `pssc.CEmbeddedPresolved` -> embedded C
+          - `pssc.SvProgSeq` / `pssc.CProgSeq` / `pssc.CppProgSeq` -> programming
+            APIs from a component tree (require `root:`)
+          - `pssc.PySource`   -> live Python classes
+
+          All build tasks accept `export_action` and `args`.
+
+          ## Reference tasks (bundled core source)
+
+          - `pssc.RegPkg`  -> SV reg_pkg (+ runtime) as systemVerilogSource
+          - `pssc.CoreC`   -> C seam headers (+ optional zsp_bridge) as cSource
+          - `pssc.CoreCpp` -> C++ core header as cppSource
+
+          See docs/dvflow-tasks.md for full usage.
+
+  tasks:
+
+  # --- reference tasks: bundled core source ---------------------------------
+  - name: RegPkg
+    shell: pytask
+    run: pssc.dvflow.reference.RegPkg
+    passthrough: all
+    consumes: none
+    desc: Emit the bundled SV reg_pkg (+ runtime) as a systemVerilogSource fileset
+    doc: |
+      Emits the SystemVerilog core package(s) that pssc bundles
+      (pssc_reg_pkg.sv, and zsp_rt_pkg.sv when `runtime` is true) as a
+      systemVerilogSource fileset, with the directory added as an incdir.
+      `needs:` this alongside a pssc.SvNative output to give SimImage the
+      register/runtime support package.
+    with:
+      runtime:
+        doc: Also include the zsp_rt_pkg.sv runtime package
+        type: bool
+        value: true
+
+  - name: CoreC
+    shell: pytask
+    run: pssc.dvflow.reference.CoreC
+    passthrough: all
+    consumes: none
+    desc: Emit the bundled C seam headers (+ optional zsp_bridge) as a cSource fileset
+    doc: |
+      Emits the C memory-seam headers pssc bundles (pssc_mem.h plus the
+      flavor-specific pssc_mem_<flavor>.h) as a cSource fileset, with the
+      directory added as an incdir. Set `bridge: true` to also include the
+      zsp_bridge.{h,c} DPI-bridge runtime source.
+    with:
+      flavor:
+        doc: "Primary seam header: direct | mmio | vtable"
+        type: str
+        value: "mmio"
+      bridge:
+        doc: Also include the zsp_bridge.{h,c} runtime source
+        type: bool
+        value: false
+
+  - name: CoreCpp
+    shell: pytask
+    run: pssc.dvflow.reference.CoreCpp
+    passthrough: all
+    consumes: none
+    desc: Emit the bundled C++ core header (pssc_reg.hpp) as a cppSource fileset
+    with: {}
+
+  # --- build tasks: one per pssc output style -------------------------------
+  - name: PySource
+    shell: pytask
+    run: pssc.dvflow.build.PySource
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Build live Python (zdc) classes from PSS (target python)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      emit:
+        doc: "On-disk artifact: none | repr | pickle"
+        type: str
+        value: "none"
+
+  - name: SvNative
+    shell: pytask
+    run: pssc.dvflow.build.SvNative
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Compile PSS to pure SystemVerilog solved by the SV solver (target sv-native, style 1)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      projection:
+        doc: "Package shape: oo_api (export API + factory) | harness (standalone module)"
+        type: str
+        value: "oo_api"
+      package_name:
+        doc: Name of the generated package
+        type: str
+        value: "zsp_gen_pkg"
+      single_file:
+        doc: Emit one package file instead of one file per type
+        type: bool
+        value: true
+      runtime:
+        doc: Also emit the bundled zsp_rt_pkg.sv runtime package
+        type: bool
+        value: true
+
+  - name: SvDpi
+    shell: pytask
+    run: pssc.dvflow.build.SvDpi
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Compile PSS to an SV facade over the c-host C runtime via DPI (target sv-dpi, style 2)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      root_action:   { type: str, value: "" }
+      runtime_solve: { type: bool, value: false }
+      presolve:      { type: bool, value: false }
+
+  - name: SvDpiBridge
+    shell: pytask
+    run: pssc.dvflow.build.SvDpiBridge
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Compile PSS to a multi-action C scenario DPI shared lib + SV trampoline (target sv-dpi-bridge)
+    doc: |
+      Emits both the systemVerilogSource trampoline (pssc_bridge_pkg.sv) and the
+      systemVerilogDPI shared library (libpssc_scenario.so). A downstream
+      SimImage links the .so and compiles the trampoline package automatically.
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      runtime_solve: { type: bool, value: false }
+
+  - name: CHost
+    shell: pytask
+    run: pssc.dvflow.build.CHost
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Compile PSS to host C with the coroutine runtime, runtime solving (target c-host, style 3)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      root_action:   { type: str, value: "" }
+      runtime_solve: { type: bool, value: false }
+      presolve:      { type: bool, value: false }
+
+  - name: CHostPresolved
+    shell: pytask
+    run: pssc.dvflow.build.CHostPresolved
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Compile PSS to host C, pre-solved constraints (target c-host-presolved, style 3)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      root_action:   { type: str, value: "" }
+      runtime_solve: { type: bool, value: false }
+      presolve:      { type: bool, value: false }
+
+  - name: CEmbedded
+    shell: pytask
+    run: pssc.dvflow.build.CEmbedded
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Compile PSS to embedded C with the coroutine runtime, runtime solving (target c-embedded, style 4)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      root_action:   { type: str, value: "" }
+      runtime_solve: { type: bool, value: false }
+      presolve:      { type: bool, value: false }
+
+  - name: CEmbeddedPresolved
+    shell: pytask
+    run: pssc.dvflow.build.CEmbeddedPresolved
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Compile PSS to embedded C, pre-solved constraints (target c-embedded-presolved, style 5)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      root_action:   { type: str, value: "" }
+      runtime_solve: { type: bool, value: false }
+      presolve:      { type: bool, value: false }
+
+  - name: SvProgSeq
+    shell: pytask
+    run: pssc.dvflow.build.SvProgSeq
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Generate a SystemVerilog programming-sequence API from a component tree (target sv-progseq)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      root:
+        doc: Root component type to generate the API for (required)
+        type: str
+        value: ""
+      package_name:
+        doc: "Generated package name (default: <root>_pkg)"
+        type: str
+        value: ""
+      core_copy:
+        doc: Copy the core seam header(s) into the output dir
+        type: bool
+        value: true
+
+  - name: CProgSeq
+    shell: pytask
+    run: pssc.dvflow.build.CProgSeq
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Generate a C programming-sequence API from a component tree (target c-progseq)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      root:
+        doc: Root component type to generate the API for (required)
+        type: str
+        value: ""
+      prefix:
+        doc: "Symbol prefix (default: root name without trailing _c)"
+        type: str
+        value: ""
+      link_style:
+        doc: "Link style: vtable | mmio"
+        type: str
+        value: "vtable"
+      reg_style:
+        doc: "Register access style: bitfields | ..."
+        type: str
+        value: "bitfields"
+      header_only:
+        doc: Emit a header-only API
+        type: bool
+        value: false
+      core_copy:
+        doc: Copy the core seam header(s) into the output dir
+        type: bool
+        value: true
+
+  - name: CppProgSeq
+    shell: pytask
+    run: pssc.dvflow.build.CppProgSeq
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Generate a C++ programming-sequence API from a component tree (target cpp-progseq)
+    with:
+      export_action: { type: list }
+      args:          { type: list }
+      root:
+        doc: Root component type to generate the API for (required)
+        type: str
+        value: ""
+      namespace:
+        doc: "Generated namespace (default: root name without trailing _c)"
+        type: str
+        value: ""
+      dispatch:
+        doc: "Dispatch style: virtual | ..."
+        type: str
+        value: "virtual"
+      core_copy:
+        doc: Copy the core seam header(s) into the output dir
+        type: bool
+        value: true

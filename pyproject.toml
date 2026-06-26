@@ -17,10 +17,14 @@ dependencies = [
   "zuspec-be-sv",
   "zuspec-be-sw",
   "dv-solve",
+  "dv-flow-mgr",
 ]
 
 [project.scripts]
 pssc = "pssc.cli:main"
+
+[project.entry-points."dv_flow.mgr"]
+pssc = "pssc.dvflow.__ext__"
 
 [tool.setuptools.dynamic]
 version = {attr = "pssc.__version__.version"}
@@ -32,4 +36,5 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-pssc = ["std_libs/*.pss", "share/sv/*.sv", "share/c/*.h", "share/cpp/*.hpp"]
+pssc = ["std_libs/*.pss", "share/sv/*.sv", "share/c/*.h", "share/c/*.c",
+        "share/cpp/*.hpp", "dvflow/*.yaml"]

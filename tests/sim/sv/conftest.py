@@ -178,3 +178,80 @@ def build_and_run(tmpdir, sim, ir_ctx, comp_type, root_action_type,
     generate_sv_files(ir_ctx, sv_dir, comp_type, root_action_type,
                       has_activity=has_activity, extra_sv=extra_sv)
     return run_sim(tmpdir, sim, sv_dir, plusargs=plusargs)
+
+
+def run_pss_sim(tmpdir, sim, pss_text, tb_text, *, top_module="tb",
+                projection="oo_api", export_actions=None, timing=True,
+                plusargs=None):
+    """Graph-native PSS -> SV -> simulate, all as a single DFM task graph.
+
+    Unlike :func:`run_sim` (which is handed pre-generated .sv files), this drives
+    the full flow through tasks: a ``std.FileSet`` of PSS source feeds
+    ``pssc.SvNative`` (which emits the runtime + generated packages, in
+    dependency order), a testbench fileset is layered on top, and the result is
+    compiled + run by ``hdlsim.<sim>``.
+
+    Returns:
+        Tuple of (status, sim_log_text).
+    """
+    from dv_flow.mgr import TaskListenerLog, TaskSetRunner, PackageLoader
+    from dv_flow.mgr.task_graph_builder import TaskGraphBuilder
+
+    rundir = str(Path(tmpdir) / "rundir")
+    errors = []
+
+    def marker_listener(marker):
+        from dv_flow.mgr.task_data import SeverityE
+        if marker.severity == SeverityE.Error:
+            errors.append(str(marker.msg))
+
+    builder = TaskGraphBuilder(
+        PackageLoader(marker_listeners=[marker_listener]).load_rgy(
+            ["std", "pssc", f"hdlsim.{sim}"]),
+        rundir)
+    runner = TaskSetRunner(rundir)
+    runner.builder = builder
+
+    # PSS source -> generated SV (zsp_rt_pkg.sv before zsp_gen_pkg.sv).
+    src_dir = Path(tmpdir) / "pss"
+    src_dir.mkdir(parents=True, exist_ok=True)
+    (src_dir / "model.pss").write_text(pss_text)
+    pss_fs = builder.mkTaskNode(
+        "std.FileSet", name="pss_src", type="pssSource",
+        base=str(src_dir), include="model.pss", needs=[])
+
+    gen_kwargs = dict(name="gen", projection=projection, needs=[pss_fs])
+    if export_actions:
+        gen_kwargs["export_action"] = list(export_actions)
+    gen = builder.mkTaskNode("pssc.SvNative", **gen_kwargs)
+
+    # Testbench layered after the generated packages so declaration order holds.
+    tb_dir = Path(tmpdir) / "tb"
+    tb_dir.mkdir(parents=True, exist_ok=True)
+    (tb_dir / "tb.sv").write_text(tb_text)
+    tb_fs = builder.mkTaskNode(
+        "std.FileSet", name="tb_src", type="systemVerilogSource",
+        base=str(tb_dir), include="tb.sv", needs=[gen])
+
+    sim_img = builder.mkTaskNode(
+        f"hdlsim.{sim}.SimImage", name="sim_img", top=[top_module],
+        timing=timing, needs=[tb_fs])
+    sim_run_kwargs = dict(name="sim_run", needs=[sim_img])
+    if plusargs:
+        sim_run_kwargs["plusargs"] = plusargs
+    sim_run = builder.mkTaskNode(f"hdlsim.{sim}.SimRun", **sim_run_kwargs)
+
+    runner.add_listener(TaskListenerLog().event)
+    out = asyncio.run(runner.run(sim_run))
+
+    sim_log = ""
+    if out is not None and getattr(out, "output", None):
+        for fs in out.output:
+            if getattr(fs, "filetype", None) in ("simRunDir", "simRunData"):
+                log_path = os.path.join(fs.basedir, "sim.log")
+                if os.path.isfile(log_path):
+                    sim_log = open(log_path).read()
+                break
+    if errors and not sim_log:
+        sim_log = "\n".join(errors)
+    return runner.status, sim_log

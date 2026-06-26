@@ -59,9 +59,17 @@ pssc.compile("model.pss", target="sv", output_dir="out/")
 The C targets solve rand-field constraints with **dv-solve** — at runtime by
 default, or at compile time (baked) with `--presolve` / the `*-presolved` targets.
 
+## DV Flow integration
+
+`pssc` ships a [DV Flow Manager](https://dv-flow.github.io/) task package
+(always installed) so PSS compilation is a node in a DFM task graph — one build
+task per output style, plus tasks that reference the bundled SV/C/C++ core
+source. See [docs/dvflow-tasks.md](docs/dvflow-tasks.md).
+
 ## Documentation
 
 - [docs/cli.md](docs/cli.md) — CLI reference
+- [docs/dvflow-tasks.md](docs/dvflow-tasks.md) — DV Flow Manager task package
 - [docs/architecture.md](docs/architecture.md) — compilation pipeline & IR hand-off
 - [docs/targets.md](docs/targets.md) — per-target details
 - [design/pssc-application-design.md](design/pssc-application-design.md) — design
