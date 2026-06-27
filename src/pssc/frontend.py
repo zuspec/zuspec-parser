@@ -171,63 +171,6 @@ def _remove_covergroup_blocks(text: str) -> str:
     return ''.join(result)
 
 
-def _strip_activity_with_constraints(text: str) -> str:
-    """Remove 'with { ... }' inline constraints from PSS activity do-statements.
-
-    The current pssparser grammar does not accept ``do action with { ... }``
-    inline constraint syntax in activity bodies.  This pass strips the
-    ``with { ... }`` portion so the parser can proceed; the inline constraints
-    are silently dropped (a known limitation of the pssparser-based front-end).
-    """
-    WS = ' \t\n\r'
-    result = []
-    i = 0
-    n = len(text)
-    while i < n:
-        end = _scan_comment_or_string(text, i)
-        if end != -1:
-            result.append(text[i:end])
-            i = end
-            continue
-
-        if (text[i:i+2] == 'do'
-                and (i == 0 or not _is_word_char(text[i-1]))
-                and (i+2 < n and not _is_word_char(text[i+2]))):
-            result.append('do')
-            i += 2
-            # Copy whitespace and the traversal-target (handles qualified names: a::b::c)
-            while i < n and text[i] in WS:
-                result.append(text[i]); i += 1
-            while i < n:
-                if _is_word_char(text[i]):
-                    result.append(text[i]); i += 1
-                elif text[i:i+2] == '::':
-                    result.append('::'); i += 2
-                else:
-                    break
-            # Peek ahead for optional 'with { ... }'
-            j = i
-            while j < n and text[j] in WS:
-                j += 1
-            if (text[j:j+4] == 'with'
-                    and (j+4 >= n or not _is_word_char(text[j+4]))):
-                k = j + 4
-                while k < n and text[k] in WS:
-                    k += 1
-                if k < n and text[k] == '{':
-                    end_brace = _find_matching_brace(text, k)
-                    if end_brace != -1:
-                        # Drop everything from current i up to end of '}'
-                        i = end_brace + 1
-                        continue
-            # No 'with' or couldn't strip — leave pointer at i (after identifier)
-            continue
-
-        result.append(text[i])
-        i += 1
-    return ''.join(result)
-
-
 def _normalize_fill_blocks(text: str) -> str:
     """Rewrite PSS 'fill { do action ...; }' blocks to plain 'do action;'.
 
@@ -396,14 +339,16 @@ def _preprocess_pss(text: str) -> str:
     1. Inject 'bool initial;' / 'int instance_id;' built-in fields.
     2. Remove 'covergroup { ... } name;' blocks.
     3. Rename 'forall' -> 'foreach' and stub bodies with '{ 0 == 0; }'.
-    4. Strip unsupported 'do ... with { }' inline activity constraints.
+
+    ``do ... with { }`` inline activity constraints are left intact: the
+    pssparser grammar accepts them and ``ast2ir`` consumes them via
+    ``ActivityActionTypeTraversal.getWith_c()``.
     """
     text = _preprocess_pss_inject_builtins(text)
     text = _strip_exec_file_blocks(text)
     text = _remove_covergroup_blocks(text)
     text = _normalize_fill_blocks(text)
     text = _transform_forall_foreach(text, stub_body=True)
-    text = _strip_activity_with_constraints(text)
     return text
 
 
@@ -412,14 +357,12 @@ def _preprocess_pss_pass1(text: str) -> str:
 
     Removes covergroup blocks (to avoid cross parse errors) and renames
     'forall' -> 'foreach' without body stubbing, so the pre-link AST
-    preserves the real constraint body nodes.  Also strips unsupported
-    'do ... with { }' inline activity constraints.
+    preserves the real constraint body nodes.
     """
     text = _strip_exec_file_blocks(text)
     text = _remove_covergroup_blocks(text)
     text = _normalize_fill_blocks(text)
     text = _transform_forall_foreach(text, stub_body=False)
-    text = _strip_activity_with_constraints(text)
     return text
 
 

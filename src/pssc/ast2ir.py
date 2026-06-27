@@ -469,16 +469,74 @@ class AstToIrTranslator:
             # Compute register offsets
             self._compute_register_offsets(ctx, comp)
 
-        # Infer pools and pool-binds from flow-object fields in nested actions.
-        # The PSS parser absorbs pool/bind declarations during link, so we
-        # reconstruct them by scanning actions for input/output FieldRef fields
-        # that reference flow-object types (buffer/stream/state/resource).
+        # Consume explicit `pool [N] T name;` declarations (FieldPool AST nodes)
+        # so real pool names and capacities reach the IR.
+        self._translate_declared_pools(ctx, component, comp)
+
+        # Infer any *remaining* pools/binds from flow-object fields in nested
+        # actions (types without an explicit pool declaration). Declared pools
+        # above take precedence; inference fills the gaps and wires wildcard
+        # binds to whichever pool (declared or inferred) serves each type.
         self._infer_pools_and_binds(ctx, comp, qualified_name)
 
         # Pop scope
         ctx.pop_scope()
 
         return comp
+
+    def _translate_declared_pools(self, ctx: AstToIrContext, component, comp: ir.DataTypeComponent):
+        """Create IR ``Pool``s from explicit ``pool [N] T name;`` declarations.
+
+        These are ``FieldPool`` AST nodes (surfaced by the parser as of the
+        pssparser-detox B1 change).  Each yields a real pool carrying the
+        source-declared name and capacity, so pool sizes reach the IR instead of
+        being inferred with a fixed default.
+        """
+        for child in component.children():
+            if not isinstance(child, pss_ast.FieldPool):
+                continue
+            name_node = child.getName()
+            pool_name = (name_node.getId()
+                         if isinstance(name_node, pss_ast.ExprId) else str(name_node))
+            elem_type = self._translate_data_type(ctx, child.getType())
+            elem_type_name = elem_type.name if isinstance(elem_type, ir.DataTypeStruct) \
+                else self._pool_elem_type_name(child.getType())
+            pool = ir.Pool(
+                name=pool_name,
+                element_type_name=elem_type_name,
+                element_type=elem_type if isinstance(elem_type, ir.DataTypeStruct) else None,
+                capacity=self._eval_pool_size(child.getSize()),
+            )
+            comp.pools.append(pool)
+
+    def _pool_elem_type_name(self, type_node) -> Optional[str]:
+        """Best-effort element-type name from a pool's DataTypeUserDefined node."""
+        if not isinstance(type_node, pss_ast.DataTypeUserDefined):
+            return None
+        type_id = type_node.getType_id()
+        if isinstance(type_id, pss_ast.TypeIdentifier):
+            if type_id.numElems() == 0:
+                return None
+            parts = []
+            for i in range(type_id.numElems()):
+                e_id = type_id.getElem(i).getId()
+                parts.append(e_id.getId() if isinstance(e_id, pss_ast.ExprId) else str(e_id))
+            return "::".join(parts)
+        if isinstance(type_id, pss_ast.ExprId):
+            return type_id.getId()
+        return str(type_id) if type_id is not None else None
+
+    def _eval_pool_size(self, size_node) -> Optional[int]:
+        """Evaluate a pool size expression to an int, or None if unsized/unknown."""
+        if size_node is None:
+            return None
+        get_val = getattr(size_node, "getValue", None)
+        if get_val is not None:
+            try:
+                return int(get_val())
+            except (TypeError, ValueError):
+                return None
+        return None
 
     def _infer_pools_and_binds(self, ctx: AstToIrContext, comp: ir.DataTypeComponent, comp_name: str):
         """Infer pool and pool-bind declarations from flow-object field refs in nested actions.
@@ -508,11 +566,16 @@ class AstToIrTranslator:
                             seen_flow_types[fdt.name] = fdt
 
         for type_name, fdt in seen_flow_types.items():
+            declared = next((p for p in comp.pools if p.element_type_name == type_name), None)
+            if declared is not None:
+                # An explicit `pool T name;` already covers this type; just wire
+                # a wildcard bind to it (preserving the declared name/capacity).
+                self._add_wildcard_bind(comp, declared.name)
+                continue
             pool_name = f"{type_name}_pool"
             pool = ir.Pool(name=pool_name, element_type_name=type_name, element_type=fdt)
             comp.pools.append(pool)
-            bind = ir.PoolBind(pool_name=pool_name, is_wildcard=True)
-            comp.pool_binds.append(bind)
+            self._add_wildcard_bind(comp, pool_name)
 
         # Also infer resource pools from lock/share fields in *all* actions
         # reachable from this component (including sub-components' actions).
@@ -556,14 +619,23 @@ class AstToIrTranslator:
                     _collect_resource_types_for(elem_name)
 
         for type_name, fdt in seen_resource_types.items():
-            if any(p.element_type_name == type_name for p in comp.pools):
-                continue  # already have a pool for this type
+            declared = next((p for p in comp.pools if p.element_type_name == type_name), None)
+            if declared is not None:
+                # Explicit `pool [N] R name;` already covers this resource type —
+                # use the real name/capacity and just wire a wildcard bind.
+                self._add_wildcard_bind(comp, declared.name)
+                continue
             pool_name = f"{type_name}_pool"
             pool = ir.Pool(name=pool_name, element_type_name=type_name,
                            element_type=fdt, capacity=16)
             comp.pools.append(pool)
-            bind = ir.PoolBind(pool_name=pool_name, is_wildcard=True)
-            comp.pool_binds.append(bind)
+            self._add_wildcard_bind(comp, pool_name)
+
+    def _add_wildcard_bind(self, comp: ir.DataTypeComponent, pool_name: str):
+        """Add a wildcard PoolBind for ``pool_name`` unless one already exists."""
+        if any(b.pool_name == pool_name and b.is_wildcard for b in comp.pool_binds):
+            return
+        comp.pool_binds.append(ir.PoolBind(pool_name=pool_name, is_wildcard=True))
 
     def _translate_action(self, ctx: AstToIrContext, action: pss_ast.Action,
                           parent_comp_name: Optional[str] = None,
