@@ -14,6 +14,7 @@ dependencies = [
   "pssparser",
   "zuspec-ir-core",
   "zuspec-dataclasses",
+  "zuspec-be-py",
   "zuspec-be-sv",
   "zuspec-be-sw",
   "dv-solve",

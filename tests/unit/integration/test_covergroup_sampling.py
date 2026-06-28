@@ -88,7 +88,7 @@ def test_covergroup_ir_has_pss_covergroups():
     parser = Parser()
     parser.parses([('t.pss', pss)])
     root = parser.link()
-    ctx = AstToIrTranslator().translate(root, annotations=parser.annotations)
+    ctx = AstToIrTranslator().translate(root)
     ns = IrToRuntimeBuilder(ctx).build()
     action_cls = ns['pss_top::draw_shape']
     cgs = getattr(action_cls, '__pss_covergroups__', [])
@@ -121,7 +121,7 @@ def test_covergroup_sampled_after_randomize():
     parser = Parser()
     parser.parses([('t.pss', pss)])
     root = parser.link()
-    ctx_ir = AstToIrTranslator().translate(root, annotations=parser.annotations)
+    ctx_ir = AstToIrTranslator().translate(root)
     ns = IrToRuntimeBuilder(ctx_ir).build()
 
     from zuspec.dataclasses import randomize
@@ -163,7 +163,7 @@ def test_covergroup_all_color_shape_combos_eventually_covered():
     parser = Parser()
     parser.parses([('t.pss', pss)])
     root = parser.link()
-    ctx_ir = AstToIrTranslator().translate(root, annotations=parser.annotations)
+    ctx_ir = AstToIrTranslator().translate(root)
     ns = IrToRuntimeBuilder(ctx_ir).build()
 
     from zuspec.dataclasses import randomize

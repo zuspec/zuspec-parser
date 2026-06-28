@@ -61,9 +61,20 @@ def test_share_field_kind():
     assert share_fields[0].name == "shared_ch"
 
 
-def test_pool_inferred_for_resource():
-    """Pool should be inferred for the resource type used in lock/share fields."""
+def test_pool_declared_for_resource():
+    """The declared `pool ch_r ch_pool;` reaches the IR with its real name."""
     ctx = _build_ctx(PSS_SRC)
     comp_ir = ctx.type_map.get("pss_top")
     assert comp_ir is not None
-    assert len(comp_ir.pools) > 0, "No pools inferred for resource type"
+    pool_names = [p.name for p in comp_ir.pools]
+    assert "ch_pool" in pool_names, f"declared pool missing; got {pool_names}"
+
+
+def test_bind_reaches_ir_for_resource():
+    """The declared `bind ch_pool *;` reaches the IR as a wildcard PoolBind."""
+    ctx = _build_ctx(PSS_SRC)
+    comp_ir = ctx.type_map.get("pss_top")
+    assert comp_ir is not None
+    binds = [b for b in comp_ir.pool_binds if b.pool_name == "ch_pool"]
+    assert len(binds) == 1, f"expected 1 bind on ch_pool, got {comp_ir.pool_binds}"
+    assert binds[0].is_wildcard is True

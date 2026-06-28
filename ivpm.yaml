@@ -11,6 +11,8 @@ package:
       url: https://github.com/psstools/pssparser.git
     - name: zuspec-ir-core
       url: https://github.com/zuspec/zuspec-ir-core.git
+    - name: zuspec-be-py
+      url: https://github.com/zuspec/zuspec-be-py.git
     - name: zuspec-be-sw
       url: https://github.com/zuspec/zuspec-be-sw.git
     - name: zuspec-be-sv

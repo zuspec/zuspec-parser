@@ -60,25 +60,42 @@ def test_parse_foreach_struct_member_direct():
 # End-to-end runtime struct-member forall — requires struct array support
 # ---------------------------------------------------------------------------
 
-@pytest.mark.xfail(
-    reason="Struct array fields are not yet decomposed into sub-variables by the "
-           "runtime randomizer (pkts[i].x variables not registered). "
-           "The solver logic (WI-6) is correct; blocked by struct-array IR-to-runtime gap.",
-    strict=False,
-)
 def test_forall_struct_member_upper_bound_e2e():
-    """constraint forall (p : pkts) { p.x < 8; } end-to-end (currently xfail)."""
+    """constraint forall (p : Pkt in pkts) { p.x < 8; } end-to-end.
+
+    Struct-array fields are now decomposed into ``pkts[i].x`` solver variables
+    and written back in place, so struct-member forall is enforced at runtime.
+    """
     ns = load_pss("""
         struct Pkt {
             rand bit[4] x;
         }
         struct Burst {
             rand Pkt pkts[4];
-            constraint forall (p : pkts) { p.x < 8; }
+            constraint forall (p : Pkt in pkts) { p.x < 8; }
         }
     """)
     for seed in range(10):
         b = ns.Burst()
         randomize(b, seed=seed)
         for i in range(4):
-            assert b.pkts[i].x < 8
+            assert b.pkts[i].x < 8, f"seed={seed}: pkts[{i}].x={b.pkts[i].x} should be < 8"
+
+
+def test_forall_struct_member_lower_bound_e2e():
+    """forall (p : Pkt in pkts) { p.x > 8; } — non-trivial lower bound forces
+    each element's struct member away from zero (real enforcement, not vacuous)."""
+    ns = load_pss("""
+        struct Pkt {
+            rand bit[4] x;
+        }
+        struct Burst {
+            rand Pkt pkts[4];
+            constraint forall (p : Pkt in pkts) { p.x > 8; }
+        }
+    """)
+    for seed in range(10):
+        b = ns.Burst()
+        randomize(b, seed=seed)
+        for i in range(4):
+            assert b.pkts[i].x > 8, f"seed={seed}: pkts[{i}].x={b.pkts[i].x} should be > 8"

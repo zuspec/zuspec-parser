@@ -12,7 +12,7 @@ def _translate(pss_text):
     parser = Parser()
     parser.parses([("inline.pss", pss_text)])
     root = parser.link()
-    return AstToIrTranslator().translate(root, annotations=parser.annotations)
+    return AstToIrTranslator().translate(root)
 
 
 def test_import_target_and_solve_captured():

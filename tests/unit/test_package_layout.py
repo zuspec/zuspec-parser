@@ -7,7 +7,7 @@ import pytest
 import pssc
 
 FROZEN_API = [
-    "Parser", "PssAnnotation", "ParseException", "PssTranslationError",
+    "Parser", "ParseException", "PssTranslationError",
     "load_pss", "load_pss_files", "generate_sv", "generate_sv_files",
     "AstToIrTranslator", "AstToIrContext", "IrToRuntimeBuilder", "ClassRegistry",
     "get_deps", "get_libs", "get_libdirs", "get_incdirs",

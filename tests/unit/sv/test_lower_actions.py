@@ -228,7 +228,7 @@ class TestSuperTypeResolution:
             }
         ''')])
         ast = p.link()
-        ctx = AstToIrTranslator().translate(ast, annotations=p.annotations)
+        ctx = AstToIrTranslator().translate(ast)
         nodes = pss_to_sv(ctx)
         sv = SVEmitter().emit_all(nodes)
         assert "class pss_top__derived_act extends pss_top__base_act;" in sv, \
@@ -251,7 +251,7 @@ class TestSuperTypeResolution:
             }
         ''')])
         ast = p.link()
-        ctx = AstToIrTranslator().translate(ast, annotations=p.annotations)
+        ctx = AstToIrTranslator().translate(ast)
         nodes = pss_to_sv(ctx)
         sv = SVEmitter().emit_all(nodes)
         assert "class sub_c__impl_op extends sub_c__base_op;" in sv
@@ -271,7 +271,7 @@ class TestConstraintFieldValidation:
         p = Parser()
         p.parse([pss])
         ast = p.link()
-        ctx = AstToIrTranslator().translate(ast, annotations=p.annotations)
+        ctx = AstToIrTranslator().translate(ast)
         nodes = pss_to_sv(ctx)
         sv = SVEmitter().emit_all(nodes)
         # 'alignment' should only appear as a field declaration, never inside a constraint block

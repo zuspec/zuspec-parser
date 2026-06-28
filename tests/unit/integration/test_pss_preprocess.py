@@ -1,65 +1,81 @@
-"""Tests for the PSS source pre-processor that injects built-in fields."""
+"""Tests for the native built-in state/resource fields.
+
+The LRM built-in fields ``initial`` (state) and ``instance_id`` (resource) are
+injected natively by pssparser (``AstBuilderInt::addStructBuiltinField``); there
+is no source pre-processing. These tests assert the fields reach the IR and that
+the constraint references link.
+"""
 from __future__ import annotations
 import os
 import tempfile
 import pytest
 
-from pssc import Parser, AstToIrTranslator, _preprocess_pss
+from pssc import Parser, AstToIrTranslator
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")
 
 
+def _translate(pss_src: str):
+    """Parse + link + translate a PSS snippet, returning the IR context."""
+    with tempfile.NamedTemporaryFile(suffix='.pss', mode='w', delete=False) as f:
+        f.write(pss_src)
+        fname = f.name
+    try:
+        p = Parser()
+        p.parse([fname])
+        root = p.link()
+        return AstToIrTranslator().translate(root)
+    finally:
+        try:
+            os.unlink(fname)
+        except OSError:
+            pass
+
+
+def _field_names(type_ir):
+    return [fld.name for fld in type_ir.fields]
+
+
 # ------------------------------------------------------------------
-# Unit tests for _preprocess_pss
+# Native built-in injection (no source rewriting)
 # ------------------------------------------------------------------
 
-def test_injects_initial_into_state():
-    src = "state s { rand bit[8] x; }"
-    out = _preprocess_pss(src)
-    assert "bool initial;" in out
-    assert out.index("bool initial;") < out.index("rand bit[8] x;")
+def test_state_gets_initial_field():
+    ctx = _translate("component pss_top { state s { rand bit[8] x; } }")
+    assert "initial" in _field_names(ctx.type_map["s"])
 
 
-def test_injects_instance_id_into_resource():
-    src = "resource r { rand bit[4] mode; }"
-    out = _preprocess_pss(src)
-    assert "int instance_id;" in out
+def test_resource_gets_instance_id_field():
+    ctx = _translate("component pss_top { resource r { rand bit[4] mode; } }")
+    assert "instance_id" in _field_names(ctx.type_map["r"])
 
 
 def test_no_double_injection_initial():
-    src = "state s { bool initial; rand int x; }"
-    out = _preprocess_pss(src)
-    assert out.count("bool initial;") == 1
+    ctx = _translate(
+        "component pss_top { state s { rand bool initial; rand int x; } }")
+    assert _field_names(ctx.type_map["s"]).count("initial") == 1
 
 
 def test_no_double_injection_instance_id():
-    src = "resource r { int instance_id; rand bit[4] cfg; }"
-    out = _preprocess_pss(src)
-    assert out.count("int instance_id;") == 1
+    ctx = _translate(
+        "component pss_top { resource r { int instance_id; rand bit[4] cfg; } }")
+    assert _field_names(ctx.type_map["r"]).count("instance_id") == 1
 
 
 def test_no_injection_into_struct():
-    src = "struct s { rand int y; }"
-    out = _preprocess_pss(src)
-    assert "bool initial;" not in out
-    assert "int instance_id;" not in out
+    ctx = _translate("component pss_top { struct s { rand int y; } }")
+    names = _field_names(ctx.type_map["s"])
+    assert "initial" not in names
+    assert "instance_id" not in names
 
 
-def test_no_injection_inside_line_comment():
-    src = "// state in_comment { }\nstruct s { int x; }"
-    out = _preprocess_pss(src)
-    assert "bool initial;" not in out
-
-
-def test_state_with_inheritance():
-    src = "state child_s : base_s { rand int x; }"
-    out = _preprocess_pss(src)
-    assert "bool initial;" in out
-
+# ------------------------------------------------------------------
+# Full parse + link + IR for constraint references
+# ------------------------------------------------------------------
 
 def test_state_constraint_initial_parseable():
-    """Full parse+link of PSS with `constraint initial -> val == 0;`."""
-    pss_src = """\
+    """`constraint initial -> val == 0;` links and reaches the IR."""
+    ctx = _translate("""\
 state power_s {
     rand bit[8] val;
     constraint initial -> val == 0;
@@ -69,29 +85,16 @@ component pss_top {
     bind p *;
     action step { input power_s a; output power_s b; }
 }
-"""
-    with tempfile.NamedTemporaryFile(suffix='.pss', mode='w', delete=False) as f:
-        f.write(pss_src)
-        fname = f.name
-    try:
-        p = Parser()
-        p.parse([fname])  # pre-processor runs inside parse()
-        root = p.link()   # should not raise "unknown identifier 'initial'"
-        ctx = AstToIrTranslator().translate(root)
-        st_ir = ctx.type_map.get("power_s")
-        assert st_ir is not None
-        assert "initial" in [fld.name for fld in st_ir.fields]
-        assert st_ir.has_initial_constraint
-    finally:
-        try:
-            os.unlink(fname)
-        except OSError:
-            pass
+""")
+    st_ir = ctx.type_map.get("power_s")
+    assert st_ir is not None
+    assert "initial" in _field_names(st_ir)
+    assert st_ir.has_initial_constraint
 
 
 def test_resource_constraint_instance_id_parseable():
-    """Full parse+link of PSS with `constraint instance_id < 2;`."""
-    pss_src = """\
+    """`constraint instance_id < 2;` links and reaches the IR."""
+    ctx = _translate("""\
 resource ch_r {
     constraint instance_id < 2;
 }
@@ -100,20 +103,7 @@ component pss_top {
     bind ch *;
     action xfer { lock ch_r c; }
 }
-"""
-    with tempfile.NamedTemporaryFile(suffix='.pss', mode='w', delete=False) as f:
-        f.write(pss_src)
-        fname = f.name
-    try:
-        p = Parser()
-        p.parse([fname])
-        root = p.link()
-        ctx = AstToIrTranslator().translate(root)
-        ch_ir = ctx.type_map.get("ch_r")
-        assert ch_ir is not None
-        assert "instance_id" in [fld.name for fld in ch_ir.fields]
-    finally:
-        try:
-            os.unlink(fname)
-        except OSError:
-            pass
+""")
+    ch_ir = ctx.type_map.get("ch_r")
+    assert ch_ir is not None
+    assert "instance_id" in _field_names(ch_ir)

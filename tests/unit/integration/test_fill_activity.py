@@ -1,20 +1,24 @@
-"""Tests for fill activity reconstruction and coverage-driven termination."""
+"""Tests for the (dropped) `fill` activity construct and the coverage model.
+
+`fill { ... }` (with its companion `FILL` placeholder) is a non-LRM,
+Perspec-specific extension. It is no longer supported: the parser rejects it
+with an explicit diagnostic rather than silently rewriting it (detox C1). The
+`PssCoverageModel` tests below are unrelated to the `fill` syntax and remain.
+"""
 import pytest
-import asyncio
-from pssc import load_pss, Parser
-from pssc.ast2ir import AstToIrTranslator
-from pssc.runtime import IrToRuntimeBuilder
-from zuspec.dataclasses import PssCoverageModel, ScenarioRunner
+
+from pssc import Parser, ParseException
+from zuspec.dataclasses import PssCoverageModel
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")
 
 
 # ---------------------------------------------------------------------------
-# Unit: fill annotation extraction
+# `fill` is rejected with a diagnostic (not silently rewritten)
 # ---------------------------------------------------------------------------
 
-def test_fill_annotation_extracted():
-    """Parser extracts a fill annotation with correct action_name."""
+def test_fill_statement_rejected_with_diagnostic():
+    """A `fill { ... }` activity statement raises a clear, sourced diagnostic."""
     pss = """
     component pss_top {
         action roll_dice { rand bit[3] x; }
@@ -28,63 +32,29 @@ def test_fill_annotation_extracted():
     }
     """
     parser = Parser()
-    parser.parses([('t.pss', pss)])
-    fill_anns = [a for a in parser.annotations if a.kind == 'fill']
-    assert len(fill_anns) == 1, f"Expected 1 fill annotation, got {fill_anns}"
-    ann = fill_anns[0]
-    assert ann.type_chain == ['pss_top', 'test_scenario']
-    assert ann.data['action_name'] == 'roll_dice'
-    assert ann.data['max_iters'] == 1000
+    with pytest.raises(ParseException) as exc:
+        parser.parses([('t.pss', pss)])
+    msg = str(exc.value)
+    assert "fill" in msg and "not supported" in msg
+    assert "t.pss:" in msg  # carries file:line
 
 
-def test_fill_ir_injection():
-    """ActivityFill is injected into the action's activity IR."""
-    from zuspec.ir.core.activity import ActivityFill, ActivityAnonTraversal, ActivitySequenceBlock
+def test_fill_as_identifier_still_parses():
+    """`fill` is only reserved in statement position; it stays a valid name."""
     pss = """
     component pss_top {
-        action roll_dice { rand bit[3] x; }
-        action test_scenario {
-            activity {
-                fill {
-                    do roll_dice with { x == FILL; }
-                }
-            }
-        }
+        action fill { rand bit[3] x; }
+        action use { activity { do fill; } }
     }
     """
     parser = Parser()
+    # Must not raise: `action fill` / `do fill;` are ordinary identifier uses.
     parser.parses([('t.pss', pss)])
-    root = parser.link()
-    ctx = AstToIrTranslator().translate(root, annotations=parser.annotations)
-    ns = IrToRuntimeBuilder(ctx).build()
-
-    scenario_cls = ns['pss_top::test_scenario']
-    activity = getattr(scenario_cls, '__activity__', None)
-    assert activity is not None, "No __activity__ on scenario class"
-
-    # Walk the activity to find ActivityFill
-    def find_fill(node):
-        if isinstance(node, ActivityFill):
-            return node
-        stmts = getattr(node, 'stmts', None) or getattr(node, 'body', None) or []
-        for s in stmts:
-            r = find_fill(s)
-            if r is not None:
-                return r
-        return None
-
-    fill_node = find_fill(activity)
-    assert fill_node is not None, "ActivityFill not found in activity IR"
-    assert fill_node.max_iters == 1000
-    # The body should contain an ActivityAnonTraversal for roll_dice
-    assert len(fill_node.body) == 1
-    inner = fill_node.body[0]
-    assert isinstance(inner, ActivityAnonTraversal)
-    assert 'roll_dice' in (inner.action_type or '')
+    parser.link()
 
 
 # ---------------------------------------------------------------------------
-# Unit: PssCoverageModel.all_covered()
+# Unit: PssCoverageModel.all_covered()  (independent of `fill` syntax)
 # ---------------------------------------------------------------------------
 
 def test_all_covered_false_when_empty():
@@ -128,49 +98,3 @@ def test_all_covered_specific_cross():
     model.sample_cross('cg', 'cx', (1, 0))
     cov = model.all_covered_for_cross('cg', 'cx', ['a', 'b'])
     assert cov is True
-
-
-# ---------------------------------------------------------------------------
-# Integration: fill loop terminates via coverage_model
-# ---------------------------------------------------------------------------
-
-@pytest.mark.asyncio
-async def test_fill_loop_terminates_on_coverage():
-    """Fill loop stops when all_covered() returns True."""
-    ns = load_pss("""
-        component pss_top {
-            action draw_shape {
-                rand bit[2] color;
-                rand bit[2] shape;
-                covergroup {
-                    coverpoint color;
-                    coverpoint shape;
-                    cx: cross color, shape;
-                } cg;
-            }
-            action fill_scenario {
-                activity {
-                    fill {
-                        do draw_shape with { color == FILL; shape == FILL; }
-                    }
-                }
-            }
-        }
-    """)
-    top = ns.pss_top()
-    model = PssCoverageModel()
-    runner = ScenarioRunner(top, seed=42, coverage_model=model)
-
-    # Run fill_scenario — should run draw_shape up to max_iters times,
-    # stopping early once all 16 color×shape combinations are hit
-    await runner.run(ns['pss_top::fill_scenario'])
-
-    # Verify we actually sampled something
-    color_samples = model.coverpoint_samples('cg', 'color')
-    shape_samples = model.coverpoint_samples('cg', 'shape')
-    assert len(color_samples) > 0
-    assert len(shape_samples) > 0
-
-    # After a fill run, we should have more coverage than a single traversal
-    cx_hits = model.cross_hits('cg', 'cx')
-    assert len(cx_hits) > 0

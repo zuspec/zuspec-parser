@@ -21,6 +21,32 @@ from . import targets as _targets
 from .ir import dump_ir
 
 
+class _DedupArgGroup:
+    """Proxy over a parser whose ``add_argument`` skips already-registered
+    options.
+
+    All targets contribute their options to the single ``compile`` parser. Target
+    *variants* commonly share inherited options (e.g. the SV family: ``sv-native``
+    and ``sv-pure`` both declare ``--no-rt-pkg`` because ``sv-pure`` extends
+    ``sv-native`` and calls ``super().add_args()``). Declaring a shared option more
+    than once would raise ``argparse.ArgumentError``; this proxy makes the option
+    register once (first wins) so the families coexist.
+    """
+
+    def __init__(self, parser: argparse.ArgumentParser):
+        self._parser = parser
+
+    def add_argument(self, *args, **kwargs):
+        existing = self._parser._option_string_actions
+        if any(isinstance(a, str) and a.startswith("-") and a in existing
+               for a in args):
+            return None
+        return self._parser.add_argument(*args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self._parser, name)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="pssc", description="The PSS compiler")
     p.add_argument("--version", action="version", version=f"pssc {version}")
@@ -52,10 +78,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="action to expose as an export entry point (repeatable; "
         "default: the auto-detected single root action)",
     )
-    # per-target options (names are unique across targets)
+    # per-target options. Shared options inherited across target variants (e.g.
+    # the SV family) are registered once via the dedup proxy.
     _targets.discover()
+    _c_dedup = _DedupArgGroup(c)
     for name in _targets.list_targets():
-        _targets.get(name).add_args(c)
+        _targets.get(name).add_args(_c_dedup)
     c.set_defaults(func=_cmd_compile)
 
     # --- parse -------------------------------------------------------------

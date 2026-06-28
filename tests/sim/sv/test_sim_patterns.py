@@ -52,7 +52,7 @@ def _find_root_action(pss_file: pathlib.Path):
     p = Parser()
     p.parse([str(pss_file)])
     ast = p.link()
-    ir_ctx = AstToIrTranslator().translate(ast, annotations=p.annotations)
+    ir_ctx = AstToIrTranslator().translate(ast)
     comp_type = "pss_top"
     # Collect actions on pss_top
     top_actions = []

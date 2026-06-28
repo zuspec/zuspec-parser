@@ -21,6 +21,17 @@ def test_version(capsys):
     assert "pssc" in capsys.readouterr().out
 
 
+def test_shared_sv_option_registered_once():
+    # Target variants that inherit options (e.g. sv-pure extends sv-native, both
+    # declaring --no-rt-pkg) must not collide in the single compile parser.
+    from pssc.cli import build_parser
+
+    parser = build_parser()  # must not raise argparse.ArgumentError
+    compile_parser = parser._subparsers._group_actions[0].choices["compile"]
+    no_rt = [a for a in compile_parser._actions if "--no-rt-pkg" in a.option_strings]
+    assert len(no_rt) == 1
+
+
 def test_targets_lists_builtins(capsys):
     code = main(["targets"])
     out = capsys.readouterr().out

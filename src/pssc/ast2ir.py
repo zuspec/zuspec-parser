@@ -90,20 +90,16 @@ class AstToIrTranslator:
         self.logger = logging.getLogger(__name__)
         if debug:
             self.logger.setLevel(logging.DEBUG)
-        # Annotation injection state (populated per translate() call)
-        self._annotations: list = []
         self._type_chain_stack: list = []  # enclosing type names during traversal
 
-    def translate(self, ast_root: pss_ast.GlobalScope, annotations=None) -> AstToIrContext:
+    def translate(self, ast_root: pss_ast.GlobalScope) -> AstToIrContext:
         """Translate the entire AST to IR.
 
         Args:
             ast_root:    Root AST node (GlobalScope)
-            annotations: Optional list of PssAnnotation from the two-pass Parser.
         Returns:
             Translation context with IR and type registry
         """
-        self._annotations = list(annotations) if annotations else []
         self._type_chain_stack = []
 
         ctx = AstToIrContext()
@@ -473,11 +469,9 @@ class AstToIrTranslator:
         # so real pool names and capacities reach the IR.
         self._translate_declared_pools(ctx, component, comp)
 
-        # Infer any *remaining* pools/binds from flow-object fields in nested
-        # actions (types without an explicit pool declaration). Declared pools
-        # above take precedence; inference fills the gaps and wires wildcard
-        # binds to whichever pool (declared or inferred) serves each type.
-        self._infer_pools_and_binds(ctx, comp, qualified_name)
+        # Consume explicit `bind pool targets;` directives (ComponentBind AST
+        # nodes) so real pool binds reach the IR.
+        self._translate_component_binds(ctx, component, comp)
 
         # Pop scope
         ctx.pop_scope()
@@ -509,6 +503,27 @@ class AstToIrTranslator:
             )
             comp.pools.append(pool)
 
+    def _translate_component_binds(self, ctx: AstToIrContext, component, comp: ir.DataTypeComponent):
+        """Create IR ``PoolBind``s from explicit ``bind pool targets;`` directives.
+
+        These are ``ComponentBind`` AST nodes (surfaced by the parser as of the
+        pssparser-detox B1b change).  Each yields a real ``PoolBind`` carrying
+        the bound pool name, the wildcard flag, and any explicit dotted target
+        paths, so real binds reach the IR instead of being inferred.
+        """
+        for child in component.children():
+            if not isinstance(child, pss_ast.ComponentBind):
+                continue
+            pool_path = child.getPool_path()
+            # The pool is named by the final element of the (usually trivial)
+            # hierarchical path, matching declared pool names.
+            pool_name = pool_path.split(".")[-1] if pool_path else pool_path
+            comp.pool_binds.append(ir.PoolBind(
+                pool_name=pool_name,
+                field_paths=list(child.getTargets()),
+                is_wildcard=child.getIs_wildcard(),
+            ))
+
     def _pool_elem_type_name(self, type_node) -> Optional[str]:
         """Best-effort element-type name from a pool's DataTypeUserDefined node."""
         if not isinstance(type_node, pss_ast.DataTypeUserDefined):
@@ -537,105 +552,6 @@ class AstToIrTranslator:
             except (TypeError, ValueError):
                 return None
         return None
-
-    def _infer_pools_and_binds(self, ctx: AstToIrContext, comp: ir.DataTypeComponent, comp_name: str):
-        """Infer pool and pool-bind declarations from flow-object field refs in nested actions.
-
-        The PSS parser absorbs pool/bind AST nodes during link.  This method
-        reconstructs them by scanning all actions registered under this
-        component for input/output fields whose data types have a non-None
-        flow_kind.  For each unique flow-object type, a Pool is created and
-        a wildcard PoolBind is added (matching the ``bind pool_name *;``
-        pattern commonly used in PSS examples).
-        """
-        seen_flow_types: dict[str, ir.DataTypeStruct] = {}
-        prefix = f"{comp_name}::"
-
-        for qname, dtype in ctx.type_map.items():
-            if not qname.startswith(prefix):
-                continue
-            if not isinstance(dtype, ir.DataTypeClass):
-                continue
-            for field in dtype.fields:
-                # Exclude Lock/Share (resources) -- those are handled by the
-                # resource-pool second pass below with an appropriate capacity.
-                if field.kind in (ir.FieldKind.Input, ir.FieldKind.Output):
-                    fdt = field.datatype
-                    if isinstance(fdt, ir.DataTypeStruct) and fdt.flow_kind is not None:
-                        if fdt.name and fdt.name not in seen_flow_types:
-                            seen_flow_types[fdt.name] = fdt
-
-        for type_name, fdt in seen_flow_types.items():
-            declared = next((p for p in comp.pools if p.element_type_name == type_name), None)
-            if declared is not None:
-                # An explicit `pool T name;` already covers this type; just wire
-                # a wildcard bind to it (preserving the declared name/capacity).
-                self._add_wildcard_bind(comp, declared.name)
-                continue
-            pool_name = f"{type_name}_pool"
-            pool = ir.Pool(name=pool_name, element_type_name=type_name, element_type=fdt)
-            comp.pools.append(pool)
-            self._add_wildcard_bind(comp, pool_name)
-
-        # Also infer resource pools from lock/share fields in *all* actions
-        # reachable from this component (including sub-components' actions).
-        # PSS `pool [N] R name; bind name *;` is absorbed by the parser, so we
-        # reconstruct it here.  Pool size defaults to 16 (sufficient for most
-        # SoC pad rings and resource banks; override by subclassing if needed).
-        seen_resource_types: dict[str, ir.DataTypeStruct] = {}
-
-        def _collect_resource_types_for(comp_name_inner):
-            """Recursively collect resource types from all actions under comp_name."""
-            inner_prefix = f"{comp_name_inner}::"
-            for qname2, dtype2 in ctx.type_map.items():
-                if not qname2.startswith(inner_prefix):
-                    continue
-                if isinstance(dtype2, ir.DataTypeComponent):
-                    # Recurse into sub-components
-                    _collect_resource_types_for(dtype2.name)
-                    continue
-                if not isinstance(dtype2, ir.DataTypeClass):
-                    continue
-                for f2 in dtype2.fields:
-                    if f2.kind in (ir.FieldKind.Lock, ir.FieldKind.Share):
-                        fdt2 = f2.datatype
-                        if isinstance(fdt2, ir.DataTypeStruct) and fdt2.flow_kind == "resource":
-                            if fdt2.name and fdt2.name not in seen_resource_types:
-                                seen_resource_types[fdt2.name] = fdt2
-
-        # Collect from direct children actions and all sub-component actions
-        _collect_resource_types_for(comp_name)
-        for field in comp.fields:
-            fdt = field.datatype
-            # Handle direct component references
-            sub_name = getattr(fdt, 'name', None) or getattr(fdt, 'ref_name', None)
-            if sub_name and isinstance(ctx.type_map.get(sub_name), ir.DataTypeComponent):
-                _collect_resource_types_for(sub_name)
-            # Handle component array fields (DataTypeArray whose element is a component)
-            elem_dt = getattr(fdt, 'element_type', None)
-            if elem_dt is not None:
-                elem_name = getattr(elem_dt, 'name', None) or getattr(elem_dt, 'ref_name', None)
-                if elem_name and isinstance(ctx.type_map.get(elem_name), ir.DataTypeComponent):
-                    _collect_resource_types_for(elem_name)
-
-        for type_name, fdt in seen_resource_types.items():
-            declared = next((p for p in comp.pools if p.element_type_name == type_name), None)
-            if declared is not None:
-                # Explicit `pool [N] R name;` already covers this resource type —
-                # use the real name/capacity and just wire a wildcard bind.
-                self._add_wildcard_bind(comp, declared.name)
-                continue
-            pool_name = f"{type_name}_pool"
-            pool = ir.Pool(name=pool_name, element_type_name=type_name,
-                           element_type=fdt, capacity=16)
-            comp.pools.append(pool)
-            self._add_wildcard_bind(comp, pool_name)
-
-    def _add_wildcard_bind(self, comp: ir.DataTypeComponent, pool_name: str):
-        """Add a wildcard PoolBind for ``pool_name`` unless one already exists."""
-        if any(b.pool_name == pool_name and b.is_wildcard for b in comp.pool_binds):
-            return
-        comp.pool_binds.append(ir.PoolBind(pool_name=pool_name, is_wildcard=True))
 
     def _translate_action(self, ctx: AstToIrContext, action: pss_ast.Action,
                           parent_comp_name: Optional[str] = None,
@@ -754,22 +670,15 @@ class AstToIrTranslator:
                 constraint_func = self._translate_constraint_block(ctx, child, action_ir)
                 if constraint_func:
                     action_ir.functions.append(constraint_func)
+            elif isinstance(child, pss_ast.Covergroup):
+                cg = self._translate_covergroup(ctx, child)
+                if cg is not None:
+                    action_ir.covergroups.append(cg)
             elif isinstance(child, pss_ast.ActivityDecl):
                 action_ir.activity_ir = self._translate_activity_body(ctx, child)
-                     
+
         # Flush any `rand int in [range]` domain constraints onto this action.
         self._flush_range_constraints(action_ir)
-
-        # Inject forall constraints, covergroups, and fill rewrites from PssAnnotation side-channel
-        current_chain = list(self._type_chain_stack)
-        for ann in self._annotations:
-            if ann.type_chain == current_chain:
-                if ann.kind == 'forall':
-                    self._inject_forall_constraint(ctx, action_ir, ann)
-                elif ann.kind == 'covergroup':
-                    self._inject_covergroup(ctx, action_ir, ann)
-                elif ann.kind == 'fill' and action_ir.activity_ir is not None:
-                    self._inject_fill_in_activity(action_ir.activity_ir, ann)
 
         # Pop scope and type-chain name
         self._type_chain_stack.pop()
@@ -1279,23 +1188,21 @@ class AstToIrTranslator:
                 constraint_func = self._translate_constraint_block(ctx, child, struct_ir)
                 if constraint_func:
                     struct_ir.functions.append(constraint_func)
+            elif isinstance(child, pss_ast.Covergroup):
+                cg = self._translate_covergroup(ctx, child)
+                if cg is not None:
+                    struct_ir.covergroups.append(cg)
 
         # Flush any `rand int in [range]` domain constraints onto this struct.
         self._flush_range_constraints(struct_ir)
-
-        # Inject forall constraints from PssAnnotation side-channel
-        current_chain = list(self._type_chain_stack)
-        for ann in self._annotations:
-            if ann.type_chain == current_chain:
-                if ann.kind == 'forall':
-                    self._inject_forall_constraint(ctx, struct_ir, ann)
 
         # Pop type-chain name for struct
         self._type_chain_stack.pop()
 
         # Tag state structs that use the `initial` built-in in a constraint implication.
-        # The pre-processor injects `bool initial;` so the linker accepts `initial`,
-        # and now we record whether any constraint body references it.
+        # pssparser injects the `bool initial;` built-in field natively so the
+        # linker accepts `initial`; here we record whether any constraint body
+        # references it.
         if struct_ir.flow_kind == "state":
             struct_ir.has_initial_constraint = self._struct_references_initial(struct_ir)
             # Ensure `initial` field defaults to True (it is set False at runtime for
@@ -1313,9 +1220,10 @@ class AstToIrTranslator:
     def _struct_references_initial(self, struct_ir) -> bool:
         """Return True if any constraint in this state struct references the `initial` field.
 
-        The pre-processor injects `bool initial;` into state struct bodies, so
-        the constraint `constraint initial -> val == X;` becomes translatable.
-        We check whether any constraint function body uses `initial` as a field ref.
+        pssparser injects the `bool initial;` built-in field into state struct
+        bodies natively, so the constraint `constraint initial -> val == X;` is
+        translatable. We check whether any constraint function body uses
+        `initial` as a field ref.
         """
         from zuspec.ir.core.expr import ExprAttribute, TypeExprRefSelf, ExprRefUnresolved
         for fn in struct_ir.functions:
@@ -1350,6 +1258,34 @@ class AstToIrTranslator:
                     if self._expr_has_name(item, name):
                         return True
         return False
+
+    def _forall_collection_from_type(self, type_id) -> Optional[ir.Expr]:
+        """Build a self-relative collection expression from a forall's type node.
+
+        For the `forall (it : coll)` form (no `in`), the type position actually
+        names the collection field, e.g. `coll` -> self.coll, `a.b` -> self.a.b.
+        """
+        if type_id is None:
+            return None
+        ti = type_id.getType_id() if hasattr(type_id, 'getType_id') else None
+        if ti is None:
+            return None
+        names: List[str] = []
+        for k in range(ti.numElems()):
+            elem = ti.getElem(k)
+            if elem is None:
+                continue
+            id_obj = elem.getId()
+            if isinstance(id_obj, pss_ast.ExprId):
+                names.append(id_obj.getId())
+            elif id_obj is not None:
+                names.append(str(id_obj))
+        if not names:
+            return None
+        coll: ir.Expr = ir.TypeExprRefSelf()
+        for name in names:
+            coll = ir.ExprAttribute(value=coll, attr=name)
+        return coll
 
     def _collect_constraint_stmt(
         self,
@@ -1457,6 +1393,45 @@ class AstToIrTranslator:
                     target=ir.ExprRefLocal(name=iter_var_name),
                     iter=collection_ir,
                     body=foreach_body,
+                ))
+
+        # ConstraintStmtForall is a subclass of ConstraintScope, so it MUST be
+        # checked before the generic ConstraintScope branch. `forall` iterates the
+        # elements of a collection, so it lowers to the same IR StmtForeach as an
+        # element-style foreach. Two forms are accepted:
+        #   forall (it : T in coll)  -> collection is `coll` (ref_path)
+        #   forall (it : coll)       -> collection is `coll` itself (the field)
+        elif isinstance(stmt, pss_ast.ConstraintStmtForall):
+            iter_id_obj = stmt.getIterator_id()
+            if iter_id_obj is None:
+                return
+            iter_var_name = (iter_id_obj.getId()
+                             if hasattr(iter_id_obj, 'getId') else str(iter_id_obj))
+
+            ref_path_node = stmt.getRef_path()
+            if ref_path_node is not None:
+                collection_ir = self._translate_expression(ctx, ref_path_node)
+            else:
+                # No `in <collection>`: the type position names the collection
+                # itself (a self-relative field path).
+                collection_ir = self._forall_collection_from_type(stmt.getType_id())
+            if collection_ir is None:
+                return
+
+            ctx.local_vars.add(iter_var_name)
+            forall_body: List[ir.Stmt] = []
+            for j in range(stmt.numConstraints()):
+                sub = stmt.getConstraint(j)
+                # Skip the synthetic iterator field the parser places at index 0.
+                if sub is not None and not isinstance(sub, pss_ast.ConstraintStmtField):
+                    self._collect_constraint_stmt(ctx, sub, forall_body)
+            ctx.local_vars.discard(iter_var_name)
+
+            if forall_body:
+                body.append(ir.StmtForeach(
+                    target=ir.ExprRefLocal(name=iter_var_name),
+                    iter=collection_ir,
+                    body=forall_body,
                 ))
 
         elif isinstance(stmt, pss_ast.ConstraintScope):
@@ -2994,109 +2969,59 @@ class AstToIrTranslator:
                 current_offset += aligned_size
 
 
-    def _inject_fill_in_activity(self, activity_ir, ann) -> None:
-        """Wrap matching ActivityAnonTraversal nodes in ActivityFill.
-
-        The preprocessor normalises ``fill { do action ...; }`` to
-        ``do action;``, which the AST-to-IR translator converts to an
-        ``ActivityAnonTraversal``.  This method replaces that traversal with
-        ``ActivityFill(body=[traversal], max_iters=ann.data['max_iters'])``.
-
-        Only the *first* matching traversal in the body (recursively) is
-        replaced.  Subsequent fill blocks in the same activity would each
-        have their own annotation entry.
-        """
-        from zuspec.ir.core.activity import ActivityFill, ActivityAnonTraversal, ActivitySequenceBlock
-        action_name: str = ann.data.get('action_name', '')
-        max_iters: int = ann.data.get('max_iters', 1000)
-        if not action_name:
-            return
-        _replace_traversal_with_fill(activity_ir, action_name, max_iters)
-
-
     # ---------------------------------------------------------------------------
-    # Annotation injection helpers
+    # Covergroup translation (from the real Covergroup AST node)
     # ---------------------------------------------------------------------------
 
-    def _inject_forall_constraint(self, ctx: AstToIrContext, owner_ir, ann) -> None:
-        """Inject a forall constraint into *owner_ir* from a PssAnnotation.
+    @staticmethod
+    def _id_name(id_obj) -> str:
+        """Return the string name of an ExprId (or empty)."""
+        if id_obj is None:
+            return ''
+        getter = getattr(id_obj, 'getId', None)
+        return getter() if getter else str(id_obj)
 
-        Translates the pre-link body AST nodes captured during pass 1 into IR
-        StmtForeach nodes, wrapped in a constraint Function appended to
-        *owner_ir*.functions.  The collection path is built as an ExprAttribute
-        chain rooted at TypeExprRefSelf.
+    def _translate_covergroup(self, ctx: AstToIrContext, cg_node) -> Optional[object]:
+        """Translate a Covergroup AST node into an IR PssCoverGroup.
+
+        Uses the singular ``num*()``/``get*(i)`` accessors (the plural list
+        accessors wrap each element via ``accept`` and yield ``None``).
         """
-        import pssparser.ast as pss_ast
-        iterator: str = ann.data.get('iterator', '')
-        coll_path: list = ann.data.get('collection', [])
-        body_ast: list = ann.data.get('body_ast', [])
-
-        if not iterator or not coll_path or not body_ast:
-            return
-
-        # Build collection expression: self.pkts (or self.comp.pkts for chained paths)
-        coll_expr: ir.Expr = ir.TypeExprRefSelf()
-        for part in coll_path:
-            coll_expr = ir.ExprAttribute(value=coll_expr, attr=part)
-
-        # Translate body with the iterator variable in scope
-        ctx.local_vars.add(iterator)
-        foreach_body: list = []
-        for stmt in body_ast:
-            if stmt is None:
-                continue
-            if isinstance(stmt, pss_ast.ConstraintStmtExpr):
-                expr_ir = self._translate_expression(ctx, stmt.getExpr())
-                if expr_ir is not None:
-                    foreach_body.append(ir.StmtExpr(expr=expr_ir))
-        ctx.local_vars.discard(iterator)
-
-        if not foreach_body:
-            return
-
-        idx = sum(1 for f in owner_ir.functions if f.metadata.get('_is_constraint'))
-        owner_ir.functions.append(ir.Function(
-            name=f'_c_{idx}',
-            is_async=False,
-            metadata={'_is_constraint': True},
-            body=[ir.StmtForeach(
-                target=ir.ExprRefLocal(name=iterator),
-                iter=coll_expr,
-                body=foreach_body,
-            )],
-        ))
-
-    def _inject_covergroup(self, ctx: AstToIrContext, owner_ir, ann) -> None:
-        """Inject a PssCoverGroup into *owner_ir*.covergroups from a PssAnnotation."""
         from zuspec.ir.core.coverage import PssCoverGroup, PssCoverPoint, PssCoverCross
 
-        instance_name: str = ann.data.get('instance_name', 'cg')
-        cp_data_list: list = ann.data.get('coverpoints', [])
-        cx_data_list: list = ann.data.get('crosses', [])
+        instance_name = self._id_name(cg_node.getName()) or 'cg'
 
         coverpoints = []
-        for cp_data in cp_data_list:
-            target_name = cp_data.get('target', '')
-            if not target_name:
+        for i in range(cg_node.numCoverpoints()):
+            cp = cg_node.getCoverpoint(i)
+            if cp is None:
                 continue
-            target_expr = ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr=target_name)
-            coverpoints.append(PssCoverPoint(
-                name=cp_data.get('name', target_name),
-                target_expr=target_expr,
-            ))
+            cp_name = self._id_name(cp.getName())
+            target = cp.getTarget()
+            target_expr = (self._translate_expression(ctx, target)
+                           if target is not None else None)
+            if target_expr is None:
+                target_expr = ir.ExprAttribute(value=ir.TypeExprRefSelf(), attr=cp_name)
+            coverpoints.append(PssCoverPoint(name=cp_name, target_expr=target_expr))
 
         crosses = []
-        for cx_data in cx_data_list:
-            crosses.append(PssCoverCross(
-                name=cx_data.get('name', 'cross'),
-                coverpoint_names=list(cx_data.get('coverpoint_names', [])),
-            ))
+        for i in range(cg_node.numCrosses()):
+            cx = cg_node.getCrosse(i)
+            if cx is None:
+                continue
+            cx_name = self._id_name(cx.getName()) or 'cross'
+            names = []
+            for j in range(cx.numCoverpoint_names()):
+                e = cx.getCoverpoint_name(j)
+                if e is not None:
+                    names.append(self._id_name(e))
+            crosses.append(PssCoverCross(name=cx_name, coverpoint_names=names))
 
-        owner_ir.covergroups.append(PssCoverGroup(
+        return PssCoverGroup(
             instance_name=instance_name,
             coverpoints=coverpoints,
             crosses=crosses,
-        ))
+        )
 
 
 def _activity_body_children(body):
@@ -3106,38 +3031,3 @@ def _activity_body_children(body):
     if hasattr(body, 'children'):
         return body.children()
     return []
-
-
-def _replace_traversal_with_fill(stmt_or_block, action_name: str, max_iters: int) -> bool:
-    """Recursively find the first ActivityAnonTraversal matching *action_name* in
-    *stmt_or_block* and replace it with ActivityFill(body=[traversal]).
-
-    Returns True if a replacement was made (so callers can stop recursing).
-    """
-    from zuspec.ir.core.activity import (
-        ActivityFill, ActivityAnonTraversal, ActivitySequenceBlock,
-        ActivityParallel, ActivitySchedule, ActivityAtomic,
-        ActivityRepeat, ActivityForeach, ActivityIfElse,
-    )
-
-    if not hasattr(stmt_or_block, 'stmts'):
-        return False
-    stmts = stmt_or_block.stmts
-    for idx, stmt in enumerate(stmts):
-        if isinstance(stmt, ActivityAnonTraversal):
-            # Check if this traversal matches the fill target
-            at = stmt.action_type or ''
-            if at == action_name or at.endswith(f'::{action_name}'):
-                stmts[idx] = ActivityFill(body=[stmt], max_iters=max_iters)
-                return True
-        # Recurse into nested blocks
-        if hasattr(stmt, 'stmts'):
-            if _replace_traversal_with_fill(stmt, action_name, max_iters):
-                return True
-        if hasattr(stmt, 'body') and hasattr(stmt.body, '__iter__'):
-            class _Wrapper:
-                def __init__(self, s):
-                    self.stmts = s
-            if _replace_traversal_with_fill(_Wrapper(stmt.body), action_name, max_iters):
-                return True
-    return False

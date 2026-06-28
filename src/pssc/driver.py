@@ -72,7 +72,7 @@ def translate(sources: Union[PathLike, Sequence[PathLike]]) -> AstToIrContext:
     parser = Parser()
     parser.parse(paths)
     root = parser.link()
-    ctx = AstToIrTranslator().translate(root, annotations=parser.annotations)
+    ctx = AstToIrTranslator().translate(root)
     ctx.ir_context = to_core_context(ctx)
     return ctx
 

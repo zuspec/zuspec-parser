@@ -66,7 +66,7 @@ def test_pattern_generates_sv(pss_file: pathlib.Path):
     ast_root = parser.link()
 
     # --- IR translation ---
-    ctx = AstToIrTranslator().translate(ast_root, annotations=parser.annotations)
+    ctx = AstToIrTranslator().translate(ast_root)
     assert not ctx.errors, (
         f"IR translation errors in {pss_file.name}:\n"
         + "\n".join(str(e) for e in ctx.errors)

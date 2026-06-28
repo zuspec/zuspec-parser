@@ -13,14 +13,7 @@ from .ast2ir import AstToIrTranslator, AstToIrContext
 from .runtime import IrToRuntimeBuilder, ClassRegistry
 from .frontend import (
     Parser,
-    PssAnnotation,
     ParseException,
-    # internal helpers re-exported for compatibility with the existing tests
-    _preprocess_pss,
-    _preprocess_pss_pass1,
-    _transform_forall_foreach,
-    _remove_covergroup_blocks,
-    _parse_covergroup_body,
 )
 from .__version__ import version as __version__
 
@@ -33,13 +26,52 @@ class PssTranslationError(Exception):
         super().__init__(f"PSS IR translation failed with {len(errors)} error(s):\n  {joined}")
 
 
-def load_pss(pss_text: str) -> ClassRegistry:
+def _configure_registry(reg: ClassRegistry, ctx: AstToIrContext,
+                        export_actions: Optional[List[str]]) -> ClassRegistry:
+    """Attach the export-api projection config (imports + export actions).
+
+    Enables the ``registry.create(imports) -> ExportApi`` workflow.  Import specs
+    come from the PSS ``import target``/``import solve`` declarations; the export
+    set is the explicit list (qualified) or the auto-detected single root.  Both
+    are advisory — the registry stays a plain class container too.
+    """
+    from zuspec.be.py import ImportSpec
+
+    import_specs = {
+        f.name: ImportSpec(
+            name=f.name,
+            is_target=bool(getattr(f, 'is_target', False)),
+            is_solve=bool(getattr(f, 'is_solve', False)),
+        )
+        for f in getattr(ctx, 'import_functions', [])
+    }
+
+    if export_actions:
+        selected = [_resolve_qualified_name(ctx, a) for a in export_actions]
+    else:
+        try:
+            comp_name, short = _auto_detect_roots(ctx)
+            selected = [f"{comp_name}::{short}"]
+        except ValueError:
+            selected = []   # ambiguous: expose all actions at create() time
+
+    reg.configure_exports(export_actions=selected, import_specs=import_specs)
+    return reg
+
+
+def load_pss(pss_text: str, *, export_actions: Optional[List[str]] = None) -> ClassRegistry:
     """Parse PSS source text and return a registry of randomizable Python classes.
 
     Each PSS ``struct`` becomes a plain Python dataclass whose fields can be
-    randomized with ``zuspec.dataclasses.randomize()``.
+    randomized with ``zuspec.dataclasses.randomize()``.  The returned registry is
+    also the export-api factory — call :meth:`ClassRegistry.create` to get a
+    runnable, import-wired instance and invoke its exported actions::
 
-    Example::
+        registry = load_pss(model_text)
+        ep = registry.create(MyImports(), seed=1)   # fresh run, wired imports
+        await ep.Entry()                            # runs the action lifecycle
+
+    Example (randomize a struct directly)::
 
         from pssc import load_pss
         from zuspec.dataclasses import randomize
@@ -57,16 +89,19 @@ def load_pss(pss_text: str) -> ClassRegistry:
     parser = Parser()
     parser.parses([('inline.pss', pss_text)])
     root = parser.link()
-    ctx = AstToIrTranslator().translate(root, annotations=parser.annotations)
+    ctx = AstToIrTranslator().translate(root)
     if ctx.errors:
         raise PssTranslationError(ctx.errors)
-    return IrToRuntimeBuilder(ctx).build()
+    return _configure_registry(IrToRuntimeBuilder(ctx).build(), ctx, export_actions)
 
 
-def load_pss_files(paths: List[Union[str, os.PathLike]]) -> ClassRegistry:
+def load_pss_files(paths: List[Union[str, os.PathLike]], *,
+                   export_actions: Optional[List[str]] = None) -> ClassRegistry:
     """Parse one or more ``.pss`` files and return a registry of Python classes.
 
-    Files are parsed together so they can reference each other's types.
+    Files are parsed together so they can reference each other's types.  As with
+    :func:`load_pss`, the registry is the export-api factory
+    (``registry.create(imports)``).
 
     Example::
 
@@ -81,10 +116,10 @@ def load_pss_files(paths: List[Union[str, os.PathLike]]) -> ClassRegistry:
     parser = Parser()
     parser.parse(str_paths)
     root = parser.link()
-    ctx = AstToIrTranslator().translate(root, annotations=parser.annotations)
+    ctx = AstToIrTranslator().translate(root)
     if ctx.errors:
         raise PssTranslationError(ctx.errors)
-    return IrToRuntimeBuilder(ctx).build()
+    return _configure_registry(IrToRuntimeBuilder(ctx).build(), ctx, export_actions)
 
 
 def get_deps():
@@ -118,7 +153,7 @@ def generate_sv(pss_text: str, output_dir: str, **options) -> List[Path]:
     parser = Parser()
     parser.parses([('inline.pss', pss_text)])
     root = parser.link()
-    ir_ctx = AstToIrTranslator().translate(root, annotations=parser.annotations)
+    ir_ctx = AstToIrTranslator().translate(root)
     if ir_ctx.errors:
         raise PssTranslationError(ir_ctx.errors)
     return _generate_sv_from_ctx(ir_ctx, output_dir, **options)
@@ -130,7 +165,7 @@ def generate_sv_files(paths: List[Union[str, os.PathLike]], output_dir: str, **o
     parser = Parser()
     parser.parse(str_paths)
     root = parser.link()
-    ir_ctx = AstToIrTranslator().translate(root, annotations=parser.annotations)
+    ir_ctx = AstToIrTranslator().translate(root)
     if ir_ctx.errors:
         raise PssTranslationError(ir_ctx.errors)
     return _generate_sv_from_ctx(ir_ctx, output_dir, **options)
