@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 
 if TYPE_CHECKING:
     from .context import LoweringContext

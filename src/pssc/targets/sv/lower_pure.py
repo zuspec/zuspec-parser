@@ -16,7 +16,7 @@ import dataclasses as dc
 from pathlib import Path
 from typing import Any, List, Optional
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 from zuspec.ir.core.fields import FieldKind
 
 from zuspec.be.sv.ir.sv import (

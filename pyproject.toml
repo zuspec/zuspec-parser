@@ -13,12 +13,22 @@ requires-python = ">=3.10"
 dependencies = [
   "pssparser",
   "zuspec-ir-core",
-  "zuspec-dataclasses",
   "zuspec-be-py",
   "zuspec-be-sv",
   "zuspec-be-sw",
   "dv-solve",
   "dv-flow-mgr",
+]
+
+# zuspec-dataclasses is the Python authoring frontend (``@zdc``); pssc's
+# IR-driven runtime and all codegen targets are free of it (guarded by
+# tests/unit/test_package_layout.py::test_import_pssc_does_not_pull_in_dataclasses).
+# It is required only to run the test suite, which exercises @zdc runtime APIs.
+[project.optional-dependencies]
+test = [
+  "zuspec-dataclasses",
+  "pytest",
+  "pytest-asyncio",
 ]
 
 [project.scripts]

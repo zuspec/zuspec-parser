@@ -20,7 +20,7 @@ import base64
 import dataclasses as dc
 from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 from zuspec.ir.core.fields import FieldKind
 
 from .analyze_flow import (

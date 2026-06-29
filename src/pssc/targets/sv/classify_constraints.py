@@ -19,7 +19,7 @@ from __future__ import annotations
 import enum
 from typing import Dict, List, Optional, Set, Tuple, TYPE_CHECKING
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 from zuspec.ir.core import expr as ir_expr
 from zuspec.ir.core.fields import FieldKind
 

@@ -11,7 +11,7 @@ import warnings
 import pytest
 
 from pssc import Parser, AstToIrTranslator, IrToRuntimeBuilder
-from zuspec.dataclasses.rt.scenario_runner import ScenarioRunner
+from zuspec.be.py.rt.scenario_runner import ScenarioRunner
 
 EXAMPLE_PSS = os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..', '..',

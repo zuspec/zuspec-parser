@@ -14,7 +14,7 @@ import dataclasses as dc
 from collections import defaultdict, deque
 from typing import Dict, List, Optional, Set, Tuple, TYPE_CHECKING
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 
 from .lower_activities import _lower_activity_stmt
 

@@ -17,7 +17,7 @@ from __future__ import annotations
 import dataclasses as dc
 from typing import Dict, List, Optional, Set, Tuple, TYPE_CHECKING
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 
 if TYPE_CHECKING:
     from .context import LoweringContext

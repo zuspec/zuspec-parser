@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import List, TYPE_CHECKING
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 
 from .lower_exprs import lower_expr, _AUGOP_MAP
 

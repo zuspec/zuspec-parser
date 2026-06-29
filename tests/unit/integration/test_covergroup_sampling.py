@@ -3,8 +3,8 @@ import pytest
 from pssc import load_pss, Parser
 from pssc.ast2ir import AstToIrTranslator
 from pssc.runtime import IrToRuntimeBuilder
-from zuspec.dataclasses.rt.coverage_model import PssCoverageModel, eval_cover_expr
-from zuspec.dataclasses.rt.activity_runner import _sample_covergroups
+from zuspec.be.py.rt.coverage_model import PssCoverageModel, eval_cover_expr
+from zuspec.be.py.rt.activity_runner import _sample_covergroups
 from zuspec.dataclasses import ir as zdc_ir
 
 pytestmark = pytest.mark.filterwarnings("ignore::UserWarning")

@@ -199,7 +199,7 @@ def _auto_detect_roots(ir_ctx: AstToIrContext):
     actions exist.  Raises ``ValueError`` when multiple equally-plausible roots
     remain (the caller may catch this and fall back to no export API).
     """
-    from zuspec.dataclasses import ir as _ir
+    import zuspec.ir.core as _ir
     from .targets.sv.pss_to_sv import _is_stdlib
 
     actions = [

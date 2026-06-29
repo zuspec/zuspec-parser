@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any, List, Tuple
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 from zuspec.be.sv.ir.sv import SVForwardDecl
 
 from ...ast2ir import AstToIrContext
@@ -97,7 +97,7 @@ def pss_to_sv_with_ctx(ir_ctx: AstToIrContext) -> Tuple[List[Any], LoweringConte
     #     activity, so downstream lowering can reuse the results. ---
     try:
         from .analyze_activity import analyze_activity as _analyze_activity
-        from zuspec.dataclasses import ir as _ir
+        import zuspec.ir.core as _ir
         for _qname, _dtype in ir_ctx.type_map.items():
             if not isinstance(_dtype, _ir.DataTypeClass):
                 continue

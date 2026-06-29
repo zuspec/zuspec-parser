@@ -20,11 +20,11 @@ def test_parse_foreach_struct_member_direct():
     """_parse_foreach_loop correctly expands struct-member iteration when
     variable_map contains 'array[i].field' keys (the pattern produced by the
     solver for struct-typed arrays)."""
-    from zuspec.dataclasses.solver.frontend.ir_parser import IRExpressionParser as IRConstraintParser
+    from zuspec.be.py.solver.frontend.ir_parser import IRExpressionParser as IRConstraintParser
     from zuspec.dataclasses import ir
 
-    from zuspec.dataclasses.solver.core.variable import Variable
-    from zuspec.dataclasses.solver.core.domain import BitVectorDomain
+    from zuspec.be.py.solver.core.variable import Variable
+    from zuspec.be.py.solver.core.domain import BitVectorDomain
 
     dom = BitVectorDomain(intervals=[(0, 15)], width=4, signed=False)
     # Build a parser with struct array entries in variable_map

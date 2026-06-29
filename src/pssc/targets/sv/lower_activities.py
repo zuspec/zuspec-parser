@@ -9,7 +9,7 @@ from __future__ import annotations
 import dataclasses as dc
 from typing import Dict, List, Optional, TYPE_CHECKING
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 from zuspec.be.sv.ir.sv import SVLineDirective
 
 from .lower_exprs import lower_expr

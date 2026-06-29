@@ -31,7 +31,7 @@ _SV_KEYWORDS: frozenset = frozenset([
     "assign", "force", "release",
 ])
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 
 
 @dc.dataclass

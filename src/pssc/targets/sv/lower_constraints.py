@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 
 from .context import LoweringContext
 

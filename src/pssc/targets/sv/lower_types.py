@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Tuple
 
-from zuspec.dataclasses import ir
+import zuspec.ir.core as ir
 from zuspec.be.sv.ir.sv import (
     SVClass,
     SVClassField,
