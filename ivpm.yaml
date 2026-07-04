@@ -11,12 +11,18 @@ package:
       url: https://github.com/psstools/pssparser.git
     - name: zuspec-ir-core
       url: https://github.com/zuspec/zuspec-ir-core.git
+    - name: zuspec-be-bc
+      url: https://github.com/zuspec/zuspec-be-bc.git
     - name: zuspec-be-py
       url: https://github.com/zuspec/zuspec-be-py.git
     - name: zuspec-be-sw
       url: https://github.com/zuspec/zuspec-be-sw.git
     - name: zuspec-be-sv
       url: https://github.com/zuspec/zuspec-be-sv.git
+    - name: zuspec-rt-core
+      url: https://github.com/zuspec/zuspec-rt-core.git
+    - name: zuspec-rt-eng
+      url: https://github.com/zuspec/zuspec-rt-eng.git
     - name: zuspec-solver
       url: https://github.com/zuspec/zuspec-solver.git
     - name: dv-solve
