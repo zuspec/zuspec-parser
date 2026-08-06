@@ -69,6 +69,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     c.add_argument("-q", "--quiet", action="store_true",
                    help="do not print written file paths")
+    # How far to lower the PSS 3.1 §21.14.1 masked register writes. The
+    # field-wise forms always reduce to write_val_masked; this decides whether
+    # that survives to the backend or is spelled out as the read/modify/write
+    # the LRM defines it to be. Behaviour is identical either way.
+    c.add_argument(
+        "--reg-rmw", dest="reg_rmw", choices=("native", "expand"),
+        default="native",
+        help="lowering for masked register writes: 'native' emits "
+        "write_val_masked; 'expand' emits read_val + write_val, for a backend "
+        "with no read-modify-write primitive; default: native",
+    )
     # Shared across the SV export targets (sv-native oo_api, sv-dpi-bridge):
     # which actions to expose as entry points. Added once here so multiple
     # targets can consume it without colliding in the single compile parser.

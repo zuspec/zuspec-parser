@@ -46,6 +46,7 @@ class CppProgSeqTarget(Target):
         if not root_name:
             raise ValueError("cpp-progseq requires --root <component>")
 
+        ProgSeqTarget._apply_ctor_name(opts)
         root = ProgSeqTarget._resolve_root(ctx, root_name)
         ns = getattr(opts, "cpp_namespace", None) or CProgSeqTarget.default_prefix(
             root_name.split("::")[-1])

@@ -62,6 +62,7 @@ class CProgSeqTarget(Target):
         if not root_name:
             raise ValueError("c-progseq requires --root <component>")
 
+        ProgSeqTarget._apply_ctor_name(opts)
         root = ProgSeqTarget._resolve_root(ctx, root_name)
 
         prefix = getattr(opts, "c_prefix", None) or self.default_prefix(

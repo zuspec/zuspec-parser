@@ -4,14 +4,29 @@ AST to IR Translation Module
 Translates PSS AST nodes to Zuspec IR (Intermediate Representation).
 """
 from __future__ import annotations
+import enum
 import logging
-from typing import Dict, List, Optional, Any, Set, TYPE_CHECKING
+from typing import Dict, List, Optional, Any, Set, Tuple, TYPE_CHECKING
 import zuspec.ir.core as ir
 
 if TYPE_CHECKING:
     import pssparser.ast as pss_ast
 else:
     import pssparser.ast as pss_ast
+
+
+class _Phase(enum.Enum):
+    """The elaboration passes over the unit list.
+
+    CONST records the package- and global-scope constants and enums that other
+    declarations fold against; DECLARE registers every type declaration; EXTEND
+    applies every `extend` to the types DECLARE registered. Splitting them is
+    what makes translation independent of the order the files were presented in
+    -- see AstToIrTranslator._translate_global_scope.
+    """
+    CONST = 0
+    DECLARE = 1
+    EXTEND = 2
 
 
 class AstToIrContext:
@@ -30,6 +45,10 @@ class AstToIrContext:
         self.errors: List[str] = []
         self.scope_stack: List[ir.DataType] = []
         self.ir_context: Optional[ir.Context] = None
+        # Names declared as template parameters somewhere in the model. A
+        # DataTypeRef naming one of these is a parameter placeholder, not an
+        # unresolved type, so the completeness check below must not report it.
+        self.template_param_names: Set[str] = set()
         # Maps qualified action name ('MyC::MyA') -> parent component name ('MyC')
         self.parent_comp_names: Dict[str, str] = {}
         # Set of local variable names in the current scope (e.g. foreach loop vars)
@@ -38,6 +57,10 @@ class AstToIrContext:
         # surfaced so the SV backend can expose each on `import_api_if` and route
         # exec-body calls through the import handle.
         self.import_functions: List[ir.Function] = []
+        # Folded package-scope `static const` integers, by bare and qualified
+        # name. Consumed where a compile-time constant must become a number --
+        # array sizes, today.
+        self.const_map: Dict[str, int] = {}
 
     def push_scope(self, scope: ir.DataType):
         """Push a new scope (component, struct, etc.)"""
@@ -110,6 +133,13 @@ class AstToIrTranslator:
         # Translate global scope
         self._translate_global_scope(ctx, ast_root)
 
+        # Reduce the masked / field-wise register writes (PSS 3.1 §21.14.1) to
+        # the single `write_val_masked` primitive. Here rather than in the
+        # driver so that *every* consumer of a translated context sees the
+        # reduced form -- a backend must never be handed a field name.
+        from . import reg_rmw
+        reg_rmw.reduce(ctx)
+
         return ctx
 
     def _init_builtin_types(self, ctx: AstToIrContext):
@@ -144,26 +174,124 @@ class AstToIrTranslator:
         if self.debug:
             self.logger.debug("Translating global scope")
 
-        # RootSymbolScope contains units (GlobalScope), iterate through them
-        for i in range(global_scope.numUnits()):
-            unit = global_scope.getUnit(i)
-            self._translate_unit(ctx, unit)
+        # RootSymbolScope contains units (GlobalScope), iterate through them.
+        #
+        # Three passes, because PSS 3.1 18.2 makes file order semantically
+        # irrelevant: "most elements may be referenced before their declaration".
+        # A single pass resolved each construct against whatever had been
+        # translated so far, which cost two distinct silent losses:
+        #
+        #   - `extend component leaf_c { action a {...} }` listed before leaf_c's
+        #     own file found no target and dropped the action. On this project's
+        #     companion-directory layout (every action lives in an `extend` file)
+        #     an alphabetical file order lost all 13 actions and 38% of the IR.
+        #   - `leaf_c ch[WB_DMA_MAX_CH]` whose const lives in a later file folded
+        #     to `size: -1` -- an array that quietly sizes to nothing.
+        #
+        # Recording constants first, then declaring every type, then applying
+        # every extension makes the result a function of the file *set* rather
+        # than its order. Order within a pass is still file order, which is all
+        # 18.2 permits a tool to require (a const initializer naming another
+        # const is the legitimate case -- see file-order-probes.md Family F).
+        for phase in (_Phase.CONST, _Phase.DECLARE, _Phase.EXTEND):
+            for i in range(global_scope.numUnits()):
+                unit = global_scope.getUnit(i)
+                self._translate_unit(ctx, unit, phase=phase)
 
-    def _translate_unit(self, ctx: AstToIrContext, unit, namespace_prefix: str = ""):
+        self._check_refs_resolve(ctx)
+
+    def _check_refs_resolve(self, ctx: AstToIrContext) -> None:
+        """Every DataTypeRef in the IR must name a type the model declares.
+
+        A `DataTypeRef` is the translator's deliberate indirection -- super
+        types always use one, and a field type may forward-reference a type
+        declared later. That is fine as long as the name resolves *by the end*.
+        One that never resolves is a reference the backends will follow to
+        nothing, so it is reported here rather than discovered as a missing
+        emission downstream.
+
+        This is the structural half of the fix: the passes above remove the
+        known order dependencies, and this check is what notices if some other
+        path drops a type. Without it, "no error" only means "nobody looked".
+        """
+        # Resolve by the same rule the backends use (see targets/sv/context.py:
+        # exact key, then any key ending "::<name>"), so this never reports a
+        # reference a consumer would in fact have followed. The last-segment
+        # index also covers the instance-path form (`tx::send_pkt`) without
+        # reimplementing it -- deliberately generous, because a check that
+        # over-reports on valid models gets switched off.
+        by_last_segment: Set[str] = {
+            key.rsplit("::", 1)[-1] for key in ctx.type_map
+        }
+
+        def resolves(name: str) -> bool:
+            return (name in ctx.type_map
+                    or name in ctx.template_param_names
+                    or name.rsplit("::", 1)[-1] in by_last_segment)
+
+        seen: Set[int] = set()
+        unresolved: Dict[str, int] = {}
+
+        def walk(node, depth=0):
+            if node is None or depth > 24 or id(node) in seen:
+                return
+            seen.add(id(node))
+            if isinstance(node, ir.DataTypeRef):
+                if not resolves(node.ref_name):
+                    unresolved[node.ref_name] = unresolved.get(node.ref_name, 0) + 1
+                return
+            for attr in ("types", "functions", "fields", "datatype", "super",
+                         "body", "value", "container", "params", "return_type"):
+                child = getattr(node, attr, None)
+                if isinstance(child, (list, tuple)):
+                    for elem in child:
+                        walk(elem, depth + 1)
+                elif child is not None:
+                    walk(child, depth + 1)
+
+        for dtype in list(ctx.type_map.values()):
+            walk(dtype)
+
+        for name in sorted(unresolved):
+            ctx.add_error(
+                f"unresolved type reference '{name}' "
+                f"({unresolved[name]} use(s)): no declaration for it was found")
+
+    def _translate_unit(self, ctx: AstToIrContext, unit, namespace_prefix: str = "",
+                        phase: '_Phase' = None):
         """Translate a global scope unit
 
         Args:
             ctx: Translation context
             unit: GlobalScope unit
             namespace_prefix: Dot-separated namespace prefix for types inside packages
+            phase: which elaboration pass to run (see _translate_global_scope).
+                CONST records constants and enums, DECLARE registers type
+                declarations, EXTEND applies extensions to what DECLARE
+                registered.
         """
+        if phase is None:
+            phase = _Phase.DECLARE
+
         # Use children() method which returns an iterable
         for child in unit.children():
             if child is None:
                 continue
 
+            # A package body holds constants, declarations and extensions
+            # alike, so it is walked in every pass.
             if isinstance(child, pss_ast.PackageScope):
-                self._translate_package(ctx, child, namespace_prefix)
+                self._translate_package(ctx, child, namespace_prefix, phase=phase)
+                continue
+
+            kind = self._decl_phase(child)
+            if kind is not phase:
+                continue
+
+            if isinstance(child, pss_ast.ExtendType):
+                self._translate_extend(ctx, child)
+            elif isinstance(child, pss_ast.ExtendEnum):
+                self._translate_extend_enum(ctx, child)
             elif isinstance(child, pss_ast.Component):
                 self._translate_component(ctx, child, namespace_prefix=namespace_prefix)
             elif isinstance(child, pss_ast.Action):
@@ -174,12 +302,69 @@ class AstToIrTranslator:
                 self._translate_enum(ctx, child)
             elif isinstance(child, pss_ast.TypedefDeclaration):
                 self._translate_typedef(ctx, child)
-            elif isinstance(child, pss_ast.ExtendType):
-                self._translate_extend(ctx, child)
-            elif isinstance(child, pss_ast.ExtendEnum):
-                self._translate_extend_enum(ctx, child)
             elif isinstance(child, pss_ast.FunctionImportProto):
                 self._translate_import_proto(ctx, child)
+            elif isinstance(child, pss_ast.Field):
+                # A package- or global-scope field is a `static const`. Its
+                # value is folded so it can size an array: `wb_dma_ch_c
+                # ch[WB_DMA_MAX_CH]` must reach the IR as a 4-element array, not
+                # as `size=-1`, or nothing downstream can emit the accessors or
+                # unroll the constructor loop.
+                self._record_const(ctx, child, namespace_prefix)
+
+    def _record_template_params(self, ctx: AstToIrContext, decl) -> None:
+        """Note the template parameter names a type declaration introduces.
+
+        `struct packed_s <endianness_e E = LITTLE>` puts `E` into the IR as a
+        DataTypeRef wherever the body uses it. It names a parameter, not a type,
+        so _check_refs_resolve must not report it as unresolved.
+        """
+        params = decl.getParams() if hasattr(decl, 'getParams') else None
+        if params is None:
+            return
+        for i in range(params.numParams()):
+            param = params.getParam(i)
+            if param is None:
+                continue
+            name_node = param.getName()
+            name = (name_node.getId() if hasattr(name_node, 'getId')
+                    else str(name_node))
+            if name:
+                ctx.template_param_names.add(name)
+
+    @staticmethod
+    def _decl_phase(child) -> '_Phase':
+        """Which pass a unit-level child belongs to.
+
+        Constants and enums go first because other declarations fold against
+        them (an array size, an enum item in a const initializer). Extensions go
+        last because they need their target declared. Everything else is a
+        declaration.
+        """
+        if isinstance(child, (pss_ast.ExtendType, pss_ast.ExtendEnum)):
+            return _Phase.EXTEND
+        if isinstance(child, (pss_ast.EnumDecl, pss_ast.Field)):
+            return _Phase.CONST
+        return _Phase.DECLARE
+
+    def _record_const(self, ctx: AstToIrContext, field, namespace_prefix: str = "") -> None:
+        """Fold a package-scope ``static const`` with a constant initializer.
+
+        Recorded under both the bare and the qualified name, matching how types
+        are registered, so `WB_DMA_MAX_CH` and `wb_dma_regs_pkg::WB_DMA_MAX_CH`
+        both resolve. Non-constant initializers are skipped rather than guessed
+        at -- an unfolded constant leaves the array size at -1, which is loud
+        downstream, while a wrong fold would not be.
+        """
+        name_node = field.getName()
+        name = name_node.getId() if isinstance(name_node, pss_ast.ExprId) else str(name_node)
+        init = field.getInit() if hasattr(field, 'getInit') else None
+        value = getattr(init, 'getValue', lambda: None)() if init is not None else None
+        if not isinstance(value, int) or isinstance(value, bool):
+            return
+        ctx.const_map[name] = value
+        if namespace_prefix:
+            ctx.const_map[f"{namespace_prefix}{name}"] = value
 
     def _translate_import_proto(self, ctx: AstToIrContext, node) -> None:
         """Capture a package-scope ``import target/solve function`` declaration.
@@ -223,14 +408,92 @@ class AstToIrTranslator:
         )
         ctx.import_functions.append(ir_func)
 
+    #: ExecBlock kinds that become a named IR function on the enclosing type.
+    #: ``is_async`` matters: an action ``body`` can consume time, the solve-time
+    #: blocks and the component init/run hooks cannot.
+    _EXEC_FUNCS = {
+        pss_ast.ExecKind.ExecKind_Body:      ('body',       True),
+        pss_ast.ExecKind.ExecKind_PreSolve:  ('pre_solve',  False),
+        pss_ast.ExecKind.ExecKind_PostSolve: ('post_solve', False),
+        pss_ast.ExecKind.ExecKind_InitDown:  ('init_down',  False),
+        pss_ast.ExecKind.ExecKind_InitUp:    ('init_up',    False),
+        pss_ast.ExecKind.ExecKind_RunStart:  ('run_start',  False),
+        pss_ast.ExecKind.ExecKind_RunEnd:    ('run_end',    False),
+    }
+
+    def _translate_type_body(self, ctx: AstToIrContext, children, target_ir,
+                             qualified_name: str):
+        """Dispatch the children of a component/action body onto ``target_ir``.
+
+        Shared by ``_translate_component`` (the initial declaration) and
+        ``_translate_extend`` (a later ``extend`` of the same type) **so the two
+        cannot diverge**. They did diverge, silently, and the cost was the whole
+        operation model: ``_translate_extend`` handled only ``Field``,
+        ``ExecBlock`` and ``ConstraintBlock``, so every ``target function`` and
+        every ``action`` declared in an ``extend component`` — which is where a
+        model following the PSS coding guidelines puts all of them — was dropped
+        without a word. Translation succeeded, the type map was populated, and
+        the generated API was empty. See the operation-model export design, §3A.
+
+        ``qualified_name`` is the name nested actions are parented to: the
+        declaring component for an initial declaration, the *extended* type for
+        an ``extend``.
+        """
+        for child in children:
+            if child is None:
+                continue
+
+            if isinstance(child, pss_ast.Field):
+                field = self._translate_field(ctx, child)
+                if field:
+                    target_ir.fields.append(field)
+            elif isinstance(child, pss_ast.FunctionDefinition):
+                func = self._translate_function(ctx, child)
+                if func:
+                    target_ir.functions.append(func)
+            elif isinstance(child, pss_ast.Action):
+                # Nested action -- registered under its qualified name, with the
+                # enclosing component recorded as its parent.
+                self._translate_action(ctx, child, parent_comp_name=qualified_name)
+            elif isinstance(child, pss_ast.Struct):
+                self._translate_struct(ctx, child)
+            elif isinstance(child, pss_ast.EnumDecl):
+                self._translate_enum(ctx, child)
+            elif isinstance(child, pss_ast.ExecBlock):
+                entry = self._EXEC_FUNCS.get(child.getKind())
+                if entry is not None:
+                    name, is_async = entry
+                    stmts = self._translate_exec_scope(ctx, child)
+                    target_ir.functions.append(
+                        ir.Function(name=name, is_async=is_async, body=stmts))
+                elif self.debug:
+                    self.logger.debug(
+                        f"{qualified_name}: unhandled exec kind {child.getKind()}")
+            elif isinstance(child, pss_ast.ConstraintBlock):
+                constraint_func = self._translate_constraint_block(ctx, child, target_ir)
+                if constraint_func:
+                    target_ir.functions.append(constraint_func)
+            elif self.debug:
+                # The silent-drop class this method exists to prevent. Anything
+                # reaching here is a body element no backend will ever see.
+                self.logger.debug(
+                    f"{qualified_name}: unhandled body element "
+                    f"{type(child).__name__}")
+
     def _translate_extend(self, ctx: AstToIrContext, extend: pss_ast.ExtendType):
         """Translate a PSS extend declaration, adding fields/functions to the target IR type.
 
         PSS ``extend action C::a { rand int y; exec body {...} }`` adds new
         fields and exec blocks to the already-translated ``C::a`` DataTypeClass.
         """
+        # Every `return` below discards user input, so each one is an error.
+        # This method runs in the EXTEND pass, after every declaration has been
+        # registered, so a target that is still missing is genuinely missing --
+        # it is no longer the "declared in a later file" case that used to reach
+        # here and return silently.
         target_ti = extend.getTarget()
         if target_ti is None:
+            ctx.add_error("extend: no target type named")
             return
 
         # Build the qualified name from TypeIdentifier elements
@@ -243,6 +506,7 @@ class AstToIrTranslator:
                     parts.append(id_node.getId())
 
         if not parts:
+            ctx.add_error("extend: target type name could not be read")
             return
 
         # Look up the target IR type (try both qualified and short names)
@@ -253,42 +517,24 @@ class AstToIrTranslator:
             target_ir = ctx.type_map.get("::".join(parts[1:]))
 
         if target_ir is None:
-            if self.debug:
-                self.logger.debug(f"extend: target type not found: {target_name}")
+            ctx.add_error(f"extend of unknown type '{target_name}'")
             return
 
         if self.debug:
             self.logger.debug(f"Translating extend for: {target_name}")
 
         ctx.push_scope(target_ir)
+        # The extended type's own name, so a nested action declared here is
+        # parented to the type being extended rather than to nothing.
+        self._type_chain_stack.append(parts[-1])
 
-        for i in range(extend.numChildren()):
-            child = extend.getChild(i)
-            if child is None:
-                continue
+        self._translate_type_body(
+            ctx,
+            (extend.getChild(i) for i in range(extend.numChildren())),
+            target_ir,
+            getattr(target_ir, "name", None) or target_name)
 
-            if isinstance(child, pss_ast.Field):
-                field = self._translate_field(ctx, child)
-                if field:
-                    target_ir.fields.append(field)
-            elif isinstance(child, pss_ast.ExecBlock):
-                kind = child.getKind()
-                if kind == pss_ast.ExecKind.ExecKind_Body:
-                    stmts = self._translate_exec_scope(ctx, child)
-                    func = ir.Function(name='body', is_async=True, body=stmts)
-                    target_ir.functions.append(func)
-                elif kind == pss_ast.ExecKind.ExecKind_PreSolve:
-                    stmts = self._translate_exec_scope(ctx, child)
-                    func = ir.Function(name='pre_solve', is_async=False, body=stmts)
-                    target_ir.functions.append(func)
-                elif kind == pss_ast.ExecKind.ExecKind_PostSolve:
-                    stmts = self._translate_exec_scope(ctx, child)
-                    func = ir.Function(name='post_solve', is_async=False, body=stmts)
-                    target_ir.functions.append(func)
-            elif isinstance(child, pss_ast.ConstraintBlock):
-                constraint_func = self._translate_constraint_block(ctx, child, target_ir)
-                if constraint_func:
-                    target_ir.functions.append(constraint_func)
+        self._type_chain_stack.pop()
 
         # Flush any `rand int in [range]` domain constraints onto the extended type.
         self._flush_range_constraints(target_ir)
@@ -297,8 +543,11 @@ class AstToIrTranslator:
 
     def _translate_extend_enum(self, ctx: AstToIrContext, extend: pss_ast.ExtendEnum):
         """Translate a PSS extend enum, appending new items to the existing IR DataTypeEnum."""
+        # As in _translate_extend: this runs after every declaration is
+        # registered, so each early return is a real error, not a "not yet".
         target_ti = extend.getTarget()
         if target_ti is None:
+            ctx.add_error("extend enum: no target type named")
             return
 
         parts = []
@@ -310,18 +559,18 @@ class AstToIrTranslator:
                     parts.append(id_node.getId())
 
         if not parts:
+            ctx.add_error("extend enum: target type name could not be read")
             return
 
         target_name = "::".join(parts)
         target_ir = ctx.type_map.get(target_name)
         if target_ir is None:
-            if self.debug:
-                self.logger.debug(f"extend enum: target not found: {target_name}")
+            ctx.add_error(f"extend enum of unknown type '{target_name}'")
             return
 
         if not isinstance(target_ir, ir.DataTypeEnum):
-            if self.debug:
-                self.logger.debug(f"extend enum: target is not DataTypeEnum: {target_name}")
+            ctx.add_error(
+                f"extend enum of '{target_name}', which is not an enum type")
             return
 
         next_val = max(target_ir.items.values(), default=-1) + 1
@@ -337,7 +586,8 @@ class AstToIrTranslator:
             target_ir.items[item_name] = next_val
             next_val += 1
 
-    def _translate_package(self, ctx: AstToIrContext, pkg: pss_ast.PackageScope, parent_prefix: str = ""):
+    def _translate_package(self, ctx: AstToIrContext, pkg: pss_ast.PackageScope,
+                           parent_prefix: str = "", phase: '_Phase' = None):
         """Translate a PSS package declaration.
 
         Types inside the package are registered with a namespace prefix:
@@ -349,7 +599,7 @@ class AstToIrTranslator:
         if self.debug:
             self.logger.debug(f"Translating package: {prefix}")
         # Recurse into package children using the same unit-level dispatch
-        self._translate_unit(ctx, pkg, namespace_prefix=prefix)
+        self._translate_unit(ctx, pkg, namespace_prefix=prefix, phase=phase)
 
     def _translate_component(self, ctx: AstToIrContext, component: pss_ast.Component, namespace_prefix: str = "") -> ir.DataTypeComponent:
         """Translate a PSS component to IR
@@ -361,6 +611,8 @@ class AstToIrTranslator:
         Returns:
             IR DataTypeComponent
         """
+        self._record_template_params(ctx, component)
+
         # Extract component name
         name_node = component.getName()
         if isinstance(name_node, pss_ast.ExprId):
@@ -373,26 +625,38 @@ class AstToIrTranslator:
         if self.debug:
             self.logger.debug(f"Translating component: {qualified_name}")
 
-        # Check if this component inherits from reg_group_c
-        # If so, create DataTypeRegisterGroup instead of DataTypeComponent
-        is_register_group = False
-        super_name = None
-        super_t = component.getSuper_t()
-        if super_t is not None:
-            # Get super type name
-            if isinstance(super_t, pss_ast.ExprId):
-                super_name = super_t.getId()
-                is_register_group = (super_name == "reg_group_c")
-            elif isinstance(super_t, pss_ast.TypeIdentifier):
-                # Handle TypeIdentifier case
-                if super_t.numElems() > 0:
-                    elem = super_t.getElem(0)
-                    elem_id = elem.getId()
-                    if isinstance(elem_id, pss_ast.ExprId):
-                        super_name = elem_id.getId()
-                        is_register_group = (super_name == "reg_group_c")
-            else:
-                super_name = str(super_t)
+        # What does this component derive from? Three answers matter:
+        #   `reg_c<R,ACC,SZ>`  -> it IS a register type (handled below)
+        #   `reg_group_c`      -> DataTypeRegisterGroup, directly or transitively
+        #   anything else      -> DataTypeComponent
+        super_name, super_elem = self._super_of(component)
+        is_register_group = self._derives_from_reg_group(ctx, super_name)
+
+        # A named register type: `pure component wb_dma_gcsr_r : reg_c<S, RW, 32> {}`.
+        #
+        # The template arguments are the whole content of such a declaration --
+        # value type, access mode and width -- and until this existed they were
+        # discarded: the super was recorded as the bare name `reg_c` and every
+        # backend saw an ordinary empty component. Registers declared this way
+        # silently became misclassified components, which is how a generated
+        # package ended up with `interface class wb_dma_gcsr_r_if` and an empty
+        # register group. See the operation-model export design §3B / §4.2.
+        #
+        # The parsing is not re-implemented here: `_translate_reg_c` already
+        # extracts R/ACC/SZ and builds the register's accessors and fields. It
+        # was simply unreachable from this path -- only from the *field*-type
+        # path in `_translate_data_type`.
+        if super_name == "reg_c" and super_elem is not None:
+            reg = self._translate_reg_c(ctx, super_elem)
+            reg.name = qualified_name
+            ctx.add_type(qualified_name, reg)
+            if namespace_prefix:
+                ctx.add_type(comp_name, reg)
+            if self.debug:
+                self.logger.debug(
+                    f"named register type {qualified_name}: "
+                    f"{reg.register_value_type}, {reg.access_mode}, {reg.size_bits} bits")
+            return reg
 
         # Create appropriate IR component type
         if is_register_group:
@@ -413,45 +677,9 @@ class AstToIrTranslator:
         if super_name:
             comp.super = ir.DataTypeRef(ref_name=super_name)
 
-        # Translate children (fields, functions, nested types)
-        for child in component.children():
-            if child is None:
-                continue
-
-            if isinstance(child, pss_ast.Field):
-                field = self._translate_field(ctx, child)
-                if field:
-                    comp.fields.append(field)
-            elif isinstance(child, pss_ast.FunctionDefinition):
-                func = self._translate_function(ctx, child)
-                if func:
-                    comp.functions.append(func)
-            elif isinstance(child, pss_ast.Action):
-                # Nested action — register under qualified name and track parent
-                self._translate_action(ctx, child, parent_comp_name=qualified_name)
-            elif isinstance(child, pss_ast.Struct):
-                # Nested struct
-                self._translate_struct(ctx, child)
-            elif isinstance(child, pss_ast.EnumDecl):
-                self._translate_enum(ctx, child)
-            elif isinstance(child, pss_ast.ExecBlock):
-                kind = child.getKind()
-                if kind == pss_ast.ExecKind.ExecKind_InitDown:
-                    stmts = self._translate_exec_scope(ctx, child)
-                    func = ir.Function(name='init_down', is_async=False, body=stmts)
-                    comp.functions.append(func)
-                elif kind == pss_ast.ExecKind.ExecKind_InitUp:
-                    stmts = self._translate_exec_scope(ctx, child)
-                    func = ir.Function(name='init_up', is_async=False, body=stmts)
-                    comp.functions.append(func)
-                elif kind == pss_ast.ExecKind.ExecKind_RunStart:
-                    stmts = self._translate_exec_scope(ctx, child)
-                    func = ir.Function(name='run_start', is_async=False, body=stmts)
-                    comp.functions.append(func)
-                elif kind == pss_ast.ExecKind.ExecKind_RunEnd:
-                    stmts = self._translate_exec_scope(ctx, child)
-                    func = ir.Function(name='run_end', is_async=False, body=stmts)
-                    comp.functions.append(func)
+        # Translate children (fields, functions, nested types). Shared with
+        # `extend component <this>` -- see _translate_type_body.
+        self._translate_type_body(ctx, component.children(), comp, qualified_name)
 
         # Flush any `rand int in [range]` domain constraints onto this component.
         self._flush_range_constraints(comp)
@@ -477,6 +705,103 @@ class AstToIrTranslator:
         ctx.pop_scope()
 
         return comp
+
+    def _fold_const_expr(self, ctx: AstToIrContext, expr) -> Optional[int]:
+        """Fold ``expr`` to an int if it names a known package-scope constant.
+
+        Deliberately shallow: a bare identifier or a qualified static path,
+        nothing arithmetic. Anything else returns None and the caller reports
+        "unknown" rather than a guess.
+        """
+        if expr is None:
+            return None
+        if isinstance(expr, pss_ast.ExprId):
+            return ctx.const_map.get(expr.getId())
+        # A bare identifier in template-argument position is parsed as a TYPE
+        # argument -- `array<S, N>` cannot be disambiguated without knowing what
+        # N is. So the constant arrives here spelled as a type reference.
+        if isinstance(expr, pss_ast.DataTypeUserDefined):
+            return self._fold_const_expr(ctx, expr.getType_id())
+        if isinstance(expr, pss_ast.TypeIdentifier) and expr.numElems() > 0:
+            parts = []
+            for i in range(expr.numElems()):
+                eid = expr.getElem(i).getId()
+                if hasattr(eid, 'getId'):
+                    parts.append(eid.getId())
+            if parts:
+                return (ctx.const_map.get("::".join(parts))
+                        or ctx.const_map.get(parts[-1]))
+        # pkg::NAME
+        if isinstance(expr, pss_ast.ExprRefPathStatic) and expr.numBase() > 0:
+            parts = []
+            for i in range(expr.numBase()):
+                elem = expr.getBase(i)
+                eid = elem.getId() if hasattr(elem, 'getId') else None
+                if eid is not None and hasattr(eid, 'getId'):
+                    parts.append(eid.getId())
+            if parts:
+                return (ctx.const_map.get("::".join(parts))
+                        or ctx.const_map.get(parts[-1]))
+        # NAME, as an unqualified reference: ExprRefPathContext -> hier id.
+        hier = getattr(expr, 'getHier_id', lambda: None)()
+        if hier is not None and getattr(hier, 'numElems', lambda: 0)() > 0:
+            parts = []
+            for i in range(hier.numElems()):
+                eid = hier.getElem(i).getId()
+                if hasattr(eid, 'getId'):
+                    parts.append(eid.getId())
+            if parts:
+                return (ctx.const_map.get("::".join(parts))
+                        or ctx.const_map.get(parts[-1]))
+        leaf = getattr(expr, 'getLeaf', lambda: None)()
+        if leaf is not None and hasattr(leaf, 'getId'):
+            return ctx.const_map.get(leaf.getId())
+        return None
+
+    @staticmethod
+    def _super_of(component) -> Tuple[Optional[str], Optional[object]]:
+        """``(super type name, its TypeIdentifierElem)`` for a component.
+
+        The elem is returned as well as the name because it is what carries the
+        template arguments -- ``reg_c<R, ACC, SZ>`` is a *specialization*, and
+        keeping only ``"reg_c"`` throws away everything that makes one register
+        type different from another. The LAST element is the type: a qualified
+        super reads ``pkg::reg_c<...>``.
+        """
+        super_t = component.getSuper_t()
+        if super_t is None:
+            return None, None
+        if isinstance(super_t, pss_ast.ExprId):
+            return super_t.getId(), None
+        if isinstance(super_t, pss_ast.TypeIdentifier):
+            if super_t.numElems() == 0:
+                return None, None
+            elem = super_t.getElem(super_t.numElems() - 1)
+            elem_id = elem.getId()
+            name = elem_id.getId() if isinstance(elem_id, pss_ast.ExprId) else str(elem_id)
+            return name, elem
+        return str(super_t), None
+
+    def _derives_from_reg_group(self, ctx: AstToIrContext, super_name: Optional[str]) -> bool:
+        """Is ``super_name`` ``reg_group_c``, or something derived from it?
+
+        Resolved **transitively** through the type map, not by matching the
+        immediate super's spelling. A group one level further derived -- a
+        project base class over ``reg_group_c``, say -- is still a register
+        group, and treating it as an ordinary component drops its entire
+        address map without complaint.
+        """
+        seen = set()
+        while super_name and super_name not in seen:
+            if super_name == "reg_group_c":
+                return True
+            seen.add(super_name)
+            resolved = ctx.get_type(super_name)
+            if isinstance(resolved, ir.DataTypeRegisterGroup):
+                return True
+            sup = getattr(resolved, "super", None) if resolved is not None else None
+            super_name = getattr(sup, "ref_name", None)
+        return False
 
     def _translate_declared_pools(self, ctx: AstToIrContext, component, comp: ir.DataTypeComponent):
         """Create IR ``Pool``s from explicit ``pool [N] T name;`` declarations.
@@ -567,6 +892,8 @@ class AstToIrTranslator:
         Returns:
             IR DataTypeClass
         """
+        self._record_template_params(ctx, action)
+
         # Extract action name
         name_node = action.getName()
         if isinstance(name_node, pss_ast.ExprId):
@@ -1123,6 +1450,8 @@ class AstToIrTranslator:
         Returns:
             IR DataTypeStruct
         """
+        self._record_template_params(ctx, struct)
+
         # Extract struct name
         name_node = struct.getName()
         if isinstance(name_node, pss_ast.ExprId):
@@ -1644,11 +1973,20 @@ class AstToIrTranslator:
         if attr & pss_ast.FieldAttr.Rand:
             rand_kind = 'rand'
 
+        # A field initializer (`bool ars = true;`, `int num_ch = MAX_CH;`) is
+        # part of the field's meaning, not decoration: a capability struct whose
+        # defaults are dropped reads as all-false, which silently disables every
+        # operation gated on it. Carried on the field so a backend can emit it.
+        init_node = field.getInit() if hasattr(field, 'getInit') else None
+        initial_value = (self._translate_expression(ctx, init_node)
+                         if init_node is not None else None)
+
         ir_field = ir.Field(
             name=field_name,
             datatype=field_type,
             kind=ir.FieldKind.Field,
             rand_kind=rand_kind,
+            initial_value=initial_value,
         )
 
         # Extract `rand int in [range]` domain constraint (T-12).
@@ -2175,10 +2513,52 @@ class AstToIrTranslator:
             return ir.ExprNull()
         elif isinstance(expr_node, pss_ast.ExprIn):
             return self._translate_expr_in(ctx, expr_node)
+        elif isinstance(expr_node, pss_ast.ExprRefPathStatic):
+            return self._translate_expr_ref_static(ctx, expr_node)
         else:
             if self.debug:
                 self.logger.debug(f"Unsupported expression type: {type(expr_node).__name__}")
             return None
+
+    def _translate_expr_ref_static(self, ctx: AstToIrContext, expr) -> Optional[ir.Expr]:
+        """Translate a qualified static reference: ``pkg::NAME``.
+
+        This had no branch at all, so every such reference translated to
+        ``None`` -- and a ``None`` inside an expression tree is not an error
+        anywhere, it is just an operand that quietly disappears. The address
+        arithmetic in the WB DMA model's `\\init`,
+
+            make_handle_from_handle(base, WB_DMA_CH_BASE + i * WB_DMA_CH_STRIDE)
+
+        reached the IR as ``(None + (i * None))``.
+
+        Constants (package-scope `static const`, enum items) fold to literals;
+        anything else becomes an attribute path, which is at least a name a
+        backend can report on.
+        """
+        parts: List[str] = []
+        for i in range(expr.numBase()):
+            elem = expr.getBase(i)
+            eid = elem.getId() if hasattr(elem, 'getId') else None
+            if eid is not None and hasattr(eid, 'getId'):
+                parts.append(eid.getId())
+        if not parts:
+            return None
+
+        qualified = "::".join(parts)
+        for key in (qualified, parts[-1]):
+            if key in ctx.const_map:
+                return ir.ExprConstant(value=ctx.const_map[key])
+        enum_val = self._resolve_enum_constant(ctx, parts[-1])
+        if enum_val is not None:
+            return ir.ExprConstant(value=enum_val)
+
+        if self.debug:
+            self.logger.debug(f"static reference not folded: {qualified}")
+        result: ir.Expr = ir.TypeExprRefSelf()
+        for name in parts:
+            result = ir.ExprAttribute(value=result, attr=name)
+        return result
 
     def _translate_expr_number(self, ctx: AstToIrContext, expr: Any) -> ir.ExprConstant:
         """Translate a number literal"""
@@ -2306,14 +2686,18 @@ class AstToIrTranslator:
                         result_lv = ir.ExprCall(func=result_lv, args=args)
                 return result_lv
 
-        # If the first element refers to an enum constant, emit ExprConstant
-        # so the constraint solver sees a literal value instead of a variable.
+        # A single-element reference may name a constant rather than a field:
+        # an enum item, or a package-scope `static const` imported by name.
+        # Folding it here is what lets an address expression written in terms of
+        # the map constants become arithmetic a backend can emit.
         if len(elems) == 1 and hasattr(elems[0], 'getId') and ctx is not None:
             id_obj = elems[0].getId()
             name = id_obj.getId() if isinstance(id_obj, pss_ast.ExprId) else str(id_obj)
             enum_val = self._resolve_enum_constant(ctx, name)
             if enum_val is not None:
                 return ir.ExprConstant(value=enum_val)
+            if name in ctx.const_map and name not in ctx.local_vars:
+                return ir.ExprConstant(value=ctx.const_map[name])
 
         # Build the ExprAttribute chain starting from self.
         # Note: expr.getIs_super() is True for ALL scope-level references in the PSS
@@ -2594,6 +2978,27 @@ class AstToIrTranslator:
         if type_name == "reg_c":
             return self._translate_reg_c(ctx, elem)
 
+        # `sync_pkg::channel_c<Te, DEPTH>` -- a core-library parameterized
+        # component, like reg_c, and translated the same way: to a datatype that
+        # CARRIES its template arguments, not to an ordinary DataTypeComponent.
+        #
+        # The distinction is not cosmetic. A component's template arguments do
+        # not survive into the IR, so a channel that reached a backend as a
+        # component arrived with no element type and no depth -- and a backend
+        # cannot invent either. `channel_c` is also not a type a backend can
+        # emit from the model: its body is the RUNTIME's (a mailbox in SV, a
+        # FIFO in C), so lowering it as a user component produced a class with
+        # the right name and no methods in it.
+        #
+        # Accepted qualified as well as bare: `import sync_pkg::*` makes the
+        # bare form usual, but `sync_pkg::channel_c<...>` is the same type and
+        # must not fall through to the generic path.
+        last = type_id.getElem(type_id.numElems() - 1)
+        last_id = last.getId()
+        last_name = last_id.getId() if isinstance(last_id, pss_ast.ExprId) else str(last_id)
+        if last_name == "channel_c":
+            return self._translate_channel_c(ctx, last)
+
         # Handle built-in collection types
         if type_name in ("list", "array", "map", "set"):
             return self._translate_collection_type(ctx, type_name, elem)
@@ -2622,6 +3027,75 @@ class AstToIrTranslator:
 
         # Fall back to forward reference
         return ir.DataTypeRef(ref_name=qualified_name)
+
+    def _translate_channel_c(
+        self,
+        ctx: AstToIrContext,
+        elem: pss_ast.TypeIdentifierElem,
+    ) -> ir.DataTypeChannel:
+        """Translate ``sync_pkg::channel_c<Te, DEPTH>`` (PSS 3.1 §21.9.1).
+
+        ``DEPTH`` defaults to 1, per the LRM, and that default is load-bearing
+        rather than incidental: a depth-1 channel is a coalescing binary
+        semaphore, which is what an interrupt-wake channel wants. Getting the
+        default wrong would not fail anywhere -- it would give the model a
+        deeper buffer than it asked for and quietly stop coalescing.
+
+        Args:
+            ctx: Translation context
+            elem: TypeIdentifierElem carrying the template parameters
+
+        Returns:
+            DataTypeChannel with the element type and depth resolved
+        """
+        element_type = None
+        depth = 1
+
+        params = elem.getParams()
+        if params is not None:
+            if params.numValues() > 0:
+                inner = params.getValue(0).getValue()
+                if inner is not None:
+                    element_type = self._translate_data_type(ctx, inner)
+
+            # DEPTH may be a literal (`channel_c<bit,1>`) or a named constant
+            # (`channel_c<bit,WAKE_DEPTH>`); fold either. A depth that does not
+            # fold is left at the LRM default rather than becoming -1, because
+            # -1 reaches a backend as a buffer size and there is no size that
+            # means "unknown".
+            if params.numValues() > 1:
+                inner = params.getValue(1).getValue()
+                folded = None
+                if inner is not None and hasattr(inner, 'getValue'):
+                    v = inner.getValue()
+                    if isinstance(v, int) and not isinstance(v, bool):
+                        folded = v
+                if folded is None:
+                    folded = self._fold_const_expr(ctx, inner)
+                if folded is not None:
+                    depth = folded
+
+        # "DEPTH, if specified, shall be positive" (§21.9.1). Rejected here
+        # rather than passed on: SV's `mailbox #(T) m = new(0)` is UNBOUNDED, so
+        # a zero would not fail downstream, it would silently produce a channel
+        # that never coalesces and never blocks a writer.
+        if depth < 1:
+            ctx.add_error(f"channel_c DEPTH shall be positive (got {depth})")
+            depth = 1
+
+        # A readable specialization name. Primitive element types carry no
+        # `name` in the IR, so `bit` would otherwise print as the unsubstituted
+        # parameter `Te` -- a name that reads like the translation failed.
+        label = getattr(element_type, 'name', None)
+        if label is None and isinstance(element_type, ir.DataTypeInt):
+            label = ("int" if element_type.signed and element_type.bits == 32
+                     else ("bit" if element_type.bits == 1
+                           else f"bit[{element_type.bits}]"))
+        return ir.DataTypeChannel(
+            name=f"channel_c<{label or 'Te'},{depth}>",
+            element_type=element_type,
+            depth=depth,
+        )
 
     def _translate_collection_type(
         self,
@@ -2656,14 +3130,24 @@ class AstToIrTranslator:
             return self._translate_data_type(ctx, inner)
 
         def get_int_param(index: int) -> int:
-            """Extract an integer-valued template parameter at ``index``."""
+            """Extract an integer-valued template parameter at ``index``.
+
+            The value may be a literal (``ch[4]``) or a reference to a
+            package-scope constant (``ch[WB_DMA_MAX_CH]``) -- the parser lowers
+            ``T x[N]`` to ``array<T, N>`` either way. Only the literal case used
+            to fold, so a model that names its channel count (as a real one
+            does) got ``size=-1``.
+            """
             if index >= params.numValues():
                 return -1
             pv = params.getValue(index)
             inner = pv.getValue()
             if inner is not None and hasattr(inner, 'getValue'):
-                return inner.getValue()
-            return -1
+                v = inner.getValue()
+                if isinstance(v, int) and not isinstance(v, bool):
+                    return v
+            folded = self._fold_const_expr(ctx, inner)
+            return folded if folded is not None else -1
 
         if coll_name == "list":
             return ir.DataTypeList(element_type=get_type_param(0))
@@ -2878,6 +3362,51 @@ class AstToIrTranslator:
             is_target=True
         )
         reg.functions.append(write_val_func)
+
+        self._add_register_rmw_functions(ctx, reg)
+
+    def _add_register_rmw_functions(self, ctx: AstToIrContext, reg: ir.DataTypeRegister):
+        """Declare the PSS 3.1 §21.14.1 masked / field-wise writes.
+
+        All four mean one thing --
+        ``REG_VAL(new) = (REG_VAL(current) & ~mask) | (val & mask)`` -- so
+        ``reg_rmw`` reduces the other three to ``write_val_masked`` before any
+        backend sees them. They are declared here anyway, because a declaration
+        is what makes the method resolvable at all; what a backend must
+        implement is only the one they reduce to.
+
+        The three that take a field name or a struct-shaped mask are declared
+        only when the register's value type is a struct: on a
+        ``reg_c<bit[32]>`` there is nothing to name, and an undeclared method is
+        a better answer than one that always fails.
+        """
+        def fn(name, arg_names):
+            return ir.Function(
+                name=name,
+                args=ir.Arguments(args=[ir.Arg(arg=a, annotation=None)
+                                        for a in arg_names]),
+                body=[],
+                returns=None,
+                is_async=False,
+                is_import=True,
+                is_target=True
+            )
+
+        # write_val_masked(mask, val) -- the primitive, always available.
+        reg.functions.append(fn("write_val_masked", ["mask", "val"]))
+
+        if not self._reg_has_struct_value(ctx, reg):
+            return
+
+        reg.functions.append(fn("write_masked", ["mask", "val"]))
+        reg.functions.append(fn("write_field", ["name", "val"]))
+        reg.functions.append(fn("write_fields", ["names", "vals"]))
+
+    def _reg_has_struct_value(self, ctx: AstToIrContext, reg: ir.DataTypeRegister) -> bool:
+        vt = reg.register_value_type
+        if isinstance(vt, ir.DataTypeRef):
+            vt = ctx.get_type(vt.ref_name) or vt
+        return isinstance(vt, ir.DataTypeStruct)
 
     def _extract_register_fields(self, ctx: AstToIrContext, reg: ir.DataTypeRegister):
         """Extract fields from register value type if it's a struct

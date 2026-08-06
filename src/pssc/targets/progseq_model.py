@@ -31,6 +31,42 @@ class FuncKind(Enum):
 #: addresses) rather than emitted as callable API.
 _REG_OFFSET_FNS = frozenset({"get_offset_of_instance", "get_offset_of_instance_array"})
 
+#: Names a `solve function void` may use to mean "this is the constructor".
+#:
+#: Three spellings, because the convention differs and none is wrong:
+#:
+#:   ctor        this generator's own example
+#:   init        the PSS coding guidelines' spelling, written `\init` -- an
+#:               escaped identifier, since `init` is reserved -- and recorded in
+#:               the IR under the plain name
+#:   initialize  the same thing without the escape. The WB DMA model moved to
+#:               this spelling precisely to stop needing the backslash, and a
+#:               name that has to be escaped to be legal is a name most models
+#:               will eventually stop using.
+#:
+#: Hard-coding `ctor` alone did not fail loudly. A model whose constructor was
+#: called `init` had its constructor classified as an ordinary export function,
+#: and the generated class then constructed its register model from an
+#: undeclared `base` variable: code that looks right and does not compile. The
+#: rename to `initialize` reproduced exactly that, which is why the third
+#: spelling is here rather than left to `--ctor-name`.
+#: Set by `set_ctor_name()` when `--ctor-name` is given.
+_CTOR_NAMES = {"ctor", "init", "initialize"}
+
+
+#: The default set, kept as its own name so `set_ctor_name(None)` restores
+#: exactly what `_CTOR_NAMES` started as. It used to repeat the literal, which
+#: is why adding a spelling above silently failed to apply: every target calls
+#: `set_ctor_name(opts.ctor_name)` on entry, so the copy -- not the definition
+#: -- was what actually took effect.
+_DEFAULT_CTOR_NAMES = frozenset(_CTOR_NAMES)
+
+
+def set_ctor_name(name: Optional[str]) -> None:
+    """Override which `solve function` name means "constructor"."""
+    global _CTOR_NAMES
+    _CTOR_NAMES = {name} if name else set(_DEFAULT_CTOR_NAMES)
+
 
 def func_kind(fn) -> FuncKind:
     """Classify an ``ir.Function`` by the flags the front end already sets.
@@ -42,7 +78,7 @@ def func_kind(fn) -> FuncKind:
     if fn.name in _REG_OFFSET_FNS:
         return FuncKind.REG_OFFSET
     if getattr(fn, "is_solve", False):
-        return FuncKind.CONSTRUCTOR if fn.name == "ctor" else FuncKind.EXPORT_SOLVE
+        return FuncKind.CONSTRUCTOR if fn.name in _CTOR_NAMES else FuncKind.EXPORT_SOLVE
     if getattr(fn, "is_import", False):
         return FuncKind.IMPORT_SOLVE if getattr(fn, "is_solve", False) else FuncKind.IMPORT_TASK
     return FuncKind.EXPORT_OP
@@ -64,8 +100,26 @@ def _super_ref_name(dtype) -> Optional[str]:
 
 
 def is_reg_group(dtype) -> bool:
-    """True if ``dtype`` is (or derives from) ``reg_group_c``."""
+    """True if ``dtype`` is (or derives from) ``reg_group_c``.
+
+    The IR node type is the primary answer: the front end builds a
+    ``DataTypeRegisterGroup`` for a group however deep the derivation is. The
+    super-name check remains as a fallback for datatypes that reach a backend
+    by another path.
+    """
+    if _dt_name(dtype) == _DT_REGISTER_GROUP:
+        return True
     return _super_ref_name(dtype) == "reg_group_c"
+
+
+def is_register(dtype) -> bool:
+    """True if ``dtype`` is a register -- inline ``reg_c<...>`` or a named type
+    declared as ``pure component X : reg_c<...>``. Both reach the IR as
+    ``DataTypeRegister``; before the front end recovered the template arguments
+    of the named form, the second silently became an ordinary component."""
+    if _dt_name(dtype) == _DT_REGISTER:
+        return True
+    return _super_ref_name(dtype) == "reg_c"
 
 
 def comp_kind(dtype) -> CompKind:
@@ -78,6 +132,7 @@ def comp_kind(dtype) -> CompKind:
 _DT_REGISTER = "DataTypeRegister"
 _DT_REGISTER_GROUP = "DataTypeRegisterGroup"
 _DT_ARRAY = "DataTypeArray"
+_DT_CHANNEL = "DataTypeChannel"
 
 
 def _dt_name(dtype) -> str:
@@ -85,15 +140,35 @@ def _dt_name(dtype) -> str:
 
 
 def field_is_register(field) -> bool:
-    return _dt_name(field.datatype) == _DT_REGISTER
+    # Not array-aware on purpose: callers dispatch on scalar-register /
+    # scalar-group / array in that order, and an array of registers is emitted
+    # differently from one register.
+    return is_register(field.datatype)
 
 
 def field_is_reg_group(field) -> bool:
-    return _dt_name(field.datatype) == _DT_REGISTER_GROUP
+    return is_reg_group(field.datatype)
 
 
 def field_is_array(field) -> bool:
     return _dt_name(field.datatype) == _DT_ARRAY
+
+
+def field_is_channel(field) -> bool:
+    """True for a ``sync_pkg::channel_c<Te, DEPTH>`` instance.
+
+    A channel is neither a sub-component nor plain data, and it is not a type a
+    backend emits: its implementation belongs to the runtime (a mailbox in SV, a
+    FIFO in C). So every place that partitions a component's fields has to name
+    it, or it falls into whichever bucket has the loosest test -- which is how
+    it first came out as an empty component class.
+    """
+    return _dt_name(field.datatype) == _DT_CHANNEL
+
+
+def channel_fields(comp) -> List[object]:
+    """Channel instances held by ``comp``, in declaration order."""
+    return [f for f in (getattr(comp, "fields", []) or []) if field_is_channel(f)]
 
 
 def array_element_type(field):
@@ -103,6 +178,39 @@ def array_element_type(field):
 
 def array_size(field) -> int:
     return int(field.datatype.size)
+
+
+@dc.dataclass
+class SubComp:
+    """A regular sub-component instance held by a component."""
+    name: str                    # field name, e.g. "ch"
+    dtype: object                # the sub-component's DataTypeComponent
+    size: Optional[int] = None   # element count, or None for a scalar instance
+
+    @property
+    def is_array(self) -> bool:
+        return self.size is not None
+
+
+def sub_components(comp) -> List[SubComp]:
+    """Regular sub-component instances of ``comp``, in declaration order.
+
+    Register groups are not sub-components -- they are the register model, which
+    is never exposed. Arrays of components are reported with their size; a size
+    that did not fold (-1) is reported as-is rather than skipped, so it fails
+    where it is used instead of silently producing a component with one fewer
+    child.
+    """
+    out: List[SubComp] = []
+    for f in getattr(comp, "fields", []) or []:
+        dt = f.datatype
+        if _dt_name(dt) == "DataTypeComponent" and not is_reg_group(dt):
+            out.append(SubComp(name=f.name, dtype=dt))
+        elif field_is_array(f):
+            elem = array_element_type(f)
+            if _dt_name(elem) == "DataTypeComponent" and not is_reg_group(elem):
+                out.append(SubComp(name=f.name, dtype=elem, size=int(dt.size)))
+    return out
 
 
 @dc.dataclass
@@ -139,7 +247,12 @@ def walk_tree(root_dtype, resolve) -> CompNode:
             child_dt = None
             if field_is_reg_group(f):
                 child_dt = f.datatype
-            elif field_is_array(f) and _dt_name(array_element_type(f)) == _DT_REGISTER_GROUP:
+            elif field_is_array(f) and _dt_name(array_element_type(f)) in (
+                    _DT_REGISTER_GROUP, "DataTypeComponent"):
+                # An ARRAY of sub-components is a child too. Following only
+                # scalar instances hid every per-channel component in a model
+                # that -- like every real one -- declares its channels as an
+                # array.
                 child_dt = array_element_type(f)
             elif _dt_name(f.datatype) == "DataTypeComponent":
                 child_dt = f.datatype

@@ -109,3 +109,31 @@ def test_component_one_class(gen):
     assert "_impl" not in sv
     assert "_imp_adapter_c" not in sv
     assert "_factory_c" not in sv
+
+
+def test_a_declaration_initializer_is_not_discarded(tmp_path):
+    """`int x = 5;` must not lower to `int x;`.
+
+    It did. The initializer was dropped on the floor by the StmtAnnAssign arm,
+    which emitted only the declaration -- output that compiles, runs, and
+    silently computes with zero. Found while checking the generated form of an
+    expanded masked register write, whose temporary is initialised from a
+    register read: the read vanished the same way.
+
+    Emitted as an SV declaration-with-initializer rather than a declaration plus
+    an assignment, because a declaration is legal only at the start of a block.
+    """
+    src = tmp_path / "m.pss"
+    src.write_text(
+        "import std_pkg::*;\n"
+        "import addr_reg_pkg::*;\n"
+        "component pss_top {\n"
+        "    target function void f() { int x = 5; int y = x + 1; }\n"
+        "    action A { exec body { comp.f(); } }\n"
+        "}\n")
+    out = tmp_path / "out"
+    driver.compile([str(src)], target="sv-progseq", output_dir=str(out),
+                   progseq_root="pss_top")
+    text = (out / "pss_top_pkg.sv").read_text()
+    assert "int x = 5;" in text, text
+    assert "int y = x + 1;" in text, text

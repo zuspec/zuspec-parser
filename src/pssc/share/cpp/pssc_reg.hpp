@@ -14,6 +14,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <type_traits>
 
 namespace pssc {
 
@@ -66,6 +67,42 @@ public:
         else if constexpr (W <= 16) bus_.write16(addr_, detail::to_raw<std::uint16_t, T>(v));
         else if constexpr (W <= 32) bus_.write32(addr_, detail::to_raw<std::uint32_t, T>(v));
         else                        bus_.write64(addr_, detail::to_raw<std::uint64_t, T>(v));
+    }
+
+    // Raw accessors. read()/write() are typed; the masked form works in bits,
+    // so it needs the untyped pair underneath it.
+    using raw_t = std::conditional_t<(W <=  8), std::uint8_t,
+                  std::conditional_t<(W <= 16), std::uint16_t,
+                  std::conditional_t<(W <= 32), std::uint32_t, std::uint64_t>>>;
+
+    raw_t read_val() const {
+        if constexpr (W <= 8)       return bus_.read8 (addr_);
+        else if constexpr (W <= 16) return bus_.read16(addr_);
+        else if constexpr (W <= 32) return bus_.read32(addr_);
+        else                        return bus_.read64(addr_);
+    }
+    void write_val(raw_t v) {
+        if constexpr (W <= 8)       bus_.write8 (addr_, v);
+        else if constexpr (W <= 16) bus_.write16(addr_, v);
+        else if constexpr (W <= 32) bus_.write32(addr_, v);
+        else                        bus_.write64(addr_, v);
+    }
+
+    // Masked write -- PSS 3.1 §21.14.1:
+    //
+    //     REG_VAL(new) = (REG_VAL(current) & ~mask) | (val & mask)
+    //
+    // THIS READS THE REGISTER, and that is the LRM's definition rather than an
+    // implementation choice: on a register whose read has side effects -- a
+    // channel CSR that clears its status and interrupt-source bits -- a masked
+    // write has them too.
+    //
+    // One method covers all four spellings the LRM offers. write_field,
+    // write_fields and write_masked are resolved and folded to a (mask, value)
+    // constant pair by the compiler, so no field name and no per-register
+    // generation reaches here.
+    void write_val_masked(raw_t mask, raw_t val) {
+        write_val(static_cast<raw_t>((read_val() & ~mask) | (val & mask)));
     }
 };
 

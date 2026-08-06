@@ -14,6 +14,7 @@ from typing import Any, List, Optional, Sequence, Union
 from .frontend import Parser
 from .ast2ir import AstToIrTranslator, AstToIrContext
 from .ir import to_core_context
+from . import reg_rmw as _reg_rmw
 from . import targets as _targets
 
 PathLike = Union[str, os.PathLike]
@@ -59,11 +60,17 @@ def _normalize_opts(opts: Optional[argparse.Namespace],
     return opts
 
 
-def translate(sources: Union[PathLike, Sequence[PathLike]]) -> AstToIrContext:
+def translate(sources: Union[PathLike, Sequence[PathLike]],
+              reg_rmw: str = "native") -> AstToIrContext:
     """Parse + link + translate ``sources`` (file paths) to an ``AstToIrContext``.
 
     The returned context is enriched with ``ctx.ir_context`` — the canonical
     ``zuspec.ir.core.Context``.
+
+    ``reg_rmw`` selects how far the §21.14.1 masked register writes are lowered.
+    The reduction to ``write_val_masked`` happens unconditionally inside
+    translation (it is what keeps field names out of the IR); ``"expand"``
+    additionally rewrites that into ``read_val`` + ``write_val``.
     """
     if isinstance(sources, (str, os.PathLike)):
         sources = [sources]
@@ -73,6 +80,8 @@ def translate(sources: Union[PathLike, Sequence[PathLike]]) -> AstToIrContext:
     parser.parse(paths)
     root = parser.link()
     ctx = AstToIrTranslator().translate(root)
+    if reg_rmw == "expand":
+        _reg_rmw.expand_all(ctx)
     ctx.ir_context = to_core_context(ctx)
     return ctx
 
@@ -106,7 +115,7 @@ def compile(
             raise CompileError(str(e)) from None
         return CompileResult(target=target, errors=[str(e)])
 
-    ctx = translate(sources)
+    ctx = translate(sources, reg_rmw=getattr(opts, "reg_rmw", "native"))
 
     if ctx.errors:
         if raise_on_error:

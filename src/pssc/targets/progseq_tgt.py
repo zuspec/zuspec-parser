@@ -41,8 +41,19 @@ class ProgSeqTarget(Target):
             default=True,
             help="progseq: do not copy the core seam header(s) into the output dir",
         )
+        parser.add_argument(
+            "--ctor-name", dest="progseq_ctor_name", metavar="NAME",
+            help="progseq: name of the `solve function` that is the constructor "
+                 "(default: ctor or init)",
+        )
 
     # -- helpers ------------------------------------------------------------
+
+    @staticmethod
+    def _apply_ctor_name(opts) -> None:
+        """Honour ``--ctor-name`` for this run (shared by sv/c/cpp)."""
+        from .progseq_model import set_ctor_name
+        set_ctor_name(getattr(opts, "progseq_ctor_name", None))
 
     @staticmethod
     def _resolve_root(ctx, root_name: str):
@@ -74,6 +85,7 @@ class ProgSeqTarget(Target):
         if not root_name:
             raise ValueError("sv-progseq requires --root <component>")
 
+        self._apply_ctor_name(opts)
         root = self._resolve_root(ctx, root_name)
 
         pkg_name = getattr(opts, "progseq_package", None) or f"{root_name}_pkg"

@@ -8,8 +8,14 @@ from .conftest import requires_dfm, run_task, filesets_by_type
 from pssc.dvflow import build
 
 
+# A component with an action AND an operation. The operation is not incidental:
+# progseq refuses to emit an export API with zero operations (that shape is how
+# every front-end defect in its history presented), so a model without one is
+# not a valid input to those tasks.
 _MODEL = """
 component pss_top {
+    int count;
+    function void bump() { count = count + 1; }
     action Entry { exec body { print("hi\\n"); } }
 }
 """

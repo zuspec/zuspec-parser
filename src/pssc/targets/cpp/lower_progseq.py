@@ -18,6 +18,7 @@ from ..c.lower_reg_model import c_struct_name, _prim_bits, _strip_pkg
 
 _DT_STRUCT = "DataTypeStruct"
 _DT_INT = "DataTypeInt"
+_DT_CHANDLE = "DataTypeChandle"
 
 _CPP_KEYWORDS = frozenset({
     "alignas", "alignof", "and", "asm", "auto", "bool", "break", "case", "catch",
@@ -45,8 +46,13 @@ def cpp_type(dtype) -> str:
         if signed:
             return "int" if bits <= 32 else "std::int64_t"
         return f"std::uint{_prim_bits(bits)}_t"
+    if cn == _DT_CHANDLE:
+        # `typedef chandle addr_handle_t` -- the typedef name is not in the IR,
+        # and the address handle is the only chandle this API can reach.
+        return "pssc::addr_t"
     if cn == _DT_STRUCT:
         nm = dtype.name.split("::")[-1]
+        # Older stdlibs declared addr_handle_t as a placeholder struct.
         if nm == "addr_handle_t":
             return "pssc::addr_t"
         return c_struct_name(dtype)
@@ -225,5 +231,19 @@ def emit_component(root, cls: str) -> str:
 
 
 def lower_component(root, cls: str) -> str:
+    # Channels have no C++ runtime here, and lowering one anyway produces a
+    # class with no channel member whose method bodies still call `wake.get()`
+    # -- a header that looks complete, exits 0, and does not compile. Same
+    # policy as the C backend and as `_assert_api_is_not_empty`: refuse rather
+    # than emit a plausible-looking non-API.
+    from ..progseq_model import channel_fields
+    chans = channel_fields(root)
+    if chans:
+        names = ", ".join(f.name for f in chans)
+        raise ValueError(
+            f"C++ programming-API generation does not support channels "
+            f"(component '{getattr(root, 'name', '?')}' declares: {names}). "
+            "sync_pkg::channel_c needs a C++ runtime implementation; the SV "
+            "backend has one (pssc_reg_pkg::channel_c) and this one does not.")
     return "\n\n".join([emit_export_api(root, cls), emit_import_api(root, cls),
                         emit_component(root, cls)])

@@ -28,6 +28,27 @@ def test_core_pkg_contents():
         assert f"task {prim} " in text or f"task {prim}(" in text, prim
 
 
+def test_reg_c_exposes_the_masked_write():
+    """`write_val_masked` is the one primitive the four §21.14.1 spellings
+    reduce to, so it is part of the frozen runtime ABI alongside read/write."""
+    text = (sv_core_dir() / SV_CORE_PKG).read_text()
+    assert "task write_val_masked(data_t mask, data_t val);" in text
+
+
+def test_the_masked_write_actually_reads():
+    """§21.14.1 defines the masked forms as read-modify-write.
+
+    On this device the read is observable -- a channel CSR read clears its
+    status and interrupt-source bits -- so an implementation that "optimised"
+    the read away would silently change device behaviour. Pinned here because
+    the mistake would look like a cleanup.
+    """
+    text = (sv_core_dir() / SV_CORE_PKG).read_text()
+    body = text.split("task write_val_masked")[1].split("endtask")[0]
+    assert "read_val(cur);" in body
+    assert "(cur & ~mask) | (val & mask)" in body
+
+
 def _run_cli(*args):
     out = subprocess.run(
         [sys.executable, "-m", "pssc.cli", *args],

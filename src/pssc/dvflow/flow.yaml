@@ -89,6 +89,33 @@ package:
 
   tasks:
 
+  # --- check task: elaborate only -------------------------------------------
+  - name: Check
+    shell: pytask
+    run: pssc.dvflow.check.Check
+    consumes:
+    - filetype: pssSource
+    passthrough: all
+    desc: Parse and elaborate PSS source, generating nothing
+    doc: |
+      A cheap "does this still link" gate: parse, link and translate the
+      `pssSource` inputs to IR, and report translation errors as markers.
+      Emits no files, and passes its inputs through so it can be inserted
+      ahead of a build task without rewiring.
+
+      With `order_check: true` it links the model TWICE -- in the order given
+      and reversed -- and fails if the two produce different IR. Exit status
+      alone cannot catch this: a front end that drops cross-file references in
+      one order still reports `0 errors` and exits 0
+      (`docs/pssparser-defects-2026-08-02.md`, D3). The failure message carries
+      the node and reference counts of both orders, so the size of the loss is
+      visible.
+    with:
+      order_check:
+        doc: Also link in reversed file order and require identical IR
+        type: bool
+        value: false
+
   # --- reference tasks: bundled core source ---------------------------------
   - name: RegPkg
     shell: pytask

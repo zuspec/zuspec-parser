@@ -18,6 +18,7 @@ from .lower_reg_model import accessor_base, c_struct_name, _prim_bits
 
 _DT_STRUCT = "DataTypeStruct"
 _DT_INT = "DataTypeInt"
+_DT_CHANDLE = "DataTypeChandle"
 
 # C reserved words that could collide with PSS identifiers (small, extend as needed).
 _C_KEYWORDS = frozenset({
@@ -43,8 +44,13 @@ def c_type(dtype) -> str:
         if signed:
             return "int" if bits <= 32 else "int64_t"
         return f"uint{_prim_bits(bits)}_t"
+    if cn == _DT_CHANDLE:
+        # `typedef chandle addr_handle_t` -- the typedef name is not in the IR,
+        # and the address handle is the only chandle this API can reach.
+        return "pssc_addr_t"
     if cn == _DT_STRUCT:
         nm = dtype.name.split("::")[-1]
+        # Older stdlibs declared addr_handle_t as a placeholder struct.
         if nm == "addr_handle_t":
             return "pssc_addr_t"
         return c_struct_name(dtype)
@@ -66,6 +72,24 @@ def _ctor(comp):
 
 def _reg_group_fields(comp) -> Set[str]:
     return {f.name for f in comp.fields if field_is_reg_group(f)}
+
+
+#: Register methods the C target emits a baked accessor for, and how many
+#: arguments each takes. The accessor is named after the method, so this table
+#: is the only thing that has to agree with ``lower_reg_model.emit_accessor``.
+#:
+#: ``write_val_masked`` is spelled ``_write_masked`` in C -- the accessor
+#: already works in raw bits, so the ``_val`` infix would say nothing.
+_REG_ACCESSORS = {
+    "read": 0,
+    "write": 1,
+    "read_val": 0,
+    "write_val": 1,
+    "write_val_masked": 2,
+}
+
+#: PSS method name -> C accessor suffix, where they differ.
+_REG_ACCESSOR_NAME = {"write_val_masked": "write_masked"}
 
 
 # --- handle + shim ---------------------------------------------------------
@@ -176,24 +200,67 @@ class _BodyEmitter:
         return None
 
     def _reg_call(self, call) -> Optional[str]:
-        """If ``call`` is a register read()/write(), return the baked-accessor
-        call; else None."""
+        """If ``call`` is a register access, return the baked-accessor call.
+
+        ``None`` means "not a register access" and lets the generic call path
+        have it. An *unrecognised method on a register* is not that: it raises.
+
+        The order matters, and it is the fix for a real trap. This used to test
+        the method name first and return ``None`` for anything outside
+        ``("read", "write")`` -- so `regs.csr.write_val(x)` fell through to the
+        generic path and emitted `regs.csr.write_val(x)`, C that names a struct
+        field which does not exist... except that it does compile wherever a
+        matching name happens to be in scope. Silence was the bug; the accessor
+        set being short was only the occasion for it.
+        """
         func = call.func
-        if _dt_name(func) != "ExprAttribute" or func.attr not in ("read", "write"):
+        if _dt_name(func) != "ExprAttribute":
             return None
         chain = self._chain(func.value)
-        if not chain or chain[0][0] not in self.reg_fields:
+        # A register lives inside a register group, so its path is at least
+        # `<group>.<reg>`. A one-element chain is a call on the GROUP itself
+        # (`regs.set_handle(...)`), which is not a register access and must not
+        # be judged as one.
+        if not chain or len(chain) < 2 or chain[0][0] not in self.reg_fields:
             return None
+
         reg = chain[-1][0]
         segs = [c[0] for c in chain[:-1]]
         idx = [c[1] for c in chain if c[1] is not None]
         base = accessor_base(self.prefix, segs, reg)
         idx_args = "".join(f", {self.expr(i)}" for i in idx)
-        if func.attr == "read":
-            return f"{base}_read(s{idx_args})"
-        return f"{base}_write(s{idx_args}, {self.expr(call.args[0])})"
+        args = [self.expr(a) for a in call.args]
+
+        if func.attr in _REG_ACCESSORS:
+            want = _REG_ACCESSORS[func.attr]
+            if len(args) != want:
+                raise ValueError(
+                    f"register method '{func.attr}' takes {want} argument(s), "
+                    f"got {len(args)}")
+            suffix = _REG_ACCESSOR_NAME.get(func.attr, func.attr)
+            return f"{base}_{suffix}(s{idx_args}" + \
+                   "".join(f", {a}" for a in args) + ")"
+
+        raise ValueError(
+            f"unsupported register method '{func.attr}' on '{'.'.join(segs + [reg])}'. "
+            f"The C target emits a baked accessor per register method; a method "
+            f"it does not know would otherwise become a generic call that "
+            f"compiles and writes the wrong thing. Known: "
+            f"{', '.join(sorted(_REG_ACCESSORS))}.")
 
     # expressions -----------------------------------------------------------
+
+    def _operand(self, e) -> str:
+        """An operand of a binary expression, parenthesised if it is one too.
+
+        The IR tree already says how the expression groups; C precedence only
+        happens to agree. Where it does not, the generated code is wrong, and
+        where it does, gcc still refuses `a & b | c` under
+        ``-Wparentheses -Werror`` -- which the C build tests use. Printing the
+        tree's own structure settles both, and costs a pair of brackets.
+        """
+        s = self.expr(e)
+        return f"({s})" if _dt_name(e) == "ExprBin" else s
 
     def expr(self, e) -> str:
         cn = _dt_name(e)
@@ -222,7 +289,13 @@ class _BodyEmitter:
             op = _BINOP.get(e.op.name)
             if op is None:
                 raise ValueError(f"unsupported binop {e.op.name}")
-            return f"{self.expr(e.lhs)} {op} {self.expr(e.rhs)}"
+            return f"{self._operand(e.lhs)} {op} {self._operand(e.rhs)}"
+        if cn == "ExprCast":
+            # `(bit[32])x` -> `(uint32_t)x`. C widens implicitly where SV does
+            # not, so this is mostly redundant here -- but dropping a cast the
+            # model wrote is not this emitter's call to make, and the masked
+            # register writes now emit one to state the register's width.
+            return f"({c_type(e.target_type)})({self.expr(e.value)})"
         if cn == "ExprCall":
             rc = self._reg_call(e)
             if rc is not None:
@@ -287,7 +360,32 @@ class _BodyEmitter:
 
 # --- emission --------------------------------------------------------------
 
+def _reject_channels(comp) -> None:
+    """Channels are not implemented by this backend -- say so, loudly.
+
+    There is no C runtime for `sync_pkg::channel_c`, so a component holding one
+    lowers to a struct with no channel member and operation bodies that still
+    call `wake.get()`: a header and a .c file that look complete, exit 0, and do
+    not compile. That silent shape is exactly what the SV backend did before it
+    grew a channel, and it cost a debugging session to find.
+
+    Raising here is the same policy as `_assert_api_is_not_empty`: a backend
+    that pretends to have generated an API is worse than one that admits it
+    cannot.
+    """
+    from ..progseq_model import channel_fields
+    chans = channel_fields(comp)
+    if chans:
+        names = ", ".join(f.name for f in chans)
+        raise ValueError(
+            f"C programming-API generation does not support channels "
+            f"(component '{getattr(comp, 'name', '?')}' declares: {names}). "
+            "sync_pkg::channel_c needs a C runtime implementation; the SV "
+            "backend has one (pssc_reg_pkg::channel_c) and this one does not.")
+
+
 def lower_decls(root_dtype, prefix: str, *, link_style: str = "vtable") -> str:
+    _reject_channels(root_dtype)
     ctor = _ctor(root_dtype)
     cp = _create_params(ctor, link_style)
     prefix_t = f"{prefix}_t"

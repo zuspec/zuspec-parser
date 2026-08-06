@@ -21,6 +21,7 @@ from ..progseq_model import (
     _dt_name, _scalar_offset, _array_base_stride, _is_reserved,
     collect_reg_groups, collect_value_structs,
 )
+from ...reg_field_resolve import struct_layout
 
 _DT_REGISTER = "DataTypeRegister"
 _DT_REGISTER_GROUP = "DataTypeRegisterGroup"
@@ -91,11 +92,9 @@ def emit_value_union(struct_dtype, reg_style: str = "bitfields") -> str:
     if reg_style == "accessors":
         return _emit_accessor_struct(struct_dtype, name, ut)
     lines = [f"typedef union {{ {ut} raw; struct {{"]
-    bit = 0
-    for f in struct_dtype.fields:
-        w = int(f.datatype.bits)
-        lines.append(f"    {ut} {f.name:12} : {w:2};   /* [{bit + w - 1}:{bit}] */")
-        bit += w
+    for fs in struct_layout(struct_dtype):
+        lines.append(f"    {ut} {fs.name:12} : {fs.width:2};   "
+                     f"/* [{fs.lsb + fs.width - 1}:{fs.lsb}] */")
     lines.append(f"}}; }} {name};")
     return "\n".join(lines)
 
@@ -104,19 +103,17 @@ def _emit_accessor_struct(struct_dtype, name: str, ut: str) -> str:
     """Layout-independent fallback (--reg-style accessors): a plain raw word plus
     inline shift/mask helpers ``<name>_<FIELD>_get/_set``."""
     lines = [f"typedef struct {{ {ut} raw; }} {name};"]
-    bit = 0
-    for f in struct_dtype.fields:
-        w = int(f.datatype.bits)
-        if not _is_reserved(f):
-            mask = (1 << w) - 1
-            lines.append(
-                f"static inline {ut} {name}_{f.name}_get({name} v) "
-                f"{{ return ({ut})((v.raw >> {bit}) & 0x{mask:x}u); }}")
-            lines.append(
-                f"static inline void {name}_{f.name}_set({name} *v, {ut} x) "
-                f"{{ v->raw = (v->raw & ~(0x{mask:x}u << {bit})) | "
-                f"(({ut})(x & 0x{mask:x}u) << {bit}); }}")
-        bit += w
+    for fs in struct_layout(struct_dtype):
+        if fs.name.startswith("_"):
+            continue                      # reserved gap: space, but no accessor
+        mask = (1 << fs.width) - 1
+        lines.append(
+            f"static inline {ut} {name}_{fs.name}_get({name} v) "
+            f"{{ return ({ut})((v.raw >> {fs.lsb}) & 0x{mask:x}u); }}")
+        lines.append(
+            f"static inline void {name}_{fs.name}_set({name} *v, {ut} x) "
+            f"{{ v->raw = (v->raw & ~(0x{mask:x}u << {fs.lsb})) | "
+            f"(({ut})(x & 0x{mask:x}u) << {fs.lsb}); }}")
     return "\n".join(lines)
 
 
@@ -226,6 +223,41 @@ def emit_accessor(acc: _Acc, prefix_t: str) -> str:
         lines.append(
             f"static inline void {acc.base}_write({prefix_t} *s{idx_p}, {acc.c_type} v) "
             f"{{ pssc_w{acc.prim}(pssc_bus(s), {acc.base}_addr(s{idx_a}), {raw}); }}")
+
+    # Raw accessors. `_read`/`_write` above are typed -- they hand back the
+    # value union -- and the masked forms work in bits, so they need the
+    # untyped pair. On a scalar-valued register these duplicate `_read`/
+    # `_write`; emitted anyway so the call site never has to ask which kind of
+    # register it is holding.
+    ut = f"uint{acc.prim}_t"
+    if acc.access != "WRITEONLY":
+        lines.append(
+            f"static inline {ut} {acc.base}_read_val({prefix_t} *s{idx_p}) "
+            f"{{ return pssc_r{acc.prim}(pssc_bus(s), {acc.base}_addr(s{idx_a})); }}")
+    if acc.access != "READONLY":
+        lines.append(
+            f"static inline void {acc.base}_write_val({prefix_t} *s{idx_p}, {ut} v) "
+            f"{{ pssc_w{acc.prim}(pssc_bus(s), {acc.base}_addr(s{idx_a}), v); }}")
+
+    # The masked write -- PSS 3.1 §21.14.1:
+    #
+    #     REG_VAL(new) = (REG_VAL(current) & ~mask) | (val & mask)
+    #
+    # THE READ IS PART OF THE DEFINITION, not an implementation choice. On a
+    # register whose read has side effects -- a channel CSR that clears its
+    # status and interrupt-source bits -- a masked write has them too. Which is
+    # also why it needs both directions: a WRITEONLY register cannot supply the
+    # current value, and a READONLY one cannot take the result.
+    #
+    # The compiler folds write_field / write_fields / write_masked to a
+    # (mask, val) constant pair before reaching here, so one accessor serves all
+    # four spellings and no field name is involved.
+    if acc.access not in ("READONLY", "WRITEONLY"):
+        lines.append(
+            f"static inline void {acc.base}_write_masked({prefix_t} *s{idx_p}, "
+            f"{ut} mask, {ut} val) "
+            f"{{ {ut} cur = {acc.base}_read_val(s{idx_a}); "
+            f"{acc.base}_write_val(s{idx_a}, (cur & ~mask) | (val & mask)); }}")
     return "\n".join(lines)
 
 

@@ -108,12 +108,24 @@ def emit_reg_group(group_dtype) -> str:
 
 
 def lower_register_model(root_dtype) -> Tuple[str, List[str], List[str]]:
-    """Return (sv_body, struct_names, group_names) for ``root``'s register tree.
+    """Return (sv_body, struct_names, group_names) for a register tree.
+
+    ``root_dtype`` is a component, or a **list** of components whose register
+    models share one package. The list form matters for component trees: a
+    per-channel bank belongs to the channel component, so lowering only the
+    root's own registers emits nothing for it.
 
     ``sv_body`` is the package-body text (value structs then reg-group classes,
     nested groups first). Names are the emitted (package-stripped) type names.
     """
-    groups = collect_reg_groups(root_dtype)
+    roots = root_dtype if isinstance(root_dtype, (list, tuple)) else [root_dtype]
+    groups: List[object] = []
+    seen = set()
+    for r in roots:
+        for g in collect_reg_groups(r):
+            if id(g) not in seen:
+                seen.add(id(g))
+                groups.append(g)
     structs = collect_value_structs(groups)
 
     parts: List[str] = []
