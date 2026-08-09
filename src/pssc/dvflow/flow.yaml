@@ -73,7 +73,7 @@ package:
           - `pssc.SvDpiBridge`-> C scenario DPI .so + SV trampoline
           - `pssc.CHost` / `pssc.CHostPresolved` -> host C
           - `pssc.CEmbedded` / `pssc.CEmbeddedPresolved` -> embedded C
-          - `pssc.SvProgSeq` / `pssc.CProgSeq` / `pssc.CppProgSeq` -> programming
+          - `pssc.OpModelSv` / `pssc.OpModelC` / `pssc.OpModelCpp` -> programming
             APIs from a component tree (require `root:`)
           - `pssc.PySource`   -> live Python classes
 
@@ -115,6 +115,14 @@ package:
         doc: Also link in reversed file order and require identical IR
         type: bool
         value: false
+      target_cfg:
+        doc: |
+          `target_cfg_pkg` constants to inject ahead of the sources, as
+          `NAME=VALUE` strings (e.g. `["HAVE_BLOCKING=false"]`). Check names no
+          target, so nothing publishes capabilities on its behalf; this is how a
+          model whose elaboration is gated on `target_cfg_pkg` gets checked on
+          both answers without a second copy of the source tree.
+        type: list
 
   # --- reference tasks: bundled core source ---------------------------------
   - name: RegPkg
@@ -293,14 +301,21 @@ package:
       runtime_solve: { type: bool, value: false }
       presolve:      { type: bool, value: false }
 
-  - name: SvProgSeq
+  - name: OpModelSv
     shell: pytask
-    run: pssc.dvflow.build.SvProgSeq
+    run: pssc.dvflow.build.OpModelSv
     consumes:
     - filetype: pssSource
     - type: pssc.PsscArgs
-    desc: Generate a SystemVerilog programming-sequence API from a component tree (target sv-progseq)
+    desc: Generate a SystemVerilog operation-model API from a component tree (target op-model-sv)
     with:
+      target_cfg:
+        doc: |
+          Override what the target publishes as `target_cfg_pkg`, the PSS source
+          unit injected ahead of the sources. `NAME=VALUE` strings, e.g.
+          `["HAVE_BLOCKING=false"]`. Empty means "use the target's own answer",
+          which is normally right.
+        type: list
       export_action: { type: list }
       args:          { type: list }
       root:
@@ -316,14 +331,21 @@ package:
         type: bool
         value: true
 
-  - name: CProgSeq
+  - name: OpModelC
     shell: pytask
-    run: pssc.dvflow.build.CProgSeq
+    run: pssc.dvflow.build.OpModelC
     consumes:
     - filetype: pssSource
     - type: pssc.PsscArgs
-    desc: Generate a C programming-sequence API from a component tree (target c-progseq)
+    desc: Generate a C operation-model API from a component tree (target op-model-c)
     with:
+      target_cfg:
+        doc: |
+          Override what the target publishes as `target_cfg_pkg`, the PSS source
+          unit injected ahead of the sources. `NAME=VALUE` strings, e.g.
+          `["HAVE_BLOCKING=false"]`. Empty means "use the target's own answer",
+          which is normally right.
+        type: list
       export_action: { type: list }
       args:          { type: list }
       root:
@@ -351,14 +373,21 @@ package:
         type: bool
         value: true
 
-  - name: CppProgSeq
+  - name: OpModelCpp
     shell: pytask
-    run: pssc.dvflow.build.CppProgSeq
+    run: pssc.dvflow.build.OpModelCpp
     consumes:
     - filetype: pssSource
     - type: pssc.PsscArgs
-    desc: Generate a C++ programming-sequence API from a component tree (target cpp-progseq)
+    desc: Generate a C++ operation-model API from a component tree (target op-model-cpp)
     with:
+      target_cfg:
+        doc: |
+          Override what the target publishes as `target_cfg_pkg`, the PSS source
+          unit injected ahead of the sources. `NAME=VALUE` strings, e.g.
+          `["HAVE_BLOCKING=false"]`. Empty means "use the target's own answer",
+          which is normally right.
+        type: list
       export_action: { type: list }
       args:          { type: list }
       root:
@@ -377,3 +406,56 @@ package:
         doc: Copy the core seam header(s) into the output dir
         type: bool
         value: true
+
+  # --- deprecated task names -------------------------------------------------
+  # `<Kind>ProgSeq` became `OpModel<Kind>` so the three read as one family and
+  # sort together, matching the `op-model-<kind>` target names. These aliases
+  # run the same builds; prefer the names above in new flows.
+  - name: SvProgSeq
+    shell: pytask
+    run: pssc.dvflow.build.SvProgSeq
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Deprecated alias for pssc.OpModelSv
+    with:
+      target_cfg:    { type: list }
+      export_action: { type: list }
+      args:          { type: list }
+      root:          { type: str, value: "" }
+      package_name:  { type: str, value: "" }
+      core_copy:     { type: bool, value: true }
+
+  - name: CProgSeq
+    shell: pytask
+    run: pssc.dvflow.build.CProgSeq
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Deprecated alias for pssc.OpModelC
+    with:
+      target_cfg:    { type: list }
+      export_action: { type: list }
+      args:          { type: list }
+      root:          { type: str, value: "" }
+      prefix:        { type: str, value: "" }
+      link_style:    { type: str, value: "vtable" }
+      reg_style:     { type: str, value: "bitfields" }
+      header_only:   { type: bool, value: false }
+      core_copy:     { type: bool, value: true }
+
+  - name: CppProgSeq
+    shell: pytask
+    run: pssc.dvflow.build.CppProgSeq
+    consumes:
+    - filetype: pssSource
+    - type: pssc.PsscArgs
+    desc: Deprecated alias for pssc.OpModelCpp
+    with:
+      target_cfg:    { type: list }
+      export_action: { type: list }
+      args:          { type: list }
+      root:          { type: str, value: "" }
+      namespace:     { type: str, value: "" }
+      dispatch:      { type: str, value: "virtual" }
+      core_copy:     { type: bool, value: true }

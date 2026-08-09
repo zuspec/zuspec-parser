@@ -1,7 +1,7 @@
 Programming-Sequence Generation — Architecture
 ==============================================
 
-This page summarizes how the ``sv-progseq`` target lowers a PSS component tree to
+This page summarizes how the ``op-model-sv`` target lowers a PSS component tree to
 SystemVerilog. The authoritative design notes are
 ``design/pss-programming-seq-gen-design.md`` (scheme) and
 ``design/pss-programming-seq-gen-impl-plan.md`` (implementation/test/doc plan);
@@ -11,7 +11,7 @@ the validated reference output is
 Pipeline
 --------
 
-``pssc compile -t sv-progseq --root <comp>`` resolves the root component from the
+``pssc compile -t op-model-sv --root <comp>`` resolves the root component from the
 translated IR and walks its subtree:
 
 1. **Classify** each reachable component by its ``super`` type
@@ -80,11 +80,11 @@ Frozen decisions
 C and C++ backends
 ------------------
 
-The ``c-progseq`` and ``cpp-progseq`` targets reuse the language-neutral model
+The ``op-model-c`` and ``op-model-cpp`` targets reuse the language-neutral model
 (``progseq_model``: walk + classify + the hoisted affine-offset and type-list
 helpers) verbatim; only the per-language *emission* differs. The authoritative
-notes are ``design/pss-c-cpp-progseq-gen-design.md`` and
-``design/pss-c-cpp-progseq-gen-impl-plan.md``; the validated references are
+notes are ``design/pss-c-op-model-cpp-gen-design.md`` and
+``design/pss-c-op-model-cpp-gen-impl-plan.md``; the validated references are
 ``examples/export/programming_seqs/c_proto/`` and ``cpp_proto/``.
 
 The one thing that varies between backends is the **seam** — how a register
@@ -123,7 +123,7 @@ regular ``component``           ``C_t`` + free fns          ``C_if`` + ``C``
 Modules
 -------
 
-- ``pssc.targets.progseq_tgt`` — the ``ProgSeqTarget`` (``sv-progseq``) target and
+- ``pssc.targets.progseq_tgt`` — the ``ProgSeqTarget`` (``op-model-sv``) target and
   ``--root`` resolution.
 - ``pssc.targets.progseq_model`` — language-neutral tree walk + classification
   (``func_kind``, ``comp_kind``, ``walk_tree``) and the shared affine-offset and

@@ -41,8 +41,18 @@ def _core_pkg_path() -> Path:
     return sv_core_dir() / SV_CORE_PKG
 
 
-def generate(ctx, root, pkg_name: str, out_dir: Path, copy_core: bool = True) -> List[Path]:
+def generate(ctx, root, pkg_name: str, out_dir: Path, copy_core: bool = True,
+             reg_fields: str = "named") -> List[Path]:
     """Generate the SV programming-sequence package for ``root``.
+
+    ``reg_fields`` controls how a folded masked write is SPELLED, not what it
+    does. ``named`` restores the field name the mask came from
+    (``csr.write_field(WB_DMA_CH_CSR_ars, ..)``); ``folded`` emits the literal
+    (mask, value) pair the reduction produced, which is what every other backend
+    consumes and what this target emitted before the naming existed. The two
+    generate identical bus traffic -- ``folded`` exists so the collapsed form
+    stays reachable for diffing against the C target and for debugging a
+    suspected naming bug.
 
     Returns the list of written file paths.
     """
@@ -61,6 +71,13 @@ def generate(ctx, root, pkg_name: str, out_dir: Path, copy_core: bool = True) ->
     # that puts registers where the operations that use them are.
     reg_body, struct_names, group_names = lower_register_model(
         [c.dtype for c in regular])
+
+    # One namer per component: receiver paths resolve against that component's
+    # own fields. `folded` leaves them all None, which disables the rewrite.
+    from .sv.reg_field_names import FieldNamer
+    type_map = getattr(ctx, "type_map", {}) or {}
+    namers = ({id(c.dtype): FieldNamer(c.dtype, type_map) for c in regular}
+              if reg_fields == "named" else {})
 
     _assert_api_is_not_empty(regular)
 
@@ -92,10 +109,11 @@ def generate(ctx, root, pkg_name: str, out_dir: Path, copy_core: bool = True) ->
         if comp.dtype is root:
             continue
         pkg.append(f"  // ----- Implementation: {comp.name} -----")
-        pkg.append(emit_subcomponent_class(comp.dtype, root))
+        pkg.append(emit_subcomponent_class(comp.dtype, root,
+                                           namers.get(id(comp.dtype))))
         pkg.append("")
     pkg.append(f"  // ----- Component handle/factory: {tree.name} -----")
-    pkg.append(emit_component(root, needs_yield))
+    pkg.append(emit_component(root, needs_yield, namers.get(id(root))))
     pkg.append("")
     pkg.append(f"endpackage")
     pkg.append("")

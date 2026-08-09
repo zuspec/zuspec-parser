@@ -70,9 +70,12 @@ def _register_builtins() -> None:
     register(PythonTarget())
     register(SvTarget(), aliases=("sv",))   # `sv` kept as a back-compat alias
     register(SvPureTarget())                # incremental-traversal pure-SV path
-    register(ProgSeqTarget(), aliases=("progseq",))
-    register(CProgSeqTarget(), aliases=("progseq-c",))
-    register(CppProgSeqTarget(), aliases=("progseq-cpp",))
+    # The operation-model family. Named `op-model-<kind>` so the three read as
+    # one family and sort together; the former `<kind>-progseq` names are kept
+    # as aliases so existing command lines and flows keep working.
+    register(ProgSeqTarget(), aliases=("progseq", "sv-progseq"))
+    register(CProgSeqTarget(), aliases=("progseq-c", "c-progseq"))
+    register(CppProgSeqTarget(), aliases=("progseq-cpp", "cpp-progseq"))
     for tgt in (CHostTarget(), CHostPresolvedTarget(),
                 CEmbeddedTarget(), CEmbeddedPresolvedTarget(), SvDpiTarget(),
                 SvDpiBridgeTarget()):

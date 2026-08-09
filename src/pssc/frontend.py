@@ -91,9 +91,17 @@ class Parser(_PssParser):
     accepted and ignored.
     """
 
-    def parse(self, files: List[str]) -> bool:
-        """Read and parse PSS files."""
-        text_files = []
+    def parse(self, files: List[str], prelude=()) -> bool:
+        """Read and parse PSS ``files``, with ``prelude`` processed first.
+
+        ``prelude`` is a sequence of ``(name, text)`` in-memory source units --
+        typically a target's ``target_cfg_pkg`` (see
+        :mod:`pssc.targets.target_cfg`). They are prepended rather than
+        appended because ``compile if`` reads constants only from
+        previously-processed source units (PSS 3.1 §19.1.2), and arriving late
+        is silent: the model simply takes its default branch.
+        """
+        text_files = [(name, text) for name, text in prelude]
         for path in files:
             with open(path, 'r') as fh:
                 src = fh.read()

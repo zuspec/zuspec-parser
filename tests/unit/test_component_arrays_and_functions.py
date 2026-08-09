@@ -141,11 +141,6 @@ class TestFunctionFeatures(unittest.TestCase):
         param = func.args.args[0]
         self.assertIsInstance(param.annotation, ir.DataTypeInt)
 
-    @pytest.mark.xfail(strict=True, reason=(
-        "pssparser D4: a function DEFINITION contributes its prototype twice, "
-        "so checkDeclarationConsistency compares the one declaration against "
-        "itself and rejects its own default value. See "
-        "docs/pssparser-defects-2026-08-02.md"))
     def test_function_default_param_translates(self):
         """Function with default param: Arguments.defaults has one entry."""
         ctx = self.parse_and_translate("""
@@ -160,11 +155,6 @@ class TestFunctionFeatures(unittest.TestCase):
         self.assertIsInstance(func.args.defaults[0], ir.ExprConstant)
         self.assertEqual(func.args.defaults[0].value, "World")
 
-    @pytest.mark.xfail(strict=True, reason=(
-        "pssparser D4: a function DEFINITION contributes its prototype twice, "
-        "so checkDeclarationConsistency compares the one declaration against "
-        "itself and rejects its own default value. See "
-        "docs/pssparser-defects-2026-08-02.md"))
     def test_function_default_int_param(self):
         """Function with int default: defaults list has ExprConstant(42)."""
         ctx = self.parse_and_translate("""

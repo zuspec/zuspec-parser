@@ -31,8 +31,10 @@ def _comp(ctx, name):
 
 def test_target_registered():
     _targets.discover()
-    assert "sv-progseq" in _targets.list_targets()
-    assert _targets.get("progseq") is _targets.get("sv-progseq")
+    assert "op-model-sv" in _targets.list_targets()
+    # `sv-progseq` / `progseq` are back-compat aliases for `op-model-sv`.
+    assert _targets.get("progseq") is _targets.get("op-model-sv")
+    assert _targets.get("sv-progseq") is _targets.get("op-model-sv")
 
 
 # --- component classification ----------------------------------------------

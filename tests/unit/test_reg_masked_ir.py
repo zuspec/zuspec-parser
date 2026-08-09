@@ -112,6 +112,10 @@ def test_field_masks(name, mask):
     ('regs.csr.write_field("prio", 5);', 0xe, 0xa),
     ('regs.csr.write_field("msb", 1);', 0x80000000, 0x80000000),
     ('regs.csr.write_masked({.prio=7}, {.prio=5});', 0xe, 0xa),
+    # The LRM's own idiom (Example356). `~0` selects the whole field, whatever
+    # its width -- which is the point of writing it that way rather than 0x7.
+    ('regs.csr.write_masked({.prio=~0}, {.prio=5});', 0xe, 0xa),
+    ('regs.csr.write_masked({.ch_en=~0}, {.ch_en=1});', 0x1, 0x1),
     ('regs.csr.write_fields({"ch_en","use_ed"}, {1,1});', 0x11, 0x11),
     ('regs.csr.write_fields({"msb","ch_en"}, {1,1});', 0x80000001, 0x80000001),
 ])

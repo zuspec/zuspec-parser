@@ -20,8 +20,10 @@ def _gen(out_dir, dispatch="virtual", namespace="wb_dma"):
 
 
 def test_registered():
-    assert "cpp-progseq" in _targets.list_targets()
-    assert _targets.get("progseq-cpp") is _targets.get("cpp-progseq")
+    assert "op-model-cpp" in _targets.list_targets()
+    # `cpp-progseq` / `progseq-cpp` are back-compat aliases for `op-model-cpp`.
+    assert _targets.get("progseq-cpp") is _targets.get("op-model-cpp")
+    assert _targets.get("cpp-progseq") is _targets.get("op-model-cpp")
 
 
 def test_missing_root():

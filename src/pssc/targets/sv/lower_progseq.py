@@ -151,8 +151,12 @@ def _is_true_const(e) -> bool:
 class _BodyEmitter:
     """Translate one function body to SV lines."""
 
-    def __init__(self, fn, comp, member_of):
+    def __init__(self, fn, comp, member_of, namer=None):
         self.fn = fn
+        # Restores field names to the folded masks `reg_rmw` produced. None
+        # disables it, and every call site then emits the literal pair it
+        # emitted before this existed -- so the naming is never load-bearing.
+        self.namer = namer
         args = (fn.args.args if fn is not None and fn.args else [])
         # rename map for SV-keyword args
         self.arg_rename = {a.arg: mangle(a.arg) for a in args}
@@ -249,8 +253,60 @@ class _BodyEmitter:
             builtin = self._builtin_call(e)
             if builtin is not None:
                 return builtin
+            # A folded masked write, spelled back as the field(s) it came from.
+            named = self._field_write(e)
+            if named is not None:
+                return named
             args = ", ".join(self.expr(a) for a in e.args)
             return f"{self.expr(callee)}({args})"
+
+    # --- field-named masked writes ---------------------------------------
+
+    def _field_write(self, call) -> Optional[str]:
+        """``write_val_masked(64, ..)`` -> ``write_field(WB_DMA_CH_CSR_ars, ..)``.
+
+        Returns ``None`` for anything it cannot prove, which leaves the folded
+        literals the reduction produced. Every step is an exact match: the mask
+        must be exactly one field's bits or exactly a set of whole fields, and
+        each value must un-place to what the model wrote. There is no partial
+        credit, because a call that NAMES a field and writes different bits
+        would be worse than the magic numbers it replaced.
+        """
+        from .reg_field_names import unplace
+
+        if self.namer is None:
+            return None
+        callee = call.func
+        if _dt_name(callee) != "ExprAttribute":
+            return None
+        if callee.attr != "write_val_masked" or len(call.args) != 2:
+            return None
+        mask_e, val_e = call.args
+        if _dt_name(mask_e) != "ExprConstant" or not isinstance(mask_e.value, int):
+            return None
+        refs = self.namer.fields_for(callee.value, int(mask_e.value))
+        if not refs:
+            return None
+        recv = self.expr(callee.value)
+
+        if len(refs) == 1:
+            v = unplace(val_e, refs[0].slice)
+            if v is None:
+                return None
+            return f"{recv}.write_field({refs[0].const}, {self.expr(v)})"
+
+        # Several fields in one transaction. Only the all-constant value is
+        # decomposed: `_or_all` flattens a mixed constant/dynamic value into a
+        # tree whose per-field parts cannot be recovered unambiguously, and
+        # guessing is exactly what the docstring above rules out.
+        if _dt_name(val_e) != "ExprConstant" or not isinstance(val_e.value, int):
+            return None
+        packed = int(val_e.value)
+        if packed & ~int(mask_e.value):
+            return None       # value carries bits the mask does not select
+        vals = [str((packed & r.slice.mask) >> r.slice.lsb) for r in refs]
+        names = ", ".join(r.const for r in refs)
+        return f"{recv}.write_fields('{{{names}}}, '{{{', '.join(vals)}}})"
         raise ValueError(f"unsupported expr {cn}")
 
     # statements -----------------------------------------------------------
@@ -746,12 +802,12 @@ def _bind_body(comp, ctor, members, subs, *, bus: str, base_arg: str) -> List[st
     return [f"      {members[g]} = new({bus}, {base_arg});" for g in reg_groups]
 
 
-def _operation_defs(comp, members: Dict[str, str]) -> List[str]:
+def _operation_defs(comp, members: Dict[str, str], namer=None) -> List[str]:
     """Export operations. `virtual`, not plain -- they implement the export
     interface's pure virtuals, and stricter simulators require the override."""
     lines: List[str] = []
     for fn in _operations(comp):
-        be = _BodyEmitter(fn, comp, members)
+        be = _BodyEmitter(fn, comp, members, namer=namer)
         lines.append(f"    virtual task {mangle(fn.name)}({_signature(fn)});")
         lines += be.stmts(fn.body, 3)
         lines.append("    endtask")
@@ -781,7 +837,7 @@ def _accessor_defs(comp, members: Dict[str, str], subs: Dict[str, SubComp]) -> L
     return lines
 
 
-def emit_subcomponent_class(comp, root) -> str:
+def emit_subcomponent_class(comp, root, namer=None) -> str:
     """A non-root component's implementation class.
 
     Deliberately **not** parameterized. Only the root carries `#(type IMP_T)`,
@@ -818,13 +874,13 @@ def emit_subcomponent_class(comp, root) -> str:
     lines += _bind_body(comp, ctor, members, subs, bus="m_imp", base_arg=base_arg)
     lines.append("    endfunction")
     lines.append("")
-    lines += _operation_defs(comp, members)
+    lines += _operation_defs(comp, members, namer)
     lines += _accessor_defs(comp, members, subs)
     lines.append("  endclass")
     return "\n".join(lines)
 
 
-def emit_component(root, needs_yield: bool = False) -> str:
+def emit_component(root, needs_yield: bool = False, namer=None) -> str:
     """The component class, named after the component itself -- one class that is
 
       * the **export implementation** (`implements <comp>_if`, the operations),
@@ -874,7 +930,7 @@ def emit_component(root, needs_yield: bool = False) -> str:
     lines.append("    endfunction")
     lines.append("")
 
-    lines += _operation_defs(root, members)
+    lines += _operation_defs(root, members, namer)
     lines += _accessor_defs(root, members, subs)
 
     # import redirect: forward each memory-access primitive to the user object.

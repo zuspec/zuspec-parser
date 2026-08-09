@@ -25,8 +25,11 @@ def _opts(**kw):
 
 
 def test_registered():
-    assert "c-progseq" in _targets.list_targets()
-    assert _targets.get("progseq-c") is _targets.get("c-progseq")
+    assert "op-model-c" in _targets.list_targets()
+    # The canonical name is `op-model-c`; `c-progseq` and `progseq-c` are
+    # back-compat aliases and must keep resolving to the same instance.
+    assert _targets.get("progseq-c") is _targets.get("op-model-c")
+    assert _targets.get("c-progseq") is _targets.get("op-model-c")
 
 
 def test_default_prefix():

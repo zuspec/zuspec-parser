@@ -30,6 +30,12 @@ _DEFAULT_WNO = (
     "WIDTH", "WIDTHEXPAND", "WIDTHTRUNC", "UNUSED", "UNUSEDSIGNAL",
     "UNUSEDPARAM", "CASEINCOMPLETE", "BLKANDNBLK", "MULTIDRIVEN",
     "UNOPTFLAT", "DECLFILENAME", "VARHIDDEN", "SYMRSVDWORD",
+    # Verilator 5.049 added IMPLICITSTATIC, which fires on every
+    # `my_class c = new();` declared in a static scope -- the ordinary shape of
+    # a generated harness, and of hand-written golden SV. Verilator promotes
+    # warnings to a non-zero exit, so without this every build here fails on a
+    # lint note about initializer lifetime rather than on anything real.
+    "IMPLICITSTATIC",
 )
 
 

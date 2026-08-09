@@ -3,12 +3,12 @@
 Two of these are the plan of record for pssc; the rest are backstops.
 
 The **zero-mask** case is pssc's own, because it is a statement about folded
-bits rather than about a name (plan §1.2). It exists because of pssparser defect
-D5: `AstBuilderInt::visitExpression` discards the operator of a unary
-expression, so `~0` reaches the compiler as `0`. That turns the LRM's own mask
-idiom -- Example356's `{.mode=~0}` -- into a write that selects no bits. Folding
-it would emit a silent no-op; refusing it is the only safe answer while D5 is
-open.
+bits rather than about a name (plan §1.2). It originally existed to contain
+pssparser defect D5, which discarded the operator of a unary expression and so
+turned the LRM's own mask idiom -- Example356's `{.mode=~0}` -- into a write
+that selects no bits. D5 is fixed and that idiom now folds correctly; the guard
+stays because naming a field in a mask literal and selecting none of its bits
+is meaningless however it was spelled.
 
 The **unreduced-call** case is the guarantee that nothing gets through: the
 reduction only follows `self`-rooted paths into the enclosing component's own
@@ -62,15 +62,20 @@ def one_error(body: str) -> str:
     return errs[0]
 
 
-# --- the D5 zero-mask trap ------------------------------------------------
+# --- the zero-mask guard --------------------------------------------------
 
-def test_the_lrm_mask_idiom_is_rejected_not_folded():
-    """`{.ch_en=~0}` is the spec's own spelling and currently folds to 0."""
-    msg = one_error("regs.csr.write_masked({.ch_en=~0}, {.ch_en=1});")
-    assert "zero mask" in msg
-    assert "'ch_en'" in msg
-    assert "D5" in msg, "the message must say why ~0 vanished"
-    assert "write_field" in msg, "the message must offer the form that works"
+def test_the_lrm_mask_idiom_is_accepted():
+    """`{.ch_en=~0}` is the spec's own spelling (Example356) and must fold.
+
+    This assertion is inverted from what it was: while D5 was open, `~0`
+    reached the compiler as `0` and the only safe answer was to refuse the
+    idiom. D5 is fixed, so the idiom folds to ch_en's bits like any other mask.
+    The folded constant is asserted in `test_reg_masked_ir.py`; here it is
+    enough that the spec's spelling is no longer an error.
+    """
+    assert errors_for(
+        "target function void f() { regs.csr.write_masked({.ch_en=~0}, {.ch_en=1}); }"
+    ) == []
 
 
 def test_explicit_zero_mask_is_rejected_too():

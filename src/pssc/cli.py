@@ -89,6 +89,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="action to expose as an export entry point (repeatable; "
         "default: the auto-detected single root action)",
     )
+    # Override what the target publishes about itself in `target_cfg_pkg`, the
+    # source unit injected ahead of the sources (see pssc/targets/target_cfg.py).
+    # A target's own answer is the default and is usually right; this exists for
+    # the case where the surrounding project changes it -- firmware that
+    # supplies its own scheduler under a generated C API, say.
+    c.add_argument(
+        "--target-cfg", dest="target_cfg", action="append",
+        metavar="NAME=VALUE", default=None,
+        help="override a target_cfg_pkg constant, e.g. HAVE_BLOCKING=false "
+        "(repeatable; see `pssc targets`)",
+    )
     # per-target options. Shared options inherited across target variants (e.g.
     # the SV family) are registered once via the dedup proxy.
     _targets.discover()
@@ -175,7 +186,15 @@ def _cmd_parse(args: argparse.Namespace) -> int:
 def _cmd_targets(args: argparse.Namespace) -> int:
     _targets.discover()
     for name in _targets.list_targets():
-        print(f"{name:24} {_targets.get(name).description}")
+        tgt = _targets.get(name)
+        print(f"{name:24} {tgt.description}")
+        # What the target publishes as `target_cfg_pkg`. Printed because it is
+        # otherwise invisible: it changes which parts of a model elaborate,
+        # without appearing in any file the user wrote.
+        if tgt.target_cfg:
+            flags = "  ".join(f"{k}={'true' if v else 'false'}"
+                              for k, v in sorted(tgt.target_cfg.items()))
+            print(f"{'':24} target_cfg: {flags}")
     return 0
 
 

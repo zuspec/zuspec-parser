@@ -1,7 +1,7 @@
 Programming-Sequence Generation (SystemVerilog / C / C++)
 =========================================================
 
-The ``sv-progseq`` target turns a PSS **component tree** — a register model plus
+The ``op-model-sv`` target turns a PSS **component tree** — a register model plus
 the driver/operation routines layered on it — into a reusable **SystemVerilog
 programming API**. A SV/UVM consumer can then write::
 
@@ -21,7 +21,7 @@ Generate the package and put the bundled core package on your compile order:
 
 .. code-block:: console
 
-   $ pssc compile -t sv-progseq --root dma_engine_c \
+   $ pssc compile -t op-model-sv --root dma_engine_c \
          examples/export/programming_seqs/dma_regs.pss \
          examples/export/programming_seqs/dma_engine.pss \
          -o out/
@@ -33,7 +33,7 @@ runtime ``out/pssc_reg_pkg.sv`` alongside it. Compile them in dependency order::
 
    pssc_reg_pkg.sv   <package>.sv   <your testbench>.sv
 
-Options (``pssc compile -t sv-progseq ...``):
+Options (``pssc compile -t op-model-sv ...``):
 
 ================================  ============================================
 Option                            Description
@@ -155,10 +155,10 @@ hand-written reference the generator converges on (references live under
 - **C++** — TB ``tests/progseq/data/cpp/wb_dma_tb.cpp``, reference ``cpp_proto/``;
   gated under g++ + clang++.
 
-C backend (``c-progseq``)
+C backend (``op-model-c``)
 -------------------------
 
-The ``c-progseq`` target emits the same programming API in C: register value
+The ``op-model-c`` target emits the same programming API in C: register value
 **unions** (anonymous-union bitfields, so ``csr.FIELD`` works), zero-overhead
 **baked inline accessors**, and free functions over an opaque ``<prefix>_t``.
 Bodies keep native value-returning reads, native ``return``, and native
@@ -166,7 +166,7 @@ Bodies keep native value-returning reads, native ``return``, and native
 
 .. code-block:: console
 
-   $ pssc compile -t c-progseq --root dma_engine_c --prefix wb_dma \
+   $ pssc compile -t op-model-c --root dma_engine_c --prefix wb_dma \
          --link-style vtable \
          examples/export/programming_seqs/dma_regs.pss \
          examples/export/programming_seqs/dma_engine.pss -o out/
@@ -205,17 +205,17 @@ Construct and call (vtable)::
 For embedded/static allocation, ``wb_dma_init(self, ...)`` fills a caller-owned
 struct (no ``malloc``).
 
-C++ backend (``cpp-progseq``)
+C++ backend (``op-model-cpp``)
 -----------------------------
 
-The ``cpp-progseq`` target is the closest to SystemVerilog: pure-virtual export
+The ``op-model-cpp`` target is the closest to SystemVerilog: pure-virtual export
 interfaces, a real ``pssc::reg<T,ACC>`` **template** (1:1 with SV's
 ``reg_c #(T,ACC)``), and register-group classes. The user subclasses
 ``pssc::mem_if`` directly — **no redirect trick**.
 
 .. code-block:: console
 
-   $ pssc compile -t cpp-progseq --root dma_engine_c --namespace wb_dma \
+   $ pssc compile -t op-model-cpp --root dma_engine_c --namespace wb_dma \
          examples/export/programming_seqs/dma_regs.pss \
          examples/export/programming_seqs/dma_engine.pss -o out/
 
@@ -240,9 +240,9 @@ Choosing a backend
 ================  ================================================================
 Backend           Typical use
 ================  ================================================================
-``sv-progseq``    SystemVerilog/UVM testbenches; front-door BFM or backdoor poke
-``c-progseq``     firmware/drivers (``mmio``/``direct``) or host C models (``vtable``)
-``cpp-progseq``   host C++ models and reference drivers; template-rich, type-safe
+``op-model-sv``    SystemVerilog/UVM testbenches; front-door BFM or backdoor poke
+``op-model-c``     firmware/drivers (``mmio``/``direct``) or host C models (``vtable``)
+``op-model-cpp``   host C++ models and reference drivers; template-rich, type-safe
 ================  ================================================================
 
 Limitations (this phase)

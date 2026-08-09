@@ -21,8 +21,15 @@ from .c_progseq_tgt import CProgSeqTarget
 
 
 class CppProgSeqTarget(Target):
-    name = "cpp-progseq"
-    description = "C++ programming-sequence API generated from a component tree"
+    name = "op-model-cpp"
+    description = "C++ operation-model API generated from a component tree"
+
+    # Same reasoning as op-model-c: plain functions, no coroutine runtime, no
+    # solver in the image.
+    target_cfg = {
+        "HAVE_BLOCKING": False,
+        "HAVE_RUNTIME_SOLVER": False,
+    }
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         # --root / --no-core-copy come from ProgSeqTarget (shared parser).

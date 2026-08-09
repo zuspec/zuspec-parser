@@ -34,6 +34,8 @@
 
 build/
 packages/
+rundir/
+obj_dir/
 
 python/PyBaseVisitor.h
 python/core.cpp

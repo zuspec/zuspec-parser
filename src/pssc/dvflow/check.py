@@ -80,11 +80,26 @@ def _signature_delta(a: Dict[str, int], b: Dict[str, int]) -> List[str]:
             if a.get(k, 0) != b.get(k, 0)]
 
 
-def _link(sources: List[str]) -> Tuple[Any, List[str]]:
+def _prelude(target_cfg) -> List[Tuple[str, str]]:
+    """Build the `target_cfg_pkg` prelude for a check that names no target.
+
+    `pssc.Check` generates nothing, so it has no target to publish capabilities
+    on its behalf -- but a model whose elaboration is gated on `target_cfg_pkg`
+    still has to be checkable on both answers. Naming the constants directly is
+    what makes that possible without a second copy of the source tree.
+    """
+    if not target_cfg:
+        return []
+    from ..targets import target_cfg as _tc
+    cfg = _tc.parse_overrides(target_cfg)
+    return [(_tc.source_name("check"), _tc.render("check", cfg))]
+
+
+def _link(sources: List[str], prelude=()) -> Tuple[Any, List[str]]:
     """Parse + elaborate ``sources``; return ``(ir_context, errors)``."""
     from ..driver import translate
 
-    ctx = translate(sources)
+    ctx = translate(sources, prelude=prelude)
     return ctx.ir_context, list(ctx.errors)
 
 
@@ -102,7 +117,13 @@ async def Check(ctxt, input):
     order_check = bool(getattr(input.params, "order_check", False))
 
     try:
-        context, errors = await asyncio.to_thread(_link, sources)
+        prelude = _prelude(getattr(input.params, "target_cfg", None))
+    except ValueError as e:
+        ctxt.error("pssc.Check: %s" % e)
+        return TaskDataResult(status=1, changed=True)
+
+    try:
+        context, errors = await asyncio.to_thread(_link, sources, prelude)
     except Exception as e:  # noqa: BLE001 -- any front-end failure is a marker
         _log.exception("pssc.Check failed")
         ctxt.error("pssc.Check: %s: %s" % (type(e).__name__, e))
@@ -121,7 +142,7 @@ async def Check(ctxt, input):
     # --- the order-independence check -------------------------------------
     try:
         reversed_context, reversed_errors = await asyncio.to_thread(
-            _link, list(reversed(sources)))
+            _link, list(reversed(sources)), prelude)
     except Exception as e:  # noqa: BLE001
         _log.exception("pssc.Check: reversed-order link failed")
         ctxt.error("pssc.Check: reversed file order failed to elaborate "

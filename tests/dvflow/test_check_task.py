@@ -105,8 +105,10 @@ def test_order_check_detects_dependence(tmp_path, monkeypatch):
     real_link = check._link
     calls = {"n": 0}
 
-    def flaky_link(sources):
-        context, errors = real_link(sources)
+    # `prelude` is the `target_cfg_pkg` source unit Check injects ahead of the
+    # sources; accepted here so the double matches the real signature.
+    def flaky_link(sources, prelude=()):
+        context, errors = real_link(sources, prelude)
         calls["n"] += 1
         if calls["n"] == 2:            # the reversed-order link
             # Drop a user type, as an unresolved reference would.
@@ -136,9 +138,9 @@ def test_order_check_off_by_default(tmp_path, monkeypatch):
     real_link = check._link
     calls = {"n": 0}
 
-    def counting_link(sources):
+    def counting_link(sources, prelude=()):
         calls["n"] += 1
-        return real_link(sources)
+        return real_link(sources, prelude)
 
     monkeypatch.setattr(check, "_link", counting_link)
 

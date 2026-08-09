@@ -61,7 +61,8 @@ def _normalize_opts(opts: Optional[argparse.Namespace],
 
 
 def translate(sources: Union[PathLike, Sequence[PathLike]],
-              reg_rmw: str = "native") -> AstToIrContext:
+              reg_rmw: str = "native",
+              prelude: Sequence[tuple] = ()) -> AstToIrContext:
     """Parse + link + translate ``sources`` (file paths) to an ``AstToIrContext``.
 
     The returned context is enriched with ``ctx.ir_context`` — the canonical
@@ -71,13 +72,19 @@ def translate(sources: Union[PathLike, Sequence[PathLike]],
     The reduction to ``write_val_masked`` happens unconditionally inside
     translation (it is what keeps field names out of the IR); ``"expand"``
     additionally rewrites that into ``read_val`` + ``write_val``.
+
+    ``prelude`` is a sequence of ``(name, text)`` in-memory source units
+    processed BEFORE ``sources`` — a target's ``target_cfg_pkg``, or anything
+    else a backend needs in scope first. :func:`compile` fills this from the
+    selected target; callers that translate without a target (``pssc.Check``)
+    pass nothing and the model takes its own defaults.
     """
     if isinstance(sources, (str, os.PathLike)):
         sources = [sources]
     paths = [str(s) for s in sources]
 
     parser = Parser()
-    parser.parse(paths)
+    parser.parse(paths, prelude=prelude)
     root = parser.link()
     ctx = AstToIrTranslator().translate(root)
     if reg_rmw == "expand":
@@ -115,7 +122,17 @@ def compile(
             raise CompileError(str(e)) from None
         return CompileResult(target=target, errors=[str(e)])
 
-    ctx = translate(sources, reg_rmw=getattr(opts, "reg_rmw", "native"))
+    # The target speaks first. Its prelude (typically `target_cfg_pkg`) must be
+    # processed ahead of the user's sources -- see `translate`.
+    try:
+        prelude = tgt.prelude(opts)
+    except ValueError as e:
+        if raise_on_error:
+            raise CompileError(str(e)) from None
+        return CompileResult(target=target, errors=[str(e)])
+
+    ctx = translate(sources, reg_rmw=getattr(opts, "reg_rmw", "native"),
+                    prelude=prelude)
 
     if ctx.errors:
         if raise_on_error:

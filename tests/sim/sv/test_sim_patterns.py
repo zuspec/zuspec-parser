@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import shutil
 import subprocess
 import tempfile
 import textwrap
@@ -25,7 +26,16 @@ from pssc import Parser, AstToIrTranslator, generate_sv_files
 from zuspec.dataclasses import ir as pss_ir
 
 # ---------------------------------------------------------------------------
-pytestmark = pytest.mark.sim
+# The `sim` marker labels these; it does not skip them. Everything below shells
+# out to `vcs` directly, so without it each test dies in subprocess.run with a
+# FileNotFoundError rather than reporting "no simulator". Guard explicitly, the
+# way the Verilator-based tests in this directory do with HAVE_VERILATOR.
+HAVE_VCS = shutil.which("vcs") is not None
+
+pytestmark = [
+    pytest.mark.sim,
+    pytest.mark.skipif(not HAVE_VCS, reason="vcs not on PATH"),
+]
 
 # ---------------------------------------------------------------------------
 # Known limitations that cause specific patterns to fail at sim time.
@@ -34,12 +44,19 @@ pytestmark = pytest.mark.sim
 # ---------------------------------------------------------------------------
 _KNOWN_FAILURES: dict = {}
 
-_REPO_ROOT   = pathlib.Path(__file__).parents[5]
-_PATTERNS_DIR = _REPO_ROOT / "packages" / "zuspec-fe-pss" / "tests" / "patterns"
+# The patterns moved into this package with the rest of the migration from
+# zuspec-fe-pss; this file kept pointing at the old location, which stopped
+# existing. Resolve them the same way the unit-level sibling
+# (tests/unit/sv/test_modeling_patterns.py) does, relative to this tests tree.
+# parents[0]=sv  [1]=sim  [2]=tests
+_TESTS_ROOT   = pathlib.Path(__file__).parents[2]
+_PATTERNS_DIR = _TESTS_ROOT / "patterns"
 
 # ---------------------------------------------------------------------------
 # Discover patterns
 # ---------------------------------------------------------------------------
+assert _PATTERNS_DIR.is_dir(), f"Patterns directory not found: {_PATTERNS_DIR}"
+
 _PATTERN_FILES: List[pathlib.Path] = sorted(_PATTERNS_DIR.glob("*.pss"))
 assert _PATTERN_FILES, f"No .pss files in {_PATTERNS_DIR}"
 

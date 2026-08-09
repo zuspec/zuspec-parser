@@ -24,6 +24,8 @@ from ..progseq_model import (
     _eval_off, _pattern_str, _array_base_stride, _scalar_offset,
     _is_reserved, collect_reg_groups, collect_value_structs,
 )
+from ...reg_field_resolve import struct_layout
+from .reg_field_names import const_name
 
 _DT_REGISTER = "DataTypeRegister"
 _DT_REGISTER_GROUP = "DataTypeRegisterGroup"
@@ -64,6 +66,41 @@ def emit_value_struct(struct_dtype) -> str:
     for f in reversed(struct_dtype.fields):   # LSB-first -> MSB-first
         lines.append(f"    {_sv_bit_type(int(f.datatype.bits))} {f.name};")
     lines.append(f"  }} {name};")
+    return "\n".join(lines)
+
+
+def emit_field_consts(struct_dtype) -> str:
+    """One ``localparam reg_field_t`` per scalar field of a value struct.
+
+    Derived from ``struct_layout()`` -- the same function the packed struct's
+    own field order comes from -- so a constant cannot disagree with the type it
+    describes. That matters more than it looks: the two are emitted next to each
+    other and a reader will assume they agree.
+
+    Every scalar field gets one, including padding fields a model happens to
+    have named `reserved`. Filtering by name would be a heuristic that silently
+    drops a user's field for being unluckily named, and an unused localparam
+    costs nothing.
+    """
+    layout = [fs for fs in struct_layout(struct_dtype) if fs.width]
+    if not layout:
+        return ""
+    name = _strip_pkg(struct_dtype.name)
+    width = max(fs.lsb + fs.width for fs in layout)
+    if width > 64:
+        # reg_field_t.mask is 64 bits; a wider register's upper fields would be
+        # silently truncated into the wrong bits. reg_c cannot address one
+        # either (ACC_W caps at 64), so this is unreachable today -- but it is
+        # the kind of unreachable that stops being unreachable quietly.
+        raise ValueError(
+            f"register value struct '{name}' is {width} bits; field constants "
+            f"support at most 64")
+    just = max(len(const_name(name, fs.name)) for fs in layout)
+    lines = [f"  // Field positions of {name}, for write_field/read_field."]
+    for fs in layout:
+        lines.append(
+            f"  localparam reg_field_t {const_name(name, fs.name):{just}} = "
+            f"'{{mask:64'h{fs.mask:016x}, shift:{fs.lsb}}};")
     return "\n".join(lines)
 
 
@@ -132,6 +169,9 @@ def lower_register_model(root_dtype) -> Tuple[str, List[str], List[str]]:
     parts.append("  // ----- Register value layouts (packed structs). -----")
     for s in structs:
         parts.append(emit_value_struct(s))
+        consts = emit_field_consts(s)
+        if consts:
+            parts.append(consts)
         parts.append("")
     parts.append("  // ----- Register-group classes. -----")
     for g in groups:

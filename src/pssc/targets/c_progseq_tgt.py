@@ -21,8 +21,23 @@ from .progseq_tgt import ProgSeqTarget
 
 
 class CProgSeqTarget(Target):
-    name = "c-progseq"
-    description = "C programming-sequence API generated from a component tree"
+    name = "op-model-c"
+    description = "C operation-model API generated from a component tree"
+
+    # This backend emits plain C functions. It generates no coroutine runtime
+    # and no scheduler -- that is what the `c-host` / `c-embedded` targets are
+    # for -- so nothing it produces can suspend a caller, and there is no
+    # solver in the image. Both false.
+    #
+    # This is the firmware-facing target: a model that reads the contract gets
+    # its arm-and-poll core here and writes its own wait loop, which is the one
+    # place that knows what to do while waiting. Override with
+    # `--target-cfg HAVE_BLOCKING=true` if a project supplies its own
+    # scheduler under the generated API.
+    target_cfg = {
+        "HAVE_BLOCKING": False,
+        "HAVE_RUNTIME_SOLVER": False,
+    }
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         # --root and --no-core-copy are contributed by ProgSeqTarget (shared

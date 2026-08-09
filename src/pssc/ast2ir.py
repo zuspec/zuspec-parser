@@ -2582,17 +2582,17 @@ class AstToIrTranslator:
         rhs = self._translate_expression(ctx, expr.getRhs())
 
         # Get operator
-        op = self._map_binop(expr.getOp())
+        op = self._map_binop(ctx, expr.getOp())
 
         return ir.ExprBin(lhs=lhs, op=op, rhs=rhs)
 
     def _translate_expr_unary(self, ctx: AstToIrContext, expr: pss_ast.ExprUnary) -> ir.ExprUnary:
         """Translate a unary expression"""
         # Get operand
-        operand = self._translate_expression(ctx, expr.getExpr())
+        operand = self._translate_expression(ctx, expr.getRhs())
 
         # Get operator
-        op = self._map_unaryop(expr.getOp())
+        op = self._map_unaryop(ctx, expr.getOp())
 
         return ir.ExprUnary(op=op, operand=operand)
 
@@ -2837,41 +2837,63 @@ class AstToIrTranslator:
                 fields.append(ir.ExprStructField(name=field_name, value=val_ir))
         return ir.ExprStructLiteral(fields=fields)
 
-    def _map_binop(self, op: int) -> ir.BinOp:
-        """Map PSS binary operator (integer) to IR operator"""
-        # PSS operator values (discovered empirically)
-        mapping = {
-            0: ir.BinOp.Or,       # ||
-            1: ir.BinOp.And,      # &&
-            2: ir.BinOp.BitOr,    # |
-            3: ir.BinOp.BitXor,   # ^
-            4: ir.BinOp.BitAnd,   # &
-            5: ir.BinOp.Lt,       # <
-            6: ir.BinOp.LtE,      # <=
-            7: ir.BinOp.Gt,       # >
-            8: ir.BinOp.GtE,      # >=
-            10: ir.BinOp.Mult,    # *
-            11: ir.BinOp.Div,     # /
-            12: ir.BinOp.Mod,     # %
-            13: ir.BinOp.Add,     # +
-            14: ir.BinOp.Sub,     # -
-            15: ir.BinOp.LShift,  # <<
-            16: ir.BinOp.RShift,  # >>
-            17: ir.BinOp.Eq,      # ==
-            18: ir.BinOp.NotEq,   # !=
-        }
-        return mapping.get(op, ir.BinOp.Add)
+    # Ordinals below are the declaration order of pssparser's ast::ExprBinOp
+    # and ast::ExprUnaryOp. Both maps must stay total: an unmapped operator
+    # that falls back to a default is a silently-wrong expression, which is
+    # exactly how `**` used to lower to `+`.
+    _BINOP_MAP = {
+        0: ir.BinOp.Or,       # ||
+        1: ir.BinOp.And,      # &&
+        2: ir.BinOp.BitOr,    # |
+        3: ir.BinOp.BitXor,   # ^
+        4: ir.BinOp.BitAnd,   # &
+        5: ir.BinOp.Lt,       # <
+        6: ir.BinOp.LtE,      # <=
+        7: ir.BinOp.Gt,       # >
+        8: ir.BinOp.GtE,      # >=
+        9: ir.BinOp.Exp,      # **
+        10: ir.BinOp.Mult,    # *
+        11: ir.BinOp.Div,     # /
+        12: ir.BinOp.Mod,     # %
+        13: ir.BinOp.Add,     # +
+        14: ir.BinOp.Sub,     # -
+        15: ir.BinOp.LShift,  # <<
+        16: ir.BinOp.RShift,  # >>
+        17: ir.BinOp.Eq,      # ==
+        18: ir.BinOp.NotEq,   # !=
+    }
 
-    def _map_unaryop(self, op: int) -> ir.UnaryOp:
+    _UNARYOP_MAP = {
+        0: ir.UnaryOp.UAdd,     # +
+        1: ir.UnaryOp.USub,     # -
+        2: ir.UnaryOp.Not,      # !
+        3: ir.UnaryOp.Invert,   # ~
+    }
+
+    # &, |, ^ as unary operators are PSS's bit-reduction operators. The IR has
+    # no node for them, so they are refused rather than approximated.
+    _UNARYOP_REDUCTION = {4: "&", 5: "|", 6: "^"}
+
+    def _map_binop(self, ctx: AstToIrContext, op: int) -> ir.BinOp:
+        """Map PSS binary operator (integer) to IR operator"""
+        if op not in self._BINOP_MAP:
+            ctx.add_error(
+                f"unsupported PSS binary operator (ExprBinOp ordinal {op})")
+            return ir.BinOp.Add
+        return self._BINOP_MAP[op]
+
+    def _map_unaryop(self, ctx: AstToIrContext, op: int) -> ir.UnaryOp:
         """Map PSS unary operator (integer) to IR operator"""
-        # PSS unary operator values (best guess based on common conventions)
-        mapping = {
-            0: ir.UnaryOp.Not,      # !
-            1: ir.UnaryOp.USub,     # -
-            2: ir.UnaryOp.UAdd,     # +
-            3: ir.UnaryOp.Invert,   # ~
-        }
-        return mapping.get(op, ir.UnaryOp.Not)
+        if op in self._UNARYOP_REDUCTION:
+            ctx.add_error(
+                f"the bit-reduction operator '{self._UNARYOP_REDUCTION[op]}' "
+                f"is not supported by this compiler")
+            return ir.UnaryOp.Not
+        if op not in self._UNARYOP_MAP:
+            ctx.add_error(
+                f"unsupported PSS unary operator (ExprUnaryOp ordinal {op})")
+            return ir.UnaryOp.Not
+        return self._UNARYOP_MAP[op]
 
     def _translate_data_type(self, ctx: AstToIrContext, dtype_node: Any) -> Optional[ir.DataType]:
         """Translate a data type node to IR

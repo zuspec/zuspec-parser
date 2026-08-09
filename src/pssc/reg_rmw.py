@@ -87,9 +87,30 @@ def _where(call) -> str:
 
 # --- constant folding -------------------------------------------------------
 
+_UNARY_FOLD = {
+    ir.UnaryOp.Invert: lambda x: ~x,
+    ir.UnaryOp.USub: lambda x: -x,
+    ir.UnaryOp.UAdd: lambda x: x,
+    ir.UnaryOp.Not: lambda x: int(not x),
+}
+
+
 def _const(e) -> Optional[int]:
-    """The integer value of ``e`` if it is an integer constant, else ``None``."""
-    if _dt_name(e) != "ExprConstant":
+    """The integer value of ``e`` if it is an integer constant, else ``None``.
+
+    A unary operator over a constant folds, because the LRM's own mask idiom is
+    ``{.f=~0}`` -- an ``ExprUnary``, not an ``ExprConstant``. Without this the
+    mask still lowers to correct bits, but it reaches the backend as an
+    unfolded expression, which breaks the invariant that a resolved mask is a
+    literal (`test_reg_ir_equivalence.py`). ``~0`` folds to -1 here and is
+    normalised by the field-width AND in `_and_lit`.
+    """
+    name = _dt_name(e)
+    if name == "ExprUnary":
+        v = _const(e.operand)
+        fold = _UNARY_FOLD.get(e.op)
+        return None if (v is None or fold is None) else fold(v)
+    if name != "ExprConstant":
         return None
     v = e.value
     if isinstance(v, bool):
@@ -337,14 +358,14 @@ def _pack_struct(reg, e, ctx, call, role: str) -> Optional[ir.Expr]:
         if role == "mask" and _const(placed) == 0:
             # A field named in the mask literal but contributing no bits writes
             # nothing -- there is no reason to name it, so this is far more
-            # likely a mistake than an intent. It is also exactly what a dropped
-            # unary operator looks like: pssparser discards the `~` in `~0`
-            # (defect D5), which turns the LRM's own `{.f=~0}` idiom into a
-            # silent no-op. Refuse it rather than emit a write that does nothing.
+            # likely a mistake than an intent. Refuse it rather than emit a
+            # write that does nothing. (This guard was introduced to contain
+            # pssparser defect D5, which dropped the `~` in `~0`; D5 is fixed,
+            # but a zero mask is still meaningless on its own terms.)
             err(f"write_masked: field '{sf.name}' is given a zero mask, so the "
-                f"{role} selects none of its bits. Note that `~0` currently "
-                f"reaches the compiler as `0` (pssparser defect D5): write the "
-                f"mask bits explicitly, or use write_field('{sf.name}', ...)")
+                f"{role} selects none of its bits. Write the mask bits "
+                f"explicitly, use `~0` to select all of them, or use "
+                f"write_field('{sf.name}', ...)")
             return None
         parts.append(placed)
     return _or_all(parts)

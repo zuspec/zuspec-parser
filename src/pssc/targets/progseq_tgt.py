@@ -19,8 +19,16 @@ from .base import Target
 
 
 class ProgSeqTarget(Target):
-    name = "sv-progseq"
-    description = "SystemVerilog programming-sequence API generated from a component tree"
+    name = "op-model-sv"
+    description = "SystemVerilog operation-model API generated from a component tree"
+
+    # A generated SV operation-model API exposes its end-to-end operations as
+    # `task`s, so the calling context can suspend; and SystemVerilog carries a
+    # constraint solver the caller randomizes through. Both true.
+    target_cfg = {
+        "HAVE_BLOCKING": True,
+        "HAVE_RUNTIME_SOLVER": True,
+    }
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         # Note: option names are global across the shared `compile` parser, so
@@ -40,6 +48,16 @@ class ProgSeqTarget(Target):
             "--no-core-copy", dest="progseq_core_copy", action="store_false",
             default=True,
             help="progseq: do not copy the core seam header(s) into the output dir",
+        )
+        # Spelling only -- see progseq_gen.generate(). Both settings produce
+        # the same bus traffic; `folded` is the collapsed (mask, value) form the
+        # C target consumes, kept reachable for diffing the two backends.
+        parser.add_argument(
+            "--sv-reg-fields", dest="progseq_reg_fields",
+            choices=("named", "folded"), default="named",
+            help="sv-progseq: spell a folded masked write as "
+                 "write_field(<FIELD_CONST>, v) ('named', default) or as "
+                 "write_val_masked(<mask>, <val>) ('folded')",
         )
         parser.add_argument(
             "--ctor-name", dest="progseq_ctor_name", metavar="NAME",
@@ -93,4 +111,5 @@ class ProgSeqTarget(Target):
         copy_core = getattr(opts, "progseq_core_copy", True)
 
         from .progseq_gen import generate
-        return generate(ctx, root, pkg_name, out_dir, copy_core=copy_core)
+        return generate(ctx, root, pkg_name, out_dir, copy_core=copy_core,
+                        reg_fields=getattr(opts, "progseq_reg_fields", "named"))

@@ -60,8 +60,19 @@ def _bridge_overrides(p) -> Dict[str, Any]:
     return ov
 
 
+def _target_cfg_overrides(p) -> Dict[str, Any]:
+    """Forward `target_cfg:` to the compile options, when the task sets it.
+
+    Passed only when non-empty so the target's own published capabilities stay
+    the default -- an empty list must not read as "override with nothing".
+    """
+    vals = _get(p, "target_cfg", []) or []
+    return {"target_cfg": list(vals)} if vals else {}
+
+
 def _sv_progseq_overrides(p) -> Dict[str, Any]:
     ov: Dict[str, Any] = {"progseq_root": _get(p, "root", "")}
+    ov.update(_target_cfg_overrides(p))
     if _get(p, "package_name", ""):
         ov["progseq_package"] = _get(p, "package_name")
     ov["progseq_core_copy"] = _get(p, "core_copy", True)
@@ -70,6 +81,7 @@ def _sv_progseq_overrides(p) -> Dict[str, Any]:
 
 def _c_progseq_overrides(p) -> Dict[str, Any]:
     ov: Dict[str, Any] = {"progseq_root": _get(p, "root", "")}
+    ov.update(_target_cfg_overrides(p))
     if _get(p, "prefix", ""):
         ov["c_prefix"] = _get(p, "prefix")
     ov["c_link_style"] = _get(p, "link_style", "vtable")
@@ -82,6 +94,7 @@ def _c_progseq_overrides(p) -> Dict[str, Any]:
 
 def _cpp_progseq_overrides(p) -> Dict[str, Any]:
     ov: Dict[str, Any] = {"progseq_root": _get(p, "root", "")}
+    ov.update(_target_cfg_overrides(p))
     if _get(p, "namespace", ""):
         ov["cpp_namespace"] = _get(p, "namespace")
     ov["cpp_dispatch"] = _get(p, "dispatch", "virtual")
@@ -100,9 +113,13 @@ TASKS = {
     "CHostPresolved": ("c-host-presolved", _c_runtime_overrides),
     "CEmbedded": ("c-embedded", _c_runtime_overrides),
     "CEmbeddedPresolved": ("c-embedded-presolved", _c_runtime_overrides),
-    "SvProgSeq": ("sv-progseq", _sv_progseq_overrides),
-    "CProgSeq": ("c-progseq", _c_progseq_overrides),
-    "CppProgSeq": ("cpp-progseq", _cpp_progseq_overrides),
+    "OpModelSv": ("op-model-sv", _sv_progseq_overrides),
+    "OpModelC": ("op-model-c", _c_progseq_overrides),
+    "OpModelCpp": ("op-model-cpp", _cpp_progseq_overrides),
+    # Deprecated aliases, kept so existing flows keep working.
+    "SvProgSeq": ("op-model-sv", _sv_progseq_overrides),
+    "CProgSeq": ("op-model-c", _c_progseq_overrides),
+    "CppProgSeq": ("op-model-cpp", _cpp_progseq_overrides),
 }
 
 
@@ -148,16 +165,25 @@ async def CEmbeddedPresolved(ctxt, input):
                            overrides_from_params=_c_runtime_overrides)
 
 
-async def SvProgSeq(ctxt, input):
-    return await run_build(ctxt, input, target="sv-progseq",
+async def OpModelSv(ctxt, input):
+    return await run_build(ctxt, input, target="op-model-sv",
                            overrides_from_params=_sv_progseq_overrides)
 
 
-async def CProgSeq(ctxt, input):
-    return await run_build(ctxt, input, target="c-progseq",
+async def OpModelC(ctxt, input):
+    return await run_build(ctxt, input, target="op-model-c",
                            overrides_from_params=_c_progseq_overrides)
 
 
-async def CppProgSeq(ctxt, input):
-    return await run_build(ctxt, input, target="cpp-progseq",
+async def OpModelCpp(ctxt, input):
+    return await run_build(ctxt, input, target="op-model-cpp",
                            overrides_from_params=_cpp_progseq_overrides)
+
+
+# --- deprecated task entry points --------------------------------------------
+# The `<kind>-progseq` names became `op-model-<kind>` so the family reads as one
+# and sorts together. These keep existing flows working; prefer the names above.
+
+SvProgSeq = OpModelSv
+CProgSeq = OpModelC
+CppProgSeq = OpModelCpp
