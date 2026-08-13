@@ -303,25 +303,145 @@ def _pattern_str(pattern) -> Optional[str]:
     return inner if isinstance(inner, str) else None
 
 
-def _array_base_stride(group_dtype, field_name: str) -> Tuple[int, int]:
-    """Return (base, stride) for an array child by evaluating the affine
-    ``get_offset_of_instance_array`` arm whose pattern matches ``field_name``."""
+class OffsetFoldError(ValueError):
+    """A ``get_offset_of_instance[_array]`` that cannot be evaluated.
+
+    Carries the message only; the caller adds the source location, the same
+    split ``reg_field_resolve.RegFieldError`` uses.
+
+    Every one of these is an ERROR rather than a fallback, and the reason is
+    the ``default: return -1;`` arm the generated register packages carry: -1
+    is an ERROR SENTINEL, not a value. Folding it -- or emitting the call so it
+    returns at run time -- puts 0xFFFF_FFFF_FFFF_FFFF into an address
+    computation, where it wraps to a wild address that no simulator will
+    complain about. `src/pss/wb_dma_c.pss` documents exactly this hazard for a
+    renamed RDL instance; refusing to fold turns that documented footgun into a
+    build failure.
+    """
+
+
+def _index_names(fn) -> Tuple[str, ...]:
+    """Names the index parameter may appear under in an offset function body.
+
+    The declared parameter name, plus ``index`` -- which is what the IR carries
+    when the reference reaches it as an attribute rather than a local.
+    """
+    names = {"index"}
+    args = getattr(getattr(fn, "args", None), "args", None) or []
+    if len(args) >= 2:
+        names.add(args[1].arg)
+    return tuple(names)
+
+
+def _affine(expr, index_names: Tuple[str, ...]) -> Tuple[int, int]:
+    """Match ``c0 + index*c1`` structurally; return ``(c0, c1)``.
+
+    STRUCTURAL, not sampled. The previous implementation evaluated the arm at
+    index 0 and index 1 and subtracted, which ASSUMES affinity rather than
+    checking it: ``0x20 + index*index*0x20`` evaluates cleanly at both sample
+    points (base 0x20, stride 0x20) and is wrong from index 2 onward -- silently,
+    with no diagnostic and wild addresses downstream. Multiplying two
+    index-dependent terms is rejected here instead.
+    """
+    cn = _dt_name(expr)
+    if cn == "ExprConstant":
+        return int(expr.value), 0
+    if cn == "ExprRefLocal" and getattr(expr, "name", None) in index_names:
+        return 0, 1
+    if cn == "ExprAttribute" and getattr(expr, "attr", None) in index_names:
+        return 0, 1
+    if cn == "ExprUnary" and expr.op.name in ("USub", "Minus"):
+        c0, c1 = _affine(expr.operand, index_names)
+        return -c0, -c1
+    if cn == "ExprBin":
+        lc0, lc1 = _affine(expr.lhs, index_names)
+        rc0, rc1 = _affine(expr.rhs, index_names)
+        op = expr.op.name
+        if op == "Add":
+            return lc0 + rc0, lc1 + rc1
+        if op in ("Sub", "Minus"):
+            return lc0 - rc0, lc1 - rc1
+        if op in ("Mul", "Mult"):
+            # Legal only if at most one operand varies with the index.
+            if lc1 and rc1:
+                raise OffsetFoldError(
+                    "the offset expression is not affine in the array index "
+                    "(the index is multiplied by itself)")
+            if rc1:
+                lc0, lc1, rc0, rc1 = rc0, rc1, lc0, lc1
+            return lc0 * rc0, lc1 * rc0
+        raise OffsetFoldError(
+            f"unsupported operator '{op}' in an offset expression; "
+            f"it must be affine in the array index")
+    raise OffsetFoldError(
+        f"unsupported expression '{cn}' in an offset expression; "
+        f"it must be affine in the array index")
+
+
+def _offset_fn(group_dtype, fname: str):
+    """The named offset function of ``group_dtype``, or None."""
     for fn in getattr(group_dtype, "functions", []) or []:
-        if fn.name != "get_offset_of_instance_array":
-            continue
-        if not fn.body or _dt_name(fn.body[0]) != "StmtMatch":
-            continue
-        for case in fn.body[0].cases:
-            if _pattern_str(case.pattern) == field_name:
-                expr = case.body[0].value   # StmtReturn.value
-                base = _eval_off(expr, 0)
-                stride = _eval_off(expr, 1) - base
-                return base, stride
-    raise ValueError(f"no array offset for {field_name}")
+        if fn.name == fname:
+            return fn
+    return None
+
+
+def array_base_stride(group_dtype, field_name: str) -> Tuple[int, int]:
+    """``(base, stride)`` for an instance array, from the group's own
+    ``get_offset_of_instance_array``.
+
+    Raises :class:`OffsetFoldError` naming the group and the instance when no
+    arm matches -- the case a renamed RDL instance produces, which the PSS
+    function itself answers with the -1 sentinel.
+    """
+    gname = _strip_pkg_name(group_dtype)
+    fn = _offset_fn(group_dtype, "get_offset_of_instance_array")
+    if fn is None:
+        raise OffsetFoldError(
+            f"register group '{gname}' declares no "
+            f"get_offset_of_instance_array")
+    if not fn.body or _dt_name(fn.body[0]) != "StmtMatch":
+        raise OffsetFoldError(
+            f"'{gname}.get_offset_of_instance_array' is not a match over the "
+            f"instance name, so its offsets cannot be evaluated at build time")
+    idx = _index_names(fn)
+    for case in fn.body[0].cases:
+        if _pattern_str(case.pattern) == field_name:
+            return _affine(case.body[0].value, idx)
+    raise OffsetFoldError(
+        f"register group '{gname}' declares no instance array named "
+        f"'{field_name}' (its get_offset_of_instance_array would return the "
+        f"-1 error sentinel)")
+
+
+def scalar_offset(group_dtype, name: str) -> int:
+    """Byte offset of a scalar instance within ``group_dtype``."""
+    omap = getattr(group_dtype, "offset_map", None) or {}
+    if name not in omap:
+        raise OffsetFoldError(
+            f"register group '{_strip_pkg_name(group_dtype)}' declares no "
+            f"instance named '{name}' (its get_offset_of_instance would "
+            f"return the -1 error sentinel)")
+    return int(omap[name])
+
+
+def _strip_pkg_name(dtype) -> str:
+    nm = getattr(dtype, "name", None) or _dt_name(dtype)
+    return nm.split("::")[-1]
+
+
+def _array_base_stride(group_dtype, field_name: str) -> Tuple[int, int]:
+    """Back-compat alias for :func:`array_base_stride`."""
+    return array_base_stride(group_dtype, field_name)
 
 
 def _scalar_offset(group_dtype, name: str) -> int:
-    return int(group_dtype.offset_map[name])
+    """Back-compat alias for :func:`scalar_offset`.
+
+    It used to be a bare ``offset_map[name]``, so an unknown instance escaped as
+    a ``KeyError`` with no group, no instance name and no source location.
+    """
+    return scalar_offset(group_dtype, name)
 
 
 # --- value-struct / reg-group collection walks (language-neutral) ----------

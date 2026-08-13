@@ -1,0 +1,101 @@
+// A minimal component tree whose constructor calls the register group's OWN
+// offset functions, rather than restating the map as constants.
+//
+// This is the shape the WB DMA operation model moved to when its register
+// package became generated from SystemRDL: the offsets are stated once, in the
+// register model, and the binding code asks for them. It is exercised nowhere
+// in the flat example (`examples/export/programming_seqs`, whose `ctor` body is
+// empty) and nowhere in `examples/op_model` (whose constructor uses map
+// constants), which is why an unlowerable `get_offset_of_instance_array` shipped
+// in generated output that did not compile.
+//
+// See docs/lowering-call-legality.md §1.1 and §7.
+package fold_regs_pkg {
+    import std_pkg::*;
+    import addr_reg_pkg::*;
+
+    struct word_s : packed_s<> {
+        rand bit[32] value;
+    }
+
+    pure component word_r : reg_c<word_s, READWRITE, 32> {}
+
+    // A leaf bank, placed as an ARRAY inside the group below.
+    pure component bank_regs_c : reg_group_c {
+        word_r ctrl;    // 0x00
+        word_r stat;    // 0x04
+
+        function bit[64] get_offset_of_instance(string name) {
+            match (name) {
+                ["ctrl"]: return 0x0;
+                ["stat"]: return 0x4;
+                default:  return -1;
+            }
+        }
+
+        function bit[64] get_offset_of_instance_array(string name, int index) {
+            return -1;
+        }
+    }
+
+    pure component top_regs_c : reg_group_c {
+        word_r       gcsr;      // 0x00
+        bank_regs_c  bank[4];   // 0x10, stride 0x10
+
+        function bit[64] get_offset_of_instance(string name) {
+            match (name) {
+                ["gcsr"]: return 0x0;
+                default:  return -1;
+            }
+        }
+
+        function bit[64] get_offset_of_instance_array(string name, int index) {
+            match (name) {
+                ["bank"]: return 0x10 + index*0x10;
+                default:  return -1;
+            }
+        }
+    }
+}
+
+import addr_reg_pkg::*;
+
+component fold_bank_c {
+    int                          id;
+    fold_regs_pkg::bank_regs_c   regs;
+
+    solve function void initialize(int i, addr_handle_t at) {
+        id = i;
+        regs.set_handle(at);
+    }
+
+    target function bit[32] read_stat() {
+        fold_regs_pkg::word_s w;
+        w = regs.stat.read();
+        return w.value;
+    }
+}
+
+component fold_top_c {
+    fold_regs_pkg::top_regs_c  regs;
+    fold_bank_c                bank[4];
+
+    // The array offset comes from the GROUP, evaluated at build time. The
+    // scalar offset likewise -- both must fold to constants, because the
+    // generated register-group class has no such methods to call.
+    solve function void initialize(addr_handle_t base) {
+        regs.set_handle(base);
+
+        foreach (bank[i]) {
+            bank[i].initialize(i,
+                make_handle_from_handle(base,
+                    regs.get_offset_of_instance_array("bank", i)));
+        }
+    }
+
+    target function void set_gcsr(bit[32] v) {
+        fold_regs_pkg::word_s w;
+        w.value = v;
+        regs.gcsr.write(w);
+    }
+}

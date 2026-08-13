@@ -56,6 +56,18 @@ def generate(ctx, root, pkg_name: str, out_dir: Path, copy_core: bool = True,
 
     Returns the list of written file paths.
     """
+    # Legality FIRST, before any file is opened. Two reasons beyond reporting
+    # every offender in one run: a failure part-way through emission would leave
+    # a truncated artifact that a later dv-flow run treats as up-to-date, and
+    # `driver.compile` checks `ctx.errors` only BEFORE the target runs -- so a
+    # target that accumulates errors has to raise for itself.
+    from .validate_calls import validate_calls
+    from ..driver import CompileError
+    bad = validate_calls(root, ctx, "op-model-sv")
+    if bad:
+        raise CompileError(
+            f"{len(bad)} call(s) cannot be lowered to SystemVerilog", bad)
+
     tree = walk_tree(root, _resolver(ctx))
     _log.info("progseq: root=%s package=%s components: %d regular, %d reg-group",
               tree.name, pkg_name, _count(tree, CompKind.REGULAR),

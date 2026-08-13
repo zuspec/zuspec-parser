@@ -17,7 +17,8 @@ from typing import Dict, List, Optional
 
 from ..progseq_model import (func_kind, FuncKind, field_is_reg_group, _dt_name,
                              sub_components, SubComp, field_is_channel,
-                             channel_fields)
+                             channel_fields, array_base_stride, scalar_offset,
+                             OffsetFoldError)
 
 _DT_STRUCT = "DataTypeStruct"
 _DT_INT = "DataTypeInt"
@@ -163,6 +164,12 @@ class _BodyEmitter:
         self.arg_names = set(self.arg_rename)
         # component field name -> member ref (reg-group fields become m_<name>)
         self.member_of = member_of  # dict: field_name -> "m_<field>"
+        # Register-group fields by PSS name, so a `regs.get_offset_of_*()` call
+        # can be resolved to the group whose offsets answer it (see _fold_offset).
+        self.reg_group_of = {
+            f.name: f.datatype
+            for f in (getattr(comp, "fields", None) or []) if field_is_reg_group(f)
+        }
         self.has_status = fn is not None and fn.returns is not None
         self._builtin_hook = None
         # Operations of this component that return a value: their result comes
@@ -257,8 +264,72 @@ class _BodyEmitter:
             named = self._field_write(e)
             if named is not None:
                 return named
+            # A register-group offset function: evaluated here, never emitted.
+            folded = self._fold_offset(e)
+            if folded is not None:
+                return folded
             args = ", ".join(self.expr(a) for a in e.args)
             return f"{self.expr(callee)}({args})"
+        # The C and C++ backends have always ended `expr` this way; this one
+        # fell off the end and returned None, which callers interpolate --
+        # `f"{self.expr(base)}.{e.attr}"` yields the literal text "None.attr".
+        # An unhandled expression class must be a diagnostic, not output.
+        raise ValueError(f"unsupported expr {cn}")
+
+    # --- register-group offset folding ------------------------------------
+
+    def _fold_offset(self, call) -> Optional[str]:
+        """``regs.get_offset_of_instance[_array](...)`` -> a folded expression.
+
+        These are classified `FuncKind.REG_OFFSET` -- "evaluated, not emitted" --
+        and the generated SV register-group class has no such method, so an
+        emitted call is code that does not compile. It was emitted anyway,
+        because nothing consulted the classification: see
+        `docs/lowering-call-legality.md` §1.1.
+
+        Returns ``None`` when the call is not one of these at all (so the caller
+        falls through); raises :class:`OffsetFoldError` when it IS one and
+        cannot be evaluated. That asymmetry is the point -- a fold that does not
+        resolve must not degrade into an emitted call, because the PSS function
+        answers an unknown instance with -1 and -1 wraps to a wild address.
+        """
+        fn = call.func
+        if _dt_name(fn) != "ExprAttribute":
+            return None
+        which = fn.attr
+        if which not in ("get_offset_of_instance", "get_offset_of_instance_array"):
+            return None
+
+        recv = fn.value
+        recv_name = (fn.value.attr if _dt_name(recv) == "ExprAttribute"
+                     and _dt_name(recv.value) == "TypeExprRefSelf" else None)
+        group = self.reg_group_of.get(recv_name)
+        if group is None:
+            raise OffsetFoldError(
+                f"'{which}' is a reg_group_c method; '{recv_name or self.expr(recv)}' "
+                f"is not a register group of this component")
+
+        if not call.args or _dt_name(call.args[0]) != "ExprConstant" \
+                or not isinstance(call.args[0].value, str):
+            raise OffsetFoldError(
+                f"'{which}': the instance name must be a string literal, so the "
+                f"offset can be evaluated at build time")
+        name = call.args[0].value
+
+        if which == "get_offset_of_instance":
+            return f"64'h{scalar_offset(group, name):x}"
+
+        if len(call.args) < 2:
+            raise OffsetFoldError(
+                "get_offset_of_instance_array takes (name, index)")
+        base, stride = array_base_stride(group, name)
+        idx = call.args[1]
+        if _dt_name(idx) == "ExprConstant":
+            return f"64'h{base + int(idx.value) * stride:x}"
+        # A loop index or other run-time value: emit the affine form, at
+        # addr_handle_t width -- a 32-bit intermediate here is what produced the
+        # WIDTHEXPAND alongside the original error.
+        return f"(64'h{base:x} + 64'h{stride:x} * {self.expr(idx)})"
 
     # --- field-named masked writes ---------------------------------------
 
@@ -574,10 +645,16 @@ class _ExprOnly(_BodyEmitter):
 
     Used where an expression appears outside an operation body -- a field
     initializer, or an argument inside a lowered `init`.
+
+    ``comp`` is not optional in practice: an `init` binds addresses, and the
+    address arithmetic is exactly where a model calls the register group's own
+    offset functions. Without the component this emitter cannot resolve `regs`
+    to a register group, and the fold in `_fold_offset` degrades to an emitted
+    call -- which is the defect this path had.
     """
 
-    def __init__(self, member_of, ctor=None):
-        super().__init__(ctor, None, member_of)
+    def __init__(self, member_of, ctor=None, comp=None):
+        super().__init__(ctor, comp, member_of)
 
 
 # --- emission --------------------------------------------------------------
@@ -771,7 +848,7 @@ def _field_defaults(comp, members: Dict[str, str], subs: Dict[str, SubComp]) -> 
     # skipped by an early return in a hand-written `init`.
     for f in channel_fields(comp):
         lines.append(f"      {members[f.name]} = new();")
-    be = _ExprOnly(members)
+    be = _ExprOnly(members, comp=comp)
     for f in _data_fields(comp):
         if f.initial_value is not None:
             lines.append(f"      {members[f.name]} = {be.expr(f.initial_value)};")
@@ -796,7 +873,7 @@ def _bind_body(comp, ctor, members, subs, *, bus: str, base_arg: str) -> List[st
     reg_groups = [f.name for f in comp.fields if field_is_reg_group(f)]
     if ctor is not None and ctor.body:
         from .lower_init import lower_init
-        be = _ExprOnly(members, ctor=ctor)
+        be = _ExprOnly(members, ctor=ctor, comp=comp)
         return lower_init(ctor, members=members, reg_groups=reg_groups, subs=subs,
                           bus=bus, expr=be.expr, indent=3)
     return [f"      {members[g]} = new({bus}, {base_arg});" for g in reg_groups]

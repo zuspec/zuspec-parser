@@ -20,7 +20,23 @@ from zuspec.be.sv.ir.expr_emit import SVExprEmitter
 
 
 # PSS exec built-in names (matched on the call target).
-PSS_BUILTINS = frozenset({"message", "print", "error", "fatal", "yield"})
+#
+# `yield` is NOT here, and must not be added back: it is a procedural STATEMENT
+# (`procedural_yield_stmt ::= yield ;`, Syntax 111), which parses to
+# ProceduralStmtYield and reaches the IR as ir.StmtYield -- never as a call. The
+# entry that used to sit here could not match anything, so its "// yield" text
+# was unreachable in every target. The statement is lowered where it belongs,
+# in lower_progseq's statement dispatch.
+#
+# The authority for what belongs here is `targets/call_legality.py`: this set is
+# the SV target's RENDERINGS, and the registry is what says which names a target
+# claims. A name claimed there with no rendering here would fall through to
+# verbatim emission, which is the defect the registry exists to prevent.
+PSS_BUILTINS = frozenset({
+    "message", "print", "error", "fatal",
+    "urandom", "urandom_range",          # std_pkg 21.4
+    "format", "format_string",           # std_pkg 21.1.2 / 19
+})
 
 
 def builtin_name(func) -> Optional[str]:
@@ -68,8 +84,18 @@ def make_pss_builtin_call_hook(
         if name == "fatal":
             # fatal(exit_code, fmt, args...) -> $fatal(exit_code, fmt, args...)
             return f"$fatal({_args(args)})"
-        if name == "yield":
-            return "// yield (no-op in SV class execution)"
+        if name == "urandom":
+            return "$urandom()"
+        if name == "urandom_range":
+            # PSS is urandom_range(min, max); SV's $urandom_range takes
+            # (maxval, minval) -- the operands are REVERSED, and getting that
+            # wrong is silent for a symmetric range and wrong everywhere else.
+            if len(args) == 2:
+                return f"$urandom_range({emit(args[1])}, {emit(args[0])})"
+            return f"$urandom_range({_args(args)})"
+        if name in ("format", "format_string"):
+            # Both return a formatted string; SV's is $sformatf.
+            return f"$sformatf({_args(args)})"
         return None
 
     return hook

@@ -40,9 +40,41 @@ def test_error_and_fatal():
     assert e.emit(_call("fatal", _c(1), _c("dead"))) == '$fatal(1, "dead")'
 
 
-def test_yield_call_is_comment():
+def test_yield_is_not_a_call_builtin():
+    """`yield` is a procedural STATEMENT, not a function.
+
+    `procedural_yield_stmt ::= yield ;` (PSS 3.1 Syntax 111) parses to
+    ProceduralStmtYield and `ast2ir` maps it to `ir.StmtYield`. It can never
+    reach the IR as an ExprCall, so the entry that used to sit in PSS_BUILTINS
+    matched nothing and its "// yield (no-op in SV class execution)" text was
+    unreachable -- in every target, not just this one.
+
+    The statement is lowered where it belongs: `lower_progseq`'s statement
+    dispatch turns `StmtYield` into `m_imp.yield_()`, which is the blocking
+    seam the import API declares.
+
+    So a *call* named `yield` -- only constructible by hand, as here -- is an
+    ordinary unrecognized call and must fall through, not be special-cased.
+    """
     e = make_sv_expr_emitter()
-    assert e.emit(_call("yield")) == "// yield (no-op in SV class execution)"
+    assert e.emit(_call("yield")) == "yield()"
+
+
+def test_urandom_and_format_are_rendered():
+    """std_pkg 21.4 / 21.1.2. Declared by the front end's stdlib, so a model may
+    legally call them; without a rendering they fall through to verbatim
+    emission -- a call to a function generated SystemVerilog does not have."""
+    e = make_sv_expr_emitter()
+    assert e.emit(_call("urandom")) == "$urandom()"
+    assert e.emit(_call("format", _c("x=%0d"), _c(1))) == '$sformatf("x=%0d", 1)'
+
+
+def test_urandom_range_reverses_its_operands():
+    """PSS is urandom_range(min, max); SystemVerilog's $urandom_range takes
+    (maxval, minval). Passing them straight through is silent for a symmetric
+    range and wrong for every other one."""
+    e = make_sv_expr_emitter()
+    assert e.emit(_call("urandom_range", _c(3), _c(9))) == "$urandom_range(9, 3)"
 
 
 def test_non_builtin_falls_through():
