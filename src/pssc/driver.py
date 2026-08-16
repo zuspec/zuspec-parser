@@ -62,7 +62,8 @@ def _normalize_opts(opts: Optional[argparse.Namespace],
 
 def translate(sources: Union[PathLike, Sequence[PathLike]],
               reg_rmw: str = "native",
-              prelude: Sequence[tuple] = ()) -> AstToIrContext:
+              prelude: Sequence[tuple] = (),
+              comments: bool = True) -> AstToIrContext:
     """Parse + link + translate ``sources`` (file paths) to an ``AstToIrContext``.
 
     The returned context is enriched with ``ctx.ir_context`` — the canonical
@@ -83,7 +84,7 @@ def translate(sources: Union[PathLike, Sequence[PathLike]],
         sources = [sources]
     paths = [str(s) for s in sources]
 
-    parser = Parser()
+    parser = Parser(collect_comments=comments)
     parser.parse(paths, prelude=prelude)
     root = parser.link()
     ctx = AstToIrTranslator().translate(root)
@@ -118,9 +119,14 @@ def compile(
     try:
         tgt = _targets.get(target)
     except KeyError as e:
+        # `e.args[0]`, not `str(e)`: KeyError renders through repr(), which
+        # wraps the whole sentence in quotes and escapes anything in it. The
+        # message already names any plugin that failed to load, which is the
+        # usual reason a target the user expects is not registered.
+        msg = e.args[0] if e.args else str(e)
         if raise_on_error:
-            raise CompileError(str(e)) from None
-        return CompileResult(target=target, errors=[str(e)])
+            raise CompileError(msg) from None
+        return CompileResult(target=target, errors=[msg])
 
     # The target speaks first. Its prelude (typically `target_cfg_pkg`) must be
     # processed ahead of the user's sources -- see `translate`.
@@ -132,6 +138,7 @@ def compile(
         return CompileResult(target=target, errors=[str(e)])
 
     ctx = translate(sources, reg_rmw=getattr(opts, "reg_rmw", "native"),
+                    comments=not getattr(opts, "no_comments", False),
                     prelude=prelude)
 
     if ctx.errors:

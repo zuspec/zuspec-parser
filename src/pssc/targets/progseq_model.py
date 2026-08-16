@@ -10,9 +10,12 @@ design/pss-programming-seq-gen-impl-plan.md (Phase 0 findings).
 """
 from __future__ import annotations
 
+import contextlib
 import dataclasses as dc
+import warnings
+from contextvars import ContextVar
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, FrozenSet, List, Optional, Tuple
 
 
 # --- Function kind ---------------------------------------------------------
@@ -50,35 +53,78 @@ _REG_OFFSET_FNS = frozenset({"get_offset_of_instance", "get_offset_of_instance_a
 #: undeclared `base` variable: code that looks right and does not compile. The
 #: rename to `initialize` reproduced exactly that, which is why the third
 #: spelling is here rather than left to `--ctor-name`.
-#: Set by `set_ctor_name()` when `--ctor-name` is given.
-_CTOR_NAMES = {"ctor", "init", "initialize"}
+DEFAULT_CTOR_NAMES = frozenset({"ctor", "init", "initialize"})
+
+#: The set in effect for the compile currently running.
+#:
+#: A ContextVar entered and RESTORED by `ctor_names_scope`, not a module global
+#: that each target overwrites on entry. The global version leaked across
+#: compiles: `--ctor-name build` in one `pssc.compile()` call left `build` as
+#: the only recognised name for every later call in the same process, so the
+#: next model's `initialize` was classified as an ordinary export function --
+#: which generates a class that constructs its register model from an
+#: undeclared variable. Silent, and only reachable when more than one compile
+#: shares a process, which is exactly what a test suite and a dv-flow run do.
+#:
+#: Still one value per context rather than a parameter on every call: threading
+#: it through the ~20 `func_kind` call sites belongs with `OpModel`, which
+#: carries it as a field (P2 of docs/generator-style-extensions-plan.md). A
+#: ContextVar is correct under asyncio and under sequential reuse -- the two
+#: ways compiles actually share a process today -- and wrong only for two
+#: compiles running in different THREADS at the same time, which nothing does.
+_ctor_names: "ContextVar[FrozenSet[str]]" = ContextVar(
+    "pssc_ctor_names", default=DEFAULT_CTOR_NAMES)
 
 
-#: The default set, kept as its own name so `set_ctor_name(None)` restores
-#: exactly what `_CTOR_NAMES` started as. It used to repeat the literal, which
-#: is why adding a spelling above silently failed to apply: every target calls
-#: `set_ctor_name(opts.ctor_name)` on entry, so the copy -- not the definition
-#: -- was what actually took effect.
-_DEFAULT_CTOR_NAMES = frozenset(_CTOR_NAMES)
+def current_ctor_names() -> FrozenSet[str]:
+    """The constructor-name set in effect for this compile."""
+    return _ctor_names.get()
+
+
+@contextlib.contextmanager
+def ctor_names_scope(name: Optional[str]):
+    """Make ``name`` the sole constructor spelling for the duration of a run.
+
+    ``None`` means "use the defaults" -- which is a real setting, not a no-op:
+    it restores the defaults inside a surrounding scope that narrowed them.
+    """
+    token = _ctor_names.set(frozenset({name}) if name else DEFAULT_CTOR_NAMES)
+    try:
+        yield
+    finally:
+        _ctor_names.reset(token)
 
 
 def set_ctor_name(name: Optional[str]) -> None:
-    """Override which `solve function` name means "constructor"."""
-    global _CTOR_NAMES
-    _CTOR_NAMES = {name} if name else set(_DEFAULT_CTOR_NAMES)
+    """Override which `solve function` name means "constructor". Deprecated.
+
+    Deprecated because it has no matching restore: the value it sets outlives
+    the compile that set it and silently changes the next one. Use
+    `ctor_names_scope`, which is the same thing with an end.
+    """
+    warnings.warn(
+        "set_ctor_name() leaks its setting into the next compile in this "
+        "process; use `with ctor_names_scope(name):` instead",
+        DeprecationWarning, stacklevel=2)
+    _ctor_names.set(frozenset({name}) if name else DEFAULT_CTOR_NAMES)
 
 
-def func_kind(fn) -> FuncKind:
+def func_kind(fn, ctor_names: Optional[FrozenSet[str]] = None) -> FuncKind:
     """Classify an ``ir.Function`` by the flags the front end already sets.
 
     Phase-0 finding: the IR carries ``is_import`` / ``is_target`` / ``is_solve``;
     component operations carry none of them. ``ctor`` is the solve constructor;
     the register offset functions are recognized by name.
+
+    ``ctor_names`` defaults to the set in effect for the running compile. Pass
+    it explicitly where the caller already has it to hand -- that is the form
+    that survives when the ambient value goes away.
     """
     if fn.name in _REG_OFFSET_FNS:
         return FuncKind.REG_OFFSET
     if getattr(fn, "is_solve", False):
-        return FuncKind.CONSTRUCTOR if fn.name in _CTOR_NAMES else FuncKind.EXPORT_SOLVE
+        names = current_ctor_names() if ctor_names is None else ctor_names
+        return FuncKind.CONSTRUCTOR if fn.name in names else FuncKind.EXPORT_SOLVE
     if getattr(fn, "is_import", False):
         return FuncKind.IMPORT_SOLVE if getattr(fn, "is_solve", False) else FuncKind.IMPORT_TASK
     return FuncKind.EXPORT_OP

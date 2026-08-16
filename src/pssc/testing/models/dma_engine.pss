@@ -1,0 +1,123 @@
+// The WB DMA engine component -- the operation half of the worked example.
+//
+// A flat, single-component operation model: every operation takes the channel
+// index as an argument and drives `regs.channels[channel]`. It is deliberately
+// simpler than the component-tree model in fw-wb-dma/src/pss (one component per
+// channel), because its job is to hold the *backend* contract steady -- export
+// API, import API, register-model lowering, body translation -- while the
+// front-end work for component trees proceeds separately.
+//
+// Every operation follows the same shape, and the shape is load-bearing:
+//
+//   1. program the channel's registers,
+//   2. READ-MODIFY-WRITE the CSR to set CH_EN (never a blind write: a blind
+//      write would clobber status bits a caller pre-seeded, and it would
+//      discard the configuration a previous configure_channel() left there),
+//   3. poll the CSR until DONE, returning 1 early on ERR.
+//
+// The poll is `repeat {} while (...)` -- do-while, not while -- so the CSR is
+// read at least once even when the device completed before the poll began.
+package dma_engine_pkg {
+    import std_pkg::*;
+    import addr_reg_pkg::*;
+    import dma_regs_pkg::*;
+
+    component dma_engine_c {
+        dma_regs_c regs;
+
+        // Address binding. The generated constructor takes this argument and
+        // builds the register model against it; the body is empty because the
+        // binding is the generator's job, not the model's.
+        solve function void ctor(addr_handle_t base) { }
+
+        // Program a channel's control fields WITHOUT arming it. CH_EN is left
+        // clear, so this is safe to call on an idle channel at any time.
+        function void configure_channel(int channel, int priority, bit mode,
+                                        bit src_sel, bit dst_sel) {
+            dma_ch_csr_s csr;
+            csr.PRIORITY = priority;
+            csr.MODE     = mode;
+            csr.SRC_SEL  = src_sel;
+            csr.DST_SEL  = dst_sel;
+            csr.INC_SRC  = 1;
+            csr.INC_DST  = 1;
+            regs.channels[channel].CSR.write(csr);
+        }
+
+        // Move `nbytes` bytes from `src` to `dst` on `channel` and wait for the
+        // transfer to finish. Returns 0 on success, 1 if the device reported an
+        // error. Sizes are programmed in WORDS.
+        function int mem_to_mem_copy(int channel, bit[32] src, bit[32] dst,
+                                     int nbytes) {
+            dma_ch_csr_s csr;
+            dma_ch_sz_s  sz;
+
+            regs.channels[channel].A0.write(src);
+            regs.channels[channel].A1.write(dst);
+            sz.TOT_SZ = nbytes / 4;
+            regs.channels[channel].SZ.write(sz);
+
+            csr = regs.channels[channel].CSR.read();
+            csr.CH_EN = 1;
+            regs.channels[channel].CSR.write(csr);
+
+            repeat {
+                csr = regs.channels[channel].CSR.read();
+                if (csr.ERR == 1) {
+                    return 1;
+                }
+            } while (csr.DONE == 0);
+            return 0;
+        }
+
+        // As mem_to_mem_copy, but also programs the circular-buffer address
+        // masks: only bits set to 1 in a mask are incremented.
+        function int mem_to_mem_copy_masked(int channel, bit[32] src,
+                                            bit[32] src_mask, bit[32] dst,
+                                            bit[32] dst_mask, int nbytes) {
+            dma_ch_csr_s csr;
+            dma_ch_sz_s  sz;
+
+            regs.channels[channel].A0.write(src);
+            regs.channels[channel].AM0.write(src_mask);
+            regs.channels[channel].A1.write(dst);
+            regs.channels[channel].AM1.write(dst_mask);
+            sz.TOT_SZ = nbytes / 4;
+            regs.channels[channel].SZ.write(sz);
+
+            csr = regs.channels[channel].CSR.read();
+            csr.CH_EN = 1;
+            regs.channels[channel].CSR.write(csr);
+
+            repeat {
+                csr = regs.channels[channel].CSR.read();
+                if (csr.ERR == 1) {
+                    return 1;
+                }
+            } while (csr.DONE == 0);
+            return 0;
+        }
+
+        // Run a transfer from an external (linked-list) descriptor at
+        // `desc_addr`. The descriptor carries the addresses and size, so none
+        // are programmed here -- only the pointer and the USE_ED select.
+        function int mem_to_mem_copy_desc(int channel, bit[32] desc_addr) {
+            dma_ch_csr_s csr;
+
+            regs.channels[channel].DESC.write(desc_addr);
+
+            csr = regs.channels[channel].CSR.read();
+            csr.USE_ED = 1;
+            csr.CH_EN  = 1;
+            regs.channels[channel].CSR.write(csr);
+
+            repeat {
+                csr = regs.channels[channel].CSR.read();
+                if (csr.ERR == 1) {
+                    return 1;
+                }
+            } while (csr.DONE == 0);
+            return 0;
+        }
+    }
+}

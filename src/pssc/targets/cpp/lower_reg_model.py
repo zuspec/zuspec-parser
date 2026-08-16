@@ -114,17 +114,41 @@ def _array_maker(name: str, elem_type: str, size: int, base: int, stride: int) -
     ])
 
 
-def lower_value_unions(root_dtype) -> str:
-    groups = collect_reg_groups(root_dtype)
-    structs = collect_value_structs(groups)
+def _groups_of(components) -> List[object]:
+    """Every register group under ``components``, deduplicated, parents last.
+
+    Across the whole TREE, not just the root: a per-channel bank is reached
+    through the channel component, and emitting only the root's groups left
+    every generated channel class naming a type nothing declared.
+
+    Order is the order `collect_reg_groups` produces -- nested groups before
+    the group that holds them -- which is what C++ needs, since a group holds
+    its children by value.
+    """
+    out: List[object] = []
+    seen = set()
+    for comp in components:
+        for g in collect_reg_groups(comp):
+            if id(g) not in seen:
+                seen.add(id(g))
+                out.append(g)
+    return out
+
+
+def lower_value_unions(components) -> str:
+    structs = collect_value_structs(_groups_of(components))
+    if not structs:
+        return ""
     parts = ["// ----- Register value layouts (shared with C; std::uintN_t). -----"]
     for s in structs:
         parts.append(emit_value_union(s))
     return "\n".join(parts)
 
 
-def lower_reg_groups(root_dtype) -> str:
-    groups = collect_reg_groups(root_dtype)
+def lower_reg_groups(components) -> str:
+    groups = _groups_of(components)
+    if not groups:
+        return ""
     parts = ["// ----- Register-group classes. -----"]
     for g in groups:
         parts.append(emit_reg_group_class(g))

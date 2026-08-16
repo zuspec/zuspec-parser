@@ -3,7 +3,7 @@
 import os
 import sys
 
-project = 'zuspec-fe-pss'
+project = 'pssc'
 copyright = '2026, Matthew Ballance'
 author = 'Matthew Ballance'
 

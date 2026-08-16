@@ -11,10 +11,24 @@ import shutil
 import pytest
 
 _HERE = os.path.dirname(__file__)
+
 _EXAMPLE = os.path.join(_HERE, "..", "..", "examples", "export", "programming_seqs")
 _SRCS = [os.path.join(_EXAMPLE, "dma_regs.pss"),
          os.path.join(_EXAMPLE, "dma_engine.pss")]
 _TB = os.path.join(_HERE, "data", "wb_dma_tb.sv")
+
+
+def diagnostic_text(exc):
+    """Everything a user would see for ``exc``, as one string.
+
+    A `CompileError` from the call-legality gate carries the summary in its
+    message and the per-call diagnostics in ``.errors`` -- the CLI prints both
+    (cli.py `_cmd_compile`), so a test asserting on the message alone would
+    miss the half that says what is actually wrong. Any other exception is just
+    its own text.
+    """
+    exc = getattr(exc, "value", exc)        # accept a pytest ExceptionInfo
+    return "\n".join([str(exc), *getattr(exc, "errors", [])])
 
 
 def available_sims():

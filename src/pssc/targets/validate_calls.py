@@ -100,10 +100,10 @@ def _walk_calls(node, out: List[object]) -> None:
             _walk_calls(child, out)
 
 
-def _context_of(fn) -> Optional[Ctx]:
+def _context_of(fn, ctor_names=None) -> Optional[Ctx]:
     """Which context ``fn``'s body is lowered into, or None if it is not
     lowered at all (a declaration, or an offset function that is evaluated)."""
-    kind = func_kind(fn)
+    kind = func_kind(fn, ctor_names)
     if kind is FuncKind.EXPORT_OP:
         return Ctx.TARGET
     if kind in (FuncKind.CONSTRUCTOR, FuncKind.EXPORT_SOLVE):
@@ -133,14 +133,20 @@ def _components(root) -> List[object]:
     return out
 
 
-def _model_names(root):
-    """Names the model itself supplies: operations, and sub-component ctors."""
+def model_names(root, ctor_names=None):
+    """Names the model itself supplies: operations, and sub-component ctors.
+
+    Public because an emitter dispatching on `Disposition` has to classify a
+    call the same way this pass did (P7.T4). Two implementations of "what
+    counts as an operation" would disagree exactly where it matters -- the pass
+    vouches for a call and the emitter then fails to place it.
+    """
     ops: Set[str] = set()
     ctors: Set[str] = set()
     comps = _components(root)
     for comp in comps:
         for fn in (getattr(comp, "functions", None) or []):
-            kind = func_kind(fn)
+            kind = func_kind(fn, ctor_names)
             if kind is FuncKind.EXPORT_OP:
                 ops.add(fn.name)
             elif kind is FuncKind.CONSTRUCTOR:
@@ -148,7 +154,8 @@ def _model_names(root):
     return comps, frozenset(ops), frozenset(ctors)
 
 
-def validate_calls(root, ctx, target: str, *, report_only: bool = False) -> List[str]:
+def validate_calls(root, ctx, target: str, *, report_only: bool = False,
+                   ctor_names=None) -> List[str]:
     """Classify every call in the component tree rooted at ``root``.
 
     Returns the diagnostics. Unless ``report_only``, they are also pushed onto
@@ -156,14 +163,14 @@ def validate_calls(root, ctx, target: str, *, report_only: bool = False) -> List
     ``driver.compile`` checks ``ctx.errors`` only BEFORE the target runs, so
     the target has to check for itself (docs §5.3).
     """
-    comps, ops, ctors = _model_names(root)
+    comps, ops, ctors = model_names(root, ctor_names)
     imports: FrozenSet[str] = frozenset(
         f.name for f in (getattr(ctx, "import_functions", None) or []))
 
     msgs: List[str] = []
     for comp in comps:
         for fn in (getattr(comp, "functions", None) or []):
-            context = _context_of(fn)
+            context = _context_of(fn, ctor_names)
             if context is None:
                 continue
             calls: List[object] = []
@@ -183,3 +190,25 @@ def validate_calls(root, ctx, target: str, *, report_only: bool = False) -> List
         for m in msgs:
             ctx.add_error(m)
     return msgs
+
+
+def gate(root, ctx, target: str, language: str, ctor_names=None) -> None:
+    """Run :func:`validate_calls` and raise if anything is unlowerable.
+
+    Every operation-model backend calls this as its first act, BEFORE any file
+    is opened -- see `progseq_gen.generate` for the two reasons that matters
+    (a truncated artifact looks up-to-date to dv-flow, and `driver.compile`
+    inspects `ctx.errors` only before the target runs).
+
+    One function rather than three copies of the same six lines, because the
+    three copies is how the gate came to run for SystemVerilog only: it was
+    written where the SV backend needed it and never propagated to the two
+    backends with the NARROWEST lowering, which are the ones most likely to
+    meet a call they cannot render. `OpModelTarget.check()` absorbs this in
+    P2 of docs/generator-style-extensions-plan.md.
+    """
+    from ..driver import CompileError
+    bad = validate_calls(root, ctx, target, ctor_names=ctor_names)
+    if bad:
+        raise CompileError(
+            f"{len(bad)} call(s) cannot be lowered to {language}", bad)

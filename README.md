@@ -64,13 +64,22 @@ default, or at compile time (baked) with `--presolve` / the `*-presolved` target
 `pssc` ships a [DV Flow Manager](https://dv-flow.github.io/) task package
 (always installed) so PSS compilation is a node in a DFM task graph — one build
 task per output style, plus tasks that reference the bundled SV/C/C++ core
-source. See [docs/dvflow-tasks.md](docs/dvflow-tasks.md).
+source. Each task documents its own parameters in
+[`src/pssc/dvflow/flow.yaml`](src/pssc/dvflow/flow.yaml).
 
 ## Documentation
 
-- [docs/cli.md](docs/cli.md) — CLI reference
-- [docs/dvflow-tasks.md](docs/dvflow-tasks.md) — DV Flow Manager task package
-- [docs/architecture.md](docs/architecture.md) — compilation pipeline & IR hand-off
-- [docs/targets.md](docs/targets.md) — per-target details
-- [design/pssc-application-design.md](design/pssc-application-design.md) — design
-- [design/pssc-implementation-plan.md](design/pssc-implementation-plan.md) — plan & status
+- [docs/cli.md](docs/cli.md) — CLI reference: every option of every target
+- [docs/custom-generator-styles.md](docs/custom-generator-styles.md) — writing a
+  style, a backend extension or a target of your own, without forking pssc
+- [docs/extension-stability.md](docs/extension-stability.md) — what the
+  published surfaces promise, and the deprecation window
+- [docs/op-model-manifest.md](docs/op-model-manifest.md) — the `--emit-manifest`
+  schema
+- [docs/lowering-call-legality.md](docs/lowering-call-legality.md) — which PSS
+  calls each target may lower, and what the gate refuses
+- [docs/op-model-c-embedded.md](docs/op-model-c-embedded.md) — the C
+  operation-model API on a target with no heap
+- [docs/generator-style-extensions-design.md](docs/generator-style-extensions-design.md)
+  — why the extension seams are where they are
+- [AGENTS.md](AGENTS.md) — working rules for this repository

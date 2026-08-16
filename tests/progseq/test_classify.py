@@ -95,11 +95,13 @@ def _collect(node, acc=None):
 # --- root resolution -------------------------------------------------------
 
 def test_resolve_root_qualified_and_bare(ctx):
-    r1 = ProgSeqTarget._resolve_root(ctx, "dma_engine_c")
-    r2 = ProgSeqTarget._resolve_root(ctx, "dma_engine_pkg::dma_engine_c")
+    """`resolve_root` is public and lives on `OpModelTarget` since P2.T2 --
+    every target in the family resolves `--root` the same way."""
+    r1 = ProgSeqTarget.resolve_root(ctx, "dma_engine_c")
+    r2 = ProgSeqTarget.resolve_root(ctx, "dma_engine_pkg::dma_engine_c")
     assert r1 is not None and r2 is not None
 
 
 def test_resolve_root_unknown(ctx):
     with pytest.raises(ValueError, match="unknown --root"):
-        ProgSeqTarget._resolve_root(ctx, "does_not_exist_c")
+        ProgSeqTarget.resolve_root(ctx, "does_not_exist_c")

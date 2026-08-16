@@ -14,7 +14,93 @@
 
 #include <stdint.h>
 
-/* PSS addr_handle_t -> 64-bit byte address. */
+/* PSS addr_handle_t -> byte address.
+ *
+ * 64-bit by default because PSS `addr_handle_t` is, and a model whose address
+ * space is wider than the machine is legal and useful (a host test driving a
+ * 64-bit DUT from a 32-bit build). It is also 8 bytes in every component that
+ * holds one, which on this class of part is real: see the plan's C5.4 log,
+ * where the width is +20 bytes of the WB DMA tree's 248.
+ *
+ * `--addr-bits 32` emits `#define PSSC_ADDR_BITS 32` above this include. An
+ * integrator can also define it on the command line -- the `#ifndef` is there so
+ * the generated choice is a default, not a decree.
+ *
+ * NARROWING IS NOT FREE AND IS NOT CHECKED HERE: if the model's addresses do
+ * not fit in 32 bits, the offsets silently wrap. That is a property of the
+ * device map, which this header cannot see. The one place it IS checkable --
+ * address wider than a pointer, in the ptr seam -- is a static assertion. */
+#ifndef PSSC_ADDR_BITS
+#  define PSSC_ADDR_BITS 64
+#endif
+#if PSSC_ADDR_BITS == 32
+typedef uint32_t pssc_addr_t;
+#elif PSSC_ADDR_BITS == 64
 typedef uint64_t pssc_addr_t;
+#else
+#  error "PSSC_ADDR_BITS must be 32 or 64"
+#endif
+
+/* Ordering hook, called after every write and before every read in the
+ * pointer-dereferencing seam (pssc_mem_mmio.h). A NO-OP BY DEFAULT, and that is
+ * the honest default rather than a safe one:
+ *
+ *   * `volatile` already stops the COMPILER reordering or eliding accesses,
+ *     which is what most register programming needs and all that C guarantees;
+ *   * it says nothing about the CPU or the interconnect. On a core with a store
+ *     buffer or a weakly-ordered fabric, two writes this model states in order
+ *     can arrive out of order, and a poll can read a stale value indefinitely.
+ *
+ * Whether that matters is a property of the part, not of the model, so it
+ * cannot be decided here. Define PSSC_MEM_BARRIER before including a generated
+ * header to supply the right instruction (`__DSB()`, `dmb ish`, `fence`, ...).
+ *
+ * The function-call seams (vtable/direct) do not use it: the call itself is an
+ * optimization barrier to the compiler, and what the platform's implementation
+ * does about the CPU is that implementation's business. */
+#ifndef PSSC_MEM_BARRIER
+#  define PSSC_MEM_BARRIER() ((void)0)
+#endif
+
+/* A C99-compatible static assertion. `_Static_assert` is C11, and the generated
+ * code is built `-std=c99` by design, so this is the negative-array-size idiom
+ * where C11 is not available. Both spellings fail at COMPILE time, which is the
+ * whole point -- the conditions it guards are silent at runtime. */
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#  define PSSC_STATIC_ASSERT(cond, tag) _Static_assert(cond, #tag)
+#else
+#  define PSSC_STATIC_ASSERT(cond, tag) \
+     typedef char pssc_static_assert_##tag[(cond) ? 1 : -1]
+#endif
+
+/* --- the selectable seam (C4.4, `--mem-access selectable`) ----------------
+ *
+ * A generated header that includes ONLY this file gets its access mechanism
+ * chosen at COMPILE time by the integrator, not at generation time by whoever
+ * ran pssc:
+ *
+ *     cc -DPSSC_MEM_ACCESS_FUNCTIONS ...   -> extern functions (pssc_mem_fn.h)
+ *     cc ...                               -> pointer deref   (pssc_mem_ptr.h)
+ *
+ * The point is one generated driver serving both: pointer on the part, extern
+ * functions in a host test that wants to intercept the bus, with no regenerate
+ * and no second copy of the driver to keep in step.
+ *
+ * PSSC_MEM_SEAM_CHOSEN is defined by every seam header BEFORE it includes this
+ * one, so a generated header that names its seam explicitly (`--mem-access
+ * pointer`, `functions`, or `--link-style vtable`) does not get a second set of
+ * primitives defined underneath it. Selection only happens when nothing has
+ * been chosen -- which is exactly the selectable case.
+ *
+ * Pointer is the default because it is the one that needs no user code at all;
+ * a build that wants the other says so, and says it once, on the command line.
+ */
+#ifndef PSSC_MEM_SEAM_CHOSEN
+#  if defined(PSSC_MEM_ACCESS_FUNCTIONS)
+#    include "pssc_mem_fn.h"
+#  else
+#    include "pssc_mem_ptr.h"
+#  endif
+#endif
 
 #endif /* PSSC_MEM_H */

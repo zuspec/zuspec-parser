@@ -18,6 +18,8 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Tuple
 
+from ..comments import append_trailing, comment_lines
+
 from ..progseq_model import (
     is_reg_group, field_is_register, field_is_array, field_is_reg_group,
     array_element_type, array_size, _dt_name,
@@ -61,10 +63,21 @@ def _reg_handle_type(reg_dtype) -> str:
 # --- emission --------------------------------------------------------------
 
 def emit_value_struct(struct_dtype) -> str:
+    """The register value struct, with whatever the source documented it with.
+
+    A register field's two comments occupy different places and say different
+    things: the prose above it comes from the SystemRDL ``desc`` and is the part
+    nothing downstream can re-derive -- a datasheet-versus-silicon divergence,
+    typically -- while the bit range and access mode beside it are facts about
+    the layout. Both come from the PSS source rather than being synthesized
+    here, so there is one statement of each and no way for them to disagree.
+    """
     name = _strip_pkg(struct_dtype.name)
     lines = ["  typedef struct packed {"]
     for f in reversed(struct_dtype.fields):   # LSB-first -> MSB-first
-        lines.append(f"    {_sv_bit_type(int(f.datatype.bits))} {f.name};")
+        lines += comment_lines(getattr(f, "doc", None), "    ")
+        decl = f"    {_sv_bit_type(int(f.datatype.bits))} {f.name};"
+        lines += append_trailing([decl], getattr(f, "doc_trailing", None))
     lines.append(f"  }} {name};")
     return "\n".join(lines)
 

@@ -22,14 +22,7 @@ import pytest
 
 from pssc import driver
 
-_MODEL = os.path.normpath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "examples", "op_model", "pss"))
-
-
-def _sources():
-    with open(os.path.join(_MODEL, "files.f")) as fp:
-        rel = [ln.strip() for ln in fp if ln.strip() and not ln.startswith("#")]
-    return [os.path.join(_MODEL, os.path.relpath(p, "src/pss")) for p in rel]
+from .op_model import OP_MODEL as _MODEL, op_model_sources as _sources
 
 
 def assert_generated(text, *, has=(), has_not=()):
@@ -144,8 +137,32 @@ def test_init_lowered_to_construction(sv):
         "for (int i = 0; i < 4; i++) begin",
         # Sub-expressions are bracketed: the IR tree says how the expression
         # groups, and SV precedence only sometimes agrees. Same arithmetic.
-        "m_ch[i] = new(this, i, (base + 32 + (i * 32)));",
+        #
+        # The literals are the GENERATED register package's -- base 0x20,
+        # stride 0x20, from `bank[NUM_CH] @0x20 += 0x20` in the RDL. They are
+        # spelled in hex and grouped as `base + (off + stride*i)` because that
+        # is the shape `get_offset_of_instance_array` folds to; the
+        # hand-written package this model used to carry produced
+        # `base + 32 + (i * 32)`, which is the same arithmetic and is why the
+        # value is checked below rather than only the text.
+        "m_ch[i] = new(this, i, (base + (64'h20 + 64'h20 * i)));",
     ])
+
+
+def test_channel_offsets_are_the_rdl_geometry(sv):
+    """The numbers, independent of how the folder spells them.
+
+    The assertion above is a string match and would survive an off-by-one in
+    the stride if someone updated it to match new output. This one states the
+    geometry the RDL declares -- channel n's bank is at 0x20 + 0x20*n -- so a
+    fold that changed the arithmetic fails here even if the text was refreshed.
+    """
+    import re
+    m = re.search(r"m_ch\[i\] = new\(this, i, \(base \+ \((.*?)\)\)\);", sv)
+    assert m, "channel construction not found"
+    expr = m.group(1).replace("64'h", "0x").replace("'h", "0x")
+    for i in range(4):
+        assert eval(expr, {"i": i}) == 0x20 + 0x20 * i, (expr, i)
 
 
 def test_channel_binds_its_own_bank(sv):

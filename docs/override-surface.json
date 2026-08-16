@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "comment": "The published override surface. Generated from the @overridable marks and CHECKED IN: growing the surface is then a diff in two files, which is a decision somebody makes rather than a thing that happens. tests/unit/test_override_surface.py fails when this file and the code disagree. Regenerate with scripts/regen_override_surface.py.",
+  "surfaces": {
+    "pssc.targets.c.backend.COpModelBackend": {
+      "assemble": {
+        "since": "0.1",
+        "stability": "provisional"
+      },
+      "body_emitter_cls": {
+        "since": "0.1",
+        "stability": "provisional",
+        "attribute": true
+      },
+      "emit_accessors": {
+        "since": "0.1",
+        "stability": "provisional"
+      },
+      "emit_api_types": {
+        "since": "0.1",
+        "stability": "stable",
+        "pairs_with": [
+          "emit_value_unions"
+        ]
+      },
+      "emit_banner": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "emit_decls": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "emit_extra_files": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "emit_guard_close": {
+        "since": "0.1",
+        "stability": "stable",
+        "pairs_with": [
+          "emit_guard_open"
+        ]
+      },
+      "emit_guard_open": {
+        "since": "0.1",
+        "stability": "stable",
+        "pairs_with": [
+          "emit_guard_close"
+        ]
+      },
+      "emit_handles": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "emit_impl": {
+        "since": "0.1",
+        "stability": "provisional"
+      },
+      "emit_impl_banner": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "emit_impl_body": {
+        "since": "0.1",
+        "stability": "provisional"
+      },
+      "emit_impl_includes": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "emit_impl_inline": {
+        "since": "0.1",
+        "stability": "provisional"
+      },
+      "emit_import_decls": {
+        "since": "0.1",
+        "stability": "provisional"
+      },
+      "emit_includes": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "emit_operation": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "emit_value_unions": {
+        "since": "0.1",
+        "stability": "stable",
+        "pairs_with": [
+          "emit_api_types"
+        ]
+      },
+      "header_sections": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "header_text": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "impl_sections": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "impl_text": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "prepare": {
+        "since": "0.1",
+        "stability": "provisional"
+      },
+      "stubs_text": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "style_cls": {
+        "since": "0.1",
+        "stability": "stable",
+        "attribute": true
+      },
+      "write_files": {
+        "since": "0.1",
+        "stability": "provisional"
+      }
+    }
+  }
+}

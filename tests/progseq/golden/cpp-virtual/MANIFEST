@@ -1,0 +1,4 @@
+wb_dma.hpp
+pssc_reg.hpp -> share/cpp/pssc_reg.hpp
+pssc_chan.hpp -> share/cpp/pssc_chan.hpp
+pssc_env.hpp -> share/cpp/pssc_env.hpp

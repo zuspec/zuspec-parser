@@ -33,7 +33,8 @@ def _is_packed(struct_dtype) -> bool:
     return bool(nm) and _strip_pkg(nm).startswith("packed_s")
 
 
-def collect_api_types(components, reg_value_structs=()) -> Tuple[List[object], List[object]]:
+def collect_api_types(components, reg_value_structs=(),
+                      ctor_names=None) -> Tuple[List[object], List[object]]:
     """``(enums, structs)`` mentioned by ``components``' exported API.
 
     Structs come back in dependency order (a nested struct before the struct
@@ -69,9 +70,11 @@ def collect_api_types(components, reg_value_structs=()) -> Tuple[List[object], L
             if f.name not in subs:
                 visit(f.datatype)
         for fn in comp.functions:
-            if func_kind(fn) not in (FuncKind.EXPORT_OP, FuncKind.EXPORT_SOLVE,
-                                     FuncKind.CONSTRUCTOR, FuncKind.IMPORT_TASK,
-                                     FuncKind.IMPORT_SOLVE):
+            if func_kind(fn, ctor_names) not in (FuncKind.EXPORT_OP,
+                                                FuncKind.EXPORT_SOLVE,
+                                                FuncKind.CONSTRUCTOR,
+                                                FuncKind.IMPORT_TASK,
+                                                FuncKind.IMPORT_SOLVE):
                 continue
             visit(fn.returns)
             for a in (fn.args.args if fn.args else []):
@@ -129,9 +132,10 @@ def emit_struct(struct_dtype) -> str:
     return "\n".join(lines)
 
 
-def lower_api_types(components, reg_value_structs=()) -> str:
+def lower_api_types(components, reg_value_structs=(), ctor_names=None) -> str:
     """Package-body text for the enums and structs the API mentions."""
-    enums, structs = collect_api_types(components, reg_value_structs)
+    enums, structs = collect_api_types(components, reg_value_structs,
+                                       ctor_names)
     if not enums and not structs:
         return ""
     parts = ["  // ----- Data types used by the export API. -----"]

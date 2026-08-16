@@ -1,6 +1,7 @@
 // wb_dma_tb.cpp -- self-checking testbench for the C++ WB DMA driver.
 //
-// A DMA-aware mock bus (subclassing pssc::mem_if) models a channel that
+// A DMA-aware mock bus (subclassing the generated wb_dma_import_if, which IS a
+// pssc::mem_if plus whatever the model imports) models a channel that
 // completes on CH_EN and moves TOT_SZ words A0->A1; a poison source forces ERR.
 // The C++ port of tb_pkg::dma_mock_bus_c; the same five checks -> PROTOTYPE PASS.
 #include <cstdint>
@@ -10,7 +11,7 @@
 #include "pssc_reg.hpp"
 #include "wb_dma.hpp"
 
-class dma_mock_bus : public pssc::mem_if {
+class dma_mock_bus : public wb_dma::wb_dma_import_if {
     static constexpr std::uint32_t POISON_SRC = 0xdead0000u;
     pssc::addr_t base_;
 public:

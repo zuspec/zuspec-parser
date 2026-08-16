@@ -70,12 +70,56 @@ def test_apis_and_component(gen):
     h = _hpp(gen)
     assert "struct wb_dma_if {" in h
     assert "virtual int mem_to_mem_copy(int channel," in h
-    assert "struct wb_dma_import_if : pssc::mem_if {" in h
-    # component holds mem_if& and reg model -- no redirect (no implements import_if)
+    # The platform seam is named uniformly in every signature. This model
+    # declares no imports, so the name IS pssc::mem_if -- see emit_import_api.
+    assert "using wb_dma_import_if = pssc::mem_if;" in h
     assert "class wb_dma : public wb_dma_if {" in h
-    assert "pssc::mem_if &imp_;" in h
-    assert "regs_(imp_, base)" in h
-    assert "std::unique_ptr<wb_dma_if> create(pssc::mem_if &imp, pssc::addr_t base)" in h
+    assert "wb_dma_import_if &imp_;" in h
+    assert "std::unique_ptr<wb_dma_if> create(wb_dma_import_if &imp, " \
+        "pssc::addr_t base)" in h
     # native member-call body + native do...while
-    assert "regs_.channels[channel].CSR.read();" in h
+    assert "this->regs.channels[channel].CSR.read();" in h
     assert "do {" in h and "} while (" in h
+
+
+def test_construction_is_two_phase(gen):
+    """The constructor takes the seam; the PSS constructor is `initialize`.
+
+    It has to be, and the reason is the tree rather than this model: a parent
+    computes its children's base addresses in its own constructor BODY, which
+    runs after the children -- as members -- already exist. `create()` does both
+    for the root, which is what a caller normally wants.
+    """
+    h = _hpp(gen)
+    assert "explicit wb_dma(wb_dma_import_if &imp)" in h
+    assert "void initialize(pssc::addr_t base) {" in h
+    # The group is bound in initialize, not at construction: constructed at 0
+    # so an operation called before initialize faults rather than reading
+    # somewhere plausible.
+    assert "regs(dma_regs_c(imp, 0))" in h
+    assert "this->regs = dma_regs_c(this->imp_, base);" in h
+
+
+def test_an_import_declaring_model_gets_a_real_interface(tmp_path):
+    """With imports, the seam gains them -- one object the platform implements,
+    rather than a second parameter."""
+    model = """
+package plat_pkg {
+    import target function void plat_delay_us(int us);
+}
+component imp_c {
+    import plat_pkg::*;
+    target function void spin(int n) { plat_delay_us(n); }
+}
+"""
+    src = tmp_path / "imp.pss"
+    src.write_text(model)
+    ns = argparse.Namespace(progseq_root="imp_c", cpp_namespace="imp",
+                            cpp_dispatch="virtual", cpp_single_header=True,
+                            progseq_core_copy=True, output_dir=str(tmp_path))
+    driver.compile([str(src)], target="cpp-progseq", opts=ns)
+    h = (tmp_path / "imp.hpp").read_text()
+    assert "struct imp_import_if : pssc::mem_if {" in h
+    assert "virtual void plat_delay_us(int us) = 0;" in h
+    # ...and the body reaches it through the same reference as memory access.
+    assert "this->imp_.plat_delay_us(n);" in h

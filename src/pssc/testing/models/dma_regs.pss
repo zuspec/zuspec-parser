@@ -1,0 +1,129 @@
+// The WB DMA register file, as a pssc programming-sequence example.
+//
+// This is the register half of the worked example the `*-progseq` targets are
+// developed against: a per-channel bank nested as an ARRAY inside one
+// device-wide group, which is what exercises the affine
+// `get_offset_of_instance_array` path in every backend.
+//
+// Map layout (matches the OpenCores WISHBONE DMA core):
+//
+//   0x00  CSR         global control
+//   0x04  INT_MSK_A   per-channel routing mask, bank A
+//   0x08  INT_MSK_B   per-channel routing mask, bank B
+//   0x0c  INT_SRC_A   masked pending snapshot, bank A (RO)
+//   0x10  INT_SRC_B   masked pending snapshot, bank B (RO)
+//   0x14  ..0x1f      reserved gap -- present here on purpose, so the
+//                     "reserved fields are not surfaced" rule is under test
+//   0x20  channel 0 bank ... stride 0x20, eight registers per bank
+//
+// All value structs are packed LITTLE_ENDIAN: the first-declared field occupies
+// bit 0 and each following field stacks toward the MSB, so declaration order IS
+// the bit numbering. Field names are upper-case because they are register
+// fields, and they appear verbatim in generated SV/C/C++.
+//
+// Registers are declared with INLINE `reg_c<...>` specializations rather than
+// named register component types. The richer operation model in
+// fw-wb-dma/src/pss uses named types; that path is being brought up separately
+// (op-model-export design, defect B).
+package dma_regs_pkg {
+    import std_pkg::*;
+    import addr_reg_pkg::*;
+
+    // ---------------------------------------------------------------------
+    // Value layouts
+    // ---------------------------------------------------------------------
+
+    // CSR -- global control. Only PAUSE is implemented.
+    struct dma_csr_s : packed_s<> {
+        rand bit      PAUSE;        //  0     RW  pause all DMA transfers
+        rand bit[31]  RSVD;         // 31:1   RO
+    }
+
+    // CHn_CSR -- per-channel control / status.
+    //
+    // DONE and ERR are the two bits every operation's completion poll looks at;
+    // CH_EN is the write that arms the channel.
+    struct dma_ch_csr_s : packed_s<> {
+        rand bit      CH_EN;        //  0     RW  channel enable / start
+        rand bit      DST_SEL;      //  1     RW  0 = IF0, 1 = IF1
+        rand bit      SRC_SEL;      //  2     RW  0 = IF0, 1 = IF1
+        rand bit      INC_DST;      //  3     RW
+        rand bit      INC_SRC;      //  4     RW
+        rand bit      MODE;         //  5     RW  1 = hardware handshake
+        rand bit      ARS;          //  6     RW  auto restart
+        rand bit      USE_ED;       //  7     RW  use external descriptors
+        rand bit      SZ_WB;        //  8     RW  size writeback into descriptor
+        rand bit      STOP;         //  9     WO  abort pulse
+        rand bit      BUSY;         // 10     RO  currently being serviced
+        rand bit      DONE;         // 11     RO  transfer complete
+        rand bit      ERR;          // 12     ROC error status
+        rand bit[3]   PRIORITY;     // 15:13  RW  priority, 0 = lowest
+        rand bit      REST_EN;      // 16     RW  hardware restart enable
+        rand bit      INE_ERR;      // 17     RW  interrupt enable: error
+        rand bit      INE_DONE;     // 18     RW  interrupt enable: done
+        rand bit      INE_CHK_DONE; // 19     RW  interrupt enable: chunk done
+        rand bit      INT_ERR;      // 20     ROC interrupt source: error
+        rand bit      INT_DONE;     // 21     ROC interrupt source: done
+        rand bit      INT_CHK_DONE; // 22     ROC interrupt source: chunk done
+        rand bit[9]   RSVD;         // 31:23  RO
+    }
+
+    // CHn_SZ -- transfer sizes, both counts in WORDS.
+    struct dma_ch_sz_s : packed_s<> {
+        rand bit[12]  TOT_SZ;       // 11:0   RW  total transfer size, words
+        rand bit[4]   RSVD0;        // 15:12  RO
+        rand bit[9]   CHK_SZ;       // 24:16  RW  chunk size, words (0 = all)
+        rand bit[7]   RSVD1;        // 31:25  RO
+    }
+
+    // CHn_SWPTR -- software pointer (the consumer side of a circular buffer).
+    struct dma_ch_swptr_s : packed_s<> {
+        rand bit[31]  PTR;          // 30:0   RW  software pointer
+        rand bit      EN;           // 31     RW  SWPTR_EN
+    }
+
+    // ---------------------------------------------------------------------
+    // One channel's bank -- eight registers at stride 4, spanning 0x20 bytes
+    // ---------------------------------------------------------------------
+
+    pure component dma_channel_regs_c : reg_group_c {
+        reg_c<dma_ch_csr_s,   READWRITE, 32>  CSR;      // 0x00 control / status
+        reg_c<dma_ch_sz_s,    READWRITE, 32>  SZ;       // 0x04 total + chunk size
+        reg_c<bit[32],        READWRITE, 32>  A0;       // 0x08 source address
+        reg_c<bit[32],        READWRITE, 32>  AM0;      // 0x0c source address mask
+        reg_c<bit[32],        READWRITE, 32>  A1;       // 0x10 destination address
+        reg_c<bit[32],        READWRITE, 32>  AM1;      // 0x14 destination mask
+        reg_c<bit[32],        READWRITE, 32>  DESC;     // 0x18 descriptor pointer
+        reg_c<dma_ch_swptr_s, READWRITE, 32>  SWPTR;    // 0x1c software pointer
+    }
+
+    // ---------------------------------------------------------------------
+    // The device-wide bank
+    // ---------------------------------------------------------------------
+
+    pure component dma_regs_c : reg_group_c {
+        reg_c<dma_csr_s, READWRITE, 32>  CSR;           // 0x00 global control
+        reg_c<bit[32],   READWRITE, 32>  INT_MSK_A;     // 0x04 routing mask A
+        reg_c<bit[32],   READWRITE, 32>  INT_MSK_B;     // 0x08 routing mask B
+        reg_c<bit[32],   READONLY,  32>  INT_SRC_A;     // 0x0c pending snapshot A
+        reg_c<bit[32],   READONLY,  32>  INT_SRC_B;     // 0x10 pending snapshot B
+
+        // The 0x14..0x1f gap. A leading underscore marks a field as a reserved
+        // placeholder: it holds the address space open but is never surfaced in
+        // a generated API.
+        reg_c<bit[32],   READONLY,  32>  _reserved0;    // 0x14
+        reg_c<bit[32],   READONLY,  32>  _reserved1;    // 0x18
+        reg_c<bit[32],   READONLY,  32>  _reserved2;    // 0x1c
+
+        dma_channel_regs_c channels[31];                // 0x20, stride 0x20
+
+        // The array's placement is affine in the index, and the generator
+        // evaluates this body rather than emitting it.
+        function bit[64] get_offset_of_instance_array(string name, int index) {
+            match (name) {
+                ["channels"]: return 0x20 + index * 0x20;
+                default:      return -1;
+            }
+        }
+    }
+}

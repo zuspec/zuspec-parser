@@ -1,141 +1,137 @@
 """Emission entry point for the ``c-progseq`` target.
 
 Assembles the generated C header (+ optional ``.c``) for the root component's
-subtree and writes it to the output directory, copying the selected core seam
-header(s) alongside so the directory is self-contained.
-
-Phase 3 ships the skeleton (walk + seam copy + header banner); the register
-model (Phase 4) and export API / bodies (Phase 5) fill the sections.
+subtree and writes it to the output directory. `CProgSeqTarget` copies the
+selected core seam headers alongside, so the directory is self-contained; this
+module names them (`seam_headers`) but does not move them.
 """
 from __future__ import annotations
 
 import logging
-import shutil
 from pathlib import Path
 from typing import List
 
-from ..progseq_model import walk_tree, CompKind
+from ..progseq_model import CompKind
 
 _log = logging.getLogger("pssc.progseq.c")
 
 #: Core seam header(s) copied per link style. pssc_mem.h is always needed.
-_SEAM_HEADERS = {
-    "vtable": ["pssc_mem.h", "pssc_mem_vtable.h"],
-    "direct": ["pssc_mem.h", "pssc_mem_direct.h"],
-    "mmio":   ["pssc_mem.h", "pssc_mem_mmio.h"],
-}
-#: The style-specific header the generated <prefix>.h #includes.
+#: Every seam file is copied regardless of style. The set is small, the
+#: directory is meant to be self-contained, and a `--mem-access selectable`
+#: build DECIDES at compile time -- so the file it will pick cannot be known
+#: here. Copying only the one style needed would make selectable fail to build
+#: for a reason no message explains.
+_CORE_HEADERS = ["pssc_mem.h", "pssc_mem_ptr.h", "pssc_mem_fn.h",
+                 "pssc_mem_vtable.h",
+                 # C4.3 shims. Still copied so a directory generated today can
+                 # be dropped in beside a generated header from before the
+                 # split; they cost 20 lines each.
+                 "pssc_mem_direct.h", "pssc_mem_mmio.h",
+                 "pssc_env.h", "pssc_chan.h"]
+
+_SEAM_HEADERS = {k: list(_CORE_HEADERS) for k in ("vtable", "direct", "mmio")}
+
+
+def seam_headers(link_style: str):
+    """The core headers a ``--link-style`` build needs, in copy order.
+
+    Named here rather than on the target because this file owns what the
+    generated header includes; `CProgSeqTarget` does the copying (P4.T5).
+    """
+    return list(_SEAM_HEADERS[link_style])
+
+
+#: The style-specific header the generated <prefix>.h #includes. The two
+#: non-vtable entries name the SHIMS, not the new files: a header generated
+#: with `--link-style mmio` should keep saying `mmio` so a regeneration is a
+#: no-op diff. `--mem-access` (below) is how a caller asks for the new names.
 _SEAM_INCLUDE = {
     "vtable": "pssc_mem_vtable.h",
     "direct": "pssc_mem_direct.h",
     "mmio":   "pssc_mem_mmio.h",
 }
 
-
-def _resolver(ctx):
-    """Return resolve(dtype)->defining-component-datatype (follows DataTypeRef)."""
-    tm = getattr(ctx, "type_map", {}) or {}
-
-    def resolve(dtype):
-        ref = getattr(dtype, "ref_name", None)
-        if ref and ref in tm:
-            return tm[ref]
-        return dtype
-
-    return resolve
+#: `--mem-access` names the MECHANISM and supersedes the direct/mmio spelling.
+#: `selectable` includes the core header alone and lets pssc_mem.h choose from
+#: `-DPSSC_MEM_ACCESS_FUNCTIONS` at compile time.
+_MEM_ACCESS_INCLUDE = {
+    "pointer":    "pssc_mem_ptr.h",
+    "functions":  "pssc_mem_fn.h",
+    "selectable": "pssc_mem.h",
+}
 
 
-def _c_core_dir() -> Path:
-    from ...cli import c_core_dir
-    return c_core_dir()
+def seam_include(link_style: str, mem_access) -> str:
+    """The style-specific header the generated ``<prefix>.h`` includes.
 
-
-def generate(ctx, root, prefix: str, out_dir: Path, *,
-             link_style: str = "vtable", reg_style: str = "bitfields",
-             header_only: bool = False, copy_core: bool = True) -> List[Path]:
-    """Generate the C programming-sequence API for ``root``.
-
-    Returns the list of written file paths.
+    `--mem-access` wins where it is given; otherwise the link style decides,
+    which keeps every existing command line byte-identical in its output.
+    Deliberately NOT defaulted to "selectable" as the plan sketched: flipping a
+    default changes what every current build generates, and doing that inside a
+    refactor whose whole claim is that nothing changes would make the claim
+    untestable. `--mem-access selectable` is one flag away.
     """
-    tree = walk_tree(root, _resolver(ctx))
+    if not mem_access:
+        return _SEAM_INCLUDE[link_style]
+    if link_style == "vtable":
+        raise ValueError(
+            "--mem-access does not apply to --link-style vtable: the vtable "
+            "seam reaches the bus through a per-instance struct of function "
+            "pointers, which is a third mechanism, not a choice between "
+            "these two. Drop one of the flags.")
+    return _MEM_ACCESS_INCLUDE[mem_access]
+
+
+def settings_for(model, prefix: str, *,
+                 link_style: str = "vtable", reg_style: str = "bitfields",
+                 header_only: bool = False,
+                 yield_mode: str = "none", match_default: str = "message",
+                 message_style: str = "import",
+                 prefix_map=None, lifecycle: str = "malloc",
+                 emit_stubs: bool = False, mem_access=None,
+                 includes=None, includes_impl=None,
+                 omit_stdint: bool = False, addr_bits: int = 64) -> "CSettings":
+    """Turn the command line's keywords into the backend's `CSettings`.
+
+    THE flag-shaped door, and the only place that knows the flag spellings.
+    Separate from `generate` so that something which needs to know what WOULD
+    be generated -- the differential test helper, a `--dry-run` -- can ask
+    without writing anything.
+    """
+    from .. import op_model as om
+    from .style import CSettings
+    from ..progseq_model import channel_fields
+
+    tree = model.tree
     _log.info("c-progseq: root=%s prefix=%s link=%s reg=%s components: %d regular, %d reg-group",
               tree.name, prefix, link_style, reg_style,
-              _count(tree, CompKind.REGULAR), _count(tree, CompKind.REG_GROUP))
+              om.count(tree, CompKind.REGULAR),
+              om.count(tree, CompKind.REG_GROUP))
 
-    from .lower_reg_model import lower_value_unions, lower_accessors
-    from .lower_progseq import emit_handle, lower_decls, lower_impl
-
-    seam_inc = _SEAM_INCLUDE[link_style]
-    unions = lower_value_unions(root, reg_style=reg_style)
-    handle = emit_handle(prefix, link_style=link_style)
-    accessors = lower_accessors(root, prefix, link_style=link_style)
-    # In header-only mode the bodies live in the header as `static inline`, which
-    # are self-declaring -- emitting separate extern prototypes would clash.
-    decls = "" if header_only else lower_decls(root, prefix, link_style=link_style)
-    impl = lower_impl(root, prefix, link_style=link_style,
-                      static_inline=header_only, reg_style=reg_style)
-
-    guard = f"{prefix.upper()}_H"
-    h: List[str] = []
-    h.append(f"/* Generated by pssc (c-progseq) -- do not edit. */")
-    h.append(f"/* Root component: {tree.name}; link-style: {link_style}. */")
-    h.append(f"/* Register value layouts assume little-endian bitfield allocation"
-             f" (gcc/clang, x86/ARM, LP64/LLP64). */")
-    h.append(f"#ifndef {guard}")
-    h.append(f"#define {guard}")
-    h.append("")
-    h.append("#include <stdint.h>")
-    if header_only:
-        h.append("#include <stdlib.h>")    # bodies (create/destroy) live here
-    h.append(f'#include "{seam_inc}"')
-    h.append("")
-    for section in (unions, handle, accessors, decls):
-        if section:
-            h.append(section)
-            h.append("")
-    if header_only and impl:
-        h.append(impl)
-        h.append("")
-    h.append(f"#endif /* {guard} */")
-    h.append("")
-
-    out_dir.mkdir(parents=True, exist_ok=True)
-    written: List[Path] = []
-
-    hdr = out_dir / f"{prefix}.h"
-    hdr.write_text("\n".join(h))
-    written.append(hdr)
-
-    if not header_only and impl:
-        c: List[str] = []
-        c.append(f"/* Generated by pssc (c-progseq) -- do not edit. */")
-        c.append(f'#include "{prefix}.h"')
-        c.append("#include <stdlib.h>")
-        c.append("")
-        c.append(impl)
-        c.append("")
-        src = out_dir / f"{prefix}.c"
-        src.write_text("\n".join(c))
-        written.append(src)
-
-    if copy_core:
-        core = _c_core_dir()
-        for name in _SEAM_HEADERS[link_style]:
-            dst = out_dir / name
-            shutil.copy2(str(core / name), str(dst))
-            written.append(dst)
-
-    _log.info("c-progseq: wrote %d file(s): %s",
-              len(written), ", ".join(p.name for p in written))
-    return written
+    return CSettings(
+        prefix=prefix, seam_include=seam_include(link_style, mem_access),
+        link_style=link_style, mem_access=mem_access, reg_style=reg_style,
+        lifecycle=lifecycle, addr_bits=addr_bits, header_only=header_only,
+        omit_stdint=omit_stdint,
+        has_channels=any(channel_fields(c)
+                         for c in model.comp_dtypes_root_first),
+        includes=tuple(includes or ()),
+        includes_impl=tuple(includes_impl or ()),
+        yield_mode=yield_mode, match_default=match_default,
+        message_style=message_style, emit_stubs=emit_stubs,
+        prefix_map=tuple(prefix_map or ()))
 
 
-def _count(node, kind, seen=None) -> int:
-    seen = seen if seen is not None else set()
-    if id(node) in seen:
-        return 0
-    seen.add(id(node))
-    n = 1 if node.kind == kind else 0
-    for c in node.children:
-        n += _count(c, kind, seen)
-    return n
+def generate(model, prefix: str, *, style=None, backend_cls=None,
+             **flags) -> List[Path]:
+    """Generate the C programming-sequence API for ``root``'s whole subtree.
+
+    The walk, the component order, the register collection and the legality
+    gate all happened before this was called, and copying the seam headers
+    happens after -- see `OpModelTarget`. What is left here is C, and it is in
+    `COpModelBackend`; ``**flags`` are `settings_for`'s, which validates them.
+    Returns the list of written file paths.
+    """
+    from .backend import COpModelBackend
+    settings = settings_for(model, prefix, **flags)
+    return (backend_cls or COpModelBackend)(style).generate(model, settings)

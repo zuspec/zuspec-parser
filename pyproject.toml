@@ -48,4 +48,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 pssc = ["std_libs/*.pss", "share/sv/*.sv", "share/c/*.h", "share/c/*.c",
-        "share/cpp/*.hpp", "dvflow/*.yaml"]
+        "share/cpp/*.hpp", "share/py/*.py", "dvflow/*.yaml"]
+# The model `pssc.testing` compiles. ~12 KB; the real WB DMA model is
+# deliberately NOT shipped -- see pssc/testing/__init__.py.
+"pssc.testing" = ["models/*.pss"]

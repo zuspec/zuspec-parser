@@ -49,24 +49,33 @@ template <class R, class T> inline T from_raw(R raw) {
 // primitive from the value width; all widths fold at compile time.
 template <class T, access ACC = access::rw>
 class reg {
-    mem_if &bus_;
+    // A POINTER, not a reference, and the difference is load-bearing: a
+    // reference member makes this class non-assignable, and a register group
+    // has to be REBINDABLE. `regs.set_handle(h)` in a PSS constructor binds a
+    // group at a handle the model computes, and a sub-component's handle is
+    // computed by its parent's constructor body -- which runs after the
+    // sub-component (and so its register members) already exists. Binding at
+    // construction alone would work only for a single-component model.
+    //
+    // Never null: the only constructor takes a reference.
+    mem_if *bus_;
     addr_t  addr_;
     static constexpr unsigned W = sizeof(T) * 8;
 public:
-    reg(mem_if &bus, addr_t addr) : bus_(bus), addr_(addr) {}
+    reg(mem_if &bus, addr_t addr) : bus_(&bus), addr_(addr) {}
     addr_t addr() const { return addr_; }
 
     T read() const {
-        if constexpr (W <= 8)       return detail::from_raw<std::uint8_t,  T>(bus_.read8 (addr_));
-        else if constexpr (W <= 16) return detail::from_raw<std::uint16_t, T>(bus_.read16(addr_));
-        else if constexpr (W <= 32) return detail::from_raw<std::uint32_t, T>(bus_.read32(addr_));
-        else                        return detail::from_raw<std::uint64_t, T>(bus_.read64(addr_));
+        if constexpr (W <= 8)       return detail::from_raw<std::uint8_t,  T>(bus_->read8 (addr_));
+        else if constexpr (W <= 16) return detail::from_raw<std::uint16_t, T>(bus_->read16(addr_));
+        else if constexpr (W <= 32) return detail::from_raw<std::uint32_t, T>(bus_->read32(addr_));
+        else                        return detail::from_raw<std::uint64_t, T>(bus_->read64(addr_));
     }
     void write(T v) {
-        if constexpr (W <= 8)       bus_.write8 (addr_, detail::to_raw<std::uint8_t,  T>(v));
-        else if constexpr (W <= 16) bus_.write16(addr_, detail::to_raw<std::uint16_t, T>(v));
-        else if constexpr (W <= 32) bus_.write32(addr_, detail::to_raw<std::uint32_t, T>(v));
-        else                        bus_.write64(addr_, detail::to_raw<std::uint64_t, T>(v));
+        if constexpr (W <= 8)       bus_->write8 (addr_, detail::to_raw<std::uint8_t,  T>(v));
+        else if constexpr (W <= 16) bus_->write16(addr_, detail::to_raw<std::uint16_t, T>(v));
+        else if constexpr (W <= 32) bus_->write32(addr_, detail::to_raw<std::uint32_t, T>(v));
+        else                        bus_->write64(addr_, detail::to_raw<std::uint64_t, T>(v));
     }
 
     // Raw accessors. read()/write() are typed; the masked form works in bits,
@@ -76,16 +85,16 @@ public:
                   std::conditional_t<(W <= 32), std::uint32_t, std::uint64_t>>>;
 
     raw_t read_val() const {
-        if constexpr (W <= 8)       return bus_.read8 (addr_);
-        else if constexpr (W <= 16) return bus_.read16(addr_);
-        else if constexpr (W <= 32) return bus_.read32(addr_);
-        else                        return bus_.read64(addr_);
+        if constexpr (W <= 8)       return bus_->read8 (addr_);
+        else if constexpr (W <= 16) return bus_->read16(addr_);
+        else if constexpr (W <= 32) return bus_->read32(addr_);
+        else                        return bus_->read64(addr_);
     }
     void write_val(raw_t v) {
-        if constexpr (W <= 8)       bus_.write8 (addr_, v);
-        else if constexpr (W <= 16) bus_.write16(addr_, v);
-        else if constexpr (W <= 32) bus_.write32(addr_, v);
-        else                        bus_.write64(addr_, v);
+        if constexpr (W <= 8)       bus_->write8 (addr_, v);
+        else if constexpr (W <= 16) bus_->write16(addr_, v);
+        else if constexpr (W <= 32) bus_->write32(addr_, v);
+        else                        bus_->write64(addr_, v);
     }
 
     // Masked write -- PSS 3.1 §21.14.1:

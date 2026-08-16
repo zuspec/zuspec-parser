@@ -120,8 +120,52 @@ regular ``component``           ``C_t`` + free fns          ``C_if`` + ``C``
 ``repeat{}while``, value read   native ``do...while``       native
 ==============================  ==========================  =====================
 
-Modules
--------
+The Python backend
+------------------
+
+``op-model-py`` (``pssc.targets.py_progseq_tgt``, emitters in
+``pssc.targets.py``) generates a plain Python module driving a duck-typed bus —
+what a cocotb bring-up, a socket-attached debugger or a pure-Python device model
+already has. Its seam is the ``bus`` object passed to the constructor; the
+generated module imports nothing unless the model has channels, in which case it
+imports the bundled ``share/py/pssc_rt.py``.
+
+It was written *after* the shared layer below existed, and is the evidence that
+the layer is sufficient: everything except ``targets/py/`` is consumed rather
+than reimplemented.
+
+The shared layer
+----------------
+
+What used to be copied per backend, and now is not. A new emitter consumes these
+rather than reimplementing them; see ``docs/custom-generator-styles.md``.
+
+- ``pssc.targets.op_model`` — ``OpModel`` (the elaborated model: tree, component
+  order, register groups, value structs, imports, ctor names) and
+  ``OpModelTarget``, the family base class whose ``run`` is elaborate → check →
+  emit → manifest. Every op-model target subclasses it, so the call-legality
+  gate and ``--emit-manifest`` are common by construction.
+- ``pssc.targets.body_walker`` — one walk of an operation body: statement and
+  expression dispatch by node class name, comment attachment, and the two
+  language-neutral scans (``scan_write_only``, ``scan_output_locals``).
+  ``CallDispatch`` routes each call by its ``Disposition``, so the legality
+  registry *is* the dispatch table.
+- ``pssc.targets.reg_layout`` — the folded register layout
+  (``collect_accessors``), shared by the C backend and by the manifest. An
+  address is the one thing in a generated API a golden snapshot cannot check, so
+  it is computed once.
+- ``pssc.targets.call_legality`` / ``validate_calls`` — which calls a target may
+  lower, and the pre-emission gate that refuses the rest with a location. See
+  ``docs/lowering-call-legality.md``.
+- ``pssc.targets.style`` (and ``targets/c/style.py``) — the naming and layout
+  decisions, so a house convention is a policy rather than a fork.
+- ``pssc.targets.sections`` / ``comments`` / ``overridable`` — file assembly,
+  comment rendering, and the published override surface.
+- ``pssc.targets.manifest`` — the elaborated model as JSON
+  (``--emit-manifest``); see ``docs/op-model-manifest.md``.
+
+Per-target modules
+------------------
 
 - ``pssc.targets.progseq_tgt`` — the ``ProgSeqTarget`` (``op-model-sv``) target and
   ``--root`` resolution.
@@ -138,3 +182,5 @@ Modules
   baked accessors, handle/shim, export functions, and the body emitter.
 - ``pssc.targets.cpp.lower_reg_model`` / ``cpp.lower_progseq`` — C++ value unions,
   ``reg<T>`` group classes, the pure-virtual APIs, and the component class.
+- ``pssc.targets.py_progseq_tgt`` and ``pssc.targets.py.*`` — the Python target:
+  value classes, accessors, API types, the module assembly and the body emitter.

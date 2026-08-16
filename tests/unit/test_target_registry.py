@@ -51,8 +51,25 @@ def test_register_requires_name():
         targets.register(_NoName())
 
 
-def test_discover_is_noop_when_off():
+def test_discover_adds_nothing_without_plugins():
+    # Discovery is live now (Phase 3), but this checkout installs no plugin, so
+    # the observable result is unchanged -- and must stay so under repetition.
+    # The behaviour that replaced "no-op stub" is covered in
+    # test_target_discovery.py against injected entry points.
     before = set(targets.list_targets())
     targets.discover()
     targets.discover()  # idempotent
     assert set(targets.list_targets()) == before
+    assert targets.plugin_errors() == ()
+
+
+def test_register_rejects_a_name_already_taken():
+    class _Shadow(Target):
+        name = "op-model-c"
+        def run(self, ctx, opts):
+            return []
+    with pytest.raises(targets.TargetError) as exc:
+        targets.register(_Shadow())
+    assert "op-model-c" in str(exc.value)
+    # the incumbent is untouched
+    assert targets.get("op-model-c").__class__.__name__ == "CProgSeqTarget"

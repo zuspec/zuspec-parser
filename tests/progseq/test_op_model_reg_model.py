@@ -17,14 +17,12 @@ import pytest
 from pssc import driver
 from pssc.targets.sv.lower_reg_model import lower_register_model
 
-_MODEL = os.path.normpath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "examples", "op_model", "pss"))
+from .op_model import OP_MODEL as _MODEL, op_model_sources
+
 
 
 def _sources():
-    with open(os.path.join(_MODEL, "files.f")) as fp:
-        rel = [ln.strip() for ln in fp if ln.strip() and not ln.startswith("#")]
-    return [os.path.join(_MODEL, os.path.relpath(p, "src/pss")) for p in rel]
+    return op_model_sources()
 
 
 def assert_generated(text, *, has=(), has_not=()):
@@ -55,13 +53,19 @@ def channel_regs(ctx):
 # --- value structs ---------------------------------------------------------
 
 def test_value_structs_emitted(engine_regs, channel_regs):
+    # Type names come from the GENERATED register package (PeakRDL, from
+    # src/rdl), not from the hand-written one this model used to carry. The
+    # masks and the source snapshots have distinct types there --
+    # `wb_dma_intmsk_s` (RW) and `wb_dma_intsrc_s` (RO) -- where the
+    # hand-written package used one `wb_dma_intvec_s` for both. That is a
+    # better model of the device and is not something to paper over.
     sv, structs, _ = engine_regs
     assert_generated(sv, has=["typedef struct packed", "} wb_dma_gcsr_s;",
-                              "} wb_dma_intvec_s;"])
+                              "} wb_dma_intmsk_s;", "} wb_dma_intsrc_s;"])
     ch_sv, ch_structs, _ = channel_regs
-    assert_generated(ch_sv, has=["} wb_dma_ch_csr_s;", "} wb_dma_ch_sz_s;",
+    assert_generated(ch_sv, has=["} wb_dma_csr_s;", "} wb_dma_sz_s;",
                                  "} wb_dma_swptr_s;"])
-    assert "wb_dma_ch_csr_s" in ch_structs
+    assert "wb_dma_csr_s" in ch_structs
 
 
 def test_value_struct_fields_are_msb_first(channel_regs):
@@ -89,13 +93,20 @@ def test_reg_group_has_members(engine_regs):
 
 
 def test_named_register_types_carry_access_mode(engine_regs):
-    """`int_src_a` is declared `reg_c<wb_dma_intvec_s, READONLY, 32>` through a
-    named type. READONLY must survive; READWRITE is the default and is omitted."""
+    """`int_src_a` is declared `reg_c<wb_dma_intsrc_s, READONLY, 32>` through a
+    named type. READONLY must survive; READWRITE is the default and is omitted.
+
+    The RO/RW split is worth checking on a register pair that differs only in
+    access mode: `int_msk_a` and `int_src_a` are the same 31 channel bits, and
+    dropping the mode would leave a read-only snapshot looking writable.
+    """
     sv, _, _ = engine_regs
     assert_generated(sv,
-                     has=["reg_c #(wb_dma_intvec_s, READONLY) int_src_a;",
+                     has=["reg_c #(wb_dma_intsrc_s, READONLY) int_src_a;",
+                          "reg_c #(wb_dma_intmsk_s)     int_msk_a;",
                           "reg_c #(wb_dma_gcsr_s)"],
-                     has_not=["reg_c #(wb_dma_gcsr_s, READWRITE)"])
+                     has_not=["reg_c #(wb_dma_gcsr_s, READWRITE)",
+                              "reg_c #(wb_dma_intmsk_s, READONLY)"])
 
 
 def test_offsets_folded(engine_regs, channel_regs):

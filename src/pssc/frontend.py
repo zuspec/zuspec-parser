@@ -89,7 +89,15 @@ class Parser(_PssParser):
     explicit diagnostic (see :func:`_reject_fill`). ``exec file`` parses natively
     (it is grammar-valid) but is not lowered — its builder is a stub, so it is
     accepted and ignored.
+
+    Comments are collected by default. The generated operation model is a
+    close transcription of its PSS source, so dropping the prose drops the
+    part a reader cannot recover from the code. Pass ``collect_comments=False``
+    (``--no-comments``) to get the pre-comment output back byte for byte.
     """
+
+    def __init__(self, *args, collect_comments: bool = True, **kwargs):
+        super().__init__(*args, collect_comments=collect_comments, **kwargs)
 
     def parse(self, files: List[str], prelude=()) -> bool:
         """Read and parse PSS ``files``, with ``prelude`` processed first.

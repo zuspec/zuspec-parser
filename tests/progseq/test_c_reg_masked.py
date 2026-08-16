@@ -163,7 +163,8 @@ def test_cpp_uses_the_native_member_call(tmp_path):
     native member calls against `pssc::reg<T>` -- so the masked write is a
     method on that template rather than a generated accessor."""
     out = _generate(tmp_path, "cpp-progseq")
-    assert "regs_.csr.write_val_masked(1, 1);" in (out / "pss_top.hpp").read_text()
+    assert "this->regs.csr.write_val_masked(1, 1);" in \
+        (out / "pss_top.hpp").read_text()
     assert "void write_val_masked(raw_t mask, raw_t val)" in \
         (out / "pssc_reg.hpp").read_text()
 
@@ -178,6 +179,7 @@ def test_cpp_output_compiles(tmp_path):
         '#include "pss_top.hpp"\n'
         'int main() { pssc::mmio_mem m; '
         'auto t = pss_top::pss_top::create(m, 0x1000); t->arm(); return 0; }\n')
+
     res = subprocess.run(
         ["g++", "-std=c++17", "-Wall", "-Wextra", "-Werror", "-c", str(main),
          "-I", str(out), "-o", str(out / "main.o")],

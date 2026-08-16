@@ -13,26 +13,28 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
-from .base import Target
-from .progseq_tgt import ProgSeqTarget
 from .c_progseq_tgt import CProgSeqTarget
+from .op_model import OpModelTarget
 
 
-class CppProgSeqTarget(Target):
+class CppProgSeqTarget(OpModelTarget):
     name = "op-model-cpp"
     description = "C++ operation-model API generated from a component tree"
+    language = "C++"
 
     # Same reasoning as op-model-c: plain functions, no coroutine runtime, no
     # solver in the image.
     target_cfg = {
-        "HAVE_BLOCKING": False,
+        "HAVE_EVENT_WAIT": False,
         "HAVE_RUNTIME_SOLVER": False,
     }
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
-        # --root / --no-core-copy come from ProgSeqTarget (shared parser).
+        # `--root`, `--ctor-name` and `--no-core-copy` come from
+        # `OpModelTarget`; only the C++-specific options are here.
+        super().add_args(parser)
         parser.add_argument(
             "--namespace", dest="cpp_namespace", metavar="NAME",
             help="cpp-progseq: namespace + class prefix (default: root sans _c)",
@@ -48,19 +50,35 @@ class CppProgSeqTarget(Target):
             help="cpp-progseq: (reserved) split declarations and bodies",
         )
 
-    def run(self, ctx, opts: argparse.Namespace) -> List[Path]:
-        root_name: Optional[str] = getattr(opts, "progseq_root", None)
-        if not root_name:
-            raise ValueError("cpp-progseq requires --root <component>")
+    # -- runtime source -----------------------------------------------------
 
-        ProgSeqTarget._apply_ctor_name(opts)
-        root = ProgSeqTarget._resolve_root(ctx, root_name)
+    core_lang = "cpp"
+
+    def core_file_names(self, model, opts) -> List[str]:
+        from .cpp.cpp_progseq_gen import core_header_names
+        return core_header_names(
+            model,
+            match_default=getattr(opts, "c_match_default", "message"),
+            message_style=getattr(opts, "c_message_style", "import"))
+
+    def emit(self, model, opts: argparse.Namespace) -> List[Path]:
+        root_name = getattr(opts, "progseq_root", None)
         ns = getattr(opts, "cpp_namespace", None) or CProgSeqTarget.default_prefix(
             root_name.split("::")[-1])
-        dispatch = getattr(opts, "cpp_dispatch", "virtual")
-        out_dir = Path(str(getattr(opts, "output_dir", ".") or "."))
-        copy_core = getattr(opts, "progseq_core_copy", True)
 
         from .cpp.cpp_progseq_gen import generate
-        return generate(ctx, root, ns, out_dir, dispatch=dispatch,
-                        copy_core=copy_core)
+        # `--yield`, `--match-default` and `--message-style` are declared by
+        # the C target on the shared `compile` parser and mean exactly the
+        # same thing here, so they are consumed rather than redeclared -- the
+        # dedup proxy would drop a second declaration silently anyway.
+        # Core headers LAST, as for C: they are included by name, so the
+        # generated header stays first in the list a build system reads.
+        return generate(model, ns,
+                        dispatch=getattr(opts, "cpp_dispatch", "virtual"),
+                        yield_mode=getattr(opts, "c_yield", "none"),
+                        match_default=getattr(opts, "c_match_default",
+                                              "message"),
+                        message_style=getattr(opts, "c_message_style",
+                                              "import"),
+                        class_map=getattr(opts, "c_prefix_map", None)
+                        ) + self.install_core(model, opts)

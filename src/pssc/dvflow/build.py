@@ -84,8 +84,13 @@ def _c_progseq_overrides(p) -> Dict[str, Any]:
     ov.update(_target_cfg_overrides(p))
     if _get(p, "prefix", ""):
         ov["c_prefix"] = _get(p, "prefix")
+    # Empty means "the target's default", which keeps a flow written before
+    # styles existed byte-identical rather than pinning it to a name.
+    if _get(p, "style", ""):
+        ov["c_style"] = _get(p, "style")
     ov["c_link_style"] = _get(p, "link_style", "vtable")
     ov["c_reg_style"] = _get(p, "reg_style", "bitfields")
+    ov["c_lifecycle"] = _get(p, "lifecycle", "malloc")
     if _get(p, "header_only", False):
         ov["c_header_only"] = True
     ov["progseq_core_copy"] = _get(p, "core_copy", True)

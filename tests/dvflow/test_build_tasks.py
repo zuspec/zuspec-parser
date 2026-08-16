@@ -203,3 +203,103 @@ def test_memento_skips_recompile(tmp_path):
     # Second run: the build task should be up-to-date (changed=False).
     assert out2 is not None
     assert out2.changed is False
+
+
+def test_memento_hit_still_recompiles_when_an_output_is_gone():
+    """The memento hash answers "would recompiling produce the same files?".
+    It does not answer "are those files still there".
+
+    Handing back a cached fileset naming a deleted file makes this task report
+    success while its *consumer* fails to find the source -- the error surfaces
+    one task downstream, which is the wrong place to debug it from.
+
+    This is a SECOND cache: dv-flow-mgr has its own up-to-date check and may
+    already have decided to invoke us. It can decide to run while we
+    short-circuit, so the existence check has to exist in both layers or the
+    outer one is unenforceable. That is exactly how this was found -- dfm
+    logged "not up-to-date", ran the task, and the file still did not come back.
+
+    Tested against the helper directly rather than end-to-end: reaching this
+    branch requires the runner to hand back a populated memento *while* dfm has
+    decided to re-run, which the unit harness does not reliably reproduce -- an
+    end-to-end version of this test passed with the fix reverted, i.e. proved
+    nothing.
+    """
+    import os
+    from pssc.dvflow.common import _missing_cached_files
+
+    class _FS:
+        def __init__(self, basedir, files):
+            self.basedir, self.files = basedir, files
+
+    here = os.path.dirname(__file__)
+    present = os.path.basename(__file__)
+
+    # All present -> nothing missing, so the cache is still usable.
+    assert _missing_cached_files([_FS(here, [present])]) == []
+
+    # One gone -> reported, so the caller recompiles.
+    assert _missing_cached_files(
+        [_FS(here, [present, "definitely_not_here.sv"])]
+    ) == [os.path.join(here, "definitely_not_here.sv")]
+
+    # A fileset carrying no files contributes nothing rather than raising.
+    assert _missing_cached_files([_FS(here, [])]) == []
+    assert _missing_cached_files([_FS(None, None)]) == []
+
+
+def test_the_memento_shortcut_is_actually_guarded_by_the_existence_check():
+    """The helper being correct is worth nothing if the cache path does not call
+    it, and a unit test of the helper cannot tell the difference -- neutering
+    the CALL leaves such a test green.
+
+    So assert the wiring: the early-return that reuses cached filesets must be
+    reached only when nothing is missing. Checked against the source because the
+    alternative -- reproducing "dfm decided to re-run while still handing us a
+    populated memento" in-process -- is exactly the setup that made an earlier
+    end-to-end version of this test vacuous.
+    """
+    import inspect
+    from pssc.dvflow import common
+
+    src = inspect.getsource(common.run_build)
+    assert "_missing_cached_files(cached)" in src, (
+        "the cached-fileset shortcut no longer consults the existence check")
+
+    # The reuse must be inside the "nothing missing" branch, not before it.
+    guard = src.index("_missing_cached_files(cached)")
+    reuse = src.index("return TaskDataResult(changed=False, output=cached")
+    assert guard < reuse, (
+        "cached filesets are returned before the existence check runs")
+
+
+def test_style_param_forwarded():
+    """P5b.T2: `style:` reaches the target as `--style` would.
+
+    Omitted when empty rather than passed as `""`: a flow written before styles
+    existed must keep generating exactly what it did, and pinning it to a name
+    -- even 'default' -- makes that a claim about the registry rather than
+    about the target's own default.
+    """
+    ov = build._c_progseq_overrides(_params(
+        root="pss_top", prefix="", style="acme", link_style="direct",
+        reg_style="bitfields", header_only=False, core_copy=True))
+    assert ov["c_style"] == "acme"
+
+    ov = build._c_progseq_overrides(_params(
+        root="pss_top", prefix="", style="", link_style="vtable",
+        reg_style="bitfields", header_only=False, core_copy=True))
+    assert "c_style" not in ov
+
+
+def test_the_style_param_is_declared_in_the_flow():
+    """A param `build.py` reads and `flow.yaml` does not declare is a param
+    that silently takes its default on every real invocation."""
+    import pathlib
+    import re
+    text = (pathlib.Path(build.__file__).resolve().parent
+            / "flow.yaml").read_text()
+    # inside the OpModelC task's `with:` block
+    block = re.search(r"name: OpModelC\b.*?(?=\n  - name: )", text, re.S)
+    assert block and re.search(r"^\s+style:\s*$", block.group(0), re.M), \
+        "OpModelC declares no `style:` param"

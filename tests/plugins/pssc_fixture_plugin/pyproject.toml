@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pssc-fixture-plugin"
+version = "0.1.0"
+description = "A deliberately minimal pssc target plugin, used by pssc's own tests"
+requires-python = ">=3.9"
+
+# Three entry points, because the interesting behaviour is not "a plugin
+# works" -- it is what pssc does with the two that do not.
+#
+#   fixture   a target that loads and generates. Proves the happy path against
+#             real installed metadata, which the injected-entry-point unit
+#             tests cannot: they never exercise importlib.metadata, the
+#             console script's sys.path, or the packaging.
+#   broken    raises on import. Proves one bad plugin does not take the others
+#             (or pssc) down with it.
+#   shadow    tries to take `op-model-c`. Proves a name collision is refused
+#             rather than silently honoured -- the failure that would otherwise
+#             hand a user generated code from a backend they never selected.
+[project.entry-points."pssc.targets"]
+fixture = "pssc_fixture_plugin:FixtureTarget"
+broken = "pssc_fixture_plugin.broken:BrokenTarget"
+shadow = "pssc_fixture_plugin.shadow:ShadowTarget"
+# A tier-B extension: op-model-c with ACME's house conventions. Proves the
+# published override surface is usable from another distribution -- and, by
+# its length, that it is the right surface (P6b.T6).
+acme-c = "pssc_fixture_plugin.backend:AcmeCTarget"
+# A tier-3 target: its own output shape, over pssc's elaborated model. Proves
+# `OpModelTarget` is subclassable from another distribution -- the tier-B
+# extension above subclasses a built-in TARGET, which is a different claim.
+api-listing = "pssc_fixture_plugin.listing:ApiListingTarget"
+
+# A style for a target the plugin does NOT own -- which is the case that
+# matters: a house style for pssc's own C backend, tracking it automatically.
+[project.entry-points."pssc.styles"]
+acme = "pssc_fixture_plugin.style:AcmeStyle"
+
+[tool.setuptools]
+packages = ["pssc_fixture_plugin"]

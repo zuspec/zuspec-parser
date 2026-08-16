@@ -79,13 +79,22 @@ package:
 
           All build tasks accept `export_action` and `args`.
 
+          `pssc.OpModelC` also accepts `style:`, which selects a naming/layout
+          policy from the `pssc.styles` entry-point group -- a house style is a
+          plugin, not a fork. See docs/custom-generator-styles.md.
+
+          The `op-model-py` target has no dv-flow task yet; drive it from the
+          CLI (`pssc compile -t op-model-py`) until one lands.
+
           ## Reference tasks (bundled core source)
 
           - `pssc.RegPkg`  -> SV reg_pkg (+ runtime) as systemVerilogSource
           - `pssc.CoreC`   -> C seam headers (+ optional zsp_bridge) as cSource
           - `pssc.CoreCpp` -> C++ core header as cppSource
 
-          See docs/dvflow-tasks.md for full usage.
+          Each task's own `doc:` and `with:` blocks in this file are the
+          reference for its parameters; docs/cli.md documents the underlying
+          compiler options they map onto.
 
   tasks:
 
@@ -118,7 +127,7 @@ package:
       target_cfg:
         doc: |
           `target_cfg_pkg` constants to inject ahead of the sources, as
-          `NAME=VALUE` strings (e.g. `["HAVE_BLOCKING=false"]`). Check names no
+          `NAME=VALUE` strings (e.g. `["HAVE_EVENT_WAIT=false"]`). Check names no
           target, so nothing publishes capabilities on its behalf; this is how a
           model whose elaboration is gated on `target_cfg_pkg` gets checked on
           both answers without a second copy of the source tree.
@@ -313,7 +322,7 @@ package:
         doc: |
           Override what the target publishes as `target_cfg_pkg`, the PSS source
           unit injected ahead of the sources. `NAME=VALUE` strings, e.g.
-          `["HAVE_BLOCKING=false"]`. Empty means "use the target's own answer",
+          `["HAVE_EVENT_WAIT=false"]`. Empty means "use the target's own answer",
           which is normally right.
         type: list
       export_action: { type: list }
@@ -343,7 +352,7 @@ package:
         doc: |
           Override what the target publishes as `target_cfg_pkg`, the PSS source
           unit injected ahead of the sources. `NAME=VALUE` strings, e.g.
-          `["HAVE_BLOCKING=false"]`. Empty means "use the target's own answer",
+          `["HAVE_EVENT_WAIT=false"]`. Empty means "use the target's own answer",
           which is normally right.
         type: list
       export_action: { type: list }
@@ -356,6 +365,13 @@ package:
         doc: "Symbol prefix (default: root name without trailing _c)"
         type: str
         value: ""
+      style:
+        doc: |
+          Naming/layout policy from the `pssc.styles` entry-point group
+          (`--style`). Empty (default) uses pssc's own C conventions. A
+          bus-overriding style cannot be combined with `link_style: vtable`.
+        type: str
+        value: ""
       link_style:
         doc: "Link style: vtable | mmio"
         type: str
@@ -364,6 +380,13 @@ package:
         doc: "Register access style: bitfields | ..."
         type: str
         value: "bitfields"
+      lifecycle:
+        doc: |
+          How the root object is obtained: `malloc` (default) also emits
+          <prefix>_create()/_destroy(); `static` emits only <prefix>_init() and
+          links no allocator, for a target with no heap.
+        type: str
+        value: "malloc"
       header_only:
         doc: Emit a header-only API
         type: bool
@@ -385,7 +408,7 @@ package:
         doc: |
           Override what the target publishes as `target_cfg_pkg`, the PSS source
           unit injected ahead of the sources. `NAME=VALUE` strings, e.g.
-          `["HAVE_BLOCKING=false"]`. Empty means "use the target's own answer",
+          `["HAVE_EVENT_WAIT=false"]`. Empty means "use the target's own answer",
           which is normally right.
         type: list
       export_action: { type: list }

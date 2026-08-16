@@ -13,41 +13,33 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
-from .base import Target
+from .op_model import OpModelTarget
 
 
-class ProgSeqTarget(Target):
+class ProgSeqTarget(OpModelTarget):
     name = "op-model-sv"
     description = "SystemVerilog operation-model API generated from a component tree"
+    language = "SystemVerilog"
 
-    # A generated SV operation-model API exposes its end-to-end operations as
-    # `task`s, so the calling context can suspend; and SystemVerilog carries a
-    # constraint solver the caller randomizes through. Both true.
+    # A generated SV operation-model API exposes its operations as `task`s, so
+    # a caller CAN suspend until another process posts an event -- that is what
+    # a `channel_c` get lowers to; and SystemVerilog carries a constraint solver
+    # the caller randomizes through. Both true.
     target_cfg = {
-        "HAVE_BLOCKING": True,
+        "HAVE_EVENT_WAIT": True,
         "HAVE_RUNTIME_SOLVER": True,
     }
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
-        # Note: option names are global across the shared `compile` parser, so
-        # `--root` cannot be argparse-`required` (it would break other targets);
-        # it is validated in run() when this target is selected.
-        # --root and --no-core-copy are shared by all progseq targets (sv/c/cpp),
-        # since add_args contributes to one global `compile` parser.
-        parser.add_argument(
-            "--root", dest="progseq_root", metavar="COMP",
-            help="progseq: root component type to generate the API for",
-        )
+        # `--root`, `--ctor-name` and `--no-core-copy` come from
+        # `OpModelTarget`: they belong to the FAMILY, not to this backend, and
+        # restating them per target is how they drifted apart before.
+        super().add_args(parser)
         parser.add_argument(
             "--package", dest="progseq_package", metavar="NAME",
             help="sv-progseq: generated package name (default: <root>_pkg)",
-        )
-        parser.add_argument(
-            "--no-core-copy", dest="progseq_core_copy", action="store_false",
-            default=True,
-            help="progseq: do not copy the core seam header(s) into the output dir",
         )
         # Spelling only -- see progseq_gen.generate(). Both settings produce
         # the same bus traffic; `folded` is the collapsed (mask, value) form the
@@ -59,57 +51,24 @@ class ProgSeqTarget(Target):
                  "write_field(<FIELD_CONST>, v) ('named', default) or as "
                  "write_val_masked(<mask>, <val>) ('folded')",
         )
-        parser.add_argument(
-            "--ctor-name", dest="progseq_ctor_name", metavar="NAME",
-            help="progseq: name of the `solve function` that is the constructor "
-                 "(default: ctor or init)",
-        )
-
-    # -- helpers ------------------------------------------------------------
-
-    @staticmethod
-    def _apply_ctor_name(opts) -> None:
-        """Honour ``--ctor-name`` for this run (shared by sv/c/cpp)."""
-        from .progseq_model import set_ctor_name
-        set_ctor_name(getattr(opts, "progseq_ctor_name", None))
-
-    @staticmethod
-    def _resolve_root(ctx, root_name: str):
-        """Resolve the root component datatype from the type table by name.
-
-        Accepts either the bare name (``wb_dma_c``) or a qualified name
-        (``pkg::wb_dma_c``). Raises ValueError with available candidates.
-        """
-        tm = getattr(ctx, "type_map", {}) or {}
-        if root_name in tm:
-            return tm[root_name]
-        # try suffix match against qualified names
-        cands = [n for n in tm if n.split("::")[-1] == root_name]
-        if len(cands) == 1:
-            return tm[cands[0]]
-        if len(cands) > 1:
-            raise ValueError(
-                f"ambiguous --root '{root_name}'; matches: {', '.join(sorted(cands))}")
-        comps = sorted({n for n, dt in tm.items()
-                        if type(dt).__name__ == "DataTypeComponent"})
-        raise ValueError(
-            f"unknown --root '{root_name}'; available components: "
-            + (", ".join(comps) or "(none)"))
 
     # -- entry point --------------------------------------------------------
 
-    def run(self, ctx, opts: argparse.Namespace) -> List[Path]:
-        root_name: Optional[str] = getattr(opts, "progseq_root", None)
-        if not root_name:
-            raise ValueError("sv-progseq requires --root <component>")
+    core_lang = "sv"
 
-        self._apply_ctor_name(opts)
-        root = self._resolve_root(ctx, root_name)
+    def core_file_names(self, model, opts) -> List[str]:
+        from .progseq_gen import SV_CORE_PKG
+        return [SV_CORE_PKG]
 
+    def emit(self, model, opts: argparse.Namespace) -> List[Path]:
+        root_name = getattr(opts, "progseq_root", None)
         pkg_name = getattr(opts, "progseq_package", None) or f"{root_name}_pkg"
-        out_dir = Path(str(getattr(opts, "output_dir", ".") or "."))
-        copy_core = getattr(opts, "progseq_core_copy", True)
-
         from .progseq_gen import generate
-        return generate(ctx, root, pkg_name, out_dir, copy_core=copy_core,
-                        reg_fields=getattr(opts, "progseq_reg_fields", "named"))
+        # COMPILATION ORDER, not creation order. The returned list is what a
+        # build system hands the compiler (dv-flow's `classify_outputs`
+        # preserves it), and the generated package uses `addr_handle_t` and
+        # `pss_mem_if` from the core package -- so the core comes first.
+        return (self.install_core(model, opts)
+                + generate(model, pkg_name,
+                           reg_fields=getattr(opts, "progseq_reg_fields",
+                                              "named")))

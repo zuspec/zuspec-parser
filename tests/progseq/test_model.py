@@ -21,7 +21,7 @@ def root():
     """Resolve the dma_engine_c root datatype from a compiled context."""
     from pssc.targets.progseq_tgt import ProgSeqTarget
     ctx = driver.translate(_SRCS)
-    return ProgSeqTarget._resolve_root(ctx, "dma_engine_c")
+    return ProgSeqTarget.resolve_root(ctx, "dma_engine_c")
 
 
 def _group_named(root, name):

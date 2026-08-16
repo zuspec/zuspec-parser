@@ -5,9 +5,11 @@ Emits, for the register subtree reachable from a root component:
     declaration order -- LSB-first, the opposite of SV; little-endian assumed);
   * a baked ``static inline`` accessor trio (``_addr``/``_read``/``_write``) per
     register, with the address arithmetic folded to gen-time constants (only the
-    component ``base`` and any array indices are runtime). The accessors call the
-    seam primitives ``pssc_r*/w*(pssc_bus(s), ...)`` and are emitted identically
-    across all link styles; only ``pssc_bus`` (emitted in lower_progseq) varies.
+    component ``base`` and any array indices are runtime). Every memory access
+    in them is rendered by the funnel in ``mem_access.py`` -- this module owns
+    the addresses, not the spelling of the access -- and they are emitted
+    identically across all link styles; only ``pssc_bus`` (defined in
+    lower_progseq) varies.
 
 Design: design/pss-c-cpp-progseq-gen-design.md (§3.3, §3.4).
 """
@@ -17,11 +19,14 @@ import dataclasses as dc
 from typing import List, Optional
 
 from ..progseq_model import (
-    field_is_register, field_is_array, field_is_reg_group, array_element_type,
-    _dt_name, _scalar_offset, _array_base_stride, _is_reserved,
-    collect_reg_groups, collect_value_structs,
+    _dt_name, collect_reg_groups, collect_value_structs,
 )
+from ..reg_layout import (collect_accessors, prim_bits as _prim_bits,
+                          value_bits as _reg_value_bits, value_struct)
 from ...reg_field_resolve import struct_layout
+from ..comments import BLOCK, append_trailing, comment_lines
+from .mem_access import DEFAULT as DEFAULT_MEM, MemAccess
+from .style import coerce as _style
 
 _DT_REGISTER = "DataTypeRegister"
 _DT_REGISTER_GROUP = "DataTypeRegisterGroup"
@@ -40,29 +45,12 @@ def c_struct_name(struct_dtype) -> str:
     return (n[:-2] + "_t") if n.endswith("_s") else (n + "_t")
 
 
-def _prim_bits(bits: int) -> int:
-    for w in (8, 16, 32, 64):
-        if bits <= w:
-            return w
-    return 64
-
-
 def _struct_total_bits(struct_dtype) -> int:
     return sum(int(f.datatype.bits) for f in struct_dtype.fields)
 
 
-def _reg_value_bits(reg_dtype) -> int:
-    sb = getattr(reg_dtype, "size_bits", None)
-    if sb:
-        return int(sb)
-    vt = reg_dtype.register_value_type
-    if _dt_name(vt) == _DT_STRUCT:
-        return _struct_total_bits(vt)
-    return int(getattr(vt, "bits", 32) or 32)
-
-
 def _reg_is_struct(reg_dtype) -> bool:
-    return _dt_name(reg_dtype.register_value_type) == _DT_STRUCT
+    return value_struct(reg_dtype) is not None
 
 
 def _reg_c_type(reg_dtype) -> str:
@@ -73,13 +61,14 @@ def _reg_c_type(reg_dtype) -> str:
     return f"uint{_prim_bits(_reg_value_bits(reg_dtype))}_t"
 
 
-def accessor_base(prefix: str, segs: List[str], reg: str) -> str:
+def accessor_base(prefix: str, segs: List[str], reg: str, style=None) -> str:
     """The shared accessor name stem: ``<prefix>_<seg>_..._<reg>``.
 
     The body emitter (lower_progseq) reconstructs the same name from a register
-    access expression, so the two stay in lock-step without a shared registry.
+    access expression, so the two stay in lock-step without a shared registry --
+    which is exactly why both must ask the same policy for it.
     """
-    return "_".join([prefix] + segs + [reg])
+    return _style(style).reg_symbol(prefix, segs, reg)
 
 
 # --- value unions ----------------------------------------------------------
@@ -92,9 +81,19 @@ def emit_value_union(struct_dtype, reg_style: str = "bitfields") -> str:
     if reg_style == "accessors":
         return _emit_accessor_struct(struct_dtype, name, ut)
     lines = [f"typedef union {{ {ut} raw; struct {{"]
-    for fs in struct_layout(struct_dtype):
-        lines.append(f"    {ut} {fs.name:12} : {fs.width:2};   "
-                     f"/* [{fs.lsb + fs.width - 1}:{fs.lsb}] */")
+    # struct_layout emits exactly one slice per declared field, in order, so
+    # the two zip. The slice carries the arithmetic; the field carries what the
+    # source said about it.
+    for fs, f in zip(struct_layout(struct_dtype), struct_dtype.fields):
+        # The prose above, the layout facts beside -- the same split the PSS
+        # source uses. `doc_trailing` already states the bit range, and more
+        # besides (access mode, reset), so it replaces the range synthesized
+        # here rather than joining it. Without it, nothing changes.
+        lines += comment_lines(getattr(f, "doc", None), "    ", BLOCK)
+        trailing = (getattr(f, "doc_trailing", None)
+                    or f"[{fs.lsb + fs.width - 1}:{fs.lsb}]")
+        decl = f"    {ut} {fs.name:12} : {fs.width:2};"
+        lines += append_trailing([decl], trailing, BLOCK)
     lines.append(f"}}; }} {name};")
     return "\n".join(lines)
 
@@ -117,12 +116,22 @@ def _emit_accessor_struct(struct_dtype, name: str, ut: str) -> str:
     return "\n".join(lines)
 
 
-def lower_value_unions(root_dtype, reg_style: str = "bitfields") -> str:
-    groups = collect_reg_groups(root_dtype)
-    structs = collect_value_structs(groups)
+def lower_value_unions(comps, reg_style: str = "bitfields") -> str:
+    """Value layouts for every register reachable from any component.
+
+    Takes the whole component list, not just the root, and deduplicates: a
+    sub-component's register group is usually ALSO reachable from the root
+    (WB DMA's per-channel bank is `wb_dma_c.regs.bank[i]` and `wb_dma_ch_c.regs`
+    at once), and emitting its value types twice is a redefinition error.
+    """
     parts = ["/* ----- Register value layouts. ----- */"]
-    for s in structs:
-        parts.append(emit_value_union(s, reg_style))
+    seen = set()
+    for comp in comps:
+        for s in collect_value_structs(collect_reg_groups(comp)):
+            if id(s) in seen:
+                continue
+            seen.add(id(s))
+            parts.append(emit_value_union(s, reg_style))
     return "\n".join(parts)
 
 
@@ -139,47 +148,26 @@ class _Acc:
     strides: List[int]   # one per array index parameter
 
 
-def _collect_accessors(root_dtype, prefix: str) -> List[_Acc]:
-    accs: List[_Acc] = []
+def _collect_accessors(root_dtype, prefix: str, style=None) -> List[_Acc]:
+    """The C accessor set for one component: the shared walk, named and typed.
 
-    def visit(group_dt, segs: List[str], const_off: int, strides: List[int]):
-        for f in group_dt.fields:
-            if _is_reserved(f):
-                continue
-            if field_is_register(f):
-                off = const_off + _scalar_offset(group_dt, f.name)
-                accs.append(_mk_acc(prefix, segs, f.name, f.datatype, off, strides))
-            elif field_is_reg_group(f):
-                off = const_off + _scalar_offset(group_dt, f.name)
-                visit(f.datatype, segs + [f.name], off, strides)
-            elif field_is_array(f):
-                elem = array_element_type(f)
-                base, stride = _array_base_stride(group_dt, f.name)
-                if _dt_name(elem) == _DT_REGISTER:
-                    accs.append(_mk_acc(prefix, segs, f.name, elem,
-                                        const_off + base, strides + [stride]))
-                elif _dt_name(elem) == _DT_REGISTER_GROUP:
-                    visit(elem, segs + [f.name], const_off + base, strides + [stride])
-
-    for f in getattr(root_dtype, "fields", []) or []:
-        if field_is_reg_group(f):
-            visit(f.datatype, [f.name], 0, [])
-        elif field_is_array(f) and _dt_name(array_element_type(f)) == _DT_REGISTER_GROUP:
-            base, stride = _array_base_stride(root_dtype, f.name)
-            visit(array_element_type(f), [f.name], base, [stride])
-    return accs
-
-
-def _mk_acc(prefix, segs, reg_name, reg_dtype, const_off, strides) -> _Acc:
-    return _Acc(
-        base=accessor_base(prefix, segs, reg_name),
-        c_type=_reg_c_type(reg_dtype),
-        prim=_prim_bits(_reg_value_bits(reg_dtype)),
-        is_struct=_reg_is_struct(reg_dtype),
-        access=getattr(reg_dtype, "access_mode", "READWRITE") or "READWRITE",
-        const_off=const_off,
-        strides=list(strides),
-    )
+    `reg_layout.collect_accessors` decides WHERE each register is -- the walk,
+    the folded offsets, the strides -- because that answer is not C's and a
+    second backend must not compute it a second way. What is C's is here: the
+    symbol stem the policy spells, and the value type the accessor hands back.
+    """
+    return [
+        _Acc(
+            base=accessor_base(prefix, list(a.segs), a.name, style),
+            c_type=_reg_c_type(a.dtype),
+            prim=a.prim_bits,
+            is_struct=a.is_struct,
+            access=a.access,
+            const_off=a.const_off,
+            strides=list(a.strides),
+        )
+        for a in collect_accessors(root_dtype)
+    ]
 
 
 def _idx_params(n: int, leading_comma: bool) -> str:
@@ -200,29 +188,45 @@ def _addr_expr(acc: _Acc) -> str:
     return " + ".join(terms)
 
 
-def emit_accessor(acc: _Acc, prefix_t: str) -> str:
+def emit_accessor(acc: _Acc, prefix_t: str, mem: MemAccess = None,
+                  addr_only: bool = False) -> str:
+    """The accessor set for one register.
+
+    ``addr_only`` emits the `_addr` accessor and nothing else, for a style
+    whose `reg_accessor_form()` is `macro`. The ADDRESS accessor survives every
+    form deliberately: the folded offsets are the model's statement about the
+    device, and a style that had to recompute them from `_Acc.const_off` would
+    be a supported way to generate firmware pointed at the wrong register. A
+    house macro gets the identity (`acc.base`) AND the address (`<base>_addr(s)`),
+    and computes neither.
+    """
+    mem = mem or DEFAULT_MEM
     n = len(acc.strides)
     idx_p = _idx_params(n, leading_comma=True)
     idx_a = _idx_args(n)
+    fn = lambda kind: mem.accessor(acc.base, kind)   # noqa: E731
+    addr = f"{fn('addr')}(s{idx_a})"
     lines = [
-        f"static inline pssc_addr_t {acc.base}_addr(const {prefix_t} *s{idx_p}) "
+        f"static inline pssc_addr_t {fn('addr')}(const {prefix_t} *s{idx_p}) "
         f"{{ return {_addr_expr(acc)}; }}",
     ]
+    if addr_only:
+        return "\n".join(lines)
     if acc.access != "WRITEONLY":
+        read = mem.read(acc.prim, "s", addr)
         if acc.is_struct:
             lines.append(
-                f"static inline {acc.c_type} {acc.base}_read({prefix_t} *s{idx_p}) "
-                f"{{ {acc.c_type} v; v.raw = pssc_r{acc.prim}(pssc_bus(s), "
-                f"{acc.base}_addr(s{idx_a})); return v; }}")
+                f"static inline {acc.c_type} {fn('read')}({prefix_t} *s{idx_p}) "
+                f"{{ {acc.c_type} v; v.raw = {read}; return v; }}")
         else:
             lines.append(
-                f"static inline {acc.c_type} {acc.base}_read({prefix_t} *s{idx_p}) "
-                f"{{ return pssc_r{acc.prim}(pssc_bus(s), {acc.base}_addr(s{idx_a})); }}")
+                f"static inline {acc.c_type} {fn('read')}({prefix_t} *s{idx_p}) "
+                f"{{ return {read}; }}")
     if acc.access != "READONLY":
         raw = "v.raw" if acc.is_struct else "v"
         lines.append(
-            f"static inline void {acc.base}_write({prefix_t} *s{idx_p}, {acc.c_type} v) "
-            f"{{ pssc_w{acc.prim}(pssc_bus(s), {acc.base}_addr(s{idx_a}), {raw}); }}")
+            f"static inline void {fn('write')}({prefix_t} *s{idx_p}, {acc.c_type} v) "
+            f"{{ {mem.write(acc.prim, 's', addr, raw)}; }}")
 
     # Raw accessors. `_read`/`_write` above are typed -- they hand back the
     # value union -- and the masked forms work in bits, so they need the
@@ -232,12 +236,12 @@ def emit_accessor(acc: _Acc, prefix_t: str) -> str:
     ut = f"uint{acc.prim}_t"
     if acc.access != "WRITEONLY":
         lines.append(
-            f"static inline {ut} {acc.base}_read_val({prefix_t} *s{idx_p}) "
-            f"{{ return pssc_r{acc.prim}(pssc_bus(s), {acc.base}_addr(s{idx_a})); }}")
+            f"static inline {ut} {fn('read_val')}({prefix_t} *s{idx_p}) "
+            f"{{ return {mem.read(acc.prim, 's', addr)}; }}")
     if acc.access != "READONLY":
         lines.append(
-            f"static inline void {acc.base}_write_val({prefix_t} *s{idx_p}, {ut} v) "
-            f"{{ pssc_w{acc.prim}(pssc_bus(s), {acc.base}_addr(s{idx_a}), v); }}")
+            f"static inline void {fn('write_val')}({prefix_t} *s{idx_p}, {ut} v) "
+            f"{{ {mem.write(acc.prim, 's', addr, 'v')}; }}")
 
     # The masked write -- PSS 3.1 §21.14.1:
     #
@@ -254,17 +258,53 @@ def emit_accessor(acc: _Acc, prefix_t: str) -> str:
     # four spellings and no field name is involved.
     if acc.access not in ("READONLY", "WRITEONLY"):
         lines.append(
-            f"static inline void {acc.base}_write_masked({prefix_t} *s{idx_p}, "
+            f"static inline void {fn('write_val_masked')}({prefix_t} *s{idx_p}, "
             f"{ut} mask, {ut} val) "
-            f"{{ {ut} cur = {acc.base}_read_val(s{idx_a}); "
-            f"{acc.base}_write_val(s{idx_a}, (cur & ~mask) | (val & mask)); }}")
+            f"{{ {mem.masked_write(ut, acc.base, f's{idx_a}')} }}")
     return "\n".join(lines)
 
 
-def lower_accessors(root_dtype, prefix: str, *, link_style: str = "vtable") -> str:
-    accs = _collect_accessors(root_dtype, prefix)
-    prefix_t = f"{prefix}_t"
-    parts = ["/* ----- Baked inline register accessors. ----- */"]
-    for a in accs:
-        parts.append(emit_accessor(a, prefix_t))
+def lower_accessors(comps, prefixes, *, link_style: str = "vtable",
+                    mem: MemAccess = None, style=None) -> str:
+    """Accessors for every component, each keyed to ITS OWN handle and base.
+
+    Per component rather than per model, because the address a register lives at
+    depends on which component you reach it through. `wb_dma_ch_c.regs.csr` is
+    `ch->base + 0x0`; the same physical register reached from the root is
+    `dma->base + 0x20 + 0x20*i`. Both are emitted -- `wb_dma_ch_regs_csr_write`
+    and `wb_dma_regs_bank_csr_write` -- and both are correct, because they take
+    different handles. Folding them into one would mean picking a base, which
+    means picking which of the two call sites to break.
+    """
+    style = _style(style)
+    mem = mem or style.mem_access()
+    addr_only = style.reg_accessor_form() == "macro"
+    # Under a macro mandate the read/write accessors are not merely unnecessary
+    # -- emitting inline functions that nothing calls would read to a reviewer
+    # as though the mandate had not been applied. The ADDRESS accessors stay:
+    # see `emit_accessor`.
+    parts = ["/* ----- Baked register addresses. ----- */" if addr_only else
+             "/* ----- Baked inline register accessors. ----- */"]
+    for comp in comps:
+        prefix = prefixes[comp]
+        for a in _collect_accessors(comp, prefix, style):
+            parts.append(emit_accessor(a, style.type_name(prefix), mem,
+                                       addr_only))
     return "\n".join(parts)
+
+
+def accessor_map(comps, prefixes, style=None):
+    """`{accessor stem: _Acc}` for every register, per component.
+
+    The body emitter needs the REGISTER, not just its name: a policy rendering
+    `ACME_REG_WRITE32` is handed the access mode, the width and the folded
+    offset, none of which can be recovered from the underscore-joined stem it
+    used to reconstruct. Built once per generation and handed down, rather than
+    re-walked per operation.
+    """
+    style = _style(style)
+    out = {}
+    for comp in comps:
+        for a in _collect_accessors(comp, prefixes[comp], style):
+            out[a.base] = a
+    return out

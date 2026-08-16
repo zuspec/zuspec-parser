@@ -21,6 +21,18 @@ Two modes, and they answer different questions:
 Exit status is 0 when the answer is "in sync", 1 otherwise, and the differing
 paths are named. Deliberately not silent about *which* files differ: "the
 example is stale" is not actionable.
+
+NOTE WHICH QUESTION EACH MODE ANSWERS, because the difference has already cost
+one silent drift. ``--check`` compares the copy **to itself**; it passes for as
+long as nobody edits the copy, no matter how far upstream has moved. Only
+``--src`` looks upstream, and nothing runs it automatically. If you are adding
+CI, the mode you want is ``--check --src``.
+
+THE REGISTER PACKAGE IS NOT UNDER ``src/pss``. ``wb_dma_regs_pkg`` is generated
+from SystemRDL and reaches the compiler from another task, so a copy of
+``src/pss`` alone does not elaborate. Pass ``--regs <generated .pss>`` to
+snapshot it alongside; it is written with a provenance banner and listed first
+in ``files.f``.
 """
 from __future__ import annotations
 
@@ -30,7 +42,7 @@ import json
 import os
 import shutil
 import sys
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _DEST = os.path.normpath(os.path.join(_HERE, "..", "examples", "op_model", "pss"))
@@ -98,7 +110,21 @@ def check_self() -> int:
 
 
 def check_against(src: str) -> int:
-    return _report(*_compare(_manifest(src), _manifest(_DEST)), src_desc=src)
+    """Has the upstream model moved on? Compare the copy against a real tree.
+
+    Two files this script itself writes are excluded from the comparison:
+    ``files.f`` (derived from the flow at sync time; upstream deleted its copy
+    precisely because a static list rots) and the register-package snapshot
+    (generated from SystemRDL, so nothing under ``src/pss`` declares it).
+    Neither has an upstream counterpart to differ from, and reporting them as
+    ``unexpected`` on every run would train a reader to ignore this output --
+    which is the failure mode this whole script exists to prevent.
+
+    Their freshness is a separate question: ``files.f`` is rewritten on every
+    refresh, and the snapshot when ``--regs`` is passed.
+    """
+    have = {k: v for k, v in _manifest(_DEST).items() if k not in _GENERATED}
+    return _report(*_compare(_manifest(src), have), src_desc=src)
 
 
 def _derive_order(src: str) -> List[str]:
@@ -116,10 +142,10 @@ def _derive_order(src: str) -> List[str]:
     without one. Asking the flow at sync time is the version of that list which
     cannot rot.
 
-    It also picks the BUILD PROFILE: the ``src`` task excludes
-    ``wb_dma_cfg_nonblocking.pss``, and it must. The two ``wb_dma_cfg_pkg``
-    files declare the same package with opposite values of
-    ``WB_DMA_HAS_BLOCKING``, so a tree holding both does not elaborate at all.
+    It no longer has to pick a build profile. The model used to carry two
+    mutually-exclusive ``wb_dma_cfg_*.pss`` files and the ``src`` task excluded
+    one; the profile is now a property of the TARGET (``target_cfg_pkg``,
+    injected by pssc) and one fileset serves both.
     """
     import subprocess
     r = subprocess.run(
@@ -135,7 +161,48 @@ def _derive_order(src: str) -> List[str]:
     return [ln.strip() for ln in r.stdout.splitlines() if ln.strip()]
 
 
-def refresh(src: str, source_commit: str) -> int:
+#: Where the snapshot of the generated register package lands. It is NOT under
+#: `src/pss` upstream and never will be -- see :func:`_snapshot_regs`.
+_REGS_REL = "wb_dma_regs_pkg.pss"
+
+#: Files this script writes into the copy that have no upstream counterpart.
+#: `check_against` must not report these as unexpected.
+_GENERATED = frozenset({_REGS_REL, "files.f"})
+
+_REGS_BANNER = """\
+// SNAPSHOT -- do not edit, and do not treat as part of the model.
+//
+// `wb_dma_regs_pkg` is GENERATED IN FULL from `src/rdl` by PeakRDL
+// (`reg-model-pss` in the upstream flow). No file under `src/pss` declares it;
+// the components there import it and the flow orders it ahead of them with
+// `needs`. So it is not in the derived file order, and copying `src/pss` alone
+// produces a tree that does not elaborate.
+//
+// It is snapshotted here rather than generated, deliberately: pssc's test suite
+// must run from pssc's own checkout, and acquiring a PeakRDL dependency to
+// rebuild a file that changes when the RDL changes -- rarely, and visibly --
+// would cost more than it buys.
+//
+// Refresh it with the rest of the model:
+//   scripts/sync_op_model.py --src <fw-wb-dma>/src/pss --regs <generated>.pss
+//
+// Source: {source}
+// Upstream commit: {commit}
+"""
+
+
+def _snapshot_regs(regs: str, source_commit: str) -> None:
+    """Copy the generated register package in, with a provenance banner."""
+    with open(regs) as fp:
+        body = fp.read()
+    banner = _REGS_BANNER.format(
+        source=f"fw-wb-dma:{os.path.basename(regs)} (generated from src/rdl)",
+        commit=source_commit)
+    with open(os.path.join(_DEST, _REGS_REL), "w") as fp:
+        fp.write(banner + "//\n" + body)
+
+
+def refresh(src: str, source_commit: str, regs: Optional[str] = None) -> int:
     order = _derive_order(src)
 
     if os.path.isdir(_DEST):
@@ -148,11 +215,24 @@ def refresh(src: str, source_commit: str) -> int:
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         shutil.copy2(os.path.join(src, rel), dst)
 
+    if regs:
+        _snapshot_regs(regs, source_commit)
+
     # files.f: the same order, written the way the tests read it (relative to
     # the upstream repo root, so a path in it is a path a reader can follow).
+    #
+    # The register package goes FIRST and is spelled relative to THIS tree,
+    # because it has no upstream path under src/pss -- it is generated. Getting
+    # this wrong is the silent kind: every component imports the package, and a
+    # front end that meets the import before the declaration leaves it
+    # unresolved while still reporting 0 errors (pssparser D3).
     with open(os.path.join(_DEST, "files.f"), "w") as fp:
         fp.write("# Derived from src/pss/flow.yaml (task `src`) by "
                  "scripts/sync_op_model.py -- do not edit.\n")
+        if regs:
+            fp.write("# Generated register package, snapshotted here; it is "
+                     "not part of src/pss and must compile first.\n")
+            fp.write(f"{_REGS_REL}\n")
         for rel in order:
             fp.write(f"src/pss/{rel}\n")
 
@@ -160,6 +240,7 @@ def refresh(src: str, source_commit: str) -> int:
         json.dump({
             "source": "fw-wb-dma:src/pss",
             "source_commit": source_commit,
+            "regs_snapshot": _REGS_REL if regs else None,
             "manifest": _manifest(_DEST),
         }, fp, indent=2, sort_keys=True)
         fp.write("\n")
@@ -184,6 +265,12 @@ def main(argv=None) -> int:
     ap.add_argument("--src", help="path to the upstream fw-wb-dma src/pss tree")
     ap.add_argument("--check", action="store_true",
                     help="report drift instead of refreshing")
+    ap.add_argument("--regs", metavar="PSS",
+                    help="path to the GENERATED wb_dma_regs_pkg.pss to "
+                         "snapshot alongside the model (from the upstream "
+                         "build, e.g. rundir/*.reg-model-pss/). Nothing under "
+                         "src/pss declares that package, so a copy without it "
+                         "does not elaborate.")
     args = ap.parse_args(argv)
 
     if args.src:
@@ -191,8 +278,15 @@ def main(argv=None) -> int:
         if not os.path.isdir(src):
             print(f"no such directory: {src}", file=sys.stderr)
             return 1
-        return check_against(src) if args.check else refresh(src, _git_commit(src))
+        if args.check:
+            return check_against(src)
+        if args.regs and not os.path.isfile(args.regs):
+            print(f"no such file: {args.regs}", file=sys.stderr)
+            return 1
+        return refresh(src, _git_commit(src), args.regs)
 
+    if args.regs:
+        ap.error("--regs is only meaningful when refreshing (--src)")
     if not args.check:
         ap.error("refreshing requires --src; use --check to verify in place")
     return check_self()

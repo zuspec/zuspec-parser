@@ -8,6 +8,8 @@
 #ifndef PSSC_MEM_VTABLE_H
 #define PSSC_MEM_VTABLE_H
 
+/* See pssc_mem.h's selector: this marks the seam as already chosen. */
+#define PSSC_MEM_SEAM_CHOSEN 1
 #include "pssc_mem.h"
 
 typedef struct pssc_mem_if {

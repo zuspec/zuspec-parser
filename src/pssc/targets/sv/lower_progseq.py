@@ -15,10 +15,12 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
+from ..body_walker import BodyWalker
 from ..progseq_model import (func_kind, FuncKind, field_is_reg_group, _dt_name,
                              sub_components, SubComp, field_is_channel,
                              channel_fields, array_base_stride, scalar_offset,
                              OffsetFoldError)
+from ..comments import blank_line, comment_lines, doc_block
 
 _DT_STRUCT = "DataTypeStruct"
 _DT_INT = "DataTypeInt"
@@ -149,11 +151,20 @@ def _is_true_const(e) -> bool:
     return _dt_name(e) == "ExprConstant" and e.value is True
 
 
-class _BodyEmitter:
-    """Translate one function body to SV lines."""
+class _BodyEmitter(BodyWalker):
+    """Translate one function body to SV lines.
 
-    def __init__(self, fn, comp, member_of, namer=None):
+    The walk, and carrying each statement's PSS comment into the output, are
+    `targets/body_walker.py`'s; what is here is the SystemVerilog rendering,
+    one hook per node kind, named after the node.
+    """
+
+    indent = "  "
+
+    def __init__(self, fn, comp, member_of, namer=None, ctor_names=None):
         self.fn = fn
+        #: This compile's constructor names -- see `_operations`.
+        self.ctor_names = ctor_names
         # Restores field names to the folded masks `reg_rmw` produced. None
         # disables it, and every call site then emits the literal pair it
         # emitted before this existed -- so the naming is never load-bearing.
@@ -170,13 +181,26 @@ class _BodyEmitter:
             f.name: f.datatype
             for f in (getattr(comp, "fields", None) or []) if field_is_reg_group(f)
         }
+        # Channel field name -> the SV type of its ELEMENT. Needed because
+        # `channel_c::get` is a task with an `output Te` argument, so a PSS
+        # `c.get();` that discards the value still has to supply somewhere to
+        # put it, and that temp must be `Te`-wide -- a `bit` temp against a
+        # wider channel is a WIDTHTRUNC warning, which `-Werror`-style lint
+        # treats as a failure. See `_discarded_get`.
+        self.chan_elem_of = {}
+        for f in (getattr(comp, "fields", None) or []):
+            if field_is_channel(f):
+                elem = getattr(f.datatype, "element_type", None)
+                self.chan_elem_of[f.name] = (
+                    sv_type(elem) if elem is not None else "bit")
         self.has_status = fn is not None and fn.returns is not None
         self._builtin_hook = None
         # Operations of this component that return a value: their result comes
         # back through an output argument, not a return value.
         self.out_calls = {
             f.name for f in (getattr(comp, "functions", None) or [])
-            if f.returns is not None and func_kind(f) is FuncKind.EXPORT_OP
+            if f.returns is not None
+            and func_kind(f, ctor_names) is FuncKind.EXPORT_OP
         }
         # Declared types of local variables, so an enum-valued assignment can be
         # written with the enum's mnemonic rather than its number.
@@ -204,77 +228,83 @@ class _BodyEmitter:
         s = self.expr(e)
         return f"({s})" if _dt_name(e) == "ExprBin" else s
 
-    def expr(self, e) -> str:
-        cn = _dt_name(e)
-        if cn == "ExprConstant":
-            v = e.value
-            if isinstance(v, bool):
-                return str(int(v))
-            if isinstance(v, int):
-                return str(v)
-            if isinstance(v, str):
-                # NOT repr(): Python prefers single quotes, and 'x' in
-                # SystemVerilog is the start of a based literal, not a string.
-                # Every message() in the model came out as a syntax error.
-                return '"%s"' % v.replace("\\", "\\\\").replace('"', '\\"')
-            return repr(v)
-        if cn == "ExprRefLocal":
-            return self.arg_rename.get(e.name, e.name)
-        if cn == "TypeExprRefSelf":
-            return "this"
-        if cn == "ExprAttribute":
-            base = e.value
-            if _dt_name(base) == "TypeExprRefSelf":
-                # self.<x>: a component field -> member; a function arg -> name
-                if e.attr in self.member_of:
-                    return self.member_of[e.attr]
-                if e.attr in self.arg_names:
-                    return self.arg_rename[e.attr]
-                return e.attr
-            return f"{self.expr(base)}.{e.attr}"
-        if cn == "ExprSubscript":
-            return f"{self.expr(e.value)}[{self.expr(e.slice)}]"
-        if cn == "ExprBin":
-            op = _BINOP.get(e.op.name)
-            if op is None:
-                raise ValueError(f"unsupported binop {e.op.name}")
-            return f"{self._operand(e.lhs)} {op} {self._operand(e.rhs)}"
-        if cn == "ExprCast":
-            return f"{sv_cast(e.target_type)}'({self.expr(e.value)})"
-        if cn == "ExprUnary":
-            op = _UNOP.get(e.op.name)
-            if op is None:
-                raise ValueError(f"unsupported unary op {e.op.name}")
-            return f"{op}({self.expr(e.operand)})"
-        if cn == "ExprCall":
-            callee = e.func
-            # Address-space builtins are arithmetic, not calls: there is no
-            # address-space object in generated SV, only 64-bit addresses.
-            if _dt_name(callee) == "ExprAttribute" and callee.attr in _ADDR_BUILTINS:
-                return _ADDR_BUILTINS[callee.attr](self, e)
-            # PSS exec built-ins have no definition to call: `message(...)` is
-            # part of the language, not of the generated package, so emitting
-            # it verbatim produces SV that references a task that does not
-            # exist. The mapping already existed in sv_builtins for the other
-            # SV targets; this one was not consulting it.
-            builtin = self._builtin_call(e)
-            if builtin is not None:
-                return builtin
-            # A folded masked write, spelled back as the field(s) it came from.
-            named = self._field_write(e)
-            if named is not None:
-                return named
-            # A register-group offset function: evaluated here, never emitted.
-            folded = self._fold_offset(e)
-            if folded is not None:
-                return folded
-            args = ", ".join(self.expr(a) for a in e.args)
-            return f"{self.expr(callee)}({args})"
-        # The C and C++ backends have always ended `expr` this way; this one
-        # fell off the end and returned None, which callers interpolate --
-        # `f"{self.expr(base)}.{e.attr}"` yields the literal text "None.attr".
-        # An unhandled expression class must be a diagnostic, not output.
-        raise ValueError(f"unsupported expr {cn}")
+    # An expression class with no hook raises rather than returning None --
+    # which is what this emitter used to do, and callers interpolate:
+    # `f"{self.expr(base)}.{e.attr}"` yielded the literal text "None.attr".
+    # An unhandled expression class must be a diagnostic, not output.
+
+    def expr_constant(self, e) -> str:
+        v = e.value
+        if isinstance(v, bool):
+            return str(int(v))
+        if isinstance(v, int):
+            return str(v)
+        if isinstance(v, str):
+            # NOT repr(): Python prefers single quotes, and 'x' in
+            # SystemVerilog is the start of a based literal, not a string.
+            # Every message() in the model came out as a syntax error.
+            return '"%s"' % v.replace("\\", "\\\\").replace('"', '\\"')
+        return repr(v)
+
+    def expr_ref_local(self, e) -> str:
+        return self.arg_rename.get(e.name, e.name)
+
+    def type_expr_ref_self(self, e) -> str:
+        return "this"
+
+    def expr_attribute(self, e) -> str:
+        base = e.value
+        if _dt_name(base) == "TypeExprRefSelf":
+            # self.<x>: a component field -> member; a function arg -> name
+            if e.attr in self.member_of:
+                return self.member_of[e.attr]
+            if e.attr in self.arg_names:
+                return self.arg_rename[e.attr]
+            return e.attr
+        return f"{self.expr(base)}.{e.attr}"
+
+    def expr_subscript(self, e) -> str:
+        return f"{self.expr(e.value)}[{self.expr(e.slice)}]"
+
+    def expr_bin(self, e) -> str:
+        op = _BINOP.get(e.op.name)
+        if op is None:
+            raise ValueError(f"unsupported binop {e.op.name}")
+        return f"{self._operand(e.lhs)} {op} {self._operand(e.rhs)}"
+
+    def expr_cast(self, e) -> str:
+        return f"{sv_cast(e.target_type)}'({self.expr(e.value)})"
+
+    def expr_unary(self, e) -> str:
+        op = _UNOP.get(e.op.name)
+        if op is None:
+            raise ValueError(f"unsupported unary op {e.op.name}")
+        return f"{op}({self.expr(e.operand)})"
+
+    def expr_call(self, e) -> str:
+        callee = e.func
+        # Address-space builtins are arithmetic, not calls: there is no
+        # address-space object in generated SV, only 64-bit addresses.
+        if _dt_name(callee) == "ExprAttribute" and callee.attr in _ADDR_BUILTINS:
+            return _ADDR_BUILTINS[callee.attr](self, e)
+        # PSS exec built-ins have no definition to call: `message(...)` is
+        # part of the language, not of the generated package, so emitting
+        # it verbatim produces SV that references a task that does not
+        # exist. The mapping already existed in sv_builtins for the other
+        # SV targets; this one was not consulting it.
+        builtin = self._builtin_call(e)
+        if builtin is not None:
+            return builtin
+        # A folded masked write, spelled back as the field(s) it came from.
+        named = self._field_write(e)
+        if named is not None:
+            return named
+        # A register-group offset function: evaluated here, never emitted.
+        folded = self._fold_offset(e)
+        if folded is not None:
+            return folded
+        args = ", ".join(self.expr(a) for a in e.args)
+        return f"{self.expr(callee)}({args})"
 
     # --- register-group offset folding ------------------------------------
 
@@ -378,136 +408,142 @@ class _BodyEmitter:
         vals = [str((packed & r.slice.mask) >> r.slice.lsb) for r in refs]
         names = ", ".join(r.const for r in refs)
         return f"{recv}.write_fields('{{{names}}}, '{{{', '.join(vals)}}})"
-        raise ValueError(f"unsupported expr {cn}")
 
     # statements -----------------------------------------------------------
 
-    def stmts(self, body, ind: int) -> List[str]:
-        out: List[str] = []
-        for s in body:
-            out += self.stmt(s, ind)
-        return out
-
-    def stmt(self, s, ind: int) -> List[str]:
-        pad = "  " * ind
-        cn = _dt_name(s)
-        if cn == "StmtAnnAssign":
-            # A local named `status` in a value-returning function IS the
-            # generated output argument, not a second variable.
-            #
-            # A PSS function returns a value; the SV lowering turns that into a
-            # leading `output <T> status` (see _signature), because anything
-            # that can consume time is a task and a task has no return value.
-            # A model that names its own result `status` -- which is the
-            # obvious name, and what this one uses -- then declared it twice:
-            #
-            #     virtual task wait_completion(output wb_dma_status_e status);
-            #       wb_dma_status_e status;          // <- rejected
-            #
-            # Suppressing the declaration is not a rename: every assignment to
-            # it already means "the value being returned", which is exactly
-            # what the output argument carries.
-            if (self.has_status
-                    and _dt_name(s.target) == "ExprRefLocal"
-                    and s.target.name == "status"):
-                self.local_types["status"] = s.annotation
-                v = getattr(s, "value", None)
-                if v is None:
-                    return []
-                rewritten = self._assign_from_call(s.target, v, pad)
-                if rewritten is not None:
-                    return rewritten
-                return [f"{pad}status = {self.value_of(s.annotation, v)};"]
-
-            # Local variable declaration. An absent initializer defaults to 0.
-            #
-            # The initializer used to be DISCARDED here: `int x = 5;` came out
-            # as `int x;`, which compiles, runs, and is wrong. Kept as an SV
-            # declaration-with-initializer rather than a following assignment,
-            # because a declaration must appear at the start of its block --
-            # splitting it in two would move the assignment past that boundary.
-            if _dt_name(s.target) == "ExprRefLocal":
-                self.local_types[s.target.name] = s.annotation
-            decl = f"{pad}{sv_type(s.annotation)} {self.expr(s.target)}"
+    def stmt_ann_assign(self, s, ind: int) -> List[str]:
+        pad = self.pad(ind)
+        # A local named `status` in a value-returning function IS the
+        # generated output argument, not a second variable.
+        #
+        # A PSS function returns a value; the SV lowering turns that into a
+        # leading `output <T> status` (see _signature), because anything
+        # that can consume time is a task and a task has no return value.
+        # A model that names its own result `status` -- which is the
+        # obvious name, and what this one uses -- then declared it twice:
+        #
+        #     virtual task wait_completion(output wb_dma_status_e status);
+        #       wb_dma_status_e status;          // <- rejected
+        #
+        # Suppressing the declaration is not a rename: every assignment to
+        # it already means "the value being returned", which is exactly
+        # what the output argument carries.
+        if (self.has_status
+                and _dt_name(s.target) == "ExprRefLocal"
+                and s.target.name == "status"):
+            self.local_types["status"] = s.annotation
             v = getattr(s, "value", None)
             if v is None:
-                return [f"{decl};"]
-            # A task-valued initializer cannot be one: a task yields its result
-            # through an output argument, so it needs the declaration and the
-            # call as separate statements (see _assign_from_call).
+                return []
             rewritten = self._assign_from_call(s.target, v, pad)
             if rewritten is not None:
-                return [f"{decl};"] + rewritten
-            return [f"{decl} = {self.value_of(s.annotation, v)};"]
-        if cn == "StmtAssign":
-            target = s.targets[0]
-            v = s.value
-            rewritten = self._assign_from_call(target, v, pad)
-            if rewritten is not None:
                 return rewritten
-            return [f"{pad}{self.expr(target)} = {self.value_of(self._target_type(target), v)};"]
-        if cn == "StmtAugAssign":
-            op = _BINOP.get(s.op.name)
-            if op is None:
-                raise ValueError(f"unsupported augmented-assign op {s.op.name}")
-            return [f"{pad}{self.expr(s.target)} {op}= {self.expr(s.value)};"]
-        if cn == "StmtExpr":
-            return [f"{pad}{self.expr(s.expr)};"]
-        if cn == "StmtReturn":
-            if self.has_status and s.value is not None:
-                # `return f();` where f is a task takes the same output-argument
-                # rewrite as an assignment does -- `return wait_completion();`
-                # becomes `wait_completion(status); return;`.
-                call = self._assign_from_call(_STATUS_TARGET, s.value, pad)
-                if call is not None:
-                    return call + [f"{pad}return;"]
-                return [f"{pad}status = {self.value_of(self.fn.returns, s.value)};",
-                        f"{pad}return;"]
-            return [f"{pad}return;"]
-        if cn == "StmtIf":
-            lines = [f"{pad}if ({self.expr(s.test)}) begin"]
-            lines += self.stmts(s.body, ind + 1)
-            if getattr(s, "orelse", None):
-                lines.append(f"{pad}end else begin")
-                lines += self.stmts(s.orelse, ind + 1)
-            lines.append(f"{pad}end")
-            return lines
-        if cn == "StmtRepeatWhile":
-            # PSS do-while: execute body, continue while cond -> forever .. break
+            return [f"{pad}status = {self.value_of(s.annotation, v)};"]
+
+        # Local variable declaration. An absent initializer defaults to 0.
+        #
+        # The initializer used to be DISCARDED here: `int x = 5;` came out
+        # as `int x;`, which compiles, runs, and is wrong. Kept as an SV
+        # declaration-with-initializer rather than a following assignment,
+        # because a declaration must appear at the start of its block --
+        # splitting it in two would move the assignment past that boundary.
+        if _dt_name(s.target) == "ExprRefLocal":
+            self.local_types[s.target.name] = s.annotation
+        decl = f"{pad}{sv_type(s.annotation)} {self.expr(s.target)}"
+        v = getattr(s, "value", None)
+        if v is None:
+            return [f"{decl};"]
+        # A task-valued initializer cannot be one: a task yields its result
+        # through an output argument, so it needs the declaration and the
+        # call as separate statements (see _assign_from_call).
+        rewritten = self._assign_from_call(s.target, v, pad)
+        if rewritten is not None:
+            return [f"{decl};"] + rewritten
+        return [f"{decl} = {self.value_of(s.annotation, v)};"]
+
+    def stmt_assign(self, s, ind: int) -> List[str]:
+        pad = self.pad(ind)
+        target = s.targets[0]
+        v = s.value
+        rewritten = self._assign_from_call(target, v, pad)
+        if rewritten is not None:
+            return rewritten
+        return [f"{pad}{self.expr(target)} = {self.value_of(self._target_type(target), v)};"]
+
+    def stmt_aug_assign(self, s, ind: int) -> List[str]:
+        op = _BINOP.get(s.op.name)
+        if op is None:
+            raise ValueError(f"unsupported augmented-assign op {s.op.name}")
+        return [f"{self.pad(ind)}{self.expr(s.target)} {op}= "
+                f"{self.expr(s.value)};"]
+
+    def stmt_expr(self, s, ind: int) -> List[str]:
+        pad = self.pad(ind)
+        got = self._discarded_get(s.expr, pad)
+        if got is not None:
+            return got
+        return [f"{pad}{self._discard_value(s.expr)};"]
+
+    def stmt_return(self, s, ind: int) -> List[str]:
+        pad = self.pad(ind)
+        if self.has_status and s.value is not None:
+            # `return f();` where f is a task takes the same output-argument
+            # rewrite as an assignment does -- `return wait_completion();`
+            # becomes `wait_completion(status); return;`.
+            call = self._assign_from_call(_STATUS_TARGET, s.value, pad)
+            if call is not None:
+                return call + [f"{pad}return;"]
+            return [f"{pad}status = {self.value_of(self.fn.returns, s.value)};",
+                    f"{pad}return;"]
+        return [f"{pad}return;"]
+
+    def stmt_if(self, s, ind: int) -> List[str]:
+        pad = self.pad(ind)
+        lines = [f"{pad}if ({self.expr(s.test)}) begin"]
+        lines += self.stmts(s.body, ind + 1)
+        if getattr(s, "orelse", None):
+            lines.append(f"{pad}end else begin")
+            lines += self.stmts(s.orelse, ind + 1)
+        lines.append(f"{pad}end")
+        return lines
+
+    def stmt_repeat_while(self, s, ind: int) -> List[str]:
+        # PSS do-while: execute body, continue while cond -> forever .. break
+        pad = self.pad(ind)
+        lines = [f"{pad}forever begin"]
+        lines += self.stmts(s.body, ind + 1)
+        lines.append(f"{pad}  if (!({self.expr(s.condition)})) break;")
+        lines.append(f"{pad}end")
+        return lines
+
+    def stmt_while(self, s, ind: int) -> List[str]:
+        # `while (true)` becomes `forever`: a constant loop condition is a
+        # width/const-expression warning under a linting simulator, and a
+        # generated package should lint clean.
+        # (`test`, not `condition` -- StmtWhile and StmtRepeatWhile spell it
+        # differently, and this branch had never run.)
+        pad = self.pad(ind)
+        if _is_true_const(s.test):
             lines = [f"{pad}forever begin"]
-            lines += self.stmts(s.body, ind + 1)
-            lines.append(f"{pad}  if (!({self.expr(s.condition)})) break;")
-            lines.append(f"{pad}end")
-            return lines
-        if cn == "StmtWhile":
-            # `while (true)` becomes `forever`: a constant loop condition is a
-            # width/const-expression warning under a linting simulator, and a
-            # generated package should lint clean.
-            # (`test`, not `condition` -- StmtWhile and StmtRepeatWhile spell it
-            # differently, and this branch had never run.)
-            if _is_true_const(s.test):
-                lines = [f"{pad}forever begin"]
-            else:
-                lines = [f"{pad}while ({self.expr(s.test)}) begin"]
-            lines += self.stmts(s.body, ind + 1)
-            lines.append(f"{pad}end")
-            return lines
-        if cn == "StmtBreak":
-            return [f"{pad}break;"]
-        if cn == "StmtContinue":
-            return [f"{pad}continue;"]
-        if cn == "StmtForeach":
-            return self._foreach(s, ind)
-        if cn == "StmtMatch":
-            return self._match(s, ind)
-        if cn == "StmtYield":
-            # The blocking primitive. Handing it to the import layer is the
-            # whole interrupt strategy: the generated model states WHERE it
-            # waits, the integration decides HOW. See the design, §4.4 -- and
-            # note the implementer's obligation there, that a pure
-            # interrupt-only binding deadlocks.
-            return [f"{pad}m_imp.yield_();"]
-        raise ValueError(f"unsupported stmt {cn}")
+        else:
+            lines = [f"{pad}while ({self.expr(s.test)}) begin"]
+        lines += self.stmts(s.body, ind + 1)
+        lines.append(f"{pad}end")
+        return lines
+
+    def stmt_break(self, s, ind: int) -> List[str]:
+        return [f"{self.pad(ind)}break;"]
+
+    def stmt_continue(self, s, ind: int) -> List[str]:
+        return [f"{self.pad(ind)}continue;"]
+
+    def stmt_yield(self, s, ind: int) -> List[str]:
+        # The blocking primitive. Handing it to the import layer is the
+        # whole interrupt strategy: the generated model states WHERE it
+        # waits, the integration decides HOW. See the design, §4.4 -- and
+        # note the implementer's obligation there, that a pure
+        # interrupt-only binding deadlocks.
+        return [f"{self.pad(ind)}m_imp.yield_();"]
 
     def _target_type(self, target):
         """Declared type of an assignment target, when it is known."""
@@ -582,14 +618,95 @@ class _BodyEmitter:
             return [f"{pad}{self.expr(fn)}({args});"]
         return None
 
-    def _match(self, s, ind: int) -> List[str]:
+    #: Channel methods that are SV *functions* returning a bit. Discarding a
+    #: non-void function's return is legal SV but warns (IEEE 1800-2023 13.4.1),
+    #: and the lint gate treats a warning as a failure.
+    _CHAN_PREDICATES = ("try_get", "try_put")
+
+    def _discard_value(self, v) -> str:
+        """Statement-position call whose value the model discards.
+
+        `inflight.try_get(tok);` is ordinary PSS -- `try_get` answers whether it
+        succeeded, and a caller that has already decided what to do either way
+        may ignore it. SV disagrees: `function bit try_get(...)` used as a
+        statement is IGNOREDRETURN. `void'(...)` is the idiom that says "yes,
+        deliberately", and it is what a hand-written testbench would write.
+
+        Restricted to the channel predicates rather than applied to every call:
+        a *task* wrapped in `void'()` is a syntax error, and the emitter cannot
+        tell a task from a function by name alone. These two it can.
+
+        Matched by METHOD NAME only, not by the receiver being a channel field
+        of *this* component. `notify_irq()` is why:
+
+            foreach (ch[i]) { ch[i].wake.try_put(1); }
+
+        the channel belongs to the child, so a receiver-based test misses it and
+        the same construct comes out wrapped in one function and bare in
+        another. Verilator happens not to warn on the indexed form today, which
+        is exactly the kind of difference that does not survive a change of
+        simulator. Name matching accepts the ambiguity this file already accepts
+        for `read`/`read_val`/`get` (see `_assign_from_call`): a user component
+        method named `try_put` returning void would be mis-wrapped.
+        """
+        if _dt_name(v) == "ExprCall":
+            fn = v.func
+            if (_dt_name(fn) == "ExprAttribute"
+                    and fn.attr in self._CHAN_PREDICATES):
+                return f"void'({self.expr(v)})"
+        return self.expr(v)
+
+    def _discarded_get(self, v, pad: str):
+        """PSS ``c.get();`` -- a blocking receive whose value is thrown away.
+
+        `sync_pkg` declares `target function Te get();`: it takes **no
+        arguments** and returns the element. The SV runtime cannot, because
+        `get` blocks and so must be a `task`, and a task returns nothing --
+        `pssc_reg_pkg` declares `task get(output Te t);`. The assignment form
+        `x = c.get()` is already rewritten to `c.get(x)` by `_assign_from_call`.
+
+        This is the form with no `x`. `wait_hint()` is the case that matters:
+
+            wake.get();          // PSS -- the token carries no information
+
+        Emitting that verbatim produces `wake.get();`, which is not a syntax
+        error -- it is a *missing argument*, which Verilator rejects only at
+        elaboration. Nothing earlier in the pipeline sees it, which is why this
+        went undetected until the model was corrected to the valid PSS spelling
+        (it previously wrote `wake.get(tok)`, passing an argument the PSS
+        declaration does not have, which the emitter happened to copy through).
+
+        The temp is `Te`-wide rather than `bit`: a narrower one is a WIDTHTRUNC
+        warning, and the lint gate treats warnings as failures.
+
+        Matched by method name and receiver, like the rest of this file -- see
+        `_assign_from_call`'s note on the same latent ambiguity.
+        """
+        if _dt_name(v) != "ExprCall" or v.args:
+            return None
+        fn = v.func
+        if _dt_name(fn) != "ExprAttribute" or fn.attr != "get":
+            return None
+        recv = getattr(fn.value, "attr", None) or getattr(fn.value, "id", None)
+        elem = self.chan_elem_of.get(recv)
+        if elem is None:
+            return None
+        # A fresh block so the temp cannot collide with a model local, and so
+        # this stays a single statement to whatever encloses it (an unbraced
+        # `if` arm, for instance).
+        return [f"{pad}begin",
+                f"{pad}  {elem} pssc_discard;",
+                f"{pad}  {self.expr(fn.value)}.get(pssc_discard);",
+                f"{pad}end"]
+
+    def stmt_match(self, s, ind: int) -> List[str]:
         """PSS `match` -> SV `case`.
 
         An arm with no pattern value is the `default`. Arms are emitted in
         source order, so a model that relies on first-match ordering keeps its
         meaning.
         """
-        pad = "  " * ind
+        pad = self.pad(ind)
         lines = [f"{pad}case ({self.expr(s.subject)})"]
         for case in s.cases:
             labels = self._pattern_labels(case.pattern)
@@ -613,14 +730,14 @@ class _BodyEmitter:
             return out
         raise ValueError(f"unsupported match pattern {cn}")
 
-    def _foreach(self, s, ind: int) -> List[str]:
+    def stmt_foreach(self, s, ind: int) -> List[str]:
         """`foreach (a[i]) { ... }` -> an indexed for loop.
 
         SV has `foreach` too, but only over its own arrays; the PSS collection
         may be a generated member with a known size, so an explicit index keeps
         one lowering for both.
         """
-        pad = "  " * ind
+        pad = self.pad(ind)
         idx = getattr(getattr(s, "target", None), "name", "i")
         coll = self.expr(s.iter)
         lines = [f"{pad}foreach ({coll}[{idx}]) begin"]
@@ -659,8 +776,13 @@ class _ExprOnly(_BodyEmitter):
 
 # --- emission --------------------------------------------------------------
 
-def _operations(comp) -> List[object]:
-    return [fn for fn in comp.functions if func_kind(fn) == FuncKind.EXPORT_OP]
+# `ctor_names` comes down from the model, never from the ambient ContextVar
+# (P6a.T5): which solve function is the constructor is the compile's answer,
+# and an emitter that asks the process gets whichever compile set it last.
+
+def _operations(comp, ctor_names=None) -> List[object]:
+    return [fn for fn in comp.functions
+            if func_kind(fn, ctor_names) == FuncKind.EXPORT_OP]
 
 
 def _reg_group_members(comp) -> Dict[str, str]:
@@ -710,7 +832,7 @@ def _data_fields(comp) -> List[object]:
     return out
 
 
-def emit_export_api(comp) -> str:
+def emit_export_api(comp, ctor_names=None) -> str:
     """The export interface class: one pure virtual task per operation, plus an
     accessor per sub-component instance.
 
@@ -721,10 +843,19 @@ def emit_export_api(comp) -> str:
     are not parameterized (see `emit_subcomponent_class`).
     """
     cls = f"{_strip_pkg(comp.name)}_if"
-    lines = [f"  interface class {cls};"]
-    for fn in _operations(comp):
+    lines = doc_block(getattr(comp, "doc", None), "  ") + [
+        f"  interface class {cls};"]
+    for fn in _operations(comp, ctor_names):
+        # The interface is the API surface a caller reads and the
+        # implementation is what someone debugging reads, so the doc block goes
+        # on both. This is the one place a comment is deliberately duplicated.
+        blank_line(lines)
+        lines += doc_block(getattr(fn, "doc", None), "    ")
         lines.append(f"    pure virtual task {mangle(fn.name)}({_signature(fn)});")
     for sub in sub_components(comp):
+        # One blank before each sub-component's accessors, not between them:
+        # `ch()` and `ch_size()` are one member's plumbing, not two entries.
+        blank_line(lines)
         sub_if = f"{_strip_pkg(sub.dtype.name)}_if"
         if sub.is_array:
             lines.append(f"    pure virtual function {sub_if} {mangle(sub.name)}(int index);")
@@ -735,20 +866,20 @@ def emit_export_api(comp) -> str:
     return "\n".join(lines)
 
 
-def _ctor(comp):
+def _ctor(comp, ctor_names=None):
     for fn in comp.functions:
-        if func_kind(fn) == FuncKind.CONSTRUCTOR:
+        if func_kind(fn, ctor_names) == FuncKind.CONSTRUCTOR:
             return fn
     return None
 
 
-def lower_component_api(comp) -> str:
+def lower_component_api(comp, ctor_names=None) -> str:
     """Export interface for a regular component, as package-body text.
 
     The implementation is folded into the component class itself (see
     `emit_component`), so there is no separate `<comp>_impl`.
     """
-    return emit_export_api(comp)
+    return emit_export_api(comp, ctor_names)
 
 
 # --- import API, adapter, factory (Phase 5) --------------------------------
@@ -785,7 +916,7 @@ def uses_yield(components) -> bool:
     return any(in_stmts(fn.body) for c in components for fn in (c.functions or []))
 
 
-def emit_import_api(root, needs_yield: bool = False) -> str:
+def emit_import_api(root, needs_yield: bool = False, ctor_names=None) -> str:
     """``interface class <root>_import_if extends pss_mem_if`` plus any
     engine-specific import functions (none for the WB DMA engine)."""
     cls = f"{_strip_pkg(root.name)}_import_if"
@@ -802,7 +933,7 @@ def emit_import_api(root, needs_yield: bool = False) -> str:
         lines.append("    // MUST NOT wait on an interrupt alone -- see the yield contract.")
         lines.append("    pure virtual task yield_();")
     for fn in root.functions:
-        k = func_kind(fn)
+        k = func_kind(fn, ctor_names)
         if k == FuncKind.IMPORT_TASK:
             lines.append(f"    pure virtual task {mangle(fn.name)}({_signature(fn)});")
         elif k == FuncKind.IMPORT_SOLVE:
@@ -819,6 +950,7 @@ def _member_decls(comp, members: Dict[str, str], subs: Dict[str, SubComp]) -> Li
         if field_is_reg_group(f):
             lines.append(f"    protected {_strip_pkg(f.datatype.name)} {members[f.name]};")
     for f in _data_fields(comp):
+        lines += comment_lines(getattr(f, "doc", None), "    ")
         lines.append(f"    protected {sv_type(f.datatype)} {members[f.name]};")
     # Channels are PUBLIC, deliberately. Every other member is `protected`
     # because the export interface is the supported surface; a channel is
@@ -879,12 +1011,16 @@ def _bind_body(comp, ctor, members, subs, *, bus: str, base_arg: str) -> List[st
     return [f"      {members[g]} = new({bus}, {base_arg});" for g in reg_groups]
 
 
-def _operation_defs(comp, members: Dict[str, str], namer=None) -> List[str]:
+def _operation_defs(comp, members: Dict[str, str], namer=None,
+                    ctor_names=None) -> List[str]:
     """Export operations. `virtual`, not plain -- they implement the export
     interface's pure virtuals, and stricter simulators require the override."""
     lines: List[str] = []
-    for fn in _operations(comp):
-        be = _BodyEmitter(fn, comp, members, namer=namer)
+    for fn in _operations(comp, ctor_names):
+        be = _BodyEmitter(fn, comp, members, namer=namer,
+                          ctor_names=ctor_names)
+        blank_line(lines)
+        lines += doc_block(getattr(fn, "doc", None), "    ")
         lines.append(f"    virtual task {mangle(fn.name)}({_signature(fn)});")
         lines += be.stmts(fn.body, 3)
         lines.append("    endtask")
@@ -914,7 +1050,7 @@ def _accessor_defs(comp, members: Dict[str, str], subs: Dict[str, SubComp]) -> L
     return lines
 
 
-def emit_subcomponent_class(comp, root, namer=None) -> str:
+def emit_subcomponent_class(comp, root, namer=None, ctor_names=None) -> str:
     """A non-root component's implementation class.
 
     Deliberately **not** parameterized. Only the root carries `#(type IMP_T)`,
@@ -931,7 +1067,7 @@ def emit_subcomponent_class(comp, root, namer=None) -> str:
     members = _members(comp)
     subs = {s.name: s for s in sub_components(comp)}
 
-    ctor = _ctor(comp)
+    ctor = _ctor(comp, ctor_names)
     ctor_params = ""
     if ctor is not None and ctor.args.args:
         ctor_params = ", " + ", ".join(
@@ -939,7 +1075,7 @@ def emit_subcomponent_class(comp, root, namer=None) -> str:
     base_arg = (mangle(ctor.args.args[0].arg)
                 if ctor is not None and ctor.args.args else "base")
 
-    lines = [
+    lines = doc_block(getattr(comp, "doc", None), "  ") + [
         f"  class {name} implements {api};",
         f"    protected {bus_if} m_imp;",
     ]
@@ -951,13 +1087,14 @@ def emit_subcomponent_class(comp, root, namer=None) -> str:
     lines += _bind_body(comp, ctor, members, subs, bus="m_imp", base_arg=base_arg)
     lines.append("    endfunction")
     lines.append("")
-    lines += _operation_defs(comp, members, namer)
+    lines += _operation_defs(comp, members, namer, ctor_names)
     lines += _accessor_defs(comp, members, subs)
     lines.append("  endclass")
     return "\n".join(lines)
 
 
-def emit_component(root, needs_yield: bool = False, namer=None) -> str:
+def emit_component(root, needs_yield: bool = False, namer=None,
+                   ctor_names=None) -> str:
     """The component class, named after the component itself -- one class that is
 
       * the **export implementation** (`implements <comp>_if`, the operations),
@@ -977,7 +1114,7 @@ def emit_component(root, needs_yield: bool = False, namer=None) -> str:
     members = _members(root)
     subs = {s.name: s for s in sub_components(root)}
 
-    ctor = _ctor(root)
+    ctor = _ctor(root, ctor_names)
     ctor_params = ""
     fwd = ""
     base_arg = "base"
@@ -988,7 +1125,7 @@ def emit_component(root, needs_yield: bool = False, namer=None) -> str:
         fwd = ", " + ", ".join(names)
         base_arg = mangle(ctor.args.args[0].arg)
 
-    lines = [
+    lines = doc_block(getattr(root, "doc", None), "  ") + [
         f"  class {name} #(type IMP_T = {import_if}) implements {api}, {import_if};",
         f"    protected IMP_T m_imp;",
     ]
@@ -1007,7 +1144,7 @@ def emit_component(root, needs_yield: bool = False, namer=None) -> str:
     lines.append("    endfunction")
     lines.append("")
 
-    lines += _operation_defs(root, members, namer)
+    lines += _operation_defs(root, members, namer, ctor_names)
     lines += _accessor_defs(root, members, subs)
 
     # import redirect: forward each memory-access primitive to the user object.

@@ -23,6 +23,39 @@ pssc compile SOURCES... [-t TARGET] [-o DIR] [--dump-ir FILE] [-q] [target-opts]
 | `--dump-ir FILE` | also write the canonical IR `Context` as YAML to `FILE` |
 | `-q, --quiet` | do not print written file paths |
 | `--target-cfg NAME=VALUE` | override what the target publishes as `target_cfg_pkg` (repeatable; see below) |
+| `--no-comments` | do not carry the PSS source's comments into the generated code (see below) |
+
+### `--no-comments` — dropping the source's prose
+
+The op-model targets emit a close transcription of their PSS source, so by
+default they carry the source's comments across: a function's doc comment onto
+the generated declaration, a statement's comment onto the generated statement.
+The prose is the part of the model a reader cannot recover from the code.
+
+`--no-comments` turns that off. Two reasons to use it:
+
+- the output is consumed by something that only cares about the code, and the
+  volume is unhelpful — the fw-wb-dma model's SystemVerilog goes from 519 to
+  1574 lines, nearly all of it prose;
+- you are checking that a change to the generator changed only comments. The
+  *code* under `--no-comments` is identical to the output from before comment
+  propagation existed; the only differences are blank lines, from the blank line
+  now placed before every function declaration. That makes "only comments moved"
+  a measured claim rather than an impression.
+
+**Not everything propagates, by design.** A comment separated from its
+construct by a blank line documents nothing and is not emitted. That is how a
+file note above the `import` statements stays out of the generated code, and it
+is the way to suppress any one comment without deleting it:
+
+```pss
+// Emitted: this documents the declaration below.
+target function void arm() { }
+
+// Not emitted: a blank line detaches it.
+
+target function void stop() { }
+```
 
 ### `target_cfg_pkg` — the target describes itself to the model
 
@@ -32,17 +65,30 @@ execution target that a portable model has to branch on:
 
 ```pss
 package target_cfg_pkg {
-    static const int  TARGET_CFG_VERSION  = 1;
-    static const bool HAVE_BLOCKING       = true;   // can the runtime suspend a thread?
+    static const int  TARGET_CFG_VERSION  = 2;
+    static const bool HAVE_EVENT_WAIT     = true;   // can a caller wait for an event?
     static const bool HAVE_RUNTIME_SOLVER = true;   // solver in the image, or pre-solved?
 }
 ```
 
 `pssc targets` prints what each target publishes. `op-model-sv` claims both
 (generated operations are `task`s, and SV carries a solver); `op-model-c` and
-`op-model-cpp` claim neither (plain functions, no coroutine runtime). A target
+`op-model-cpp` and `op-model-py` claim neither (plain functions or methods, no
+coroutine runtime). A target
 that has not established its capabilities publishes nothing, and the model takes
 its own defaults.
+
+`HAVE_EVENT_WAIT` asks exactly one thing: can a caller **suspend until another
+party posts an event** — concretely, is `channel_c`'s blocking `get`/`put`
+available. It does *not* ask whether a caller may spin; every target can spin,
+so a polling wait needs no capability at all and `yield` is available
+everywhere.
+
+> **Contract v1 → v2.** v1 spelled this `HAVE_BLOCKING` and conflated the two
+> questions, so a target with no scheduler deleted every operation that waits —
+> including ones that could have polled. `HAVE_BLOCKING` is now **rejected**,
+> not accepted as a synonym: the right migration is to re-decide the narrower
+> question, not to rename the answer.
 
 A model reads it by testing the version marker first, then the flag — **nested,
 not `&&`**:
@@ -52,14 +98,14 @@ package target_cfg_pkg { }          // stub, so the name resolves
 
 package my_cfg_pkg {
     compile if (compile has(target_cfg_pkg::TARGET_CFG_VERSION)) {
-        static const bool HAS_BLOCKING = target_cfg_pkg::HAVE_BLOCKING;
+        static const bool HAS_EVENT_WAIT = target_cfg_pkg::HAVE_EVENT_WAIT;
     } else {
-        static const bool HAS_BLOCKING = true;      // default: the richer model
+        static const bool HAS_EVENT_WAIT = true;    // default: the richer model
     }
 }
 ```
 
-`compile has(V) && target_cfg_pkg::HAVE_BLOCKING` — the shape in the LRM's
+`compile has(V) && target_cfg_pkg::HAVE_EVENT_WAIT` — the shape in the LRM's
 Example275 — is a hard error: pssparser evaluates both operands of a
 compile-time binary expression eagerly. Short-circuiting is normative (§8.4.4)
 but governs evaluation, not name resolution. Nesting sidesteps it.
@@ -83,14 +129,16 @@ Per-target options (contributed by each target's `add_args`):
 | `sv-dpi-bridge` | *(imports)* | package-scope imports become a `pssc_import_if` the testbench implements + registers (`pssc_set_imports`): **solve** imports are synchronous `export "DPI-C"` functions; **target** imports are blocking SV **tasks** (may consume time) serviced via the request-mailbox + fork trampoline. Build the simulator with `-Wl,--export-dynamic` |
 | `op-model-sv` | `--root COMP` | root component type to generate the API for (required) |
 | `op-model-sv` | `--package NAME` | generated package name (default `<root>_pkg`) |
-| *(all op-model)* | `--root COMP` | root component (shared by `op-model-sv` / `-c` / `-cpp`) |
+| *(all op-model)* | `--root COMP` | root component (shared by `op-model-sv` / `-c` / `-cpp` / `-py`) |
 | *(all op-model)* | `--no-core-copy` | do not copy the core seam header(s)/package |
+| *(all op-model)* | `--emit-manifest FILE` | also write the elaborated model as JSON — operations and signatures, register offsets, produced files and their roles. So a consumer never has to parse generated code |
 | `op-model-c` | `--prefix NAME` | symbol/file prefix (default root sans `_c`) |
 | `op-model-c` | `--link-style {vtable,direct,mmio}` | memory-access seam (default `vtable`) |
 | `op-model-c` | `--reg-style {bitfields,accessors}` | register value layout (default `bitfields`) |
 | `op-model-c` | `--header-only` | emit a single `.h` (forced for `mmio`) |
 | `op-model-cpp` | `--namespace NAME` | namespace + class prefix (default root sans `_c`) |
 | `op-model-cpp` | `--dispatch {virtual,template}` | dispatch model (default `virtual`) |
+| `op-model-py` | `--py-module NAME` | generated module name (default root sans `_c`) |
 
 ## `pssc parse`
 

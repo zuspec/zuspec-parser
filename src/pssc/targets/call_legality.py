@@ -16,7 +16,8 @@ flat per-target list has no contract to hold them together:
            identically.
   Tier 1   COMMON: what EVERY backend must render. A target may extend this;
            it may never shrink it. `test_call_legality.py` enforces that.
-  Tier 2   per-target extensions, declared by the target.
+  Tier 2   per-target extensions, declared through `register_extension` --
+           by a built-in here, or by a plugin from its own package.
 
 The four outcomes below exist so each failure gets an actionable message rather
 than one generic "unsupported call".
@@ -205,8 +206,15 @@ _NO_C_STRING = ("it returns a PSS string, and the C lowering has no string "
                 "representation or ownership model")
 _NO_C_PRNG = ("it needs a PRNG in the core header, and seeding/determinism is a "
               "policy decision the SV target gets from the simulator for free")
-_NO_C_CHANNEL = ("there is no C runtime for sync_pkg::channel_c; see "
-                 "targets/c/lower_progseq.py::_reject_channels")
+# Updated 2026-08-13 (C3). The C target grew a depth-1 channel_c runtime, so the
+# two NON-blocking calls are now renderable and only the blocking pair is not.
+# The old reason cited `_reject_channels`, which no longer exists.
+_NO_C_BLOCKING_CHANNEL = (
+    "get()/put() suspend, and this backend generates no scheduler to suspend to "
+    "(HAVE_EVENT_WAIT=false). A blocking channel call reaching the C means the "
+    "model asked for an event this target cannot deliver -- a modelling error, "
+    "not something to lower to a spin. try_get/try_put are supported: see "
+    "share/c/pssc_chan.h")
 
 _SV_EXT = [
     # `print` is declared `solve function` (21.1.2) -- the solve platform's
@@ -225,24 +233,154 @@ _SV_EXT = [
 ]
 
 #: What each target adds beyond COMMON, and what it explicitly cannot do.
-EXTENSIONS: Dict[str, Dict[str, Entry]] = {
-    "op-model-sv": {e.name: e for e in _SV_EXT},
-    "c-progseq": {e.name: e for e in [
+#:
+#: KEYED BY CANONICAL TARGET NAME -- the `name` attribute of the registered
+#: target, never an alias. The op-model family was renamed `<kind>-progseq` ->
+#: `op-model-<kind>` and these keys were left behind, so `entries_for` matched
+#: nothing for the name the CLI actually reports and every C/C++ Tier-2 entry
+#: was invisible. Aliases keep working through `_canonical` below; they must
+#: not appear here, and `test_extensions_keyed_by_canonical_name` enforces it.
+#:
+#: PRIVATE. Write through `register_extension`, read through `extensions_for`:
+#: the Tier-1 contract ("a target may extend COMMON, never shrink it") was a
+#: test over a literal dict, which is no contract at all for a target that is
+#: not in this file. Registration enforces it at the point of the mistake.
+_EXTENSIONS: Dict[str, Dict[str, Entry]] = {}
+
+
+class LegalityError(Exception):
+    """A Tier-2 extension violates the tier contract."""
+
+
+def register_extension(target: str, entries, inherit: Optional[str] = None,
+                       replace: bool = False) -> Dict[str, Entry]:
+    """Declare what ``target`` renders beyond :data:`COMMON`.
+
+    ``entries`` is an iterable of :class:`Entry` (or a name->Entry mapping).
+    ``inherit`` names an already-registered target to start from -- the shape a
+    derived backend wants ("everything the C target does, plus these"), stated
+    once instead of copied. It is a snapshot taken now, not a live link: the
+    base changing later must not silently change a derived target's legality,
+    which is exactly the failure a `dict()` copy of the C entry would have
+    produced for C++.
+
+    Raises :class:`LegalityError` if an entry marks a Tier-1 name unsupported.
+    That is the one thing a target may not do, because every backend downstream
+    of the model -- and the model author -- relies on COMMON being renderable
+    everywhere; a target that cannot render it is not a conforming target, and
+    finding out at generation time gives a diagnostic that blames the model.
+    """
+    if target in _EXTENSIONS and not replace:
+        raise LegalityError(
+            f"call-legality extensions for '{target}' are already registered; "
+            f"pass replace=True to override them deliberately")
+
+    merged: Dict[str, Entry] = {}
+    if inherit is not None:
+        if inherit not in _EXTENSIONS:
+            raise LegalityError(
+                f"target '{target}' inherits call legality from '{inherit}', "
+                f"which has none registered (available: "
+                f"{', '.join(sorted(_EXTENSIONS)) or 'none'})")
+        merged.update(_EXTENSIONS[inherit])
+
+    items = (entries.values() if isinstance(entries, dict) else entries)
+    for entry in items:
+        if entry.name in COMMON and entry.unsupported:
+            raise LegalityError(
+                f"target '{target}' declares the Tier 1 (COMMON) call "
+                f"'{entry.name}' unsupported ({entry.unsupported}). A target "
+                f"may extend the common set; it may never shrink it -- every "
+                f"model is written assuming COMMON renders everywhere")
+        merged[entry.name] = entry
+
+    _EXTENSIONS[target] = merged
+    return merged
+
+
+def extensions_for(target: str) -> Dict[str, Entry]:
+    """The Tier-2 entries registered for ``target`` (canonical name or alias)."""
+    return dict(_EXTENSIONS.get(_canonical(target), {}))
+
+
+def registered_targets() -> Tuple[str, ...]:
+    """Canonical names of every target bound by the Tier-1 contract, sorted."""
+    return tuple(sorted(_EXTENSIONS))
+
+
+register_extension("op-model-sv", _SV_EXT)
+
+register_extension("op-model-c", [
         _e("print", Disposition.UTILITY, BOTH, "21.1.2"),
         _e("format",        Disposition.UTILITY, SOLVE_ONLY, "21.1.2", _NO_C_STRING),
         _e("format_string", Disposition.UTILITY, BOTH, "19", _NO_C_STRING),
         _e("urandom",       Disposition.UTILITY, BOTH, "21.4", _NO_C_PRNG),
         _e("urandom_range", Disposition.UTILITY, BOTH, "21.4", _NO_C_PRNG),
-        _e("get",     Disposition.CHANNEL, TARGET_ONLY, "21.9.1", _NO_C_CHANNEL),
-        _e("put",     Disposition.CHANNEL, TARGET_ONLY, "21.9.1", _NO_C_CHANNEL),
-        _e("try_get", Disposition.CHANNEL, TARGET_ONLY, "21.9.1", _NO_C_CHANNEL),
-        _e("try_put", Disposition.CHANNEL, TARGET_ONLY, "21.9.1", _NO_C_CHANNEL),
-    ]},
-}
-EXTENSIONS["cpp-progseq"] = dict(EXTENSIONS["c-progseq"])
+        _e("get",     Disposition.CHANNEL, TARGET_ONLY, "21.9.1",
+           _NO_C_BLOCKING_CHANNEL),
+        _e("put",     Disposition.CHANNEL, TARGET_ONLY, "21.9.1",
+           _NO_C_BLOCKING_CHANNEL),
+        # Renderable: pssc_chan1_try_get / _try_put (DEPTH > 1 is rejected).
+        _e("try_get", Disposition.CHANNEL, TARGET_ONLY, "21.9.1"),
+        _e("try_put", Disposition.CHANNEL, TARGET_ONLY, "21.9.1"),
+])
 
-#: Targets bound by the Tier 1 contract.
-PROGSEQ_TARGETS = tuple(sorted(EXTENSIONS))
+# C++ reaches the same conclusions as C and for the same reasons -- no string
+# type, no PRNG, no scheduler -- but it is stated in full rather than copied
+# from the C entry. A `dict()` copy silently hands this target whatever the C
+# entry gains next, and the two ARE different backends: C++ has a typed channel
+# template where C has a 64-bit payload, and it may grow a coroutine profile
+# that C will not.
+_NO_CPP_STRING = ("it returns a PSS string, and the C++ lowering has no string "
+                  "representation or ownership model")
+_NO_CPP_PRNG = ("it needs a PRNG in the core header, and seeding/determinism is "
+                "a policy decision the SV target gets from the simulator for free")
+# Updated 2026-08-14. The C++ target grew a depth-1 channel_c runtime
+# (share/cpp/pssc_chan.hpp), so the two NON-blocking calls are renderable and
+# only the blocking pair is not -- the same position the C target reached.
+_NO_CPP_BLOCKING_CHANNEL = (
+    "get()/put() suspend, and this backend generates no scheduler to suspend to "
+    "(HAVE_EVENT_WAIT=false). A blocking channel call reaching the C++ means the "
+    "model asked for an event this target cannot deliver -- a modelling error, "
+    "not something to lower to a spin. try_get/try_put are supported: see "
+    "share/cpp/pssc_chan.hpp")
+
+register_extension("op-model-cpp", [
+    _e("print", Disposition.UTILITY, BOTH, "21.1.2"),
+    _e("format",        Disposition.UTILITY, SOLVE_ONLY, "21.1.2", _NO_CPP_STRING),
+    _e("format_string", Disposition.UTILITY, BOTH, "19", _NO_CPP_STRING),
+    _e("urandom",       Disposition.UTILITY, BOTH, "21.4", _NO_CPP_PRNG),
+    _e("urandom_range", Disposition.UTILITY, BOTH, "21.4", _NO_CPP_PRNG),
+    _e("get",     Disposition.CHANNEL, TARGET_ONLY, "21.9.1",
+       _NO_CPP_BLOCKING_CHANNEL),
+    _e("put",     Disposition.CHANNEL, TARGET_ONLY, "21.9.1",
+       _NO_CPP_BLOCKING_CHANNEL),
+    # Renderable: pssc::chan1<T>::try_get / try_put (DEPTH > 1 is rejected).
+    _e("try_get", Disposition.CHANNEL, TARGET_ONLY, "21.9.1"),
+    _e("try_put", Disposition.CHANNEL, TARGET_ONLY, "21.9.1"),
+])
+
+
+def _canonical(target: str) -> str:
+    """The canonical name of ``target``, resolving a registered alias.
+
+    `c-progseq` and `op-model-c` are the same backend, and either may reach
+    here: the alias from an existing command line or flow, the canonical name
+    from the target itself. Resolution goes through the target registry rather
+    than a second alias table here, so there is one place that decides what a
+    name means.
+
+    An unregistered name is returned unchanged and will simply match no
+    extension set -- the same outcome as before, and the right one: a typo in a
+    target name is diagnosed where targets are resolved, not here.
+    """
+    if target in _EXTENSIONS:
+        return target
+    from . import get as _get_target     # deferred: this module loads during
+    try:                                 # the registry's own import
+        return _get_target(target).name
+    except KeyError:
+        return target
 
 
 def entries_for(target: str) -> Dict[str, Entry]:
@@ -250,10 +388,12 @@ def entries_for(target: str) -> Dict[str, Entry]:
 
     Later wins, so a target extension may make a Tier 0 name renderable, and
     COMMON can never be shadowed away by Tier 0.
+
+    ``target`` may be a canonical name or a registered alias.
     """
     merged: Dict[str, Entry] = dict(TIER0)
     merged.update(COMMON)
-    merged.update(EXTENSIONS.get(target, {}))
+    merged.update(_EXTENSIONS.get(_canonical(target), {}))
     return merged
 
 

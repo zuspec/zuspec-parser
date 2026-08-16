@@ -1,25 +1,19 @@
-/* pssc_mem_mmio.h -- link style "mmio" (bare-metal memory-mapped access).
+/* pssc_mem_mmio.h -- COMPATIBILITY SHIM. Use pssc_mem_ptr.h.
  *
- * When addr_handle_t is a real CPU address, the seam is just a `volatile`
- * load/store -- no user code, no function pointer, no call. As `static inline`
- * each primitive compiles to a single load/store instruction. There is no
- * import API to implement, so the generated <prefix>_create takes only the base.
+ * This file's contents moved to `pssc_mem_ptr.h` in C4.3. The old name said
+ * what the seam was FOR ("memory-mapped I/O"); the new one says what it DOES
+ * (forms a pointer from the address and dereferences it), which is the property
+ * that decides whether it is usable -- see the width assertion in pssc_mem.h.
  *
- * Caveat: the address space must be directly CPU-addressable, and there is no
- * hook for logging, backdoor, or a simulated bus -- use vtable/direct for that.
+ * Kept because generated headers in the wild `#include "pssc_mem_mmio.h"` by
+ * name, and a rename that breaks them buys nothing. `--link-style mmio` still
+ * works and still emits this include.
+ *
+ * Nothing new should include this file.
  */
 #ifndef PSSC_MEM_MMIO_H
 #define PSSC_MEM_MMIO_H
 
-#include "pssc_mem.h"
-
-static inline void     pssc_w8 (const void *s, pssc_addr_t a, uint8_t  d) { (void)s; *(volatile uint8_t  *)(uintptr_t)a = d; }
-static inline uint8_t  pssc_r8 (const void *s, pssc_addr_t a)             { (void)s; return *(volatile uint8_t  *)(uintptr_t)a; }
-static inline void     pssc_w16(const void *s, pssc_addr_t a, uint16_t d) { (void)s; *(volatile uint16_t *)(uintptr_t)a = d; }
-static inline uint16_t pssc_r16(const void *s, pssc_addr_t a)             { (void)s; return *(volatile uint16_t *)(uintptr_t)a; }
-static inline void     pssc_w32(const void *s, pssc_addr_t a, uint32_t d) { (void)s; *(volatile uint32_t *)(uintptr_t)a = d; }
-static inline uint32_t pssc_r32(const void *s, pssc_addr_t a)             { (void)s; return *(volatile uint32_t *)(uintptr_t)a; }
-static inline void     pssc_w64(const void *s, pssc_addr_t a, uint64_t d) { (void)s; *(volatile uint64_t *)(uintptr_t)a = d; }
-static inline uint64_t pssc_r64(const void *s, pssc_addr_t a)             { (void)s; return *(volatile uint64_t *)(uintptr_t)a; }
+#include "pssc_mem_ptr.h"
 
 #endif /* PSSC_MEM_MMIO_H */

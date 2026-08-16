@@ -9,7 +9,7 @@ asking the register model which field has those bits, so that
 
 reaches SystemVerilog as
 
-    m_regs.csr.write_field(WB_DMA_CH_CSR_ars, 32'(enable))
+    m_regs.csr.write_field(WB_DMA_CSR_ars, 32'(enable))
 
 rather than as `write_val_masked(64, (32'(enable) & 1) << 6)`.
 
@@ -40,8 +40,9 @@ from pssc import driver
 from pssc.targets.sv.reg_field_names import const_name, const_prefix, unplace
 from pssc.reg_field_resolve import FieldSlice
 
-_MODEL = os.path.normpath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "examples", "op_model", "pss"))
+from .codetext import code_only
+from .op_model import OP_MODEL as _MODEL, op_model_sources
+
 
 #: Transcribed BY HAND from src/pss/wb_dma_ch_c/wb_dma_ch_regs_c.pss -- field
 #: name -> (lsb, width). Deliberately not derived from field_layout(), which is
@@ -57,9 +58,7 @@ _CSR_FIELDS = {
 
 
 def _sources():
-    with open(os.path.join(_MODEL, "files.f")) as fp:
-        rel = [ln.strip() for ln in fp if ln.strip() and not ln.startswith("#")]
-    return [os.path.join(_MODEL, os.path.relpath(p, "src/pss")) for p in rel]
+    return op_model_sources()
 
 
 def _gen(tmp, reg_fields="named"):
@@ -98,7 +97,7 @@ def test_every_csr_field_has_a_constant(sv):
     """
     for name, (lsb, width) in _CSR_FIELDS.items():
         mask = ((1 << width) - 1) << lsb
-        want = (f"localparam reg_field_t WB_DMA_CH_CSR_{name}")
+        want = (f"localparam reg_field_t WB_DMA_CSR_{name}")
         assert want in sv, f"no constant for csr.{name}"
         line = next(ln for ln in sv.splitlines() if want in ln)
         assert f"mask:64'h{mask:016x}" in line, f"{name}: {line}"
@@ -107,33 +106,39 @@ def test_every_csr_field_has_a_constant(sv):
 
 def test_constants_cover_every_value_struct(sv):
     """Not just the CSR -- every emitted packed struct gets a constant block."""
-    for struct in ("wb_dma_ch_csr_s", "wb_dma_ch_sz_s", "wb_dma_swptr_s",
-                   "wb_dma_gcsr_s", "wb_dma_intvec_s"):
+    for struct in ("wb_dma_csr_s", "wb_dma_sz_s", "wb_dma_swptr_s",
+                   "wb_dma_gcsr_s", "wb_dma_intmsk_s", "wb_dma_intsrc_s"):
         assert f"// Field positions of {struct}," in sv, struct
 
 
 def test_prefix_is_the_value_struct_not_the_register_instance(sv):
     """`csr` is ambiguous in this model -- the channel bank and the global bank
     both have one. Keying on the value struct is what makes the constants
-    collision-free, so the two must land on different prefixes."""
-    assert const_prefix("wb_dma_ch_csr_s") == "WB_DMA_CH_CSR"
+    collision-free, so the two must land on different prefixes.
+
+    The generated register package resolves the ambiguity by naming the global
+    one `gcsr`; the channel one keeps the plain name. Either way the prefix
+    follows the STRUCT, which is the property being pinned -- keying on the
+    register instance name would give both `WB_DMA_CSR` and collide."""
+    assert const_prefix("wb_dma_csr_s") == "WB_DMA_CSR"
     assert const_prefix("wb_dma_gcsr_s") == "WB_DMA_GCSR"
-    assert "WB_DMA_CH_CSR_ch_en" in sv and "WB_DMA_GCSR_pause" in sv
+    assert "WB_DMA_CSR_ch_en" in sv and "WB_DMA_GCSR_pause" in sv
 
 
 def test_field_keeps_its_source_spelling():
     """The identifier round-trips: grepping `ch_en` finds the PSS declaration,
     the packed struct member and the constant. Upper-casing the field would be
     a lossy transform the reader has to reverse."""
-    assert const_name("wb_dma_ch_csr_s", "ch_en") == "WB_DMA_CH_CSR_ch_en"
-    assert const_name("wb_dma_ch_csr_s", "int_chk_done") == "WB_DMA_CH_CSR_int_chk_done"
+    assert const_name("wb_dma_csr_s", "ch_en") == "WB_DMA_CSR_ch_en"
+    assert const_name("wb_dma_csr_s", "int_chk_done") == "WB_DMA_CSR_int_chk_done"
 
 
 def test_constants_agree_with_the_packed_struct(sv):
     """The struct and its constants are emitted adjacently and a reader will
     assume they agree. Walk the struct's own declared widths (MSB-first, as SV
     emits it) and check every constant against the running offset."""
-    body = sv.split("} wb_dma_ch_csr_s;")[0].split("typedef struct packed {")[-1]
+    body = code_only(
+        sv.split("} wb_dma_csr_s;")[0].split("typedef struct packed {")[-1])
     decls = []
     for ln in body.strip().splitlines():
         ln = ln.strip().rstrip(";")
@@ -143,7 +148,7 @@ def test_constants_agree_with_the_packed_struct(sv):
     lsb = 0
     for name, width in reversed(decls):        # MSB-first -> LSB-first
         mask = ((1 << width) - 1) << lsb
-        want = f"localparam reg_field_t WB_DMA_CH_CSR_{name}"
+        want = f"localparam reg_field_t WB_DMA_CSR_{name}"
         line = next((l for l in sv.splitlines() if want in l), None)
         assert line, f"struct declares {name} but no constant exists"
         assert f"mask:64'h{mask:016x}" in line, f"{name}: {line}"
@@ -157,10 +162,10 @@ def test_all_five_call_sites_are_named(sv):
     the generated component -- a site left behind would be a silent
     half-conversion."""
     for frag in (
-        "m_regs.csr.write_field(WB_DMA_CH_CSR_ars, 32'(enable));",
-        "m_regs.csr.write_field(WB_DMA_CH_CSR_stop, 1);",
-        "m_regs.csr.write_field(WB_DMA_CH_CSR_use_ed, 1);",
-        "m_regs.csr.write_field(WB_DMA_CH_CSR_ch_en, 1);",
+        "m_regs.csr.write_field(WB_DMA_CSR_ars, 32'(enable));",
+        "m_regs.csr.write_field(WB_DMA_CSR_stop, 1);",
+        "m_regs.csr.write_field(WB_DMA_CSR_use_ed, 1);",
+        "m_regs.csr.write_field(WB_DMA_CSR_ch_en, 1);",
     ):
         assert frag in sv, frag
     assert "write_val_masked(" not in sv
@@ -170,8 +175,8 @@ def test_runtime_value_keeps_its_width_cast(sv):
     """`write_field(F, enable)` on a 1-bit `enable` is an implicit widening,
     which Verilator reports as WIDTHEXPAND and treats as fatal by default. The
     cast `_place()` inserts has to survive the un-placing."""
-    assert "write_field(WB_DMA_CH_CSR_ars, 32'(enable))" in sv
-    assert "write_field(WB_DMA_CH_CSR_ars, enable)" not in sv
+    assert "write_field(WB_DMA_CSR_ars, 32'(enable))" in sv
+    assert "write_field(WB_DMA_CSR_ars, enable)" not in sv
 
 
 def test_transfer_list_still_writes_twice(sv):
@@ -179,9 +184,10 @@ def test_transfer_list_still_writes_twice(sv):
     into one write_fields would be one bus operation where the device requires
     two -- so this is a behaviour assertion, not a formatting one."""
     # The impl, not the interface's `pure virtual` declaration of the same name.
-    body = sv.split("virtual task transfer_list_start(input addr_handle_t head);")[-1] \
-             .split("endtask")[0]
-    assert body.index("WB_DMA_CH_CSR_use_ed") < body.index("WB_DMA_CH_CSR_ch_en")
+    body = code_only(
+        sv.split("virtual task transfer_list_start(input addr_handle_t head);")[-1]
+          .split("endtask")[0])
+    assert body.index("WB_DMA_CSR_use_ed") < body.index("WB_DMA_CSR_ch_en")
     assert body.count("write_field(") == 2
     assert "write_fields(" not in body
 
@@ -202,7 +208,7 @@ def test_folded_still_emits_the_constants(folded):
     """The constants are for testbench code too, not only for the call sites,
     so switching the spelling must not withdraw them."""
     text = (folded[0] / "wb_dma_c_pkg.sv").read_text()
-    assert "localparam reg_field_t WB_DMA_CH_CSR_ars" in text
+    assert "localparam reg_field_t WB_DMA_CSR_ars" in text
 
 
 def _masked_writes(ctx):
@@ -241,11 +247,14 @@ def test_naming_does_not_touch_the_ir(tmp_path):
     before = _masked_writes(ctx)
     assert before, "no masked writes in the model; this test proves nothing"
 
+    from pssc.targets.op_model import elaborate
     from pssc.targets.progseq_gen import generate
     root = ctx.type_map["wb_dma_c"]
     for mode in ("named", "folded"):
-        generate(ctx, root, "wb_dma_c_pkg", tmp_path / mode,
-                 copy_core=False, reg_fields=mode)
+        model = elaborate(ctx, root, tmp_path / mode)
+        # `generate` no longer copies the core package -- the target does
+        # (P4.T5), so there is nothing to turn off here.
+        generate(model, "wb_dma_c_pkg", reg_fields=mode)
         assert _masked_writes(ctx) == before, mode
 
     # ...and the collapsed pair the C target consumes is still what is there.
@@ -304,10 +313,10 @@ def test_mask_lookup_is_exact_set_equality():
     namer = FieldNamer(comp, ctx.type_map)
     named = lambda m: [r.const for r in (namer.fields_for(recv, m) or [])]
 
-    assert named(0x0000_0040) == ["WB_DMA_CH_CSR_ars"]
-    assert named(0x0000_e000) == ["WB_DMA_CH_CSR_prio"]
+    assert named(0x0000_0040) == ["WB_DMA_CSR_ars"]
+    assert named(0x0000_e000) == ["WB_DMA_CSR_prio"]
     # union of whole fields, returned LSB-first regardless of mask order
-    assert named(0x0000_00c0) == ["WB_DMA_CH_CSR_ars", "WB_DMA_CH_CSR_use_ed"]
+    assert named(0x0000_00c0) == ["WB_DMA_CSR_ars", "WB_DMA_CSR_use_ed"]
     # part of prio -- not prio
     assert namer.fields_for(recv, 0x0000_2000) is None
     assert namer.fields_for(recv, 0x0000_6000) is None
@@ -339,7 +348,7 @@ module tb;
   endclass
 
   stub_bus                 bus;
-  reg_c #(wb_dma_ch_csr_s) csr;
+  reg_c #(wb_dma_csr_s) csr;
   bit [63:0]               rv;
   int                      errs;
 
@@ -354,46 +363,46 @@ module tb;
 
     // set a bit-0 field
     bus.word = 32'h0;
-    csr.write_field(WB_DMA_CH_CSR_ch_en, 1);
+    csr.write_field(WB_DMA_CSR_ch_en, 1);
     check("ch_en=1", bus.word, 32'h0000_0001);
 
     // read-modify-write must preserve neighbours; bit 9 starts CLEAR
     bus.word = 32'hdead_bced;
-    csr.write_field(WB_DMA_CH_CSR_stop, 1);
+    csr.write_field(WB_DMA_CSR_stop, 1);
     check("stop=1 preserves", bus.word, 32'hdead_beed);
 
     // and must CLEAR a set bit, which an OR would not
     bus.word = 32'hffff_ffff;
-    csr.write_field(WB_DMA_CH_CSR_ars, 0);
+    csr.write_field(WB_DMA_CSR_ars, 0);
     check("ars=0 clears", bus.word, 32'hffff_ffbf);
 
     // multi-bit field places, and an over-wide value truncates
     bus.word = 32'h0;
-    csr.write_field(WB_DMA_CH_CSR_prio, 5);
+    csr.write_field(WB_DMA_CSR_prio, 5);
     check("prio=5", bus.word, 32'h0000_a000);
     bus.word = 32'h0;
-    csr.write_field(WB_DMA_CH_CSR_prio, 32'hff);
+    csr.write_field(WB_DMA_CSR_prio, 32'hff);
     check("prio=0xff truncates", bus.word, 32'h0000_e000);
 
     // the top declared field, at bit 22
     bus.word = 32'h0;
-    csr.write_field(WB_DMA_CH_CSR_int_chk_done, 1);
+    csr.write_field(WB_DMA_CSR_int_chk_done, 1);
     check("int_chk_done=1", bus.word, 32'h0040_0000);
 
     // read_field de-shifts
     bus.word = 32'h0000_a000;
-    csr.read_field(WB_DMA_CH_CSR_prio, rv);
+    csr.read_field(WB_DMA_CSR_prio, rv);
     check("read prio", 32'(rv), 32'h5);
 
     // one masked write == one read + one write
     bus.n_read = 0; bus.n_write = 0;
-    csr.write_field(WB_DMA_CH_CSR_ch_en, 1);
+    csr.write_field(WB_DMA_CSR_ch_en, 1);
     check("reads",  32'(bus.n_read),  1);
     check("writes", 32'(bus.n_write), 1);
 
     // write_fields: several fields, ONE transaction, replacing not OR-ing
     bus.word = 32'hffff_ffff; bus.n_read = 0; bus.n_write = 0;
-    csr.write_fields('{WB_DMA_CH_CSR_prio, WB_DMA_CH_CSR_ch_en}, '{2, 0});
+    csr.write_fields('{WB_DMA_CSR_prio, WB_DMA_CSR_ch_en}, '{2, 0});
     check("write_fields value",  bus.word, 32'hffff_5ffe);
     check("write_fields reads",  32'(bus.n_read),  1);
     check("write_fields writes", 32'(bus.n_write), 1);

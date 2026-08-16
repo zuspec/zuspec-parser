@@ -28,14 +28,12 @@ import pytest
 from pssc.driver import translate
 from pssc.dvflow.check import _ir_signature, _normalized_dump
 
-_MODEL = os.path.normpath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "examples", "op_model", "pss"))
+from .op_model import OP_MODEL as _MODEL, op_model_sources
+
 
 
 def _sources():
-    with open(os.path.join(_MODEL, "files.f")) as fp:
-        rel = [ln.strip() for ln in fp if ln.strip() and not ln.startswith("#")]
-    return [os.path.join(_MODEL, os.path.relpath(p, "src/pss")) for p in rel]
+    return op_model_sources()
 
 
 def _reordered():

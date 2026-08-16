@@ -15,6 +15,43 @@ else:
     import pssparser.ast as pss_ast
 
 
+def ast_comments(node: Any) -> Tuple[Optional[str], Optional[str]]:
+    """The ``(leading, trailing)`` comment text attached to a PSS AST node.
+
+    Empty when the parser was not asked to collect comments, which is what
+    ``--no-comments`` produces.
+
+    Orphans -- comments a blank line detached from any construct -- are
+    deliberately dropped. That is the mechanism by which a file note above the
+    imports stays out of the generated code, and by which an author suppresses
+    propagation of any one comment. See docs/pss-comment-propagation-plan.md.
+    """
+    getter = getattr(node, "getComments", None)
+    if getter is None:
+        return (None, None)
+
+    leading: List[str] = []
+    trailing: List[str] = []
+    for c in getter():
+        placement = c.getPlacement()
+        if placement == pss_ast.CommentPlacement.CommentPlacement_Leading:
+            leading.append(c.getText())
+        elif placement == pss_ast.CommentPlacement.CommentPlacement_Trailing:
+            trailing.append(c.getText())
+
+    return ("\n".join(leading) or None, "\n".join(trailing) or None)
+
+
+def ast_doc(node: Any) -> Optional[str]:
+    """The documentation for a declaration: its leading comment, else trailing.
+
+    Matches what the parser puts in ``docstring``, but reads the comment list
+    so a caller that collected comments without docstrings still gets it.
+    """
+    leading, trailing = ast_comments(node)
+    return leading if leading is not None else trailing
+
+
 class _Phase(enum.Enum):
     """The elaboration passes over the unit list.
 
@@ -663,6 +700,7 @@ class AstToIrTranslator:
             comp = ir.DataTypeRegisterGroup(name=qualified_name, super=None)
         else:
             comp = ir.DataTypeComponent(name=qualified_name, super=None)
+        comp.doc = ast_doc(component)
 
         # Register in type map (both short and qualified names)
         ctx.add_type(qualified_name, comp)
@@ -1466,6 +1504,7 @@ class AstToIrTranslator:
 
         # Create IR struct
         struct_ir = ir.DataTypeStruct(name=qualified_name, super=None)
+        struct_ir.doc = ast_doc(struct)
 
         # Set flow_kind from StructKind (buffer/stream/state/resource)
         if hasattr(struct, 'getKind'):
@@ -1981,12 +2020,20 @@ class AstToIrTranslator:
         initial_value = (self._translate_expression(ctx, init_node)
                          if init_node is not None else None)
 
+        # Both slots, not `ast_doc`'s leading-else-trailing: a register value
+        # struct's member routinely carries prose above it and its bit range
+        # and access mode beside it, and the two are emitted in different
+        # places. Collapsing them would drop whichever lost.
+        field_doc, field_doc_trailing = ast_comments(field)
+
         ir_field = ir.Field(
             name=field_name,
             datatype=field_type,
             kind=ir.FieldKind.Field,
             rand_kind=rand_kind,
             initial_value=initial_value,
+            doc=field_doc,
+            doc_trailing=field_doc_trailing,
         )
 
         # Extract `rand int in [range]` domain constraint (T-12).
@@ -2086,6 +2133,7 @@ class AstToIrTranslator:
             is_async=False,
             is_invariant=bool(is_pure),
             is_solve=is_solve,
+            doc=ast_doc(function),
         )
 
         return ir_func
@@ -2112,7 +2160,25 @@ class AstToIrTranslator:
         return stmts
 
     def _translate_statement(self, ctx: AstToIrContext, stmt_node: Any) -> Optional[ir.Stmt]:
-        """Translate a statement node to IR
+        """Translate a statement node to IR, carrying its comments across.
+
+        Every procedural statement at every nesting level reaches the IR
+        through this one method, so stamping here covers a comment inside a
+        nested `if` body as well as one at the top of a function.
+        """
+        stmt = self._translate_statement_kind(ctx, stmt_node)
+
+        if stmt is not None:
+            leading, trailing = ast_comments(stmt_node)
+            if leading is not None:
+                stmt.comment = leading
+            if trailing is not None:
+                stmt.comment_trailing = trailing
+
+        return stmt
+
+    def _translate_statement_kind(self, ctx: AstToIrContext, stmt_node: Any) -> Optional[ir.Stmt]:
+        """Dispatch on the statement kind.
 
         Args:
             ctx: Translation context

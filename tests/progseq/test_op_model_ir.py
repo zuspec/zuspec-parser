@@ -15,8 +15,8 @@ import pytest
 
 from pssc import driver
 
-_MODEL = os.path.normpath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "examples", "op_model", "pss"))
+from .op_model import OP_MODEL as _MODEL, op_model_sources
+
 
 #: Operations exposed by each component, from the model's own documentation.
 #: `initialize` is the constructor and is deliberately listed apart from them.
@@ -39,9 +39,7 @@ def _sources():
     The order is load-bearing until pssparser D3 is fixed: presented wrongly,
     references silently fail to resolve and the run still exits 0.
     """
-    with open(os.path.join(_MODEL, "files.f")) as fp:
-        rel = [ln.strip() for ln in fp if ln.strip() and not ln.startswith("#")]
-    return [os.path.join(_MODEL, os.path.relpath(p, "src/pss")) for p in rel]
+    return op_model_sources()
 
 
 @pytest.fixture(scope="module")
@@ -70,7 +68,7 @@ def test_constructors_present(ctx):
 
     It was `\\init` -- an escaped identifier, since `init` is reserved -- and was
     renamed to drop the backslash. Both spellings are recognised as the
-    constructor (progseq_model._CTOR_NAMES); the rename is what proved that
+    constructor (progseq_model.DEFAULT_CTOR_NAMES); the rename is what proved that
     mattered, since a constructor classified as an ordinary export function
     generates a class that builds its register model from an undeclared
     variable."""
