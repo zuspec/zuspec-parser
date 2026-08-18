@@ -142,7 +142,9 @@ def test_the_generated_accessors_use_the_funnel(tmp_path):
     generator kept its own copy."""
     from pssc import testing
     with testing.compile_op_model("op-model-c", output_dir=tmp_path) as out:
-        text = out.read("dma_engine.h")
+        # The .c: every memory access the funnel renders is in an accessor or
+        # an operation body, and both live there.
+        text = out.read("dma_engine.c")
     assert f"{DEFAULT.read_fn(32)}({DEFAULT.bus_expr('s')}" in text
     assert f"{DEFAULT.write_fn(32)}({DEFAULT.bus_expr('s')}" in text
     for line in text.splitlines():

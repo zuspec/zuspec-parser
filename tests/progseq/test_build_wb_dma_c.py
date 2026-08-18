@@ -22,11 +22,18 @@ def test_build_and_run(tmp_path, cc, link_style):
     out = generate_c_wb_dma(tmp_path, link_style=link_style)
     define = {"vtable": [], "direct": ["-DPSSC_LINK_DIRECT"],
               "mmio": ["-DPSSC_LINK_MMIO"]}[link_style]
+    # The generated wb_dma.c is in every link style's link line, mmio included:
+    # mmio used to imply a header-only API, so the bodies arrived with the
+    # header and the TB was the whole program. It no longer does -- the
+    # implementation is in the .c whatever the seam is -- and mmio's only
+    # remaining difference here is that it needs no bus mock, because the seam
+    # dereferences the address itself.
+    srcs = [os.path.join(out, "wb_dma.c")]
     if link_style == "mmio":
-        srcs = [os.path.join(out, "wb_dma_tb_mmio.c")]
+        srcs.append(os.path.join(out, "wb_dma_tb_mmio.c"))
     else:
-        srcs = [os.path.join(out, "wb_dma.c"), os.path.join(out, "dma_mock.c"),
-                os.path.join(out, "wb_dma_tb.c")]
+        srcs += [os.path.join(out, "dma_mock.c"),
+                 os.path.join(out, "wb_dma_tb.c")]
     exe = os.path.join(out, "run")
     build = _run([cc, *_CFLAGS, *define, "-I", out, *srcs, "-o", exe])
     assert build.returncode == 0, build.stderr

@@ -85,7 +85,7 @@ def test_outputs_written(gen):
     names = {os.path.basename(str(p)) for p in res.outputs}
     assert names == {"wb_dma.h", "wb_dma.c",
                      "pssc_mem.h", "pssc_mem_ptr.h", "pssc_mem_fn.h",
-                     "pssc_mem_vtable.h",
+                     "pssc_mem_vtable.h", "pssc_mem_reg.h",
                      # C4.3 shims, still copied so a freshly generated
                      # directory works beside a header generated before the
                      # split.
@@ -174,11 +174,17 @@ def test_per_channel_operations_use_the_type_prefix(h):
     assert_c(h, has_not=["wb_dma_transfer_single(", "wb_dma_ch0_transfer_single("])
 
 
-def test_the_whole_per_channel_surface_is_present(c):
+def test_the_whole_per_channel_surface_is_present(h):
     """The count, not just a sample. C1's failure mode was emitting SOME of the
     tree, and thirteen operations reduced to four is not a shape a spot check
-    reliably notices."""
-    assert c.count("wb_dma_ch_t *s) {") + c.count("wb_dma_ch_t *s, ") == 13
+    reliably notices.
+
+    Counted on the PROTOTYPES rather than the definitions: the .c now also
+    holds the baked accessors, which take the same handle and would be counted
+    as operations. The header's export API is exactly the callable surface,
+    which is what this test is about anyway.
+    """
+    assert h.count("wb_dma_ch_t *s);") + h.count("wb_dma_ch_t *s, ") == 13
 
 
 def test_prefix_collision_is_an_error():
@@ -217,41 +223,51 @@ def test_prefix_map_is_the_escape_hatch(gen, tmp_path_factory):
 
 # --- C1.4: register accessors are per owning component ----------------------
 
-def test_channel_registers_are_reached_through_the_channel_handle(h):
+def test_channel_registers_are_reached_through_the_channel_handle(c):
     """`wb_dma_ch_c.regs.csr` is at `ch->base + 0`, because the channel's base
     IS its bank. That is what makes every per-channel operation body index-free
-    -- `regs.csr.read()` with no channel number anywhere."""
-    assert_c(h, has=[
-        "static inline pssc_addr_t wb_dma_ch_regs_csr_addr(const wb_dma_ch_t *s) "
+    -- `regs.csr.read()` with no channel number anywhere.
+
+    In the .c: the accessors are implementation, and a caller reaches the
+    device through the operations rather than through them."""
+    assert_c(c, has=[
+        "PSSC_MAYBE_UNUSED static inline pssc_addr_t "
+        "wb_dma_ch_regs_csr_addr(const wb_dma_ch_t *s) "
         "{ return s->base + 0x0u; }",
         "wb_dma_ch_regs_csr_write(wb_dma_ch_t *s, wb_dma_csr_t v)",
     ])
 
 
-def test_the_same_register_is_also_reachable_from_the_root(h):
+def test_the_same_register_is_also_reachable_from_the_root(c):
     """Both spellings are emitted and both are right, because they take
     different handles: through the root the bank offset is still in the address.
     Folding them into one would mean picking a base, which means picking which
     call site to break."""
-    assert ("static inline pssc_addr_t wb_dma_regs_bank_csr_addr("
+    assert ("PSSC_MAYBE_UNUSED static inline pssc_addr_t "
+            "wb_dma_regs_bank_csr_addr("
             "const wb_dma_t *s, int i0) "
-            "{ return s->base + 0x20u + (pssc_addr_t)i0 * 0x20u; }") in h
+            "{ return s->base + 0x20u + (pssc_addr_t)i0 * 0x20u; }") in c
 
 
-def test_register_value_types_are_emitted_once(h):
+def test_register_value_types_are_emitted_once(h, c):
     """The per-channel bank is reachable twice -- as `wb_dma_ch_c.regs` and as
     `wb_dma_c.regs.bank[i]` -- so an emitter that walked per component without
     deduplicating produced every channel value union twice, which C rejects as a
-    redefinition."""
-    assert h.count("} wb_dma_csr_t;") == 1
-    assert h.count("} wb_dma_gcsr_t;") == 1
+    redefinition.
+
+    Counted ACROSS both files, because the layouts are now partitioned between
+    them: a struct that both halves claimed would be declared twice in one
+    translation unit (the .c includes the .h), and counting either file alone
+    could not see it."""
+    assert (h + c).count("} wb_dma_csr_t;") == 1
+    assert (h + c).count("} wb_dma_gcsr_t;") == 1
 
 
-def test_access_mode_is_honoured_per_register(h):
+def test_access_mode_is_honoured_per_register(c):
     """INT_SRC_A is READONLY in the RDL, so it gets no write accessor. A write
     the device ignores is worse than a compile error."""
-    assert "wb_dma_regs_int_src_a_read(" in h
-    assert_c(h, has_not=["wb_dma_regs_int_src_a_write("])
+    assert "wb_dma_regs_int_src_a_read(" in c
+    assert_c(c, has_not=["wb_dma_regs_int_src_a_write("])
 
 
 # --- C1.5: init folds the address arithmetic --------------------------------

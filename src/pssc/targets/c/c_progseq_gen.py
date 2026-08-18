@@ -22,7 +22,7 @@ _log = logging.getLogger("pssc.progseq.c")
 #: here. Copying only the one style needed would make selectable fail to build
 #: for a reason no message explains.
 _CORE_HEADERS = ["pssc_mem.h", "pssc_mem_ptr.h", "pssc_mem_fn.h",
-                 "pssc_mem_vtable.h",
+                 "pssc_mem_vtable.h", "pssc_mem_reg.h",
                  # C4.3 shims. Still copied so a directory generated today can
                  # be dropped in beside a generated header from before the
                  # split; they cost 20 lines each.
@@ -112,6 +112,21 @@ def settings_for(model, prefix: str, *,
         prefix=prefix, seam_include=seam_include(link_style, mem_access),
         link_style=link_style, mem_access=mem_access, reg_style=reg_style,
         lifecycle=lifecycle, addr_bits=addr_bits, header_only=header_only,
+        # THE BARE-METAL SHAPE, and it follows from the SEAM rather than being
+        # a knob of its own -- but from the seam's mechanism, not from the
+        # absence of a bus handle.
+        #
+        # Only the pointer-dereference seam qualifies. It is the one where the
+        # device IS memory, so an address and a pointer are the same thing and
+        # the layout can be followed. `vtable` and `direct` both take the
+        # address BY VALUE and route it somewhere -- a sequencer, a mock, a
+        # platform function -- so for them a layout struct would be a shape
+        # nothing may dereference, and they keep the folded accessors.
+        #
+        # `direct` having no bus CONTEXT is what made this look like the test
+        # for a while; it is not. Its primitives still take a `pssc_addr_t` and
+        # hand it to a user-supplied function.
+        reg_map=(link_style == "mmio" or mem_access == "pointer"),
         omit_stdint=omit_stdint,
         has_channels=any(channel_fields(c)
                          for c in model.comp_dtypes_root_first),

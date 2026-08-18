@@ -32,6 +32,22 @@ _DT_REGISTER = "DataTypeRegister"
 _DT_REGISTER_GROUP = "DataTypeRegisterGroup"
 _DT_STRUCT = "DataTypeStruct"
 
+#: The qualifier every accessor and field helper here carries.
+#:
+#: These are DERIVED FROM THE REGISTER MAP, not from what the operations
+#: happen to call, so the set always covers registers no body in this model
+#: touches. Since the split (implementation in the ``.c``), those land in a
+#: single translation unit as `static inline` with no caller -- which clang
+#: reports under -Wunused-function and -Werror turns into a failed build.
+#:
+#: Pruning to the called set was the alternative and is worse: the accessors
+#: are the API's vocabulary for the device, so pruning makes deleting one
+#: operation silently delete the only way to reach a register. Unconditional
+#: rather than only-in-the-.c, because one spelling that is always right beats
+#: two that agree today; `PSSC_MAYBE_UNUSED` is empty on a compiler that has no
+#: such attribute (pssc_env.h).
+_SI = "PSSC_MAYBE_UNUSED static inline"
+
 
 # --- small helpers ---------------------------------------------------------
 
@@ -107,31 +123,55 @@ def _emit_accessor_struct(struct_dtype, name: str, ut: str) -> str:
             continue                      # reserved gap: space, but no accessor
         mask = (1 << fs.width) - 1
         lines.append(
-            f"static inline {ut} {name}_{fs.name}_get({name} v) "
+            f"{_SI} {ut} {name}_{fs.name}_get({name} v) "
             f"{{ return ({ut})((v.raw >> {fs.lsb}) & 0x{mask:x}u); }}")
         lines.append(
-            f"static inline void {name}_{fs.name}_set({name} *v, {ut} x) "
+            f"{_SI} void {name}_{fs.name}_set({name} *v, {ut} x) "
             f"{{ v->raw = (v->raw & ~(0x{mask:x}u << {fs.lsb})) | "
             f"(({ut})(x & 0x{mask:x}u) << {fs.lsb}); }}")
     return "\n".join(lines)
 
 
-def lower_value_unions(comps, reg_style: str = "bitfields") -> str:
-    """Value layouts for every register reachable from any component.
+def value_structs_for(comps):
+    """Every register value struct reachable from ``comps``, in emission order.
 
     Takes the whole component list, not just the root, and deduplicates: a
     sub-component's register group is usually ALSO reachable from the root
     (WB DMA's per-channel bank is `wb_dma_c.regs.bank[i]` and `wb_dma_ch_c.regs`
     at once), and emitting its value types twice is a redefinition error.
+
+    Separate from `lower_value_unions` because the caller now has to PARTITION
+    this list -- the layouts are implementation and belong in the .c, except
+    for any the exported API mentions -- and it cannot partition a string.
     """
-    parts = ["/* ----- Register value layouts. ----- */"]
-    seen = set()
+    out, seen = [], set()
     for comp in comps:
         for s in collect_value_structs(collect_reg_groups(comp)):
             if id(s) in seen:
                 continue
             seen.add(id(s))
-            parts.append(emit_value_union(s, reg_style))
+            out.append(s)
+    return out
+
+
+def lower_value_unions(comps, reg_style: str = "bitfields", *,
+                       structs=None) -> str:
+    """Value layouts, as header/impl text. ``structs`` restricts the set.
+
+    ``None`` means every register value struct reachable from ``comps`` --
+    which is what a `--header-only` build wants, since it has one file. A split
+    build passes the subset that belongs in the file being assembled.
+
+    Empty in, empty out: a section with no content contributes no banner, so a
+    model with no registers does not get a "Register value layouts" heading
+    over nothing.
+    """
+    structs = value_structs_for(comps) if structs is None else list(structs)
+    if not structs:
+        return ""
+    parts = ["/* ----- Register value layouts. ----- */"]
+    for s in structs:
+        parts.append(emit_value_union(s, reg_style))
     return "\n".join(parts)
 
 
@@ -207,7 +247,7 @@ def emit_accessor(acc: _Acc, prefix_t: str, mem: MemAccess = None,
     fn = lambda kind: mem.accessor(acc.base, kind)   # noqa: E731
     addr = f"{fn('addr')}(s{idx_a})"
     lines = [
-        f"static inline pssc_addr_t {fn('addr')}(const {prefix_t} *s{idx_p}) "
+        f"{_SI} pssc_addr_t {fn('addr')}(const {prefix_t} *s{idx_p}) "
         f"{{ return {_addr_expr(acc)}; }}",
     ]
     if addr_only:
@@ -216,16 +256,16 @@ def emit_accessor(acc: _Acc, prefix_t: str, mem: MemAccess = None,
         read = mem.read(acc.prim, "s", addr)
         if acc.is_struct:
             lines.append(
-                f"static inline {acc.c_type} {fn('read')}({prefix_t} *s{idx_p}) "
+                f"{_SI} {acc.c_type} {fn('read')}({prefix_t} *s{idx_p}) "
                 f"{{ {acc.c_type} v; v.raw = {read}; return v; }}")
         else:
             lines.append(
-                f"static inline {acc.c_type} {fn('read')}({prefix_t} *s{idx_p}) "
+                f"{_SI} {acc.c_type} {fn('read')}({prefix_t} *s{idx_p}) "
                 f"{{ return {read}; }}")
     if acc.access != "READONLY":
         raw = "v.raw" if acc.is_struct else "v"
         lines.append(
-            f"static inline void {fn('write')}({prefix_t} *s{idx_p}, {acc.c_type} v) "
+            f"{_SI} void {fn('write')}({prefix_t} *s{idx_p}, {acc.c_type} v) "
             f"{{ {mem.write(acc.prim, 's', addr, raw)}; }}")
 
     # Raw accessors. `_read`/`_write` above are typed -- they hand back the
@@ -236,11 +276,11 @@ def emit_accessor(acc: _Acc, prefix_t: str, mem: MemAccess = None,
     ut = f"uint{acc.prim}_t"
     if acc.access != "WRITEONLY":
         lines.append(
-            f"static inline {ut} {fn('read_val')}({prefix_t} *s{idx_p}) "
+            f"{_SI} {ut} {fn('read_val')}({prefix_t} *s{idx_p}) "
             f"{{ return {mem.read(acc.prim, 's', addr)}; }}")
     if acc.access != "READONLY":
         lines.append(
-            f"static inline void {fn('write_val')}({prefix_t} *s{idx_p}, {ut} v) "
+            f"{_SI} void {fn('write_val')}({prefix_t} *s{idx_p}, {ut} v) "
             f"{{ {mem.write(acc.prim, 's', addr, 'v')}; }}")
 
     # The masked write -- PSS 3.1 §21.14.1:
@@ -258,7 +298,7 @@ def emit_accessor(acc: _Acc, prefix_t: str, mem: MemAccess = None,
     # four spellings and no field name is involved.
     if acc.access not in ("READONLY", "WRITEONLY"):
         lines.append(
-            f"static inline void {fn('write_val_masked')}({prefix_t} *s{idx_p}, "
+            f"{_SI} void {fn('write_val_masked')}({prefix_t} *s{idx_p}, "
             f"{ut} mask, {ut} val) "
             f"{{ {mem.masked_write(ut, acc.base, f's{idx_a}')} }}")
     return "\n".join(lines)
@@ -308,3 +348,103 @@ def accessor_map(comps, prefixes, style=None):
         for a in _collect_accessors(comp, prefixes[comp], style):
             out[a.base] = a
     return out
+
+
+# --- the register map, as C -------------------------------------------------
+#
+# The struct the bare-metal driver follows to reach a register. This replaces
+# the per-register accessor set for the no-context link styles, and the reason
+# is scale: an IP with a thousand registers, of which a driver touches thirty,
+# got a thousand accessor sets. A layout is DATA proportional to the register
+# map and leaves the code proportional to the registers actually used.
+
+def map_type_name(group_dtype, style=None) -> str:
+    """C type for a register group's layout: ``wb_dma_regs_c`` -> ``wb_dma_regs_t``.
+
+    Derived from the GROUP's type name and not from the component's prefix,
+    because one group is commonly reached through two components -- WB DMA's
+    per-channel bank is `wb_dma_c.regs.bank[i]` and `wb_dma_ch_c.regs` at once.
+    Naming it per component would declare the same layout twice under two names,
+    and the two would be the same bytes until the day someone edited one.
+    """
+    n = _strip_pkg(getattr(group_dtype, "name", None) or "regs")
+    if n.endswith("_c"):
+        n = n[:-2]
+    return f"{n}_t"
+
+
+def _member_c_type(m, style=None) -> str:
+    from ..reg_layout import GROUP, PAD, prim_bits, value_bits
+    if m.kind == GROUP:
+        return map_type_name(m.dtype, style)
+    if m.kind == PAD:
+        return "uint32_t" if (m.offset % 4 == 0 and m.total_size % 4 == 0) \
+            else "uint8_t"
+    return f"uint{prim_bits(value_bits(m.dtype))}_t"
+
+
+def _pad_count(m) -> int:
+    return m.total_size // 4 if (m.offset % 4 == 0 and m.total_size % 4 == 0) \
+        else m.total_size
+
+
+def emit_reg_map(rm, style=None) -> str:
+    """One register group's layout, plus the assertions that pin it.
+
+    THE ASSERTIONS ARE THE POINT, not decoration. This struct is a claim about
+    where each register sits, and C -- not this generator -- decides where a
+    member actually lands: an alignment rule, a member the layout walk mis-sized,
+    a padding byte nobody accounted for, and every register after it moves with
+    no diagnostic at all. A `_Static_assert` per member turns that class of
+    defect into a compile error naming the register, which is the only check
+    available here that a golden snapshot cannot silently freeze in the wrong
+    state.
+    """
+    from ..reg_layout import GROUP, PAD, REG
+
+    name = map_type_name(rm.dtype, style)
+    lines = [f"typedef struct {{"]
+    for m in rm.members:
+        ct = _member_c_type(m, style)
+        if m.kind == PAD:
+            decl = f"{ct} {m.name}[{_pad_count(m)}];"
+            lines.append(f"    {decl:<40} /* 0x{m.offset:03x} reserved */")
+            continue
+        # READONLY as `const`: the write primitives take `volatile void *`, so a
+        # `const` member's address will not convert and writing it is a compile
+        # error. That is exactly what the absent `_write` accessor used to buy.
+        access = getattr(m.dtype, "access_mode", "READWRITE") or "READWRITE"
+        qual = "const " if (m.kind == REG and access == "READONLY") else ""
+        sub = f"[{m.count}]" if m.is_array else ""
+        decl = f"{qual}{ct} {m.name}{sub};"
+        note = f"0x{m.offset:03x}" + (f" {access.lower()}" if m.kind == REG else "")
+        lines.append(f"    {decl:<40} /* {note} */")
+    lines.append(f"}} {name};")
+
+    lines.append(f"PSSC_STATIC_ASSERT(sizeof({name}) == 0x{rm.size:x}u,"
+                 f" {name}_size);")
+    for m in rm.members:
+        if m.kind == PAD:
+            continue
+        lines.append(
+            f"PSSC_STATIC_ASSERT(offsetof({name}, {m.name}) == 0x{m.offset:x}u,"
+            f" {name}_{m.name}_offset);")
+    return "\n".join(lines)
+
+
+def lower_reg_maps(model, style=None) -> str:
+    """Every register group's layout, innermost first.
+
+    Order is `reg_maps_for`'s, which derives it from the maps themselves: C has
+    no forward reference for a struct used by value, so a bank's layout must
+    precede the map that embeds an array of it.
+    """
+    from ..reg_layout import reg_maps_for
+
+    maps = reg_maps_for(model.reg_groups)
+    if not maps:
+        return ""
+    parts = ["/* ----- Register map. The layout IS the address arithmetic. ----- */"]
+    for rm in maps:
+        parts.append(emit_reg_map(rm, style))
+    return "\n".join(parts)

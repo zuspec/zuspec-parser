@@ -13,6 +13,25 @@
 
 #include "wb_dma.h"
 
+/* The register value layouts are the driver's IMPLEMENTATION and are not in
+ * wb_dma.h -- deliberately: a caller drives this device through the operations,
+ * not by assembling register words. A checker still has to decode the words the
+ * driver left behind, so it states the bit positions ITSELF.
+ *
+ * That is the stronger arrangement anyway. Decoding with the generator's own
+ * layout could never detect a generator that put a field in the wrong place:
+ * the check and the thing checked would move together. These constants come
+ * from the register spec (dma_regs.pss), which is what the driver is supposed
+ * to agree with. */
+#define FLD(w, lsb, width)  (((w) >> (lsb)) & ((1u << (width)) - 1u))
+#define CSR_CH_EN(w)    FLD(w,  0, 1)
+#define CSR_DST_SEL(w)  FLD(w,  1, 1)
+#define CSR_SRC_SEL(w)  FLD(w,  2, 1)
+#define CSR_MODE(w)     FLD(w,  5, 1)
+#define CSR_USE_ED(w)   FLD(w,  7, 1)
+#define CSR_PRIORITY(w) FLD(w, 13, 3)
+#define SZ_TOT_SZ(w)    FLD(w,  0, 12)
+
 #define RAMWORDS 256
 static uint32_t g_ram[RAMWORDS];
 
@@ -30,11 +49,12 @@ int main(void) {
     /* 1) configure_channel (no polling). */
     wb_dma_configure_channel(dma, 5, 7, 1, 1, 0);
     {
-        dma_ch_csr_t csr; csr.raw = ram_at(chbase_off(5));
-        if (csr.PRIORITY != 7 || csr.MODE != 1 || csr.SRC_SEL != 1 || csr.DST_SEL != 0) {
-            printf("  FAIL configure_channel fields: csr=0x%08x\n", csr.raw); errors++;
+        uint32_t csr = ram_at(chbase_off(5));
+        if (CSR_PRIORITY(csr) != 7 || CSR_MODE(csr) != 1 ||
+            CSR_SRC_SEL(csr) != 1 || CSR_DST_SEL(csr) != 0) {
+            printf("  FAIL configure_channel fields: csr=0x%08x\n", csr); errors++;
         }
-        if (csr.CH_EN != 0) { printf("  FAIL configure_channel started the channel\n"); errors++; }
+        if (CSR_CH_EN(csr) != 0) { printf("  FAIL configure_channel started the channel\n"); errors++; }
     }
 
     /* 2) mem_to_mem_copy: pre-seed DONE so the poll exits; verify programming. */
@@ -43,10 +63,10 @@ int main(void) {
     if (status != 0) { printf("  FAIL copy status=%d\n", status); errors++; }
     {
         uint64_t cb = chbase_off(3);
-        dma_ch_sz_t sz; sz.raw = ram_at(cb + 0x04u);
+        uint32_t sz = ram_at(cb + 0x04u);
         if (ram_at(cb + 0x08u) != 0x10000000u) { printf("  FAIL A0\n"); errors++; }
         if (ram_at(cb + 0x10u) != 0x20000000u) { printf("  FAIL A1\n"); errors++; }
-        if (sz.TOT_SZ != 4) { printf("  FAIL TOT_SZ=%u\n", sz.TOT_SZ); errors++; }
+        if (SZ_TOT_SZ(sz) != 4) { printf("  FAIL TOT_SZ=%u\n", SZ_TOT_SZ(sz)); errors++; }
     }
 
     /* 3) masked: verify AM0/AM1. */
@@ -66,9 +86,9 @@ int main(void) {
     if (status != 0) { printf("  FAIL desc status=%d\n", status); errors++; }
     {
         uint64_t cb = chbase_off(9);
-        dma_ch_csr_t csr; csr.raw = ram_at(cb);
+        uint32_t csr = ram_at(cb);
         if (ram_at(cb + 0x18u) != 0x50000000u) { printf("  FAIL DESC\n"); errors++; }
-        if (csr.USE_ED != 1) { printf("  FAIL USE_ED not set\n"); errors++; }
+        if (CSR_USE_ED(csr) != 1) { printf("  FAIL USE_ED not set\n"); errors++; }
     }
 
     /* 5) error path: pre-seed ERR so the poll returns non-zero. */

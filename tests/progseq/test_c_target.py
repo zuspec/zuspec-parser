@@ -66,8 +66,26 @@ def test_skeleton_emits(tmp_path, link_style):
     assert f'#include "{seam}"' in hdr
 
 
-def test_mmio_is_header_only(tmp_path):
+def test_mmio_emits_both_files(tmp_path):
+    """mmio no longer implies a header-only API.
+
+    It used to: with no bus handle to carry, every body COULD be `static
+    inline`. But "could" was the whole argument, and it cost every mmio build
+    the .c that its register layouts and accessors belong in. The seam is a
+    property of how a register access is spelled; whether there is a
+    translation unit is a separate question, and `--header-only` is how it is
+    asked."""
     res = driver.compile(_SRCS, target="c-progseq",
                          opts=_opts(link_style="mmio", output_dir=str(tmp_path)))
     names = {os.path.basename(str(p)) for p in res.outputs}
-    assert "dma_engine.c" not in names      # mmio forces header-only
+    assert {"dma_engine.h", "dma_engine.c"} <= names
+
+
+def test_header_only_is_asked_for(tmp_path):
+    """...and `--header-only` still gets the single self-contained file."""
+    res = driver.compile(_SRCS, target="c-progseq",
+                         opts=_opts(link_style="mmio", header_only=True,
+                                    output_dir=str(tmp_path)))
+    names = {os.path.basename(str(p)) for p in res.outputs}
+    assert "dma_engine.h" in names
+    assert "dma_engine.c" not in names

@@ -37,8 +37,16 @@ def _c(d):
     return (d / "wb_dma.c").read_text()
 
 
+def _hc(d):
+    """Both generated files. For an assertion about what the generator EMITS
+    rather than about which file it lands in -- the register layouts are split
+    between the two (API-mentioned ones in the header, the rest in the .c), so
+    a search of either alone answers a question nobody asked."""
+    return _h(d) + "\n" + _c(d)
+
+
 def test_value_unions(vtable):
-    h = _h(vtable)
+    h = _hc(vtable)
     for t in ("dma_ch_csr_t", "dma_ch_sz_t", "dma_ch_swptr_t", "dma_csr_t"):
         assert f"}} {t};" in h, t
     # LSB-first (declaration order): CH_EN [0] precedes INT_CHK_DONE [22]
@@ -48,7 +56,8 @@ def test_value_unions(vtable):
 
 
 def test_baked_accessors(vtable):
-    h = _h(vtable)
+    # The .c: the accessors are implementation and live there.
+    h = _c(vtable)
     assert "wb_dma_regs_channels_CSR_addr" in h
     assert "0x20u + (pssc_addr_t)i0 * 0x20u" in h     # channel base + stride
     # READONLY -> read accessor present, write suppressed
@@ -80,19 +89,35 @@ def _op_body(text, sig_substr):
     return body
 
 
-def test_body_identical_across_link_styles(tmp_path):
+def test_body_identical_across_address_seams(tmp_path):
+    """The seams that take an ADDRESS emit the same body.
+
+    `mmio` is deliberately not in the set any more. It is the pointer-
+    dereference seam, so the device IS memory and the generated body follows
+    the register-layout struct -- `write32(&s->regs->csr, v)` rather than a
+    baked accessor over a folded offset. That is a different body on purpose,
+    and it is the one thing this test must not average away.
+
+    What remains is the invariant that was always the point: a change to WHERE
+    an access goes must not change WHAT the operation does.
+    """
     bodies = {}
-    for style in ("vtable", "direct", "mmio"):
+    for style in ("vtable", "direct"):
         d = _gen(tmp_path / style, link_style=style)
-        src = (d / "wb_dma.h").read_text() if style == "mmio" else (d / "wb_dma.c").read_text()
+        # Every style now has a .c, mmio included: it no longer implies a
+        # header-only API, so there is no per-style question about where a
+        # body landed -- which is itself part of the invariant.
+        src = (d / "wb_dma.c").read_text()
         bodies[style] = _op_body(src, "wb_dma_mem_to_mem_copy(")
-    assert bodies["vtable"] == bodies["direct"] == bodies["mmio"], \
-        "operation bodies must be byte-identical across link styles"
+    assert bodies["vtable"] == bodies["direct"], \
+        "operation bodies must be byte-identical across the address seams"
 
 
 def test_reg_style_accessors(tmp_path):
     d = _gen(tmp_path / "acc", reg_style="accessors")
-    h = _h(d)
+    # The .c: this style changes how a LAYOUT is spelled, and layouts are
+    # implementation -- so the whole thing lands there, helpers included.
+    h = _c(d)
     # layout-independent path: plain raw word + shift/mask helpers
     assert "dma_ch_csr_t_PRIORITY_get" in h
     assert "dma_ch_csr_t_PRIORITY_set" in h

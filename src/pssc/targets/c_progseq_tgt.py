@@ -127,7 +127,9 @@ class CProgSeqTarget(OpModelTarget):
         parser.add_argument(
             "--header-only", dest="c_header_only", action="store_true",
             default=False,
-            help="c-progseq: emit a single self-contained .h (forced for mmio)",
+            help="c-progseq: emit a single self-contained .h -- every body, "
+                 "register layout and accessor `static inline`, and no .c. "
+                 "The default emits both, with the implementation in the .c",
         )
         parser.add_argument(
             "--yield", dest="c_yield", choices=("none", "import"),
@@ -260,8 +262,13 @@ class CProgSeqTarget(OpModelTarget):
         return dict(
             link_style=link_style,
             reg_style=getattr(opts, "c_reg_style", "bitfields"),
-            header_only=(getattr(opts, "c_header_only", False)
-                         or link_style == "mmio"),
+            # ASKED FOR, never inferred. `--link-style mmio` used to force this
+            # -- with no bus handle to carry there is nothing a body needs from
+            # a translation unit, so everything COULD be `static inline` -- but
+            # "could" was the whole argument, and it cost every mmio build the
+            # .c that its register layouts and accessors belong in. A caller
+            # that wants one file says so.
+            header_only=getattr(opts, "c_header_only", False),
             yield_mode=getattr(opts, "c_yield", "none"),
             match_default=getattr(opts, "c_match_default", "message"),
             message_style=getattr(opts, "c_message_style", "import"),
@@ -325,7 +332,7 @@ class CProgSeqTarget(OpModelTarget):
         be.prepare(model, s)
         out: Dict[str, str] = {}
         files = [(be.style.header_name(s.prefix), be.header_sections(model, s))]
-        if not s.header_only and be.impl:
+        if not s.header_only:
             files.append((be.style.impl_name(s.prefix),
                           be.impl_sections(model, s)))
         for filename, sections in files:

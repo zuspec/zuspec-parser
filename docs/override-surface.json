@@ -3,6 +3,10 @@
   "comment": "The published override surface. Generated from the @overridable marks and CHECKED IN: growing the surface is then a diff in two files, which is a decision somebody makes rather than a thing that happens. tests/unit/test_override_surface.py fails when this file and the code disagree. Regenerate with scripts/regen_override_surface.py.",
   "surfaces": {
     "pssc.targets.c.backend.COpModelBackend": {
+      "api_value_structs": {
+        "since": "0.1",
+        "stability": "provisional"
+      },
       "assemble": {
         "since": "0.1",
         "stability": "provisional"
@@ -73,6 +77,10 @@
         "since": "0.1",
         "stability": "provisional"
       },
+      "emit_impl_value_unions": {
+        "since": "0.1",
+        "stability": "stable"
+      },
       "emit_import_decls": {
         "since": "0.1",
         "stability": "provisional"
@@ -82,6 +90,10 @@
         "stability": "stable"
       },
       "emit_operation": {
+        "since": "0.1",
+        "stability": "stable"
+      },
+      "emit_reg_maps": {
         "since": "0.1",
         "stability": "stable"
       },

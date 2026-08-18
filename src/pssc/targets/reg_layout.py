@@ -181,3 +181,217 @@ def _mk(segs, name, reg_dtype, const_off, strides) -> RegAccessor:
         const_off=const_off,
         strides=tuple(strides),
     )
+
+
+# --- the map, as a C struct would lay it out --------------------------------
+#
+# `collect_accessors` above answers "where is this register" one register at a
+# time, with every offset folded to a constant. That is what a per-register
+# accessor needs and it is why it exists.
+#
+# What follows answers a different question -- "what does this register group
+# LOOK LIKE" -- and it exists because the folded constants are the wrong shape
+# for an IP with a thousand registers. One `_addr` function per register is code
+# proportional to the register map; a struct is DATA proportional to the
+# register map and code proportional to the registers actually touched. The
+# offsets stop being restated per accessor and get stated once, by the layout,
+# with the compiler folding the arithmetic at each use.
+#
+# The gaps are the whole difficulty. A folded offset does not care what sits
+# between two registers; a struct member's position is decided by everything
+# declared before it, so an unmapped hole has to be declared or every later
+# register silently moves. Hence `PAD` members and, in the C emitter, a
+# `_Static_assert` per member: the layout is a claim about addresses, and a
+# claim about addresses that nothing checks is the one defect a golden snapshot
+# can never catch.
+
+#: `MapMember.kind` values.
+REG, GROUP, PAD = "reg", "group", "pad"
+
+
+@dc.dataclass(frozen=True)
+class MapMember:
+    """One member of a register group's struct layout."""
+
+    kind: str                 # REG / GROUP / PAD
+    name: str                 # C member name (PAD: the synthesised `_rsvd_*`)
+    dtype: Any                # register or group datatype; None for PAD
+    offset: int               # byte offset within the enclosing group
+    elem_size: int            # bytes occupied by ONE element
+    count: Optional[int]      # array length, or None for a scalar member
+    stride: int               # byte stride between elements (== elem_size when packed)
+
+    @property
+    def is_array(self) -> bool:
+        return self.count is not None
+
+    @property
+    def total_size(self) -> int:
+        return self.stride * self.count if self.is_array else self.elem_size
+
+    @property
+    def end(self) -> int:
+        return self.offset + self.total_size
+
+
+@dc.dataclass(frozen=True)
+class RegMap:
+    """A register group's layout: ordered members, gaps declared, total size."""
+
+    dtype: Any
+    members: Tuple[MapMember, ...]
+    size: int
+
+    @property
+    def registers(self) -> List[MapMember]:
+        return [m for m in self.members if m.kind == REG]
+
+    @property
+    def groups(self) -> List[MapMember]:
+        return [m for m in self.members if m.kind == GROUP]
+
+
+class RegMapError(Exception):
+    """A register group that cannot be expressed as a struct."""
+
+
+def _pad_name(offset: int) -> str:
+    """`_rsvd_<hex offset>`.
+
+    Named for WHERE it is rather than counted, so inserting a register early in
+    a map does not renumber every hole after it -- which would make a diff of
+    two generated maps unreadable in exactly the situation (a register map
+    changed) where it most needs to be read.
+    """
+    return f"_rsvd_{offset:x}"
+
+
+def _group_size(group_dt, min_size: Optional[int] = None, _seen=None) -> int:
+    """Bytes spanned by ``group_dt``, at least ``min_size``."""
+    return build_reg_map(group_dt, min_size=min_size, _seen=_seen).size
+
+
+def build_reg_map(group_dt, *, min_size: Optional[int] = None,
+                  _seen=None) -> RegMap:
+    """The struct layout of one register group.
+
+    Members come back in ADDRESS order with every hole declared as a PAD, so a C
+    emitter can render the list verbatim and get the offsets right by
+    construction rather than by arithmetic it repeats.
+
+    ``min_size`` pads the tail. It carries the stride of an enclosing array:
+    a group used as `bank[4]` with stride 0x20 must have `sizeof == 0x20` or C's
+    own indexing lands between banks, and a trailing hole in the last register
+    of a bank is invisible without it.
+
+    Raises `RegMapError` on a map a struct cannot express -- overlapping
+    instances, or an array whose stride is smaller than its element.
+    """
+    _seen = set() if _seen is None else _seen
+    if id(group_dt) in _seen:
+        raise RegMapError(
+            f"register group '{_name(group_dt)}' contains itself; a recursive "
+            f"map has no struct layout")
+    _seen = _seen | {id(group_dt)}
+
+    placed: List[MapMember] = []
+    for f in getattr(group_dt, "fields", []) or []:
+        placed.append(_place(group_dt, f, _seen))
+
+    placed.sort(key=lambda m: m.offset)
+    members: List[MapMember] = []
+    cursor = 0
+    for m in placed:
+        if m.offset < cursor:
+            prev = members[-1].name if members else "the start of the group"
+            raise RegMapError(
+                f"'{_name(group_dt)}.{m.name}' at 0x{m.offset:x} overlaps "
+                f"{prev}, which ends at 0x{cursor:x}; a struct cannot place "
+                f"two instances at one address")
+        if m.offset > cursor:
+            members.append(_pad(cursor, m.offset - cursor))
+        members.append(m)
+        cursor = m.end
+
+    if min_size is not None and cursor < min_size:
+        members.append(_pad(cursor, min_size - cursor))
+        cursor = min_size
+    if min_size is not None and cursor > min_size:
+        raise RegMapError(
+            f"register group '{_name(group_dt)}' spans 0x{cursor:x} bytes but "
+            f"is used with a stride of 0x{min_size:x}; the elements would "
+            f"overlap")
+    return RegMap(dtype=group_dt, members=tuple(members), size=cursor)
+
+
+def _pad(offset: int, nbytes: int) -> MapMember:
+    return MapMember(kind=PAD, name=_pad_name(offset), dtype=None,
+                     offset=offset, elem_size=nbytes, count=None,
+                     stride=nbytes)
+
+
+def _place(group_dt, f, _seen) -> MapMember:
+    """One field, placed. Reserved instances keep their own name."""
+    if field_is_register(f):
+        return MapMember(kind=REG, name=f.name, dtype=f.datatype,
+                         offset=scalar_offset(group_dt, f.name),
+                         elem_size=prim_bits(value_bits(f.datatype)) // 8,
+                         count=None,
+                         stride=prim_bits(value_bits(f.datatype)) // 8)
+    if field_is_reg_group(f):
+        sz = _group_size(f.datatype, _seen=_seen)
+        return MapMember(kind=GROUP, name=f.name, dtype=f.datatype,
+                         offset=scalar_offset(group_dt, f.name),
+                         elem_size=sz, count=None, stride=sz)
+    if field_is_array(f):
+        elem = array_element_type(f)
+        base, stride = array_base_stride(group_dt, f.name)
+        count = int(f.datatype.size)
+        if _dt_name(elem) == _DT_REGISTER:
+            width = prim_bits(value_bits(elem)) // 8
+            if stride < width:
+                raise RegMapError(
+                    f"'{_name(group_dt)}.{f.name}' has stride 0x{stride:x} but "
+                    f"each element is {width} bytes; the elements overlap")
+            return MapMember(kind=REG, name=f.name, dtype=elem, offset=base,
+                             elem_size=width, count=count, stride=stride)
+        if _dt_name(elem) == _DT_REGISTER_GROUP:
+            # min_size=stride: the element struct must be exactly the stride,
+            # or C's indexing and the device's disagree from bank 1 onward.
+            sz = _group_size(elem, min_size=stride, _seen=_seen)
+            return MapMember(kind=GROUP, name=f.name, dtype=elem, offset=base,
+                             elem_size=sz, count=count, stride=stride)
+    raise RegMapError(
+        f"'{_name(group_dt)}.{getattr(f, 'name', '?')}' is neither a register, "
+        f"a register group, nor an array of either; it has no place in a "
+        f"register map")
+
+
+def _name(dtype) -> str:
+    nm = getattr(dtype, "name", None) or _dt_name(dtype)
+    return nm.split("::")[-1]
+
+
+def reg_maps_for(groups, *, strides=None) -> "List[RegMap]":
+    """Layouts for ``groups``, innermost first.
+
+    ORDER IS THE POINT: C has no forward reference for a struct used by value,
+    so a bank's layout must be emitted before the map that embeds an array of
+    it. Dependency order is derived here, from the maps themselves, rather than
+    left to the caller's iteration order.
+    """
+    by_id, order = {}, []
+
+    def visit(g, min_size=None):
+        m = build_reg_map(g, min_size=min_size)
+        for sub in m.groups:
+            visit(sub.dtype, min_size=sub.stride if sub.is_array else None)
+        if id(g) not in by_id:
+            by_id[id(g)] = m
+            order.append(m)
+        return m
+
+    strides = strides or {}
+    for g in groups:
+        visit(g, min_size=strides.get(id(g)))
+    return order

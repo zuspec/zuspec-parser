@@ -115,7 +115,7 @@ class COpModelBackend:
         generated.
         """
         from .lower_progseq import Prefixes, parse_prefix_map, _BodyEmitter
-        from .lower_reg_model import accessor_map
+        from .lower_reg_model import accessor_map, value_structs_for
 
         self.model, self.settings = model, s
         self.prefixes = Prefixes(model, s.prefix,
@@ -124,6 +124,16 @@ class COpModelBackend:
         self.imports = model.imports
         self.emitter_cls = self.body_emitter_cls or _BodyEmitter
         self.accs = accessor_map(self.comps, self.prefixes, self.style)
+        # The register value layouts, partitioned into the file each belongs
+        # in. Computed here rather than in the two section emitters so that the
+        # partition is ONE decision -- a struct that both halves think is the
+        # other's is a type declared nowhere.
+        self.value_structs = value_structs_for(self.comps)
+        api = {id(x) for x in self.api_value_structs(model, s)}
+        self.header_value_structs = [x for x in self.value_structs
+                                     if id(x) in api]
+        self.impl_value_structs = [x for x in self.value_structs
+                                   if id(x) not in api]
         _log.info("c-progseq: prefixes: %s",
                   ", ".join(f"{getattr(c, 'name', '?')}->{self.prefixes[c]}"
                             for c in self.comps))
@@ -187,17 +197,73 @@ class COpModelBackend:
         return self._block(lower_api_types(self.comps, model.value_structs,
                                            model.ctor_names))
 
+    @overridable(since='0.1', stability='provisional')
+    def api_value_structs(self, model, s: CSettings):
+        """The register value structs to declare in the HEADER. None, by default.
+
+        A REGISTER LAYOUT IS IMPLEMENTATION. It says how the device is poked --
+        which bit of which word a field occupies -- and a caller drives the
+        device through the operations, not by assembling register words. So the
+        whole set goes to the .c and the header does not mention registers at
+        all.
+
+        This method is the seam for the build that needs otherwise: an
+        operation that takes or returns a register value makes that layout part
+        of the caller's contract, and a prototype naming a type defined only in
+        the .c is a header that does not compile. Such a build overrides this to
+        name the layouts to hoist -- or returns the API's own answer wholesale:
+
+            def api_value_structs(self, model, s):
+                from pssc.targets.sv.lower_api_types import collect_api_types
+                _, structs = collect_api_types(self.comps, (), model.ctor_names)
+                return list(structs)
+
+        Not the default, because that collector answers a WIDER question than
+        this one -- it reports every struct reachable from a component field or
+        an import signature, which for the WB DMA model is five layouts that
+        nothing in the generated header goes on to name. Hoisting on it puts
+        register types in the header to satisfy a reference that does not exist.
+
+        The check on getting this wrong is the C compiler, and it is a good one:
+        an unknown type name at the prototype, pointing at the line.
+        """
+        return ()
+
     @overridable(since='0.1', stability='stable', pairs_with=['emit_api_types'])
     def emit_value_unions(self, model, s: CSettings) -> List[str]:
-        """The register VALUE structs/unions. Returns LINES.
+        """The register VALUE structs/unions belonging in the HEADER. LINES.
+
+        Under `--header-only` that is all of them -- there is no other file to
+        put them in. Otherwise it is only the ones the API mentions
+        (`api_value_structs`); the rest go to the .c via
+        `emit_impl_value_unions`.
 
         Paired with `emit_api_types`, which deliberately skips these: the two
         partition one set of type declarations between them, and an overlap
         declares one type twice -- incompatibly, since the layouts differ.
         """
         from .lower_reg_model import lower_value_unions
+        structs = (self.value_structs if s.header_only
+                   else self.header_value_structs)
         return self._block(lower_value_unions(self.comps,
-                                              reg_style=s.reg_style))
+                                              reg_style=s.reg_style,
+                                              structs=structs))
+
+    @overridable(since='0.1', stability='stable')
+    def emit_impl_value_unions(self, model, s: CSettings) -> List[str]:
+        """The register value structs belonging in the ``.c``. Returns LINES.
+
+        Every layout the API does not mention -- which, for a device whose
+        operations are stated in terms of the device's own vocabulary rather
+        than its register encodings, is all of them. Empty under
+        `--header-only`, where `emit_value_unions` has already taken them.
+        """
+        from .lower_reg_model import lower_value_unions
+        if s.header_only:
+            return []
+        return self._block(lower_value_unions(self.comps,
+                                              reg_style=s.reg_style,
+                                              structs=self.impl_value_structs))
 
     @overridable(since='0.1', stability='stable')
     def emit_handles(self, model, s: CSettings) -> List[str]:
@@ -211,7 +277,23 @@ class COpModelBackend:
         from .lower_progseq import lower_handles
         return self._block(lower_handles(model, self.prefixes,
                                          link_style=s.link_style,
-                                         style=self.style))
+                                         style=self.style,
+                                         reg_map=s.reg_map))
+
+    @overridable(since='0.1', stability='stable')
+    def emit_reg_maps(self, model, s: CSettings) -> List[str]:
+        """The register-group layout structs, with their offset assertions.
+
+        The bare-metal alternative to a baked accessor per register, and the
+        reason is scale: an IP with a thousand registers of which a driver
+        touches thirty got a thousand accessor sets. A layout is DATA
+        proportional to the register map and leaves the CODE proportional to
+        the registers actually used.
+        """
+        from .lower_reg_model import lower_reg_maps
+        if not s.reg_map:
+            return []
+        return self._block(lower_reg_maps(model, self.style))
 
     @overridable(since='0.1', stability='provisional')
     def emit_accessors(self, model, s: CSettings) -> List[str]:
@@ -224,6 +306,11 @@ class COpModelBackend:
         state that as a pair it can check.
         """
         from .lower_reg_model import lower_accessors
+        if s.reg_map:
+            # The layout addresses every register; a per-register function
+            # would be a second way to reach the same member, and the one
+            # nobody would keep in agreement with the struct.
+            return []
         return self._block(lower_accessors(self.comps, self.prefixes,
                                            link_style=s.link_style,
                                            style=self.style))
@@ -292,6 +379,7 @@ class COpModelBackend:
                           match_default=s.match_default,
                           message_style=s.message_style,
                           lifecycle=s.lifecycle,
+                          reg_map=s.reg_map,
                           imports=self.imports,
                           style=self.style,
                           accs=self.accs,
@@ -338,30 +426,52 @@ class COpModelBackend:
         that hold them and the prototypes that pass them, and the imports
         precede the export API that may call them. A subclass reorders at its
         own risk; it inserts and replaces freely.
+
+        WHAT is in it is a split down the interface/implementation line. The
+        header carries the INTERFACE -- the data types the API mentions, the
+        component handles (complete types, so a caller can place one in static
+        storage), the platform imports and the prototypes. The register value
+        layouts and the baked accessors are how the device is poked, not what a
+        caller may call, so they go to the .c (`impl_sections`). `--header-only`
+        has no .c to move them to and keeps everything, which is the ONLY
+        reason `accessors` is conditional here rather than simply absent.
         """
-        return [
+        secs = [
             Section("banner",      self.emit_banner),
             Section("guard_open",  self.emit_guard_open),
             Section("includes",    self.emit_includes),
             Section("api_types",   self.emit_api_types),
             Section("reg_values",  self.emit_value_unions),
+            Section("reg_map",     self.emit_reg_maps),
             Section("handles",     self.emit_handles),
-            Section("accessors",   self.emit_accessors),
+        ]
+        if s.header_only:
+            secs.append(Section("accessors", self.emit_accessors))
+        secs += [
             Section("imports",     self.emit_import_decls),
             Section("decls",       self.emit_decls),
             Section("impl",        self.emit_impl_inline),
             Section("guard_close", self.emit_guard_close),
         ]
+        return secs
 
     @overridable(since='0.1', stability='stable')
     def impl_sections(self, model, s: CSettings):
-        """The ``.c`` file's sections. Fewer, and still a list: the company
-        prologue an extension wants to add goes at the top of a generated
-        source file at least as often as it goes in the header."""
+        """The ``.c`` file's sections. Still a list: the company prologue an
+        extension wants to add goes at the top of a generated source file at
+        least as often as it goes in the header.
+
+        `reg_values` and `accessors` are the same emitters the header used to
+        run, placed here instead -- see `header_sections`. They precede `impl`
+        because the bodies call the accessors and the accessors name the
+        layouts.
+        """
         return [
-            Section("banner",   self.emit_impl_banner),
-            Section("includes", self.emit_impl_includes),
-            Section("impl",     self.emit_impl_body),
+            Section("banner",     self.emit_impl_banner),
+            Section("includes",   self.emit_impl_includes),
+            Section("reg_values", self.emit_impl_value_unions),
+            Section("accessors",  self.emit_accessors),
+            Section("impl",       self.emit_impl_body),
         ]
 
     @overridable(since='0.1', stability='stable')
@@ -386,7 +496,7 @@ class COpModelBackend:
         once in `prepare`. Wrap `emit_impl` or `emit_operation` to change what
         the bodies SAY.
         """
-        return [self.impl, ""]
+        return self._block(self.impl)
 
     @overridable(since='0.1', stability='stable')
     def impl_text(self, model, s: CSettings) -> str:
@@ -437,7 +547,12 @@ class COpModelBackend:
         """
         self.prepare(model, s)
         files = {self.style.header_name(s.prefix): self.header_text(model, s)}
-        if not s.header_only and self.impl:
+        if not s.header_only:
+            # Unconditionally, not `and self.impl`: the .c now also carries the
+            # register layouts and the accessors, so "no operation bodies" is
+            # no longer the same question as "nothing to compile". It is also a
+            # contract -- a build system that has to ask whether this run
+            # produced a source file cannot state its compile step once.
             files[self.style.impl_name(s.prefix)] = self.impl_text(model, s)
         if s.emit_stubs:
             files[self.style.stubs_name(s.prefix)] = self.stubs_text(model, s)

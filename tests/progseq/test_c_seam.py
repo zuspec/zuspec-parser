@@ -345,7 +345,8 @@ def test_an_included_header_can_define_the_barrier(tmp_path):
         "}\n")
     exe = str(out / "a.out")
     r = subprocess.run([_CC[0], "-std=c99", "-Wall", "-Wextra", "-Werror",
-                        "-I", str(out), "main.c", "wb_dma_stubs.c", "-o", exe],
+                        "-I", str(out), "main.c", "wb_dma.c",
+                        "wb_dma_stubs.c", "-o", exe],
                        cwd=str(out), capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
     assert subprocess.run([exe]).returncode == 0, (

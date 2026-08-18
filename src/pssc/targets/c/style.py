@@ -44,6 +44,11 @@ class CSettings:
     lifecycle: str = "malloc"
     addr_bits: int = 64
     header_only: bool = False
+    #: Address registers by following a generated layout struct, rather than by
+    #: a baked `_addr` accessor per register. True for every seam that has no
+    #: bus context to thread -- which is what makes the access a plain
+    #: `write32(&s->regs->x, v)` with nothing to pass but the pointer.
+    reg_map: bool = False
     omit_stdint: bool = False
     has_channels: bool = False
     includes: Tuple[str, ...] = ()
@@ -283,6 +288,12 @@ class CStylePolicy(StylePolicy):
             # so a 64-bit generation stays byte-identical to what it produced
             # before this knob existed.
             out.append(f"#define PSSC_ADDR_BITS {s.addr_bits}")
+        if s.reg_map:
+            # offsetof, for the _Static_asserts that pin the layout. Before the
+            # seam headers rather than after: they are what a platform
+            # overrides, and an include that arrives late has already missed
+            # its #ifndef.
+            out.append("#include <stddef.h>")
         out += [self.include_line(inc) for inc in s.includes]
         if s.header_only and s.lifecycle == "malloc":
             # ONLY for malloc/free, which only `_create`/`_destroy` call. Under
@@ -292,6 +303,12 @@ class CStylePolicy(StylePolicy):
             # the part rather than on the workstation.
             out.append("#include <stdlib.h>")
         out.append(f'#include "{s.seam_include}"')
+        if s.reg_map:
+            # The pointer-in primitives (write32/read32). Alongside the address
+            # seam, not instead of it: `_mem_call` still lowers the model's own
+            # `write32(addr, ...)` into system RAM, which is an address and not
+            # a register.
+            out.append('#include "pssc_mem_reg.h"')
         # The environment seam: `message`, and PSSC_UNREACHABLE. Separate from
         # the memory seam because it is optional, and it is what an integrator
         # is most likely to redirect.

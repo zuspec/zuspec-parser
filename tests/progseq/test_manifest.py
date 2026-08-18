@@ -208,14 +208,16 @@ def test_a_target_with_no_abi_options_declares_none(tmp_path):
 
 def test_every_offset_appears_in_the_generated_c(c_manifest):
     doc, outcome = c_manifest
-    header = outcome.read("dma_engine.h")
+    # The .c: the manifest's job is to describe the addresses the generator
+    # baked, and the baked accessors are implementation.
+    header = outcome.read("dma_engine.c")
     for comp in doc["components"]:
         for reg in comp["registers"]:
             stem = "_".join(["dma_engine"] + reg["path"]).lower()
             match = re.search(
                 rf"{stem}_addr\([^)]*\)\s*\{{\s*return\s+([^;]+);", header,
                 re.IGNORECASE)
-            assert match, f"no _addr accessor for {reg['path']} in the header"
+            assert match, f"no _addr accessor for {reg['path']} in the .c"
             expr = match.group(1)
             assert f"0x{reg['offset']:x}u" in expr, (reg["path"], expr)
             for stride in reg["strides"]:

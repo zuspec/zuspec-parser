@@ -28,7 +28,8 @@ from ..progseq_model import (
     func_kind, FuncKind, field_is_reg_group, _dt_name, CompKind,
     sub_components, channel_fields, array_base_stride, scalar_offset,
 )
-from .lower_reg_model import accessor_base, c_struct_name, _prim_bits
+from .lower_reg_model import (accessor_base, c_struct_name, _prim_bits,
+                             map_type_name)
 from .mem_access import DEFAULT as DEFAULT_MEM, MemAccess
 from .style import coerce as _style
 from ..body_walker import (BodyWalker, CallDispatch, scan_output_locals,
@@ -433,8 +434,15 @@ def _sub_member_decl(sub, prefixes, style=None) -> str:
 
 
 def emit_handle(node, prefixes, link_style: str = "vtable",
-                style=None) -> str:
-    """One component's handle struct."""
+                style=None, reg_map: bool = False) -> str:
+    """One component's handle struct.
+
+    Under ``reg_map`` it also carries one typed pointer per register-group
+    field, named for the field, so a register access reads the way the PSS
+    does: `regs.bank[i].csr` becomes `s->regs->bank[i].csr`. The pointer is
+    what makes the access a pointer -- there is no address to pass and nothing
+    to fold, because the layout already holds the arithmetic.
+    """
     style = _style(style)
     comp = node.dtype
     prefix = prefixes[comp]
@@ -447,6 +455,11 @@ def emit_handle(node, prefixes, link_style: str = "vtable",
         # rules out. One pointer per channel is the cheaper of the two.
         lines.append("    const pssc_mem_if *bus;")
     lines.append("    pssc_addr_t base;")
+    if reg_map:
+        for f in comp.fields:
+            if field_is_reg_group(f):
+                lines.append(
+                    f"    {map_type_name(f.datatype, style)} *{mangle(f.name)};")
     for f in data_members(comp):
         lines += comment_lines(getattr(f, "doc", None), "    ", BLOCK)
         lines.append(f"    {_member_decl(f)}")
@@ -458,8 +471,20 @@ def emit_handle(node, prefixes, link_style: str = "vtable",
     return "\n".join(lines)
 
 
+def _stem(chain, prefix: str, style=None) -> str:
+    """The accessor stem a chain would have had.
+
+    Under `reg_map` no accessor is emitted, but the `_Acc` record keyed by this
+    stem still carries what the access needs and the layout does not: the
+    TRANSACTION WIDTH. A 16-bit register in a 32-bit map is `read16` of a
+    `uint16_t` member, and the member type alone would let `read32` compile.
+    """
+    return accessor_base(prefix, [c[0] for c in chain[:-1]], chain[-1][0],
+                         style)
+
+
 def _bus_macro(link_style: str, mem: MemAccess = None,
-               style=None) -> List[str]:
+               style=None, reg_map: bool = False) -> List[str]:
     """``pssc_bus(s)``: the seam's first argument.
 
     A MACRO rather than a `static inline` function, and the reason is the tree.
@@ -474,6 +499,12 @@ def _bus_macro(link_style: str, mem: MemAccess = None,
     straight to `pssc_r32(const pssc_mem_if *, ...)`, which checks it again.
     """
     style = _style(style)
+    if reg_map:
+        # Nothing expands it. Under the layout struct every register access is
+        # a pointer and every descriptor access is a cast pointer, so there is
+        # no call left that wants a bus handle -- and a macro nothing uses is a
+        # macro a reader of this header has to rule out.
+        return []
     if style.overrides_bus(link_style):
         # A style that renders its own accesses never expands this, and a
         # macro nothing uses is a macro a reader has to rule out.
@@ -519,7 +550,7 @@ def _sub_accessors(node, prefixes, style=None) -> List[str]:
 
 
 def lower_handles(model, prefixes, link_style: str = "vtable",
-                  style=None) -> str:
+                  style=None, reg_map: bool = False) -> str:
     """Every component's handle, the bus shim, and the sub-component accessors.
 
     Structs in post-order (children first): a parent embeds its children by
@@ -528,9 +559,9 @@ def lower_handles(model, prefixes, link_style: str = "vtable",
     """
     lines = ["/* ----- Component handles. ----- */"]
     for node in post_order(model):
-        lines.append(emit_handle(node, prefixes, link_style, style))
+        lines.append(emit_handle(node, prefixes, link_style, style, reg_map))
         lines.append("")
-    lines += _bus_macro(link_style, style=style)
+    lines += _bus_macro(link_style, style=style, reg_map=reg_map)
     acc: List[str] = []
     for node in regular_nodes(model):
         acc += _sub_accessors(node, prefixes, style)
@@ -711,8 +742,10 @@ class _BodyEmitter(CallDispatch, BodyWalker):
                  message_style: str = "import", handle: str = "s",
                  prefixes=None, link_style: str = "vtable", imports=None,
                  mem: MemAccess = None, style=None, accs=None,
-                 ctor_names=None):
+                 ctor_names=None, reg_map: bool = False):
         self.fn = fn
+        #: Address registers by following the layout struct. See `_reg_path`.
+        self.reg_map = reg_map
         #: This compile's constructor names, for the one call site that has
         #: only a name to classify (`ch[i].initialize(...)`).
         self.ctor_names = ctor_names
@@ -898,6 +931,8 @@ class _BodyEmitter(CallDispatch, BodyWalker):
                 raise ValueError(
                     f"register method '{func.attr}' takes {want} argument(s), "
                     f"got {len(args)}")
+            if self.reg_map:
+                return self._reg_map_access(chain, func.attr, args)
             return self._reg_access(base, func.attr, idx_args, args)
 
         raise ValueError(
@@ -906,6 +941,69 @@ class _BodyEmitter(CallDispatch, BodyWalker):
             f"it does not know would otherwise become a generic call that "
             f"compiles and writes the wrong thing. Known: "
             f"{', '.join(sorted(_REG_ACCESSORS))}.")
+
+    def _reg_path(self, chain) -> str:
+        """`s->regs->bank[3].csr` for the PSS path `regs.bank[3].csr`.
+
+        The PSS access path and the C member path are THE SAME PATH -- which is
+        the whole reason the layout struct is worth having. Nothing is folded
+        here and no offset appears: the struct states where each register is
+        and the compiler does the arithmetic, so this walk only has to spell
+        the hops.
+
+        Only the first hop is through a pointer (the handle's layout member);
+        everything after it is a member of a struct reached by value, hence
+        `->` once and `.` thereafter. An index makes the element a value, so a
+        subscripted first hop drops straight to `.`.
+        """
+        name, idx = chain[0]
+        out = f"{self.h}->{mangle(name)}"
+        deref = True                      # the next hop crosses the pointer
+        if idx is not None:
+            out += f"[{self.expr(idx)}]"
+            deref = False
+        for nm, ix in chain[1:]:
+            out += ("->" if deref else ".") + nm
+            deref = False
+            if ix is not None:
+                out += f"[{self.expr(ix)}]"
+        return out
+
+    def _reg_map_access(self, chain, method: str, args) -> str:
+        """One register access, addressed through the layout struct.
+
+        The primitives take a pointer and nothing else -- there is no bus
+        handle on this seam and no address to pass, so the whole access is the
+        member expression and a width.
+
+        The masked write is rendered INLINE rather than as a call, because
+        there is no per-register function left to put it in. It is still
+        §21.14.1's read-modify-write and the read is still part of the
+        definition, not an optimisation: on a register whose read clears its
+        status bits, dropping it changes what the device does.
+        """
+        acc = self.accs.get(_stem(chain, self.prefix, self.style))
+        prim = acc.prim if acc is not None else 32
+        # A register whose value is a struct is carried as its value union;
+        # the primitives move a plain word, so the union is opened here. The
+        # `_val` spellings are already raw and must NOT be opened again.
+        typed = acc is not None and acc.is_struct
+        path = self._reg_path(chain)
+        raw = f"&{path}"
+        if method == "read":
+            rd = f"read{prim}({raw})"
+            # A compound literal, because this is an EXPRESSION: the accessor
+            # that used to do `v.raw = ...; return v;` had a function body to
+            # do it in, and there is no function here any more.
+            return f"({acc.c_type}){{ .raw = {rd} }}" if typed else rd
+        if method == "read_val":
+            return f"read{prim}({raw})"
+        if method in ("write", "write_val"):
+            v = f"({args[0]}).raw" if (typed and method == "write") else args[0]
+            return f"write{prim}({raw}, {v})"
+        mask, val = args[0], args[1]
+        return (f"write{prim}({raw}, (read{prim}({raw}) & ~({mask}))"
+                f" | (({val}) & ({mask})))")
 
     def _reg_access(self, base: str, method: str, idx_args: str,
                     args) -> str:
@@ -1078,12 +1176,29 @@ class _BodyEmitter(CallDispatch, BodyWalker):
                          f"has no rendering; see targets/c/lower_progseq.py")
 
     def _mem_call(self, name: str, args) -> str:
-        """`read32(h)` / `write32(h, v)` -> the memory seam, via the funnel.
+        """`read32(h)` / `write32(h, v)` -> the memory seam.
 
         These are NOT register accesses -- `write_descriptor` uses them to put
-        a DMA descriptor into system RAM -- but they cross the same seam, so
-        they are rendered by the same object rather than by a parallel spelling
-        that would then have to be kept in agreement with it.
+        a DMA descriptor into system RAM -- but under `reg_map` they get the
+        SAME primitives, and deliberately.
+
+        A descriptor is not ordinary memory. The DMA engine reads it while the
+        CPU is running and writes back into it (SZ_WB, the DONE bits of a
+        linked list), so it changes without this program touching it -- which
+        is the definition of `volatile`. Reached through a plain pointer the
+        compiler is entitled to cache a field across a loop, sink a store past
+        the write that arms the channel, or drop a re-read whose value it
+        thinks it already has. Every one of those is correct C and a broken
+        driver.
+
+        So the descriptor goes through `write32`/`read32` exactly as a register
+        does, and picks up the same `volatile` access and the same
+        PSSC_MEM_BARRIER. The only difference left is where the pointer comes
+        from: a register's is a member of the layout struct, a descriptor's is
+        an address the model computed, so it is cast here.
+
+        Under the address seams (`vtable`, `direct`) this stays on the funnel:
+        those route an address somewhere and have no pointer to dereference.
         """
         direction, width = _MEM_PRIMS[name]
         want = 1 if direction == "read" else 2
@@ -1091,6 +1206,11 @@ class _BodyEmitter(CallDispatch, BodyWalker):
             raise ValueError(
                 f"'{name}' takes {want} argument(s), got {len(args)}")
         rendered = [self.expr(a) for a in args]
+        if self.reg_map:
+            ptr = f"(volatile void *)(uintptr_t)({rendered[0]})"
+            if direction == "read":
+                return f"read{width}({ptr})"
+            return f"write{width}({ptr}, {rendered[1]})"
         if direction == "read":
             return self.mem.read(width, self.h, rendered[0])
         return self.mem.write(width, self.h, rendered[0], rendered[1])
@@ -1561,6 +1681,7 @@ def lower_decls(model, prefixes, *, link_style: str = "vtable",
 
 def _lifecycle_impl(node, prefixes, link_style: str, qual: str,
                     reg_style: str, is_root: bool, lifecycle: str = "malloc",
+                    reg_map: bool = False,
                     style=None, emitter_cls=None, ctor_names=None,
                     **be_kw) -> List[str]:
     style = _style(style)
@@ -1594,6 +1715,15 @@ def _lifecycle_impl(node, prefixes, link_style: str, qual: str,
         # Nothing to bind. 0 is the honest answer: every accessor then offsets
         # from 0, which is visibly wrong in a trace rather than quietly wrong.
         lines.append("    self->base = 0;")
+    if reg_map:
+        # The one cast in the generated driver, and it is here rather than at
+        # every access for that reason. `base` is what the model's constructor
+        # was handed; the layout is how this component reads it.
+        for f in comp.fields:
+            if field_is_reg_group(f):
+                mt = map_type_name(f.datatype, style)
+                lines.append(f"    self->{mangle(f.name)} = "
+                             f"({mt} *)(uintptr_t)self->base;")
     for f in channel_fields(comp):
         lines.append(f"    pssc_chan1_init(&self->{mangle(f.name)});")
     lines += _field_defaults(comp)
@@ -1602,7 +1732,7 @@ def _lifecycle_impl(node, prefixes, link_style: str, qual: str,
         be = ctor_cls(ctor, comp, prefix, reg_style=reg_style,
                       handle="self", prefixes=prefixes,
                       link_style=link_style, style=style,
-                      ctor_names=ctor_names, **be_kw)
+                      ctor_names=ctor_names, reg_map=reg_map, **be_kw)
         lines += be.stmts(ctor.body, 1)
     lines.append("}")
 
@@ -1693,7 +1823,8 @@ def lower_impl(model, prefixes, *, link_style: str = "vtable",
                yield_mode: str = "none", match_default: str = "message",
                message_style: str = "import",
                lifecycle: str = "malloc", imports=None, style=None,
-               accs=None, emitter_cls=None, emit_operation=None) -> str:
+               accs=None, emitter_cls=None, emit_operation=None,
+               reg_map: bool = False) -> str:
     """Lifecycle + operation bodies for every component, CHILDREN FIRST.
 
     ``emit_operation(fn, ctx)`` renders one operation; it defaults to
@@ -1705,7 +1836,7 @@ def lower_impl(model, prefixes, *, link_style: str = "vtable",
     emit_operation = emit_operation or lower_operation
     be_kw = dict(yield_mode=yield_mode, match_default=match_default,
                  message_style=message_style, imports=imports, style=style,
-                 accs=accs)
+                 accs=accs, reg_map=reg_map)
     ctor_names = model.ctor_names
     lines: List[str] = ["/* ----- Component lifecycle + operations. ----- */"]
     for node in post_order(model):

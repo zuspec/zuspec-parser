@@ -98,9 +98,22 @@ def test_the_c_backend_sections_are_addressable_by_name():
     'accessors' must not need to know the list's length or shape."""
     from pssc.targets.c.backend import COpModelBackend
 
+    from pssc.targets.c.style import CSettings
+
     be = COpModelBackend()
-    listed = names(be.header_sections(None, None))
+    # Real settings, not None: the header's section list is a function of
+    # `header_only` -- the accessors are in the header only when there is no
+    # .c to hold them -- so a caller that cannot supply settings is asking a
+    # question with two answers.
+    split = CSettings(prefix="p", seam_include="pssc_mem_vtable.h")
+    listed = names(be.header_sections(None, split))
     assert listed[0] == "banner" and listed[-1] == "guard_close"
-    for expected in ("includes", "api_types", "handles", "accessors",
+    for expected in ("includes", "api_types", "reg_values", "handles",
                      "imports", "decls"):
         assert expected in listed
+    assert "accessors" not in listed        # implementation: it is in the .c
+    assert "accessors" in names(be.impl_sections(None, split))
+
+    hdr_only = CSettings(prefix="p", seam_include="pssc_mem_mmio.h",
+                         header_only=True)
+    assert "accessors" in names(be.header_sections(None, hdr_only))

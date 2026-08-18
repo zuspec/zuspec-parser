@@ -14,8 +14,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include "pssc_mem_mmio.h"
+#include "pssc_mem_reg.h"
 #include "pssc_env.h"
 #include "pssc_chan.h"
 
@@ -144,6 +146,43 @@ typedef union { uint32_t raw; struct {
     uint32_t rsvd_31      :  1;   /* [31] reserved */
 }; } wb_dma_intsrc_t;
 
+/* ----- Register map. The layout IS the address arithmetic. ----- */
+typedef struct {
+    uint32_t csr;                            /* 0x000 readwrite */
+    uint32_t sz;                             /* 0x004 readwrite */
+    uint32_t adr0;                           /* 0x008 readwrite */
+    uint32_t am0;                            /* 0x00c readwrite */
+    uint32_t adr1;                           /* 0x010 readwrite */
+    uint32_t am1;                            /* 0x014 readwrite */
+    uint32_t desc;                           /* 0x018 readwrite */
+    uint32_t swptr;                          /* 0x01c readwrite */
+} wb_dma_ch_regs_t;
+PSSC_STATIC_ASSERT(sizeof(wb_dma_ch_regs_t) == 0x20u, wb_dma_ch_regs_t_size);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_ch_regs_t, csr) == 0x0u, wb_dma_ch_regs_t_csr_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_ch_regs_t, sz) == 0x4u, wb_dma_ch_regs_t_sz_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_ch_regs_t, adr0) == 0x8u, wb_dma_ch_regs_t_adr0_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_ch_regs_t, am0) == 0xcu, wb_dma_ch_regs_t_am0_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_ch_regs_t, adr1) == 0x10u, wb_dma_ch_regs_t_adr1_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_ch_regs_t, am1) == 0x14u, wb_dma_ch_regs_t_am1_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_ch_regs_t, desc) == 0x18u, wb_dma_ch_regs_t_desc_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_ch_regs_t, swptr) == 0x1cu, wb_dma_ch_regs_t_swptr_offset);
+typedef struct {
+    uint32_t csr;                            /* 0x000 readwrite */
+    uint32_t int_msk_a;                      /* 0x004 readwrite */
+    uint32_t int_msk_b;                      /* 0x008 readwrite */
+    const uint32_t int_src_a;                /* 0x00c readonly */
+    const uint32_t int_src_b;                /* 0x010 readonly */
+    uint32_t _rsvd_14[3];                    /* 0x014 reserved */
+    wb_dma_ch_regs_t bank[4];                /* 0x020 */
+} wb_dma_regs_t;
+PSSC_STATIC_ASSERT(sizeof(wb_dma_regs_t) == 0xa0u, wb_dma_regs_t_size);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_regs_t, csr) == 0x0u, wb_dma_regs_t_csr_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_regs_t, int_msk_a) == 0x4u, wb_dma_regs_t_int_msk_a_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_regs_t, int_msk_b) == 0x8u, wb_dma_regs_t_int_msk_b_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_regs_t, int_src_a) == 0xcu, wb_dma_regs_t_int_src_a_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_regs_t, int_src_b) == 0x10u, wb_dma_regs_t_int_src_b_offset);
+PSSC_STATIC_ASSERT(offsetof(wb_dma_regs_t, bank) == 0x20u, wb_dma_regs_t_bank_offset);
+
 /* ----- Component handles. ----- */
 /*
  * The per-channel MMIO operation model (§3).
@@ -183,6 +222,7 @@ typedef union { uint32_t raw; struct {
  */
 typedef struct wb_dma_ch_s {
     pssc_addr_t base;
+    wb_dma_ch_regs_t *regs;
     /*
      * Which channel this is, in ``dma_req_i``/``dma_ack_o`` and INT_SRC bit
      * numbering.
@@ -231,6 +271,7 @@ typedef struct wb_dma_ch_s {
  */
 typedef struct wb_dma_s {
     pssc_addr_t base;
+    wb_dma_regs_t *regs;
     /*
      * How many channels this instance actually uses.
      *
@@ -251,134 +292,10 @@ typedef struct wb_dma_s {
     wb_dma_ch_t ch[4];
 } wb_dma_t;
 
-/* pssc_bus(s): the seam's first argument -- the ONLY line varying by style. */
-#define pssc_bus(s) ((void)(s), (const void *)0)
 
 /* ----- Sub-component access. ----- */
 #define WB_DMA_CH_COUNT 4u
 static inline wb_dma_ch_t *wb_dma_ch(wb_dma_t *s, unsigned i) { return &s->ch[i]; }
-
-/* ----- Baked inline register accessors. ----- */
-static inline pssc_addr_t wb_dma_regs_csr_addr(const wb_dma_t *s) { return s->base + 0x0u; }
-static inline wb_dma_gcsr_t wb_dma_regs_csr_read(wb_dma_t *s) { wb_dma_gcsr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_csr_addr(s)); return v; }
-static inline void wb_dma_regs_csr_write(wb_dma_t *s, wb_dma_gcsr_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_csr_addr(s), v.raw); }
-static inline uint32_t wb_dma_regs_csr_read_val(wb_dma_t *s) { return pssc_r32(pssc_bus(s), wb_dma_regs_csr_addr(s)); }
-static inline void wb_dma_regs_csr_write_val(wb_dma_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_csr_addr(s), v); }
-static inline void wb_dma_regs_csr_write_masked(wb_dma_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_csr_read_val(s); wb_dma_regs_csr_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_int_msk_a_addr(const wb_dma_t *s) { return s->base + 0x4u; }
-static inline wb_dma_intmsk_t wb_dma_regs_int_msk_a_read(wb_dma_t *s) { wb_dma_intmsk_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_int_msk_a_addr(s)); return v; }
-static inline void wb_dma_regs_int_msk_a_write(wb_dma_t *s, wb_dma_intmsk_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_int_msk_a_addr(s), v.raw); }
-static inline uint32_t wb_dma_regs_int_msk_a_read_val(wb_dma_t *s) { return pssc_r32(pssc_bus(s), wb_dma_regs_int_msk_a_addr(s)); }
-static inline void wb_dma_regs_int_msk_a_write_val(wb_dma_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_int_msk_a_addr(s), v); }
-static inline void wb_dma_regs_int_msk_a_write_masked(wb_dma_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_int_msk_a_read_val(s); wb_dma_regs_int_msk_a_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_int_msk_b_addr(const wb_dma_t *s) { return s->base + 0x8u; }
-static inline wb_dma_intmsk_t wb_dma_regs_int_msk_b_read(wb_dma_t *s) { wb_dma_intmsk_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_int_msk_b_addr(s)); return v; }
-static inline void wb_dma_regs_int_msk_b_write(wb_dma_t *s, wb_dma_intmsk_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_int_msk_b_addr(s), v.raw); }
-static inline uint32_t wb_dma_regs_int_msk_b_read_val(wb_dma_t *s) { return pssc_r32(pssc_bus(s), wb_dma_regs_int_msk_b_addr(s)); }
-static inline void wb_dma_regs_int_msk_b_write_val(wb_dma_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_int_msk_b_addr(s), v); }
-static inline void wb_dma_regs_int_msk_b_write_masked(wb_dma_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_int_msk_b_read_val(s); wb_dma_regs_int_msk_b_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_int_src_a_addr(const wb_dma_t *s) { return s->base + 0xcu; }
-static inline wb_dma_intsrc_t wb_dma_regs_int_src_a_read(wb_dma_t *s) { wb_dma_intsrc_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_int_src_a_addr(s)); return v; }
-static inline uint32_t wb_dma_regs_int_src_a_read_val(wb_dma_t *s) { return pssc_r32(pssc_bus(s), wb_dma_regs_int_src_a_addr(s)); }
-static inline pssc_addr_t wb_dma_regs_int_src_b_addr(const wb_dma_t *s) { return s->base + 0x10u; }
-static inline wb_dma_intsrc_t wb_dma_regs_int_src_b_read(wb_dma_t *s) { wb_dma_intsrc_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_int_src_b_addr(s)); return v; }
-static inline uint32_t wb_dma_regs_int_src_b_read_val(wb_dma_t *s) { return pssc_r32(pssc_bus(s), wb_dma_regs_int_src_b_addr(s)); }
-static inline pssc_addr_t wb_dma_regs_bank_csr_addr(const wb_dma_t *s, int i0) { return s->base + 0x20u + (pssc_addr_t)i0 * 0x20u; }
-static inline wb_dma_csr_t wb_dma_regs_bank_csr_read(wb_dma_t *s, int i0) { wb_dma_csr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_bank_csr_addr(s, i0)); return v; }
-static inline void wb_dma_regs_bank_csr_write(wb_dma_t *s, int i0, wb_dma_csr_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_csr_addr(s, i0), v.raw); }
-static inline uint32_t wb_dma_regs_bank_csr_read_val(wb_dma_t *s, int i0) { return pssc_r32(pssc_bus(s), wb_dma_regs_bank_csr_addr(s, i0)); }
-static inline void wb_dma_regs_bank_csr_write_val(wb_dma_t *s, int i0, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_csr_addr(s, i0), v); }
-static inline void wb_dma_regs_bank_csr_write_masked(wb_dma_t *s, int i0, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_bank_csr_read_val(s, i0); wb_dma_regs_bank_csr_write_val(s, i0, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_bank_sz_addr(const wb_dma_t *s, int i0) { return s->base + 0x24u + (pssc_addr_t)i0 * 0x20u; }
-static inline wb_dma_sz_t wb_dma_regs_bank_sz_read(wb_dma_t *s, int i0) { wb_dma_sz_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_bank_sz_addr(s, i0)); return v; }
-static inline void wb_dma_regs_bank_sz_write(wb_dma_t *s, int i0, wb_dma_sz_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_sz_addr(s, i0), v.raw); }
-static inline uint32_t wb_dma_regs_bank_sz_read_val(wb_dma_t *s, int i0) { return pssc_r32(pssc_bus(s), wb_dma_regs_bank_sz_addr(s, i0)); }
-static inline void wb_dma_regs_bank_sz_write_val(wb_dma_t *s, int i0, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_sz_addr(s, i0), v); }
-static inline void wb_dma_regs_bank_sz_write_masked(wb_dma_t *s, int i0, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_bank_sz_read_val(s, i0); wb_dma_regs_bank_sz_write_val(s, i0, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_bank_adr0_addr(const wb_dma_t *s, int i0) { return s->base + 0x28u + (pssc_addr_t)i0 * 0x20u; }
-static inline wb_dma_addr_t wb_dma_regs_bank_adr0_read(wb_dma_t *s, int i0) { wb_dma_addr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_bank_adr0_addr(s, i0)); return v; }
-static inline void wb_dma_regs_bank_adr0_write(wb_dma_t *s, int i0, wb_dma_addr_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_adr0_addr(s, i0), v.raw); }
-static inline uint32_t wb_dma_regs_bank_adr0_read_val(wb_dma_t *s, int i0) { return pssc_r32(pssc_bus(s), wb_dma_regs_bank_adr0_addr(s, i0)); }
-static inline void wb_dma_regs_bank_adr0_write_val(wb_dma_t *s, int i0, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_adr0_addr(s, i0), v); }
-static inline void wb_dma_regs_bank_adr0_write_masked(wb_dma_t *s, int i0, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_bank_adr0_read_val(s, i0); wb_dma_regs_bank_adr0_write_val(s, i0, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_bank_am0_addr(const wb_dma_t *s, int i0) { return s->base + 0x2cu + (pssc_addr_t)i0 * 0x20u; }
-static inline wb_dma_amask_t wb_dma_regs_bank_am0_read(wb_dma_t *s, int i0) { wb_dma_amask_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_bank_am0_addr(s, i0)); return v; }
-static inline void wb_dma_regs_bank_am0_write(wb_dma_t *s, int i0, wb_dma_amask_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_am0_addr(s, i0), v.raw); }
-static inline uint32_t wb_dma_regs_bank_am0_read_val(wb_dma_t *s, int i0) { return pssc_r32(pssc_bus(s), wb_dma_regs_bank_am0_addr(s, i0)); }
-static inline void wb_dma_regs_bank_am0_write_val(wb_dma_t *s, int i0, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_am0_addr(s, i0), v); }
-static inline void wb_dma_regs_bank_am0_write_masked(wb_dma_t *s, int i0, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_bank_am0_read_val(s, i0); wb_dma_regs_bank_am0_write_val(s, i0, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_bank_adr1_addr(const wb_dma_t *s, int i0) { return s->base + 0x30u + (pssc_addr_t)i0 * 0x20u; }
-static inline wb_dma_addr_t wb_dma_regs_bank_adr1_read(wb_dma_t *s, int i0) { wb_dma_addr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_bank_adr1_addr(s, i0)); return v; }
-static inline void wb_dma_regs_bank_adr1_write(wb_dma_t *s, int i0, wb_dma_addr_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_adr1_addr(s, i0), v.raw); }
-static inline uint32_t wb_dma_regs_bank_adr1_read_val(wb_dma_t *s, int i0) { return pssc_r32(pssc_bus(s), wb_dma_regs_bank_adr1_addr(s, i0)); }
-static inline void wb_dma_regs_bank_adr1_write_val(wb_dma_t *s, int i0, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_adr1_addr(s, i0), v); }
-static inline void wb_dma_regs_bank_adr1_write_masked(wb_dma_t *s, int i0, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_bank_adr1_read_val(s, i0); wb_dma_regs_bank_adr1_write_val(s, i0, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_bank_am1_addr(const wb_dma_t *s, int i0) { return s->base + 0x34u + (pssc_addr_t)i0 * 0x20u; }
-static inline wb_dma_amask_t wb_dma_regs_bank_am1_read(wb_dma_t *s, int i0) { wb_dma_amask_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_bank_am1_addr(s, i0)); return v; }
-static inline void wb_dma_regs_bank_am1_write(wb_dma_t *s, int i0, wb_dma_amask_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_am1_addr(s, i0), v.raw); }
-static inline uint32_t wb_dma_regs_bank_am1_read_val(wb_dma_t *s, int i0) { return pssc_r32(pssc_bus(s), wb_dma_regs_bank_am1_addr(s, i0)); }
-static inline void wb_dma_regs_bank_am1_write_val(wb_dma_t *s, int i0, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_am1_addr(s, i0), v); }
-static inline void wb_dma_regs_bank_am1_write_masked(wb_dma_t *s, int i0, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_bank_am1_read_val(s, i0); wb_dma_regs_bank_am1_write_val(s, i0, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_bank_desc_addr(const wb_dma_t *s, int i0) { return s->base + 0x38u + (pssc_addr_t)i0 * 0x20u; }
-static inline wb_dma_descptr_t wb_dma_regs_bank_desc_read(wb_dma_t *s, int i0) { wb_dma_descptr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_bank_desc_addr(s, i0)); return v; }
-static inline void wb_dma_regs_bank_desc_write(wb_dma_t *s, int i0, wb_dma_descptr_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_desc_addr(s, i0), v.raw); }
-static inline uint32_t wb_dma_regs_bank_desc_read_val(wb_dma_t *s, int i0) { return pssc_r32(pssc_bus(s), wb_dma_regs_bank_desc_addr(s, i0)); }
-static inline void wb_dma_regs_bank_desc_write_val(wb_dma_t *s, int i0, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_desc_addr(s, i0), v); }
-static inline void wb_dma_regs_bank_desc_write_masked(wb_dma_t *s, int i0, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_bank_desc_read_val(s, i0); wb_dma_regs_bank_desc_write_val(s, i0, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_regs_bank_swptr_addr(const wb_dma_t *s, int i0) { return s->base + 0x3cu + (pssc_addr_t)i0 * 0x20u; }
-static inline wb_dma_swptr_t wb_dma_regs_bank_swptr_read(wb_dma_t *s, int i0) { wb_dma_swptr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_regs_bank_swptr_addr(s, i0)); return v; }
-static inline void wb_dma_regs_bank_swptr_write(wb_dma_t *s, int i0, wb_dma_swptr_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_swptr_addr(s, i0), v.raw); }
-static inline uint32_t wb_dma_regs_bank_swptr_read_val(wb_dma_t *s, int i0) { return pssc_r32(pssc_bus(s), wb_dma_regs_bank_swptr_addr(s, i0)); }
-static inline void wb_dma_regs_bank_swptr_write_val(wb_dma_t *s, int i0, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_regs_bank_swptr_addr(s, i0), v); }
-static inline void wb_dma_regs_bank_swptr_write_masked(wb_dma_t *s, int i0, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_regs_bank_swptr_read_val(s, i0); wb_dma_regs_bank_swptr_write_val(s, i0, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_ch_regs_csr_addr(const wb_dma_ch_t *s) { return s->base + 0x0u; }
-static inline wb_dma_csr_t wb_dma_ch_regs_csr_read(wb_dma_ch_t *s) { wb_dma_csr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_ch_regs_csr_addr(s)); return v; }
-static inline void wb_dma_ch_regs_csr_write(wb_dma_ch_t *s, wb_dma_csr_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_csr_addr(s), v.raw); }
-static inline uint32_t wb_dma_ch_regs_csr_read_val(wb_dma_ch_t *s) { return pssc_r32(pssc_bus(s), wb_dma_ch_regs_csr_addr(s)); }
-static inline void wb_dma_ch_regs_csr_write_val(wb_dma_ch_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_csr_addr(s), v); }
-static inline void wb_dma_ch_regs_csr_write_masked(wb_dma_ch_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_ch_regs_csr_read_val(s); wb_dma_ch_regs_csr_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_ch_regs_sz_addr(const wb_dma_ch_t *s) { return s->base + 0x4u; }
-static inline wb_dma_sz_t wb_dma_ch_regs_sz_read(wb_dma_ch_t *s) { wb_dma_sz_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_ch_regs_sz_addr(s)); return v; }
-static inline void wb_dma_ch_regs_sz_write(wb_dma_ch_t *s, wb_dma_sz_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_sz_addr(s), v.raw); }
-static inline uint32_t wb_dma_ch_regs_sz_read_val(wb_dma_ch_t *s) { return pssc_r32(pssc_bus(s), wb_dma_ch_regs_sz_addr(s)); }
-static inline void wb_dma_ch_regs_sz_write_val(wb_dma_ch_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_sz_addr(s), v); }
-static inline void wb_dma_ch_regs_sz_write_masked(wb_dma_ch_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_ch_regs_sz_read_val(s); wb_dma_ch_regs_sz_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_ch_regs_adr0_addr(const wb_dma_ch_t *s) { return s->base + 0x8u; }
-static inline wb_dma_addr_t wb_dma_ch_regs_adr0_read(wb_dma_ch_t *s) { wb_dma_addr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_ch_regs_adr0_addr(s)); return v; }
-static inline void wb_dma_ch_regs_adr0_write(wb_dma_ch_t *s, wb_dma_addr_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_adr0_addr(s), v.raw); }
-static inline uint32_t wb_dma_ch_regs_adr0_read_val(wb_dma_ch_t *s) { return pssc_r32(pssc_bus(s), wb_dma_ch_regs_adr0_addr(s)); }
-static inline void wb_dma_ch_regs_adr0_write_val(wb_dma_ch_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_adr0_addr(s), v); }
-static inline void wb_dma_ch_regs_adr0_write_masked(wb_dma_ch_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_ch_regs_adr0_read_val(s); wb_dma_ch_regs_adr0_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_ch_regs_am0_addr(const wb_dma_ch_t *s) { return s->base + 0xcu; }
-static inline wb_dma_amask_t wb_dma_ch_regs_am0_read(wb_dma_ch_t *s) { wb_dma_amask_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_ch_regs_am0_addr(s)); return v; }
-static inline void wb_dma_ch_regs_am0_write(wb_dma_ch_t *s, wb_dma_amask_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_am0_addr(s), v.raw); }
-static inline uint32_t wb_dma_ch_regs_am0_read_val(wb_dma_ch_t *s) { return pssc_r32(pssc_bus(s), wb_dma_ch_regs_am0_addr(s)); }
-static inline void wb_dma_ch_regs_am0_write_val(wb_dma_ch_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_am0_addr(s), v); }
-static inline void wb_dma_ch_regs_am0_write_masked(wb_dma_ch_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_ch_regs_am0_read_val(s); wb_dma_ch_regs_am0_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_ch_regs_adr1_addr(const wb_dma_ch_t *s) { return s->base + 0x10u; }
-static inline wb_dma_addr_t wb_dma_ch_regs_adr1_read(wb_dma_ch_t *s) { wb_dma_addr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_ch_regs_adr1_addr(s)); return v; }
-static inline void wb_dma_ch_regs_adr1_write(wb_dma_ch_t *s, wb_dma_addr_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_adr1_addr(s), v.raw); }
-static inline uint32_t wb_dma_ch_regs_adr1_read_val(wb_dma_ch_t *s) { return pssc_r32(pssc_bus(s), wb_dma_ch_regs_adr1_addr(s)); }
-static inline void wb_dma_ch_regs_adr1_write_val(wb_dma_ch_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_adr1_addr(s), v); }
-static inline void wb_dma_ch_regs_adr1_write_masked(wb_dma_ch_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_ch_regs_adr1_read_val(s); wb_dma_ch_regs_adr1_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_ch_regs_am1_addr(const wb_dma_ch_t *s) { return s->base + 0x14u; }
-static inline wb_dma_amask_t wb_dma_ch_regs_am1_read(wb_dma_ch_t *s) { wb_dma_amask_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_ch_regs_am1_addr(s)); return v; }
-static inline void wb_dma_ch_regs_am1_write(wb_dma_ch_t *s, wb_dma_amask_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_am1_addr(s), v.raw); }
-static inline uint32_t wb_dma_ch_regs_am1_read_val(wb_dma_ch_t *s) { return pssc_r32(pssc_bus(s), wb_dma_ch_regs_am1_addr(s)); }
-static inline void wb_dma_ch_regs_am1_write_val(wb_dma_ch_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_am1_addr(s), v); }
-static inline void wb_dma_ch_regs_am1_write_masked(wb_dma_ch_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_ch_regs_am1_read_val(s); wb_dma_ch_regs_am1_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_ch_regs_desc_addr(const wb_dma_ch_t *s) { return s->base + 0x18u; }
-static inline wb_dma_descptr_t wb_dma_ch_regs_desc_read(wb_dma_ch_t *s) { wb_dma_descptr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_ch_regs_desc_addr(s)); return v; }
-static inline void wb_dma_ch_regs_desc_write(wb_dma_ch_t *s, wb_dma_descptr_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_desc_addr(s), v.raw); }
-static inline uint32_t wb_dma_ch_regs_desc_read_val(wb_dma_ch_t *s) { return pssc_r32(pssc_bus(s), wb_dma_ch_regs_desc_addr(s)); }
-static inline void wb_dma_ch_regs_desc_write_val(wb_dma_ch_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_desc_addr(s), v); }
-static inline void wb_dma_ch_regs_desc_write_masked(wb_dma_ch_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_ch_regs_desc_read_val(s); wb_dma_ch_regs_desc_write_val(s, (cur & ~mask) | (val & mask)); }
-static inline pssc_addr_t wb_dma_ch_regs_swptr_addr(const wb_dma_ch_t *s) { return s->base + 0x1cu; }
-static inline wb_dma_swptr_t wb_dma_ch_regs_swptr_read(wb_dma_ch_t *s) { wb_dma_swptr_t v; v.raw = pssc_r32(pssc_bus(s), wb_dma_ch_regs_swptr_addr(s)); return v; }
-static inline void wb_dma_ch_regs_swptr_write(wb_dma_ch_t *s, wb_dma_swptr_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_swptr_addr(s), v.raw); }
-static inline uint32_t wb_dma_ch_regs_swptr_read_val(wb_dma_ch_t *s) { return pssc_r32(pssc_bus(s), wb_dma_ch_regs_swptr_addr(s)); }
-static inline void wb_dma_ch_regs_swptr_write_val(wb_dma_ch_t *s, uint32_t v) { pssc_w32(pssc_bus(s), wb_dma_ch_regs_swptr_addr(s), v); }
-static inline void wb_dma_ch_regs_swptr_write_masked(wb_dma_ch_t *s, uint32_t mask, uint32_t val) { uint32_t cur = wb_dma_ch_regs_swptr_read_val(s); wb_dma_ch_regs_swptr_write_val(s, (cur & ~mask) | (val & mask)); }
 
 /* ----- Export API + lifecycle. ----- */
 static inline void wb_dma_init(wb_dma_t *self, pssc_addr_t base);
@@ -929,6 +846,7 @@ static inline void wb_dma_ch_wait_hint(wb_dma_ch_t *s);
 /* --- wb_dma_ch_c --- */
 static inline void wb_dma_ch_init(wb_dma_ch_t *self, int id, pssc_addr_t bank) {
     self->base = bank;
+    self->regs = (wb_dma_ch_regs_t *)(uintptr_t)self->base;
     pssc_chan1_init(&self->inflight);
     pssc_chan1_init(&self->wake);
     self->caps.present = 1;
@@ -1203,13 +1121,13 @@ static inline wb_dma_status_t wb_dma_ch_check_completion(wb_dma_ch_t *s) {
 static inline void wb_dma_ch_configure_channel(wb_dma_ch_t *s, wb_dma_ch_cfg_t cfg) {
     wb_dma_sz_t sz = {0};
     wb_dma_csr_t csr = {0};
-    wb_dma_ch_regs_adr0_write_val(s, cfg.src);
-    wb_dma_ch_regs_am0_write_val(s, cfg.src_mask);
-    wb_dma_ch_regs_adr1_write_val(s, cfg.dst);
-    wb_dma_ch_regs_am1_write_val(s, cfg.dst_mask);
+    write32(&s->regs->adr0, cfg.src);
+    write32(&s->regs->am0, cfg.src_mask);
+    write32(&s->regs->adr1, cfg.dst);
+    write32(&s->regs->am1, cfg.dst_mask);
     sz.tot_sz = cfg.tot_sz;
     sz.chk_sz = cfg.chk_sz;
-    wb_dma_ch_regs_sz_write(s, sz);
+    write32(&s->regs->sz, (sz).raw);
     /*
      * CH_EN is what arms the channel, so it must not ride along with the
      * configuration write.
@@ -1233,7 +1151,7 @@ static inline void wb_dma_ch_configure_channel(wb_dma_ch_t *s, wb_dma_ch_cfg_t c
     csr.ine_done = cfg.int_on_done;
     csr.ine_err = cfg.int_on_err;
     csr.ine_chk_done = cfg.int_on_chunk;
-    wb_dma_ch_regs_csr_write(s, csr);
+    write32(&s->regs->csr, (csr).raw);
 }
 
 /*
@@ -1270,7 +1188,7 @@ static inline void wb_dma_ch_configure_channel(wb_dma_ch_t *s, wb_dma_ch_cfg_t c
  */
 static inline wb_dma_status_t wb_dma_ch_probe_status(wb_dma_ch_t *s) {
     wb_dma_csr_t csr = {0};
-    csr = wb_dma_ch_regs_csr_read(s);
+    csr = (wb_dma_csr_t){ .raw = read32(&s->regs->csr) };
     if (csr.err == 1) {
         return 1;
     }
@@ -1312,7 +1230,7 @@ static inline void wb_dma_ch_set_auto_restart(wb_dma_ch_t *s, uint8_t enable) {
     if (!(s->caps.ars)) {
         return;
     }
-    wb_dma_ch_regs_csr_write_masked(s, 64, ((uint32_t)(enable) & 1) << 6);
+    write32(&s->regs->csr, (read32(&s->regs->csr) & ~(64)) | ((((uint32_t)(enable) & 1) << 6) & (64)));
 }
 
 /*
@@ -1350,7 +1268,7 @@ static inline void wb_dma_ch_set_software_pointer(wb_dma_ch_t *s, uint32_t ptr, 
      */
     sw.ptr = ptr;
     sw.en = enable;
-    wb_dma_ch_regs_swptr_write(s, sw);
+    write32(&s->regs->swptr, (sw).raw);
 }
 
 /*
@@ -1396,7 +1314,7 @@ static inline void wb_dma_ch_set_software_pointer(wb_dma_ch_t *s, uint32_t ptr, 
  *    be considered delivered on return, which matters post-silicon.
  */
 static inline void wb_dma_ch_stop_channel_start(wb_dma_ch_t *s) {
-    wb_dma_ch_regs_csr_write_masked(s, 512, 512);
+    write32(&s->regs->csr, (read32(&s->regs->csr) & ~(512)) | ((512) & (512)));
 }
 
 /*
@@ -1444,7 +1362,7 @@ static inline void wb_dma_ch_transfer_list_start(wb_dma_ch_t *s, pssc_addr_t hea
      * descriptors from interface 0 regardless of which interface the data
      * moves on, so `head` must be IF0-reachable.
      */
-    wb_dma_ch_regs_desc_write_val(s, (uint32_t)(head));
+    write32(&s->regs->desc, (uint32_t)(head));
     /*
      * Steps 3 and 4, in that order and as TWO WRITES, deliberately: the
      * device requires them separate, and write_fields({"use_ed","ch_en"},
@@ -1452,8 +1370,8 @@ static inline void wb_dma_ch_transfer_list_start(wb_dma_ch_t *s, pssc_addr_t hea
      * what the plural form is for. Each of these is still a
      * read-modify-write in its own right (§21.14.1).
      */
-    wb_dma_ch_regs_csr_write_masked(s, 128, 128);
-    wb_dma_ch_regs_csr_write_masked(s, 1, 1);
+    write32(&s->regs->csr, (read32(&s->regs->csr) & ~(128)) | ((128) & (128)));
+    write32(&s->regs->csr, (read32(&s->regs->csr) & ~(1)) | ((1) & (1)));
 }
 
 /*
@@ -1501,7 +1419,7 @@ static inline void wb_dma_ch_transfer_single_start(wb_dma_ch_t *s, wb_dma_ch_cfg
      * configuration just written survives; the read clears the read-to-clear
      * status bits, harmless here because the channel has not started yet.
      */
-    wb_dma_ch_regs_csr_write_masked(s, 1, 1);
+    write32(&s->regs->csr, (read32(&s->regs->csr) & ~(1)) | ((1) & (1)));
 }
 
 /*
@@ -1556,6 +1474,7 @@ static inline void wb_dma_ch_wait_hint(wb_dma_ch_t *s) {
 /* --- wb_dma_c --- */
 static inline void wb_dma_init(wb_dma_t *self, pssc_addr_t base) {
     self->base = base;
+    self->regs = (wb_dma_regs_t *)(uintptr_t)self->base;
     self->num_ch = 4;
     self->pri_levels = 4;
     (self->base = base);
@@ -1596,10 +1515,10 @@ static inline void wb_dma_configure_interrupt_routing(wb_dma_t *s, wb_dma_int_ba
     vec.ch = channel_mask;
     switch (bank) {
     case 0:
-        wb_dma_regs_int_msk_a_write(s, vec);
+        write32(&s->regs->int_msk_a, (vec).raw);
         break;
     case 1:
-        wb_dma_regs_int_msk_b_write(s, vec);
+        write32(&s->regs->int_msk_b, (vec).raw);
         break;
     default:
         pssc_message("wb_dma: unmatched match subject in configure_interrupt_routing");
@@ -1630,9 +1549,9 @@ static inline void wb_dma_configure_interrupt_routing(wb_dma_t *s, wb_dma_int_ba
 static inline void wb_dma_pause_engine(wb_dma_t *s, uint8_t pause) {
     wb_dma_gcsr_t gcsr = {0};
     gcsr.pause = pause;
-    wb_dma_regs_csr_write(s, gcsr);
+    write32(&s->regs->csr, (gcsr).raw);
     while (1) {
-        gcsr = wb_dma_regs_csr_read(s);
+        gcsr = (wb_dma_gcsr_t){ .raw = read32(&s->regs->csr) };
         if (gcsr.pause == pause) {
             break;
         }
@@ -1660,8 +1579,9 @@ static inline void wb_dma_pause_engine(wb_dma_t *s, uint8_t pause) {
  * :param desc_ptr: the descriptor whose control word is read back
  */
 static inline uint16_t wb_dma_read_descriptor_residual(wb_dma_t *s, pssc_addr_t desc_ptr) {
+    (void)s;
     uint32_t desc_csr;
-    desc_csr = pssc_r32(pssc_bus(s), desc_ptr);
+    desc_csr = read32((volatile void *)(uintptr_t)(desc_ptr));
     return (uint16_t)(desc_csr);
 }
 
@@ -1688,6 +1608,7 @@ static inline uint16_t wb_dma_read_descriptor_residual(wb_dma_t *s, pssc_addr_t 
  * :param desc: the descriptor contents; the caller's copy is not modified
  */
 static inline pssc_addr_t wb_dma_write_descriptor(wb_dma_t *s, pssc_addr_t at, pssc_addr_t prev, wb_dma_desc_t desc) {
+    (void)s;
     wb_dma_desc_t d = {0};
     uint32_t csr_word;
     /*
@@ -1708,17 +1629,17 @@ static inline pssc_addr_t wb_dma_write_descriptor(wb_dma_t *s, pssc_addr_t at, p
     csr_word |= (uint32_t)(d.csr.inc_dst) << 18;
     csr_word |= (uint32_t)(d.csr.inc_src) << 19;
     csr_word |= (uint32_t)(d.csr.eol) << 20;
-    pssc_w32(pssc_bus(s), at, csr_word);
-    pssc_w32(pssc_bus(s), (at + 4), d.adr0);
-    pssc_w32(pssc_bus(s), (at + 8), d.adr1);
-    pssc_w32(pssc_bus(s), (at + 12), d.next);
+    write32((volatile void *)(uintptr_t)(at), csr_word);
+    write32((volatile void *)(uintptr_t)((at + 4)), d.adr0);
+    write32((volatile void *)(uintptr_t)((at + 8)), d.adr1);
+    write32((volatile void *)(uintptr_t)((at + 12)), d.next);
     /*
      * Extend the list. The check is on the resolved address rather than a
      * handle comparison, because an address handle is opaque and not
      * usefully comparable.
      */
     if (prev != 0) {
-        pssc_w32(pssc_bus(s), (prev + 12), (uint32_t)(at));
+        write32((volatile void *)(uintptr_t)((prev + 12)), (uint32_t)(at));
     }
     return (at + 16);
 }

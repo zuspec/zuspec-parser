@@ -108,8 +108,14 @@ CONFIGS: Tuple[Config, ...] = (
            "the collapsed (mask, value) SV spelling the C target consumes"),
     Config("c-vtable", "op-model-c", (),
            "C defaults: vtable seam, bitfields, malloc lifecycle, .h + .c"),
-    Config("c-mmio-hdr", "op-model-c", ("--link-style", "mmio"),
-           "header-only C against a directly-mapped device"),
+    Config("c-mmio-hdr", "op-model-c", ("--link-style", "mmio",
+                                        "--header-only"),
+           "header-only C against a directly-mapped device -- every body, "
+           "layout and accessor `static inline` in one file, and no .c"),
+    Config("c-mmio", "op-model-c", ("--link-style", "mmio"),
+           "the same device SPLIT: mmio no longer implies header-only, and "
+           "this is what the firmware build now gets -- interface in the .h, "
+           "layouts + accessors + bodies in the .c"),
     Config("c-fn-static", "op-model-c",
            ("--mem-access", "functions", "--lifecycle", "static",
             "--link-style", "direct"),

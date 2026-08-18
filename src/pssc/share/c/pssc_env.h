@@ -57,6 +57,22 @@ void pssc_message(const char *fmt, ...);
 #  endif
 #endif
 
+/* On a definition that may legitimately have no caller in its translation
+ * unit. The generated register accessors are the case: the set is derived from
+ * the register map, so it covers registers no operation in this model happens
+ * to touch, and when they live in the .c (the default layout) that is a
+ * translation-unit-local `static inline` nobody calls -- which clang reports
+ * under -Wunused-function. The accessors are the API's vocabulary for the
+ * device, not a list of what today's operations use, so pruning them to the
+ * called set would make a model edit silently remove a symbol. */
+#ifndef PSSC_MAYBE_UNUSED
+#  if defined(__GNUC__) || defined(__clang__)
+#    define PSSC_MAYBE_UNUSED __attribute__((unused))
+#  else
+#    define PSSC_MAYBE_UNUSED
+#  endif
+#endif
+
 #ifdef __cplusplus
 }
 #endif
