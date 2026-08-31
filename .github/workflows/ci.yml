@@ -160,120 +160,17 @@ jobs:
         python -m twine upload --non-interactive --skip-existing dist/*.whl
 
 
-#   ci-linux-docs:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: Install Dependencies
-#         run: |
-#           sudo apt-get update
-#           sudo apt-get install python3
-#           python3 -m pip install ivpm
-#           python3 -m ivpm update --anonymous-git
-#           ./packages/python/bin/pip install packaging jinja2
-#       - name: Build Docs
-#         run: |
-#           cd docs
-#           make html
-#           touch _build/html/.nojekyll
-#       - name: Deploy Docs
-#         if: startsWith(github.ref, 'refs/heads/main')
-#         uses: JamesIves/github-pages-deploy-action@4.1.7
-#         with:
-#           branch: gh-pages
-#           folder: docs/_build/html
-
-#   ci-windows:
-#     runs-on: ${{ matrix.platform }}
-#     strategy:
-#         matrix:
-#             include:
-#             - platform: windows-latest
-#               build_arch: x64
-#               python_arch: x64
-#               spec: '3.8'
-#             - platform: windows-latest
-#               build_arch: x64
-#               python_arch: x64
-#               spec: '3.9'
-#             - platform: windows-latest
-#               build_arch: x64
-#               python_arch: x64
-#               spec: '3.10'
-#             - platform: windows-latest
-#               build_arch: x64
-#               python_arch: x64
-#               spec: '3.11'
-#             - platform: windows-latest
-#               build_arch: x64
-#               python_arch: x64
-#               spec: '3.12'
-#     steps:
-#     - name: checkout
-#       uses: actions/checkout@v4
-#     - name: Install Python ${{ matrix.spec }}
-#       uses: actions/setup-python@v4
-#       with:
-#         architecture: ${{ matrix.python_arch }}
-#         python-version: ${{ matrix.spec }}
-#     - uses: ilammy/msvc-dev-cmd@v1.13.0
-#       with:
-#         arch: ${{ matrix.build_arch }}
-#     - name: Build/Test Package
-#       env:
-#         BUILD_NUM: ${{ github.run_id }}
-#       run: |
-#         python -m pip install ivpm
-#         python -m ivpm update -a
-#         ./packages/python/Scripts/python -m pip install ninja cython setuptools wheel build twine
-#         echo "BUILD_NUM=$env:BUILD_NUM" > python/zsp_parser/__build_num__.py
-#         $env:PYTHONPATH = '$PWD.Path/packages/pyastbuilder/src'
-#         echo "PYTHONPATH: $env:PYTHONPATH"
-#         ./packages/python/Scripts/python setup.py build_ext
-#         ./packages/python/Scripts/python setup.py build bdist_wheel
-#     - name: Publish to PyPi
-#       if: startsWith(github.ref, 'refs/heads/main')
-#       env:
-#         TWINE_USERNAME: __token__
-#         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-#       run: |
-#         ./packages/python/Scripts/python -m twine  upload dist/*.whl      
-            
-
-#   macos:
-#     runs-on: macos-latest
-#     strategy:
-#         matrix:
-#             include:
-#             - pyversion: '3.8'
-#             - pyversion: '3.9'
-#             - pyversion: '3.10'
-#             - pyversion: '3.11'
-#             - pyversion: '3.12'
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Install Python ${{ matrix.pyversion }}
-#         uses: actions/setup-python@v4
-#         with:
-#           python-version: ${{ matrix.pyversion }}
-#       - name: Fetch dependencies
-#         run: |
-#           python3 --version
-#           python3 -m venv py
-#           ./py/bin/python3 -m pip install ivpm
-#           ./py/bin/python3 -m ivpm update -a
-#           ./packages/python/bin/python3 -m pip install cython setuptools wheel build twine
-#       - name: Build wheel
-#         env:
-#           BUILD_NUM: ${{ github.run_id }}
-#         run: |
-#           echo "BUILD_NUM=${BUILD_NUM}" > python/zsp_parser/__build_num__.py
-#           ./packages/python/bin/python3 setup.py build_ext --inplace
-#           ./packages/python/bin/python3 setup.py bdist_wheel
-#       - name: Publish to PyPi
-#         if: startsWith(github.ref, 'refs/heads/main')
-#         env:
-#           TWINE_USERNAME: __token__
-#           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-#         run: |
-#           ./packages/python/bin/python3 -m twine  upload dist/*.whl      
+# ---------------------------------------------------------------------------
+# ~100 lines of commented-out CI stood here and have been removed.
+#
+# They were not this project's. Every one of the three blocks -- ci-linux-docs,
+# ci-windows and macos -- built `python/zsp_parser/__build_num__.py` and
+# imported zsp_parser, which belongs to zuspec, not to pssc; the files they
+# name do not exist in this repository. They were copied in with the workflow
+# and never adapted.
+#
+# Dead configuration that names the wrong package is worse than absent
+# configuration: someone restoring Windows or macOS coverage here would start
+# from a block that cannot work and spend the time finding out why. The git
+# history has them if they are ever wanted.
+# ---------------------------------------------------------------------------
