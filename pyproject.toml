@@ -9,7 +9,11 @@ description = "PSSC — the PSS compiler: PSS source to SystemVerilog, C, and Py
 authors = [
   { name = "Matthew Ballance", email = "matt.ballance@gmail.com" },
 ]
-requires-python = ">=3.10"
+# 3.12 because zuspec-be-py is a hard runtime dependency and it uses PEP 695
+# type-parameter syntax, which is a SyntaxError before 3.12. Leaving this at
+# >=3.10 would let `uvx pssc` install on 3.10/3.11 and then fail at import --
+# an honest resolution error is the better outcome.
+requires-python = ">=3.12"
 dependencies = [
   "pssparser",
   "zuspec-ir-core",
