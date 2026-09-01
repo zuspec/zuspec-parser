@@ -129,3 +129,66 @@ outright *empty*. Nothing installed, so the runs died on
 
 Fixing that (`default-dep-set: default-dev`) is what made the suites run for the
 first time, and what exposed everything above.
+
+---
+
+## Codegen gaps found while verifying the 0.1.0 release
+
+Both were found by driving the **published wheels** (not the source tree) end
+to end: `uvx pssc` → `pssc compile -t c-host` → `gcc` → `ld`. Both are
+pre-existing. `git diff a847b31..v0.1.0` touches only `pyproject.toml`,
+`.forgejo/workflows/docs.yml`, `KNOWN_TEST_FAILURES.md` and the deletion of the
+unparseable `src/pssc/__build_num__.py` — no codegen file changed — so neither
+of these is release fallout.
+
+Everything up to the link step works: for
+
+```pss
+component pss_top {
+    action A { rand bit[8] v; constraint { v > 10; v < 20; } }
+    action Top { activity { do A; do A; } }
+}
+```
+
+`c-host`, `c-embedded` and `sv-native` all emit files, and all 20 generated C
+files plus the 16 runtime `.c` files shipped in the wheels compile cleanly
+against wheel-supplied headers alone. So the packaging is sound — the headers,
+the runtime sources and the DPI/solver libraries are all present and correct in
+the published artifacts.
+
+### 1. A compound root action emits a call to a body that is never defined
+
+`main.c` calls `pss_top__Top_body(&root, &tb)`, but `pss_top__top.c` defines
+only `pss_top__Top_init`. No translation unit defines `..._Top_body`, so the
+link fails:
+
+```
+ld: obj/main.o: in function `pssc_run':
+    undefined reference to `pss_top__Top_body'
+```
+
+Passing `--root-action pss_top::Top` explicitly does not change it. So an
+activity-bodied root action currently generates C that compiles but cannot link.
+
+### 2. A leaf action with `exec body` crashes the C generator
+
+```pss
+action A { rand bit[8] v; constraint { v > 10; v < 20; } exec body { } }
+```
+
+```
+zuspec/be/sw/c_generator.py:909, in _generate_async_method
+RuntimeError: Cannot generate async method 'body' for component 'pss_top::A':
+method body is not available in datamodel. Ensure DataModelFactory.build() is
+called with proper component classes and that the source code is accessible.
+```
+
+`pssc` reports this as `internal error` and exits 2. The async analyzer that
+runs just before it prints `✓ pss_top::A.body` under "Convertible functions",
+so the analysis and the generator disagree about whether the body is available.
+
+The message names `DataModelFactory.build()` and "source code is accessible",
+which reads like a path written for the `@zdc` Python frontend, where the body
+is recovered by introspecting Python source. Coming from a `.pss` file through
+pssparser there is no Python source to introspect — which would explain both
+this and (1), and would make them one gap rather than two.
